@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<view icon="100" title="UtilityBelt" width="500" height="400">
+		<control progid="DecalControls.Notebook" name="Notebook">
+		<page label="Test">
+			<control progid="DecalControls.FixedLayout" clipped="">
+			</control>
+
+		</page>
+		<page label="Config">
+			<control progid="DecalControls.FixedLayout" clipped="">
+				<control progid="DecalControls.Checkbox" name="AutoVendorEnable" left="8" top="8" width="480" height="16" text="Enable AutoVendor"/>
+				<control progid="DecalControls.Checkbox" name="AutoVendorTestMode" left="48" top="24" width="448" height="16" text="TestMode (debug to chat)"/>
+			</control>
+
+		</page>
+		</control>
+
+</view>
