@@ -112,8 +112,8 @@ namespace UtilityBelt
         }
         
         internal static void StackItem(WorldObject stackThis) {
+            // try to stack in side pack
             foreach (var container in Globals.Core.WorldFilter.GetInventory()) {
-
                 if (container.ObjectClass == ObjectClass.Container && container.Values(LongValueKey.Slot, -1) >= 0) {
                     foreach (var wo in Globals.Core.WorldFilter.GetByContainer(container.Id)) {
                         if (wo.Name == stackThis.Name && wo.Id != stackThis.Id) {
@@ -122,6 +122,19 @@ namespace UtilityBelt
                                 Globals.Core.Actions.MoveItem(stackThis.Id, container.Id, container.Values(LongValueKey.Slot), true);
                                 return;
                             }
+                        }
+                    }
+                }
+            }
+
+            // try to stack in main pack
+            foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
+                if (wo.Container == Globals.Core.CharacterFilter.Id) {
+                    if (wo.Name == stackThis.Name && wo.Id != stackThis.Id) {
+                        if (wo.Values(LongValueKey.StackCount, 1) + stackThis.Values(LongValueKey.StackCount, 1) <= wo.Values(LongValueKey.StackMax)) {
+                            Globals.Core.Actions.SelectItem(stackThis.Id);
+                            Globals.Core.Actions.MoveItem(stackThis.Id, Globals.Core.CharacterFilter.Id, 0, true);
+                            return;
                         }
                     }
                 }

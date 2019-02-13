@@ -238,9 +238,14 @@ namespace UtilityBelt.Tools {
 
         private void DoVendoring() {
             try {
-                int amount;
-                WorldObject nextBuyItem = GetNextBuyItem(out amount);
+                int amount = 0;
+                int nextBuyItemId = GetNextBuyItem(out amount);
+                WorldObject nextBuyItem = null;
                 List<WorldObject> sellItems = GetSellItems();
+
+                if (Globals.Core.Actions.IsValidObject(nextBuyItemId)) {
+                    nextBuyItem = Globals.Core.WorldFilter[nextBuyItemId];
+                }
 
                 Util.WriteToChat("AutoVendor:DoVendoring");
 
@@ -356,24 +361,29 @@ namespace UtilityBelt.Tools {
 
         private int GetVendorSellPrice(WorldObject wo) {
             var price = 0;
+            try {
 
-            int vendorId = Globals.Core.Actions.VendorId;
+                int vendorId = Globals.Core.Actions.VendorId;
 
-            if (vendorId == 0) return 0;
+                if (vendorId == 0) return 0;
 
-            price = (int)Math.Ceiling((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * VendorCache.GetSellRate(vendorId));
+                price = (int)Math.Ceiling((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * VendorCache.GetSellRate(vendorId));
+            }
+            catch (Exception ex) { }
 
             return price;
         }
 
         private int GetVendorBuyPrice(WorldObject wo) {
             var price = 0;
+            try {
+                int vendorId = Globals.Core.Actions.VendorId;
 
-            int vendorId = Globals.Core.Actions.VendorId;
+                if (vendorId == 0) return 0;
 
-            if (vendorId == 0) return 0;
-
-            price = (int)Math.Floor((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * VendorCache.GetBuyRate(vendorId));
+                price = (int)Math.Floor((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * VendorCache.GetBuyRate(vendorId));
+            }
+            catch (Exception ex) { }
 
             return price;
         }
@@ -392,13 +402,13 @@ namespace UtilityBelt.Tools {
             return Util.GetFreeMainPackSpace() >= packSlotsNeeded;
         }
 
-        private WorldObject GetNextBuyItem(out int amount) {
+        private int GetNextBuyItem(out int amount) {
             using (Vendor openVendor = Globals.Core.WorldFilter.OpenVendor) {
                 amount = 0;
 
                 if (openVendor == null || openVendor.MerchantId == 0) {
                     Util.WriteToChat("Bad Merchant");
-                    return null;
+                    return 0;
                 }
 
                 // keepUpTo rules first, just like mag-tools
@@ -420,7 +430,7 @@ namespace UtilityBelt.Tools {
                     if (amount > MAX_VENDOR_BUY_COUNT) amount = MAX_VENDOR_BUY_COUNT;
 
                     if (amount > 0) {
-                        return wo;
+                        return wo.Id;
                     }
                 }
 
@@ -436,11 +446,11 @@ namespace UtilityBelt.Tools {
 
                     amount = MAX_VENDOR_BUY_COUNT;
 
-                    return wo;
+                    return wo.Id;
                 }
             }
 
-            return null;
+            return 0;
         }
         private List<WorldObject> GetSellItems() {
             List<WorldObject> sellObjects = new List<WorldObject>();
