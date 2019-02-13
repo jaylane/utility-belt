@@ -22,7 +22,6 @@ namespace UtilityBelt.Tools {
         private object lootProfile;
         private bool needsToBuy = false;
         private bool needsToSell = false;
-        private bool isRunning = true;
         private int stackItem = 0;
         private bool shouldStack = false;
 
@@ -41,6 +40,8 @@ namespace UtilityBelt.Tools {
 
         private void WorldFilter_ApproachVendor(object sender, ApproachVendorEventArgs e) {
             try {
+                Util.WriteToChat("ApproachVendor: " + e.MerchantId);
+
                 if (!Globals.Config.AutoVendor.Enabled.Value || !Globals.Core.Actions.IsValidObject(e.MerchantId)) {
                     Stop();
                     return;
@@ -94,6 +95,8 @@ namespace UtilityBelt.Tools {
         }
 
         public void Stop() {
+            Util.WriteToChat("AutoVendor:Stop");
+
             needsVendoring = false;
             needsToBuy = false;
             needsToSell = false;
@@ -134,7 +137,6 @@ namespace UtilityBelt.Tools {
                             Globals.Core.Actions.VendorSellAll();
                         }
                         else {
-                            Util.WriteToChat("AutoVendor:DoVendoring");
                             DoVendoring();
                         }
                     }
@@ -153,9 +155,9 @@ namespace UtilityBelt.Tools {
                 WorldObject nextBuyItem = GetNextBuyItem(out amount);
                 List<WorldObject> sellItems = GetSellItems();
 
-                Vendor vendor = Globals.Core.WorldFilter.OpenVendor;
+                Util.WriteToChat("AutoVendor:DoVendoring");
 
-                if (vendor == null) {
+                if (!HasVendorOpen()) {
                     Stop();
                     return;
                 }
@@ -258,6 +260,7 @@ namespace UtilityBelt.Tools {
                     return;
                 }
 
+                Util.Think("AutoVendor finished.");
                 Util.WriteToChat("AutoVendor finished.");
                 Stop();
             }
@@ -265,24 +268,35 @@ namespace UtilityBelt.Tools {
         }
 
         private int GetVendorSellPrice(WorldObject wo) {
-            var vendor = Globals.Core.WorldFilter.OpenVendor;
+            var price = 0;
 
-            if (vendor == null) return 0;
+            using (Vendor vendor = Globals.Core.WorldFilter.OpenVendor) {
 
-            return (int)Math.Ceiling((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * vendor.SellRate);
+                if (vendor == null) return 0;
+
+                price = (int)Math.Ceiling((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * vendor.SellRate);
+
+            }
+            return price;
         }
 
         private int GetVendorBuyPrice(WorldObject wo) {
-            var vendor = Globals.Core.WorldFilter.OpenVendor;
+            var price = 0;
 
-            if (vendor == null) return 0;
+            using (Vendor vendor = Globals.Core.WorldFilter.OpenVendor) {
 
-            var buyRate = vendor.BuyRate;
+                if (vendor == null) return 0;
 
-            // tradenotes are always sold to vendor at full price?
-            if (wo.ObjectClass == ObjectClass.TradeNote) buyRate = 1;
+                var buyRate = vendor.BuyRate;
 
-            return (int)Math.Floor((wo.Values(LongValueKey.Value, 0)/wo.Values(LongValueKey.StackCount,1)) * buyRate);
+                // tradenotes are always sold to vendor at full price?
+                if (wo.ObjectClass == ObjectClass.TradeNote) buyRate = 1;
+
+                price = (int)Math.Floor((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * buyRate);
+
+            }
+
+            return price;
         }
 
         private bool CanBuy(WorldObject nextBuyItem) {
@@ -300,95 +314,94 @@ namespace UtilityBelt.Tools {
         }
 
         private WorldObject GetNextBuyItem(out int amount) {
-            Vendor openVendor = Globals.Core.WorldFilter.OpenVendor;
+            using (Vendor openVendor = Globals.Core.WorldFilter.OpenVendor) {
 
-            amount = 0;
+                amount = 0;
 
-            if (openVendor == null || openVendor.MerchantId == 0) {
-                Util.WriteToChat("Bad Merchant");
-                return null;
-            }
-
-            // keepUpTo rules first, just like mag-tools
-            foreach (WorldObject wo in openVendor) {
-                uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithVendorObjectTemplateID(wo.Id);
-
-                if (itemInfo == null) continue;
-
-                uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
-
-                if (!result.IsKeepUpTo) continue;
-
-                amount = result.Data1 - Util.GetItemCountInInventoryByName(wo.Name);
-
-                if (amount > wo.Values(LongValueKey.StackMax, 1)) {
-                    amount = wo.Values(LongValueKey.StackMax, 1);
+                if (openVendor == null || openVendor.MerchantId == 0) {
+                    Util.WriteToChat("Bad Merchant");
+                    return null;
                 }
 
-                if (amount > MAX_VENDOR_BUY_COUNT) amount = MAX_VENDOR_BUY_COUNT;
+                // keepUpTo rules first, just like mag-tools
+                foreach (WorldObject wo in openVendor) {
+                    uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithVendorObjectTemplateID(wo.Id);
 
-                if (amount > 0) {
+                    if (itemInfo == null) continue;
+
+                    uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
+
+                    if (!result.IsKeepUpTo) continue;
+
+                    amount = result.Data1 - Util.GetItemCountInInventoryByName(wo.Name);
+
+                    if (amount > wo.Values(LongValueKey.StackMax, 1)) {
+                        amount = wo.Values(LongValueKey.StackMax, 1);
+                    }
+
+                    if (amount > MAX_VENDOR_BUY_COUNT) amount = MAX_VENDOR_BUY_COUNT;
+
+                    if (amount > 0) {
+                        return wo;
+                    }
+                }
+
+                // keep rules next
+                foreach (WorldObject wo in openVendor) {
+                    uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithVendorObjectTemplateID(wo.Id);
+
+                    if (itemInfo == null) continue;
+
+                    uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
+
+                    if (!result.IsKeep) continue;
+
+                    amount = MAX_VENDOR_BUY_COUNT;
+
                     return wo;
                 }
-            }
-
-            // keep rules next
-            foreach (WorldObject wo in openVendor) {
-                uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithVendorObjectTemplateID(wo.Id);
-
-                if (itemInfo == null) continue;
-                
-                uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
-
-                if (!result.IsKeep) continue;
-                
-                amount = MAX_VENDOR_BUY_COUNT;
-
-                return wo;
             }
 
             return null;
         }
         private List<WorldObject> GetSellItems() {
             List<WorldObject> sellObjects = new List<WorldObject>();
-            Vendor vendor = Globals.Core.WorldFilter.OpenVendor;
+            using (Vendor vendor = Globals.Core.WorldFilter.OpenVendor) {
 
-            foreach (WorldObject wo in Globals.Core.WorldFilter.GetInventory()) {
-                if (!Util.ItemIsSafeToGetRidOf(wo)) continue;
+                foreach (WorldObject wo in Globals.Core.WorldFilter.GetInventory()) {
+                    if (!Util.ItemIsSafeToGetRidOf(wo)) continue;
 
-                if (wo.Values(LongValueKey.Value, 0) <= 0) continue;
-                
-                uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(wo.Id);
+                    if (wo.Values(LongValueKey.Value, 0) <= 0) continue;
 
-                if (itemInfo == null) continue;
+                    uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(wo.Id);
 
-                uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
+                    if (itemInfo == null) continue;
 
-                if (!result.IsSell)
-                    continue;
+                    uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
 
-                sellObjects.Add(wo);
-            }
+                    if (!result.IsSell)
+                        continue;
 
-            if (sellObjects.Count == 0)
-                return null;
+                    sellObjects.Add(wo);
+                }
 
-            sellObjects.Sort(
-                delegate (WorldObject wo1, WorldObject wo2) {
+                sellObjects.Sort(
+                    delegate (WorldObject wo1, WorldObject wo2) {
                     // tradenotes last
                     if (wo1.ObjectClass == ObjectClass.TradeNote && wo2.ObjectClass != ObjectClass.TradeNote) return 1;
 
                     // then cheapest first
                     if (wo1.Values(LongValueKey.Value, 0) > wo2.Values(LongValueKey.Value, 0)) return 1;
-                    if (wo1.Values(LongValueKey.Value, 0) < wo2.Values(LongValueKey.Value, 0)) return -1;
+                        if (wo1.Values(LongValueKey.Value, 0) < wo2.Values(LongValueKey.Value, 0)) return -1;
 
                     // then smallest stack size
                     if (wo1.Values(LongValueKey.StackCount, 1) > wo2.Values(LongValueKey.StackCount, 1)) return 1;
-                    if (wo1.Values(LongValueKey.StackCount, 1) < wo2.Values(LongValueKey.StackCount, 1)) return -1;
+                        if (wo1.Values(LongValueKey.StackCount, 1) < wo2.Values(LongValueKey.StackCount, 1)) return -1;
 
-                    return 0;
-                }
-            );
+                        return 0;
+                    }
+                );
+            }
             return sellObjects;
         }
 
@@ -431,14 +444,9 @@ namespace UtilityBelt.Tools {
             bool hasVendorOpen = false;
 
             try {
-                using (Vendor openVendor = Globals.Core.WorldFilter.OpenVendor) {
-                    if (openVendor == null || openVendor.MerchantId == 0) {
-                        hasVendorOpen = false;
-                    }
-                    else {
-                        hasVendorOpen = true;
-                    }
-                }
+                if (Globals.Core.Actions.VendorId == 0) return false;
+
+                hasVendorOpen = true;
             }
             catch (Exception ex) { Util.LogException(ex); }
 

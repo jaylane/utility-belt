@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace UtilityBelt
 {
@@ -178,6 +179,39 @@ namespace UtilityBelt
             }
 
             return total;
+        }
+
+
+        [DllImport("Decal.dll")]
+        static extern int DispatchOnChatCommand(ref IntPtr str, [MarshalAs(UnmanagedType.U4)] int target);
+
+        public static bool Decal_DispatchOnChatCommand(string cmd) {
+            IntPtr bstr = Marshal.StringToBSTR(cmd);
+
+            try {
+                bool eaten = (DispatchOnChatCommand(ref bstr, 1) & 0x1) > 0;
+
+                return eaten;
+            }
+            finally {
+                Marshal.FreeBSTR(bstr);
+            }
+        }
+
+        /// <summary>
+        /// This will first attempt to send the messages to all plugins. If no plugins set e.Eat to true on the message, it will then simply call InvokeChatParser.
+        /// </summary>
+        /// <param name="cmd"></param>
+        public static void DispatchChatToBoxWithPluginIntercept(string cmd) {
+            if (!Decal_DispatchOnChatCommand(cmd))
+                Globals.Core.Actions.InvokeChatParser(cmd);
+        }
+
+        internal static void Think(string message) {
+            try {
+                DispatchChatToBoxWithPluginIntercept(string.Format("/tell {0}, {1}", Globals.Core.CharacterFilter.Name, message));
+            }
+            catch (Exception ex) { Util.LogException(ex); }
         }
     }
 }
