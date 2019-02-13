@@ -458,7 +458,7 @@ namespace UtilityBelt.Tools {
                 if (!result.IsSell)
                     continue;
 
-                if (VendorCache.GetMaxValue(Globals.Core.Actions.VendorId) > wo.Values(LongValueKey.Value, 0)) {
+                if (VendorCache.GetMaxValue(Globals.Core.Actions.VendorId) >= wo.Values(LongValueKey.Value, 0)) {
                     sellObjects.Add(wo);
                 }
             }
