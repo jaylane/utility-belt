@@ -10,6 +10,7 @@ namespace UtilityBelt.Tools {
         public static Dictionary<int, double> SellRates = new Dictionary<int, double>();
         public static Dictionary<int, double> BuyRates = new Dictionary<int, double>();
         public static Dictionary<int, int> MaxValues = new Dictionary<int, int>();
+        public static Dictionary<int, int> Categories = new Dictionary<int, int>();
 
         public static void AddVendor(Vendor vendor) {
             if (SellRates.ContainsKey(vendor.MerchantId)) {
@@ -32,6 +33,13 @@ namespace UtilityBelt.Tools {
             else {
                 MaxValues.Add(vendor.MerchantId, vendor.MaxValue);
             }
+
+            if (Categories.ContainsKey(vendor.MerchantId)) {
+                Categories[vendor.MerchantId] = vendor.Categories;
+            }
+            else {
+                Categories.Add(vendor.MerchantId, vendor.Categories);
+            }
         }
 
         public static double GetSellRate(int vendorId) {
@@ -50,12 +58,20 @@ namespace UtilityBelt.Tools {
             return 1;
         }
 
-        public static double GetMaxValue(int vendorId) {
+        public static int GetMaxValue(int vendorId) {
             if (MaxValues.ContainsKey(vendorId)) {
                 return MaxValues[vendorId];
             }
 
             return 1;
+        }
+
+        public static int GetCategories(int vendorId) {
+            if (Categories.ContainsKey(vendorId)) {
+                return Categories[vendorId];
+            }
+
+            return 0;
         }
     }
 
@@ -176,7 +192,7 @@ namespace UtilityBelt.Tools {
 
                 if (DateTime.UtcNow - lastThought >= thinkInterval && DateTime.UtcNow - startedVendoring >= thinkInterval) {
                     lastThought = DateTime.UtcNow;
-
+                    
                     if (needsVendoring && waitingForIds) {
                         if (Assessor.NeedsInventoryData()) {
                             if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(10)) {
@@ -467,6 +483,9 @@ namespace UtilityBelt.Tools {
 
                 if (!result.IsSell)
                     continue;
+
+                // will vendor buy this item?
+                if ((VendorCache.GetCategories(Globals.Core.Actions.VendorId) & wo.Values(LongValueKey.Type)) != 0) continue;
 
                 if (VendorCache.GetMaxValue(Globals.Core.Actions.VendorId) >= wo.Values(LongValueKey.Value, 0)) {
                     sellObjects.Add(wo);
