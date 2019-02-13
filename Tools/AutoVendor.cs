@@ -9,6 +9,7 @@ namespace UtilityBelt.Tools {
     public static class VendorCache {
         public static Dictionary<int, double> SellRates = new Dictionary<int, double>();
         public static Dictionary<int, double> BuyRates = new Dictionary<int, double>();
+        public static Dictionary<int, int> MaxValues = new Dictionary<int, int>();
 
         public static void AddVendor(Vendor vendor) {
             if (SellRates.ContainsKey(vendor.MerchantId)) {
@@ -18,11 +19,18 @@ namespace UtilityBelt.Tools {
                 SellRates.Add(vendor.MerchantId, vendor.SellRate);
             }
 
-            if ( BuyRates.ContainsKey(vendor.MerchantId)) {
+            if (BuyRates.ContainsKey(vendor.MerchantId)) {
                 BuyRates[vendor.MerchantId] = vendor.BuyRate;
             }
             else {
                 BuyRates.Add(vendor.MerchantId, vendor.BuyRate);
+            }
+
+            if (MaxValues.ContainsKey(vendor.MerchantId)) {
+                MaxValues[vendor.MerchantId] = vendor.MaxValue;
+            }
+            else {
+                MaxValues.Add(vendor.MerchantId, vendor.MaxValue);
             }
         }
 
@@ -37,6 +45,14 @@ namespace UtilityBelt.Tools {
         public static double GetBuyRate(int vendorId) {
             if (BuyRates.ContainsKey(vendorId)) {
                 return BuyRates[vendorId];
+            }
+
+            return 1;
+        }
+
+        public static double GetMaxValue(int vendorId) {
+            if (MaxValues.ContainsKey(vendorId)) {
+                return MaxValues[vendorId];
             }
 
             return 1;
@@ -102,7 +118,7 @@ namespace UtilityBelt.Tools {
                     return;
                 }
 
-                Util.WriteToChat(string.Format("rates buy: {0} sell: {1}", e.Vendor.BuyRate, e.Vendor.SellRate));
+                Util.WriteToChat(string.Format("rates buy: {0} sell: {1} categories: {2}", e.Vendor.BuyRate, e.Vendor.SellRate, e.Vendor.Categories));
 
 
                 if (Assessor.NeedsInventoryData()) {
@@ -442,7 +458,9 @@ namespace UtilityBelt.Tools {
                 if (!result.IsSell)
                     continue;
 
-                sellObjects.Add(wo);
+                if (VendorCache.GetMaxValue(Globals.Core.Actions.VendorId) > wo.Values(LongValueKey.Value, 0)) {
+                    sellObjects.Add(wo);
+                }
             }
 
             sellObjects.Sort(
@@ -472,7 +490,7 @@ namespace UtilityBelt.Tools {
             if (wo.Values(StringValueKey.FullDescription, "").Length > 1) return false;
 
             // can be sold?
-            if (wo.Values(BoolValueKey.CanBeSold, false) == false) return false;
+            //if (wo.Values(BoolValueKey.CanBeSold, false) == false) return false;
 
             // no attuned
             if (wo.Values(LongValueKey.Attuned, 0) > 1) return false;
