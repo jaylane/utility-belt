@@ -6,6 +6,44 @@ using System.Text;
 using Decal.Adapter.Wrappers;
 
 namespace UtilityBelt.Tools {
+    public static class VendorCache {
+        public static Dictionary<int, double> SellRates = new Dictionary<int, double>();
+        public static Dictionary<int, double> BuyRates = new Dictionary<int, double>();
+
+        public static void AddVendor(Vendor vendor) {
+            if (SellRates.ContainsKey(vendor.MerchantId)) {
+                SellRates[vendor.MerchantId] = vendor.SellRate;
+            }
+            else {
+                SellRates.Add(vendor.MerchantId, vendor.SellRate);
+            }
+
+            if ( BuyRates.ContainsKey(vendor.MerchantId)) {
+                BuyRates[vendor.MerchantId] = vendor.BuyRate;
+            }
+            else {
+                BuyRates.Add(vendor.MerchantId, vendor.BuyRate);
+            }
+        }
+
+        public static double GetSellRate(int vendorId) {
+            if (SellRates.ContainsKey(vendorId)) {
+                return SellRates[vendorId];
+            }
+
+            return 1;
+        }
+
+        public static double GetBuyRate(int vendorId) {
+            if (BuyRates.ContainsKey(vendorId)) {
+                return BuyRates[vendorId];
+            }
+
+            return 1;
+        }
+    }
+
+
     class AutoVendor : IDisposable {
         private const int MAX_VENDOR_BUY_COUNT = 5000;
         private const double PYREAL_STACK_SIZE = 25000.0;
@@ -48,6 +86,8 @@ namespace UtilityBelt.Tools {
                 }
 
                 if (needsVendoring) return;
+
+                VendorCache.AddVendor(e.Vendor);
 
                 var merchant = Globals.Core.WorldFilter[e.MerchantId];
                 var profilePath = GetMerchantProfilePath(merchant);
@@ -270,31 +310,23 @@ namespace UtilityBelt.Tools {
         private int GetVendorSellPrice(WorldObject wo) {
             var price = 0;
 
-            using (Vendor vendor = Globals.Core.WorldFilter.OpenVendor) {
+            int vendorId = Globals.Core.Actions.VendorId;
 
-                if (vendor == null) return 0;
+            if (vendorId == 0) return 0;
 
-                price = (int)Math.Ceiling((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * vendor.SellRate);
+            price = (int)Math.Ceiling((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * VendorCache.GetSellRate(vendorId));
 
-            }
             return price;
         }
 
         private int GetVendorBuyPrice(WorldObject wo) {
             var price = 0;
 
-            using (Vendor vendor = Globals.Core.WorldFilter.OpenVendor) {
+            int vendorId = Globals.Core.Actions.VendorId;
 
-                if (vendor == null) return 0;
+            if (vendorId == 0) return 0;
 
-                var buyRate = vendor.BuyRate;
-
-                // tradenotes are always sold to vendor at full price?
-                if (wo.ObjectClass == ObjectClass.TradeNote) buyRate = 1;
-
-                price = (int)Math.Floor((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * buyRate);
-
-            }
+            price = (int)Math.Floor((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * VendorCache.GetBuyRate(vendorId));
 
             return price;
         }
@@ -315,7 +347,6 @@ namespace UtilityBelt.Tools {
 
         private WorldObject GetNextBuyItem(out int amount) {
             using (Vendor openVendor = Globals.Core.WorldFilter.OpenVendor) {
-
                 amount = 0;
 
                 if (openVendor == null || openVendor.MerchantId == 0) {
@@ -366,42 +397,40 @@ namespace UtilityBelt.Tools {
         }
         private List<WorldObject> GetSellItems() {
             List<WorldObject> sellObjects = new List<WorldObject>();
-            using (Vendor vendor = Globals.Core.WorldFilter.OpenVendor) {
+            foreach (WorldObject wo in Globals.Core.WorldFilter.GetInventory()) {
+                if (!Util.ItemIsSafeToGetRidOf(wo)) continue;
 
-                foreach (WorldObject wo in Globals.Core.WorldFilter.GetInventory()) {
-                    if (!Util.ItemIsSafeToGetRidOf(wo)) continue;
+                if (wo.Values(LongValueKey.Value, 0) <= 0) continue;
 
-                    if (wo.Values(LongValueKey.Value, 0) <= 0) continue;
+                uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(wo.Id);
 
-                    uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(wo.Id);
+                if (itemInfo == null) continue;
 
-                    if (itemInfo == null) continue;
+                uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
 
-                    uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
+                if (!result.IsSell)
+                    continue;
 
-                    if (!result.IsSell)
-                        continue;
-
-                    sellObjects.Add(wo);
-                }
-
-                sellObjects.Sort(
-                    delegate (WorldObject wo1, WorldObject wo2) {
-                    // tradenotes last
-                    if (wo1.ObjectClass == ObjectClass.TradeNote && wo2.ObjectClass != ObjectClass.TradeNote) return 1;
-
-                    // then cheapest first
-                    if (wo1.Values(LongValueKey.Value, 0) > wo2.Values(LongValueKey.Value, 0)) return 1;
-                        if (wo1.Values(LongValueKey.Value, 0) < wo2.Values(LongValueKey.Value, 0)) return -1;
-
-                    // then smallest stack size
-                    if (wo1.Values(LongValueKey.StackCount, 1) > wo2.Values(LongValueKey.StackCount, 1)) return 1;
-                        if (wo1.Values(LongValueKey.StackCount, 1) < wo2.Values(LongValueKey.StackCount, 1)) return -1;
-
-                        return 0;
-                    }
-                );
+                sellObjects.Add(wo);
             }
+
+            sellObjects.Sort(
+                delegate (WorldObject wo1, WorldObject wo2) {
+                // tradenotes last
+                if (wo1.ObjectClass == ObjectClass.TradeNote && wo2.ObjectClass != ObjectClass.TradeNote) return 1;
+
+                // then cheapest first
+                if (wo1.Values(LongValueKey.Value, 0) > wo2.Values(LongValueKey.Value, 0)) return 1;
+                    if (wo1.Values(LongValueKey.Value, 0) < wo2.Values(LongValueKey.Value, 0)) return -1;
+
+                // then smallest stack size
+                if (wo1.Values(LongValueKey.StackCount, 1) > wo2.Values(LongValueKey.StackCount, 1)) return 1;
+                    if (wo1.Values(LongValueKey.StackCount, 1) < wo2.Values(LongValueKey.StackCount, 1)) return -1;
+
+                    return 0;
+                }
+            );
+
             return sellObjects;
         }
 
