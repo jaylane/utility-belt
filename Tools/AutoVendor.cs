@@ -62,6 +62,9 @@ namespace UtilityBelt.Tools {
         private bool needsToSell = false;
         private int stackItem = 0;
         private bool shouldStack = false;
+        private string vendorName = "";
+        private bool waitingForIds = false;
+        private DateTime lastIdSpam = DateTime.MinValue;
 
         public AutoVendor() {
             try {
@@ -92,6 +95,8 @@ namespace UtilityBelt.Tools {
                 var merchant = Globals.Core.WorldFilter[e.MerchantId];
                 var profilePath = GetMerchantProfilePath(merchant);
 
+                vendorName = merchant.Name;
+
                 if (!File.Exists(profilePath)) {
                     Util.WriteToChat("No vendor profile exists: " + profilePath);
                     return;
@@ -99,20 +104,22 @@ namespace UtilityBelt.Tools {
 
                 Util.WriteToChat(string.Format("rates buy: {0} sell: {1}", e.Vendor.BuyRate, e.Vendor.SellRate));
 
+
+                if (Assessor.NeedsInventoryData()) {
+                    Assessor.RequestAll();
+                    waitingForIds = true;
+                    lastIdSpam = DateTime.UtcNow;
+                }
+
                 // Load our loot profile
                 ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
+                
+                needsVendoring = true;
+                needsToBuy = false;
+                needsToSell = false;
+                startedVendoring = DateTime.UtcNow;
 
-                if (Globals.Config.AutoVendor.TestMode.Value == true) {
-                    DoTestMode();
-                }
-                else {
-                    needsVendoring = true;
-                    needsToBuy = false;
-                    needsToSell = false;
-                    startedVendoring = DateTime.UtcNow;
-
-                    Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
-                }
+                Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
             }
             catch (Exception ex) { Util.LogException(ex); }
         }
@@ -140,6 +147,7 @@ namespace UtilityBelt.Tools {
             needsVendoring = false;
             needsToBuy = false;
             needsToSell = false;
+            vendorName = "";
 
             Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
 
@@ -152,6 +160,29 @@ namespace UtilityBelt.Tools {
 
                 if (DateTime.UtcNow - lastThought >= thinkInterval && DateTime.UtcNow - startedVendoring >= thinkInterval) {
                     lastThought = DateTime.UtcNow;
+
+                    if (needsVendoring && waitingForIds) {
+                        if (Assessor.NeedsInventoryData()) {
+                            if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(10)) {
+                                lastIdSpam = DateTime.UtcNow;
+                                startedVendoring = DateTime.UtcNow;
+
+                                Util.WriteToChat(string.Format("Waiting to id {0} items, this will take approximately {0} seconds.", Assessor.GetNeededIdCount()));
+                            }
+
+                            // waiting
+                            return;
+                        }
+                        else {
+                            waitingForIds = false;
+                        }
+                    }
+
+                    if (needsVendoring && Globals.Config.AutoVendor.TestMode.Value == true) {
+                        DoTestMode();
+                        Stop();
+                        return;
+                    }
 
                     if (stackItem != 0) {
                         Util.StackItem(Globals.Core.WorldFilter[stackItem]);
@@ -300,8 +331,8 @@ namespace UtilityBelt.Tools {
                     return;
                 }
 
-                Util.Think("AutoVendor finished.");
-                Util.WriteToChat("AutoVendor finished.");
+                Util.Think("AutoVendor " + vendorName + " finished.");
+                Util.WriteToChat("AutoVendor " + vendorName + " finished.");
                 Stop();
             }
             catch (Exception ex) { Util.LogException(ex); }
@@ -398,7 +429,7 @@ namespace UtilityBelt.Tools {
         private List<WorldObject> GetSellItems() {
             List<WorldObject> sellObjects = new List<WorldObject>();
             foreach (WorldObject wo in Globals.Core.WorldFilter.GetInventory()) {
-                if (!Util.ItemIsSafeToGetRidOf(wo)) continue;
+                if (!Util.ItemIsSafeToGetRidOf(wo) || !ItemIsSafeToGetRidOf(wo)) continue;
 
                 if (wo.Values(LongValueKey.Value, 0) <= 0) continue;
 
@@ -434,6 +465,21 @@ namespace UtilityBelt.Tools {
             return sellObjects;
         }
 
+        private bool ItemIsSafeToGetRidOf(WorldObject wo) {
+            if (wo == null) return false;
+
+            // dont sell items with descriptions (quest items)
+            if (wo.Values(StringValueKey.FullDescription, "").Length > 1) return false;
+
+            // can be sold?
+            if (wo.Values(BoolValueKey.CanBeSold, false) == false) return false;
+
+            // no attuned
+            if (wo.Values(LongValueKey.Attuned, 0) > 1) return false;
+
+            return true;
+        }
+
         private void DoTestMode() {
             Util.WriteToChat("Buy Items:");
 
@@ -446,10 +492,10 @@ namespace UtilityBelt.Tools {
                     uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
 
                     if (result.IsKeepUpTo && result.Data1 - Util.GetItemCountInInventoryByName(vendorObj.Name) > 0) {
-                        Util.WriteToChat(string.Format("  {0} * {1}", vendorObj.Name, result.Data1 - Util.GetItemCountInInventoryByName(vendorObj.Name)));
+                        Util.WriteToChat(string.Format("  {0} * {1} - {2}", vendorObj.Name, result.Data1 - Util.GetItemCountInInventoryByName(vendorObj.Name), result.RuleName));
                     }
                     else if (result.IsKeep) {
-                        Util.WriteToChat("  " + vendorObj.Name);
+                        Util.WriteToChat("  " + vendorObj.Name + " - " + result.RuleName);
                     }
                 }
             }
@@ -464,7 +510,12 @@ namespace UtilityBelt.Tools {
                 uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
 
                 if (result.IsSell) {
-                    Util.WriteToChat("  " + wo.Name);
+                    Util.WriteToChat("  " + wo.Name + " - " + result.RuleName);
+                    var desc = wo.Values(StringValueKey.FullDescription, "");
+
+                    if (desc != null && desc.Length > 1) {
+                        Util.WriteToChat(desc);
+                    }
                 }
             }
         }
