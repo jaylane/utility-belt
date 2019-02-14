@@ -102,6 +102,7 @@ namespace UtilityBelt.Tools {
         public AutoVendor() {
             try {
                 Directory.CreateDirectory(Util.GetPluginDirectory() + @"autovendor\");
+                Directory.CreateDirectory(Util.GetCharacterDirectory() + @"autovendor\");
 
                 if (lootProfile == null) {
                     lootProfile = new VTClassic.LootCore();
@@ -169,9 +170,22 @@ namespace UtilityBelt.Tools {
             }
             catch (Exception ex) { Util.LogException(ex); }
         }
-
+        
         private string GetMerchantProfilePath(WorldObject merchant) {
             // TODO: support more than utl?
+            if (File.Exists(Util.GetCharacterDirectory() + @"autovendor\" + merchant.Name + ".utl")) {
+                return Util.GetCharacterDirectory() + @"autovendor\" + merchant.Name + ".utl";
+            }
+            else if (File.Exists(Util.GetPluginDirectory() + @"autovendor\" + merchant.Name + ".utl")) {
+                return Util.GetPluginDirectory() + @"autovendor\" + merchant.Name + ".utl";
+            }
+            else if (File.Exists(Util.GetCharacterDirectory() + @"autovendor\default.utl")) {
+                return Util.GetCharacterDirectory() + @"autovendor\default.utl";
+            }
+            else if (File.Exists(Util.GetPluginDirectory() + @"autovendor\default.utl")) {
+                return Util.GetPluginDirectory() + @"autovendor\default.utl";
+            }
+
             return Util.GetPluginDirectory() + @"autovendor\" + merchant.Name + ".utl";
         }
 
