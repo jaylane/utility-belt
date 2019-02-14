@@ -234,7 +234,7 @@ namespace UtilityBelt.Tools {
                         return;
                     }
 
-                    if (stackItem != 0) {
+                    if (stackItem != 0 && Globals.Core.Actions.IsValidObject(stackItem)) {
                         Util.StackItem(Globals.Core.WorldFilter[stackItem]);
                         stackItem = 0;
                         return;
