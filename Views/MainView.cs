@@ -4,14 +4,12 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using UtilityBelt.Views.Pages;
 using VirindiViewService;
 using VirindiViewService.XMLParsers;
 
 namespace UtilityBelt.Views {
     public class MainView : IDisposable {
         public readonly VirindiViewService.HudView view;
-        public readonly ConfigPage configPage;
 
         private ViewProperties properties;
         private ControlGroup controls;
@@ -25,8 +23,6 @@ namespace UtilityBelt.Views {
                 properties.Icon = GetIcon();
 
                 view = new VirindiViewService.HudView(properties, controls);
-
-                configPage = new ConfigPage(this);
             }
             catch (Exception ex) { Util.LogException(ex); }
         }
@@ -54,7 +50,6 @@ namespace UtilityBelt.Views {
         protected virtual void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
-                    if (configPage != null) configPage.Dispose();
                     if (view != null) view.Dispose();
                 }
                 disposed = true;

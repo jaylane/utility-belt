@@ -80,7 +80,6 @@
     <Compile Include="Tools\AutoVendor.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="Views\MainView.cs" />
-    <Compile Include="Views\Pages\ConfigPage.cs" />
     <Compile Include="VirindiViews\ViewSystemSelector.cs" />
     <Compile Include="VirindiViews\Wrapper.cs" />
     <Compile Include="VirindiViews\Wrapper_Decal.cs" />

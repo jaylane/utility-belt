@@ -23,12 +23,10 @@ namespace UtilityBelt.Tools {
         }
 
         public static int GetNeededIdCount() {
-            bool needsData = false;
             itemsNeedingData = 0;
 
             foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
                 if (!wo.HasIdData) {
-                    needsData = true;
                     itemsNeedingData++;
                 }
             }

@@ -1,15 +1,24 @@
 <?xml version="1.0"?>
 <view icon="100" title="UtilityBelt" width="500" height="400">
 		<control progid="DecalControls.Notebook" name="Notebook">
-		<page label="Test">
-			<control progid="DecalControls.FixedLayout" clipped="">
-			</control>
+		<page label="Settings">
+			<control progid="DecalControls.Notebook" name="Notebook">
+			<page label="AutoVendor">
+				<control progid="DecalControls.FixedLayout" clipped="">
+					<control progid="DecalControls.Checkbox" name="AutoVendorEnabled" left="8" top="8" width="184" height="16" text="Enable AutoVendor"/>
+					<control progid="DecalControls.Checkbox" name="AutoVendorTestMode" left="32" top="32" width="184" height="16" text="Test Mode"/>
+					<control progid="DecalControls.Checkbox" name="AutoVendorShowMerchantInfo" left="32" top="56" width="184" height="16" text="Show merchant info on approach"/>
+					<control progid="DecalControls.Slider" name="AutoVendorSpeed" left="232" top="24" width="208" height="16" minimum="0" maximum="22" textcolor="0" vertical="0"/>
+					<control progid="DecalControls.StaticText" name="AutoVendorSpeedLabel" left="328" top="0" width="72" height="24" text="Delay (ms)"/>
+					<control progid="DecalControls.Checkbox" name="AutoVendorThink" left="32" top="80" width="184" height="16" text="Think to yourself when finished"/>
+					<control progid="DecalControls.Checkbox" name="AutoVendorDebug" left="32" top="104" width="184" height="16" text="Show Debug Messages"/>
+					<control progid="DecalControls.Slider" name="AutoVendorMaxSellCount" left="232" top="72" width="208" height="16" minimum="1" maximum="25" textcolor="0" vertical="0"/>
+					<control progid="DecalControls.StaticText" name="AutoVendorMaxSellCountLabel" left="240" top="48" width="240" height="16" text="Maximum number of items to sell at once"/>
+					<control progid="DecalControls.StaticText" name="AutoVendorSpeedText" left="456" top="24" width="40" height="16" text="0"/>
+					<control progid="DecalControls.StaticText" name="AutoVendorMaxSellCountText" left="456" top="72" width="40" height="16" text="0"/>
+				</control>
 
-		</page>
-		<page label="Config">
-			<control progid="DecalControls.FixedLayout" clipped="">
-				<control progid="DecalControls.Checkbox" name="AutoVendorEnable" left="8" top="8" width="480" height="16" text="Enable AutoVendor"/>
-				<control progid="DecalControls.Checkbox" name="AutoVendorTestMode" left="48" top="24" width="448" height="16" text="TestMode (debug to chat)"/>
+			</page>
 			</control>
 
 		</page>
