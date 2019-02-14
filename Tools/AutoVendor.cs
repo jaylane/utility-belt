@@ -134,7 +134,7 @@ namespace UtilityBelt.Tools {
                     return;
                 }
 
-                Util.WriteToChat(string.Format("rates buy: {0} sell: {1} categories: {2}", e.Vendor.BuyRate, e.Vendor.SellRate, e.Vendor.Categories));
+                Util.WriteToChat(string.Format("rates buy: {0} sell: {1} categories: {2} maxvalue: {3}", e.Vendor.BuyRate, e.Vendor.SellRate, e.Vendor.Categories, e.Vendor.MaxValue));
 
 
                 if (Assessor.NeedsInventoryData()) {
@@ -193,6 +193,7 @@ namespace UtilityBelt.Tools {
                 if (DateTime.UtcNow - lastThought >= thinkInterval && DateTime.UtcNow - startedVendoring >= thinkInterval) {
                     lastThought = DateTime.UtcNow;
                     
+                    /*
                     if (needsVendoring && waitingForIds) {
                         if (Assessor.NeedsInventoryData()) {
                             if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(10)) {
@@ -210,6 +211,7 @@ namespace UtilityBelt.Tools {
                         }
                     }
 
+    */
                     if (needsVendoring && Globals.Config.AutoVendor.TestMode.Value == true) {
                         DoTestMode();
                         Stop();
@@ -483,14 +485,21 @@ namespace UtilityBelt.Tools {
                 if (!result.IsSell)
                     continue;
 
-                // will vendor buy this item?
-                if (wo.ObjectClass != ObjectClass.TradeNote) {
-                    if ((VendorCache.GetCategories(Globals.Core.Actions.VendorId) & wo.Values(LongValueKey.Type)) != 0) continue;
-                }
+                // too expensive for this vendor
+                if (VendorCache.GetMaxValue(Globals.Core.Actions.VendorId) < wo.Values(LongValueKey.Value, 0)) continue;
 
-                if (VendorCache.GetMaxValue(Globals.Core.Actions.VendorId) >= wo.Values(LongValueKey.Value, 0)) {
-                    sellObjects.Add(wo);
+                /*
+                Util.WriteToChat("Vendor will buy?: " + wo.Name + " --- " + (VendorCache.GetCategories(Globals.Core.Actions.VendorId) & wo.Type));
+
+
+                // will vendor buy this item?
+                if (wo.ObjectClass != ObjectClass.TradeNote && (VendorCache.GetCategories(Globals.Core.Actions.VendorId) & wo.Values(LongValueKey.Type)) == 0) {
+                    Util.WriteToChat("Vendor will not buy: " + wo.Name + " --- " + (VendorCache.GetCategories(Globals.Core.Actions.VendorId) & wo.Values(LongValueKey.Type)));
+                    continue;
                 }
+                */
+
+                sellObjects.Add(wo);
             }
 
             sellObjects.Sort(
