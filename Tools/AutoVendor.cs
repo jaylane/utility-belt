@@ -531,7 +531,9 @@ namespace UtilityBelt.Tools {
                     if (Globals.Config.AutoVendor.Think.Value == true) {
                         Util.Think("AutoVendor " + vendorName + " finished.");
                     }
-                    Util.WriteToChat("AutoVendor " + vendorName + " finished.");
+                    else {
+                        Util.WriteToChat("AutoVendor " + vendorName + " finished.");
+                    }
                     Stop();
                 }
             }
