@@ -6,13 +6,13 @@ using VirindiViewService.Controls;
 
 namespace UtilityBelt.Tools {
     class EmuConfig : IDisposable {
-        HudButton UIAutoSalvageStart { get; set; }
+        HudButton UIEmuConfigUseDeception { get; set; }
 
         private bool disposed = false;
 
         public EmuConfig() {
-            UIAutoSalvageStart = Globals.View.view != null ? (HudButton)Globals.View.view["EmuConfigUseDeception"] : new HudButton();
-            UIAutoSalvageStart.Hit += (s, e) => { ToggleConfig("UseDeception"); };
+            UIEmuConfigUseDeception = Globals.View.view != null ? (HudButton)Globals.View.view["EmuConfigUseDeception"] : new HudButton();
+            UIEmuConfigUseDeception.Hit += (s, e) => { ToggleConfig("UseDeception"); };
         }
 
         private void ToggleConfig(string v) {
