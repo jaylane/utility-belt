@@ -97,6 +97,7 @@ namespace UtilityBelt.Tools {
         private string vendorName = "";
         private bool waitingForIds = false;
         private DateTime lastIdSpam = DateTime.MinValue;
+        private bool needsToUse = false;
 
         public AutoVendor() {
             try {
@@ -136,12 +137,13 @@ namespace UtilityBelt.Tools {
 
                 Util.WriteToChat(string.Format("rates buy: {0} sell: {1} categories: {2} maxvalue: {3}", e.Vendor.BuyRate, e.Vendor.SellRate, e.Vendor.Categories, e.Vendor.MaxValue));
 
-
+                /*
                 if (Assessor.NeedsInventoryData()) {
                     Assessor.RequestAll();
                     waitingForIds = true;
                     lastIdSpam = DateTime.UtcNow;
                 }
+                */
 
                 // Load our loot profile
                 ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
@@ -210,8 +212,8 @@ namespace UtilityBelt.Tools {
                             waitingForIds = false;
                         }
                     }
+                    */
 
-    */
                     if (needsVendoring && Globals.Config.AutoVendor.TestMode.Value == true) {
                         DoTestMode();
                         Stop();
@@ -221,6 +223,15 @@ namespace UtilityBelt.Tools {
                     if (stackItem != 0) {
                         Util.StackItem(Globals.Core.WorldFilter[stackItem]);
                         stackItem = 0;
+                        return;
+                    }
+
+                    if (needsToUse) {
+                        if (Globals.Core.Actions.VendorId != 0) {
+                            Globals.Core.Actions.UseItem(Globals.Core.Actions.VendorId, 0);
+                        }
+
+                        needsToUse = false;
                         return;
                     }
 
@@ -240,6 +251,7 @@ namespace UtilityBelt.Tools {
                             needsToSell = false;
                             shouldStack = false;
                             Globals.Core.Actions.VendorSellAll();
+                            needsToUse = true;
                         }
                         else {
                             DoVendoring();
@@ -487,20 +499,16 @@ namespace UtilityBelt.Tools {
 
                 if (!result.IsSell)
                     continue;
+                
 
                 // too expensive for this vendor
                 if (VendorCache.GetMaxValue(Globals.Core.Actions.VendorId) < wo.Values(LongValueKey.Value, 0)) continue;
 
-                /*
-                Util.WriteToChat("Vendor will buy?: " + wo.Name + " --- " + (VendorCache.GetCategories(Globals.Core.Actions.VendorId) & wo.Type));
-
-
+                
                 // will vendor buy this item?
-                if (wo.ObjectClass != ObjectClass.TradeNote && (VendorCache.GetCategories(Globals.Core.Actions.VendorId) & wo.Values(LongValueKey.Type)) == 0) {
-                    Util.WriteToChat("Vendor will not buy: " + wo.Name + " --- " + (VendorCache.GetCategories(Globals.Core.Actions.VendorId) & wo.Values(LongValueKey.Type)));
+                if (wo.ObjectClass != ObjectClass.TradeNote && (VendorCache.GetCategories(Globals.Core.Actions.VendorId) & wo.Category) == 0) {
                     continue;
                 }
-                */
 
                 sellObjects.Add(wo);
             }
@@ -529,13 +537,14 @@ namespace UtilityBelt.Tools {
             if (wo == null) return false;
 
             // dont sell items with descriptions (quest items)
-            if (wo.Values(StringValueKey.FullDescription, "").Length > 1) return false;
+            // peas have descriptions...
+            //if (wo.Values(StringValueKey.FullDescription, "").Length > 1) return false;
 
             // can be sold?
             //if (wo.Values(BoolValueKey.CanBeSold, false) == false) return false;
 
             // no attuned
-            //if (wo.Values(LongValueKey.Attuned, 0) > 1) return false;
+            if (wo.Values(LongValueKey.Attuned, 0) > 1) return false;
 
             return true;
         }
