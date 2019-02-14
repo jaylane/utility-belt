@@ -15,6 +15,7 @@ namespace UtilityBelt
 	[FriendlyName("UtilityBelt")]
 	public class PluginCore : PluginBase {
         private AutoVendor autoVendor;
+        private AutoSalvage autoSalvage;
         private DateTime lastThought = DateTime.MinValue;
 
         /// <summary>
@@ -43,8 +44,6 @@ namespace UtilityBelt
 			try {
                 string configFilePath = Util.GetCharacterDirectory() + "config.xml";
 
-                //Globals.Core.WorldFilter.ChangeObject += new EventHandler<ChangeObjectEventArgs>(WorldFilter_ChangeObject2);
-
                 Mag.Shared.Settings.SettingsFile.Init(configFilePath, Globals.PluginName);
 
                 Util.CreateDataDirectories();
@@ -53,6 +52,7 @@ namespace UtilityBelt
                 Globals.View = new MainView();
 
                 autoVendor = new AutoVendor();
+                autoSalvage = new AutoSalvage();
 
                 Globals.Core.RenderFrame += Core_RenderFrame;
             }
@@ -61,9 +61,10 @@ namespace UtilityBelt
 
         private void Core_RenderFrame(object sender, EventArgs e) {
             try {
-                //if (DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(10)) {
+                //if (DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(1000/60)) {
                     lastThought = DateTime.UtcNow;
 
+                    if (autoSalvage != null) autoSalvage.Think();
                     if (autoVendor != null) autoVendor.Think();
                 //}
             }
@@ -77,6 +78,7 @@ namespace UtilityBelt
                 Globals.Core.RenderFrame -= Core_RenderFrame;
 
                 if (autoVendor != null) autoVendor.Dispose();
+                if (autoSalvage != null) autoSalvage.Dispose();
                 if (Globals.View != null) Globals.View.Dispose();
                 if (Globals.Config != null) Globals.Config.Dispose();
             }

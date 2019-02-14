@@ -11,7 +11,38 @@ namespace UtilityBelt {
     public class Config : IDisposable {
         private bool disposed;
 
+        public AutoSalvageConfig AutoSalvage;
         public AutoVendorConfig AutoVendor;
+
+        public class AutoSalvageConfig : IDisposable {
+            public Setting<bool> Think;
+            public Setting<bool> Debug;
+
+            private bool disposed = false;
+
+            public AutoSalvageConfig() {
+                try {
+                    Think = new Setting<bool>("Config/AutoSalvage/Think", "Think to yourself when finished", true);
+                    Debug = new Setting<bool>("Config/AutoSalvage/Debug", "Show debug messages", false);
+                }
+                catch (Exception e) { Util.LogException(e); }
+            }
+
+            public void Dispose() {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
+            protected virtual void Dispose(bool disposing) {
+                if (!disposed) {
+                    if (disposing) {
+                        if (Think != null) Think.Dispose();
+                        if (Debug != null) Debug.Dispose();
+                    }
+                    disposed = true;
+                }
+            }
+        }
 
         public class AutoVendorConfig : IDisposable {
             public Setting<bool> Enabled;
@@ -50,6 +81,8 @@ namespace UtilityBelt {
                         if (ShowMerchantInfo != null) ShowMerchantInfo.Dispose();
                         if (Think != null) Think.Dispose();
                         if (Speed != null) Speed.Dispose();
+                        if (Debug != null) Debug.Dispose();
+                        if (MaxSellCount != null) MaxSellCount.Dispose();
                     }
                     disposed = true;
                 }
@@ -57,6 +90,7 @@ namespace UtilityBelt {
         }
 
         public Config() {
+            AutoSalvage = new AutoSalvageConfig();
             AutoVendor = new AutoVendorConfig();
         }
 
@@ -68,6 +102,7 @@ namespace UtilityBelt {
         protected virtual void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
+                    if (AutoSalvage != null) AutoSalvage.Dispose();
                     if (AutoVendor != null) AutoVendor.Dispose();
                 }
                 disposed = true;
