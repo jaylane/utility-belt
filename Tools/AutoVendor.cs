@@ -378,13 +378,14 @@ namespace UtilityBelt.Tools {
 
         private int GetVendorSellPrice(WorldObject wo) {
             var price = 0;
+            int vendorId = Globals.Core.Actions.VendorId;
+            var rate = VendorCache.GetSellRate(vendorId);
+
             try {
-
-                int vendorId = Globals.Core.Actions.VendorId;
-
                 if (vendorId == 0) return 0;
+                if (wo.ObjectClass == ObjectClass.TradeNote) rate = 1.15;
 
-                price = (int)Math.Ceiling((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * VendorCache.GetSellRate(vendorId));
+                price = (int)Math.Ceiling((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * rate);
             }
             catch (Exception ex) { }
 
@@ -393,12 +394,14 @@ namespace UtilityBelt.Tools {
 
         private int GetVendorBuyPrice(WorldObject wo) {
             var price = 0;
+            int vendorId = Globals.Core.Actions.VendorId;
+            var rate = VendorCache.GetBuyRate(vendorId);
+
             try {
-                int vendorId = Globals.Core.Actions.VendorId;
-
                 if (vendorId == 0) return 0;
+                if (wo.ObjectClass == ObjectClass.TradeNote) rate = 1;
 
-                price = (int)Math.Floor((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * VendorCache.GetBuyRate(vendorId));
+                price = (int)Math.Floor((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * rate);
             }
             catch (Exception ex) { }
 
