@@ -256,121 +256,120 @@ namespace UtilityBelt.Tools {
             try {
                 int amount = 0;
                 int nextBuyItemId = GetNextBuyItem(out amount);
-                WorldObject nextBuyItem = null;
                 List<WorldObject> sellItems = GetSellItems();
 
-                if (Globals.Core.Actions.IsValidObject(nextBuyItemId)) {
-                    nextBuyItem = Globals.Core.WorldFilter[nextBuyItemId];
-                }
-
-                Util.WriteToChat("AutoVendor:DoVendoring");
-
                 if (!HasVendorOpen()) {
+                    Util.WriteToChat("No vendor open, closing!");
                     Stop();
                     return;
                 }
 
-                Globals.Core.Actions.VendorClearBuyList();
-                Globals.Core.Actions.VendorClearSellList();
+                
+                using (var nextBuyItem = Globals.Core.WorldFilter.OpenVendor[nextBuyItemId]) {
+                    Util.WriteToChat("AutoVendor:DoVendoring " + ((nextBuyItem == null) ? "null" : "good?"));
 
-                if (nextBuyItem != null && CanBuy(nextBuyItem)) {
-                    int buyCount = 1;
+                    Globals.Core.Actions.VendorClearBuyList();
+                    Globals.Core.Actions.VendorClearSellList();
 
-                    // TODO check stack size of incoming item to make sure we have enough space...
+                    if (nextBuyItem != null && CanBuy(nextBuyItem)) {
+                        int buyCount = 1;
 
-                    while (buyCount < amount && GetVendorSellPrice(nextBuyItem) * (buyCount + 1) <= Util.PyrealCount()) {
-                        ++buyCount;
+                        // TODO check stack size of incoming item to make sure we have enough space...
+
+                        while (buyCount < amount && GetVendorSellPrice(nextBuyItem) * (buyCount + 1) <= Util.PyrealCount()) {
+                            ++buyCount;
+                        }
+
+                        Util.WriteToChat(string.Format("Buying {0} {1}", buyCount, nextBuyItem.Name));
+
+                        Globals.Core.Actions.VendorAddBuyList(nextBuyItem.Id, buyCount);
+                        needsToBuy = true;
+                        return;
                     }
 
-                    Util.WriteToChat(string.Format("Buying {0} {1}", buyCount, nextBuyItem.Name));
+                    int totalSellValue = 0;
+                    int sellItemCount = 0;
 
-                    Globals.Core.Actions.VendorAddBuyList(nextBuyItem.Id, buyCount);
-                    needsToBuy = true;
-                    return;
-                }
+                    while (sellItemCount < MAX_SELL_COUNT && sellItemCount < sellItems.Count) {
+                        var item = sellItems[sellItemCount];
+                        var value = GetVendorBuyPrice(item);
+                        var stackSize = item.Values(LongValueKey.StackCount, 1);
+                        var stackCount = 0;
 
-                int totalSellValue = 0;
-                int sellItemCount = 0;
+                        // dont sell notes if we are trying to buy notes...
+                        if (((nextBuyItem != null && nextBuyItem.ObjectClass == ObjectClass.TradeNote) || nextBuyItem == null) && item.ObjectClass == ObjectClass.TradeNote) {
+                            break;
+                        }
 
-                while (sellItemCount < MAX_SELL_COUNT && sellItemCount < sellItems.Count) {
-                    var item = sellItems[sellItemCount];
-                    var value = GetVendorBuyPrice(item);
-                    var stackSize = item.Values(LongValueKey.StackCount, 1);
-                    var stackCount = 0;
+                        // if we are selling notes to buy something, sell the minimum amount...
+                        if (nextBuyItem != null && !CanBuy(nextBuyItem) && item.ObjectClass == ObjectClass.TradeNote) {
+                            if (!PyrealsWillFitInMainPack(GetVendorBuyPrice(item))) {
+                                Util.WriteToChat("No inventory room to sell... " + item.Name);
+                                Stop();
+                                return;
+                            }
 
-                    // dont sell notes if we are trying to buy notes...
-                    if (((nextBuyItem != null && nextBuyItem.ObjectClass == ObjectClass.TradeNote) || nextBuyItem == null) && item.ObjectClass == ObjectClass.TradeNote) {
-                        break;
-                    }
+                            foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
+                                if (wo.Name == item.Name && wo.Values(LongValueKey.StackCount, 0) == 1) {
+                                    Util.WriteToChat("Selling single " + wo.Name + " so we can afford to buy: " + nextBuyItem.Name);
+                                    Globals.Core.Actions.VendorAddSellList(wo.Id);
+                                    needsToSell = true;
+                                    return;
+                                }
+                            }
 
-                    // if we are selling notes to buy something, sell the minimum amount...
-                    if (nextBuyItem != null && !CanBuy(nextBuyItem) && item.ObjectClass == ObjectClass.TradeNote) {
-                        if (!PyrealsWillFitInMainPack(GetVendorBuyPrice(item))) {
-                            Util.WriteToChat("No inventory room to sell... " + item.Name);
-                            Stop();
+                            Globals.Core.Actions.SelectItem(item.Id);
+                            Globals.Core.Actions.SelectedStackCount = 1;
+                            Globals.Core.Actions.MoveItem(item.Id, Globals.Core.CharacterFilter.Id, 0, false);
+
+                            Util.WriteToChat(string.Format("Splitting {0}. old: {1} new: {2}", item.Name, item.Values(LongValueKey.StackCount), 1));
+
+                            shouldStack = false;
+
                             return;
                         }
 
-                        foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
-                            if (wo.Name == item.Name && wo.Values(LongValueKey.StackCount, 0) == 1) {
-                                Util.WriteToChat("Selling single " + wo.Name + " so we can afford to buy: " + nextBuyItem.Name);
-                                Globals.Core.Actions.VendorAddSellList(wo.Id);
+                        if (item.Values(LongValueKey.StackMax, 0) > 1) {
+                            while (stackCount <= stackSize) {
+                                if (!PyrealsWillFitInMainPack(totalSellValue + (value * stackCount))) {
+                                    if (item.Values(LongValueKey.StackCount, 1) > 1) {
+                                        Globals.Core.Actions.SelectItem(item.Id);
+                                        Globals.Core.Actions.SelectedStackCount = stackCount;
+                                        Globals.Core.Actions.MoveItem(item.Id, Globals.Core.CharacterFilter.Id, 0, false);
+                                        Util.WriteToChat(string.Format("Splitting {0}. old: {1} new: {2}", item.Name, item.Values(LongValueKey.StackCount), stackCount));
+
+                                        shouldStack = false;
+
+                                        return;
+                                    }
+                                }
+
+                                ++stackCount;
+                            }
+                        }
+                        else {
+                            if (!PyrealsWillFitInMainPack(totalSellValue + value)) {
                                 needsToSell = true;
                                 return;
                             }
                         }
 
-                        Globals.Core.Actions.SelectItem(item.Id);
-                        Globals.Core.Actions.SelectedStackCount = 1;
-                        Globals.Core.Actions.MoveItem(item.Id, Globals.Core.CharacterFilter.Id, 0, false);
+                        Util.WriteToChat(string.Format("Adding {0} to sell list", item.Name));
+                        Globals.Core.Actions.VendorAddSellList(item.Id);
 
-                        Util.WriteToChat(string.Format("Splitting {0}. old: {1} new: {2}", item.Name, item.Values(LongValueKey.StackCount), 1));
+                        totalSellValue += value * stackCount;
+                        ++sellItemCount;
+                    }
 
-                        shouldStack = false;
-
+                    if (sellItemCount > 0) {
+                        needsToSell = true;
                         return;
                     }
 
-                    if (item.Values(LongValueKey.StackMax, 0) > 1) {
-                        while (stackCount <= stackSize) {
-                            if (!PyrealsWillFitInMainPack(totalSellValue + (value * stackCount))) {
-                                if (item.Values(LongValueKey.StackCount, 1) > 1) {
-                                    Globals.Core.Actions.SelectItem(item.Id);
-                                    Globals.Core.Actions.SelectedStackCount = stackCount;
-                                    Globals.Core.Actions.MoveItem(item.Id, Globals.Core.CharacterFilter.Id, 0, false);
-                                    Util.WriteToChat(string.Format("Splitting {0}. old: {1} new: {2}", item.Name, item.Values(LongValueKey.StackCount), stackCount));
-
-                                    shouldStack = false;
-
-                                    return;
-                                }
-                            }
-
-                            ++stackCount;
-                        }
-                    }
-                    else {
-                        if (!PyrealsWillFitInMainPack(totalSellValue + value)) {
-                            needsToSell = true;
-                            return;
-                        }
-                    }
-
-                    Util.WriteToChat(string.Format("Adding {0} to sell list", item.Name));
-                    Globals.Core.Actions.VendorAddSellList(item.Id);
-
-                    totalSellValue += value * stackCount;
-                    ++sellItemCount;
+                    Util.Think("AutoVendor " + vendorName + " finished.");
+                    Util.WriteToChat("AutoVendor " + vendorName + " finished.");
+                    Stop();
                 }
-
-                if (sellItemCount > 0) {
-                    needsToSell = true;
-                    return;
-                }
-
-                Util.Think("AutoVendor " + vendorName + " finished.");
-                Util.WriteToChat("AutoVendor " + vendorName + " finished.");
-                Stop();
             }
             catch (Exception ex) { Util.LogException(ex); }
         }
@@ -446,6 +445,7 @@ namespace UtilityBelt.Tools {
                     if (amount > MAX_VENDOR_BUY_COUNT) amount = MAX_VENDOR_BUY_COUNT;
 
                     if (amount > 0) {
+                        Util.WriteToChat("Buy " + wo.Name);
                         return wo.Id;
                     }
                 }
@@ -461,7 +461,6 @@ namespace UtilityBelt.Tools {
                     if (!result.IsKeep) continue;
 
                     amount = MAX_VENDOR_BUY_COUNT;
-
                     return wo.Id;
                 }
             }
@@ -485,7 +484,9 @@ namespace UtilityBelt.Tools {
                     continue;
 
                 // will vendor buy this item?
-                if ((VendorCache.GetCategories(Globals.Core.Actions.VendorId) & wo.Values(LongValueKey.Type)) != 0) continue;
+                if (wo.ObjectClass != ObjectClass.TradeNote) {
+                    if ((VendorCache.GetCategories(Globals.Core.Actions.VendorId) & wo.Values(LongValueKey.Type)) != 0) continue;
+                }
 
                 if (VendorCache.GetMaxValue(Globals.Core.Actions.VendorId) >= wo.Values(LongValueKey.Value, 0)) {
                     sellObjects.Add(wo);
@@ -522,7 +523,7 @@ namespace UtilityBelt.Tools {
             //if (wo.Values(BoolValueKey.CanBeSold, false) == false) return false;
 
             // no attuned
-            if (wo.Values(LongValueKey.Attuned, 0) > 1) return false;
+            //if (wo.Values(LongValueKey.Attuned, 0) > 1) return false;
 
             return true;
         }
