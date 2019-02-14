@@ -16,6 +16,7 @@ namespace UtilityBelt
 	public class PluginCore : PluginBase {
         private AutoVendor autoVendor;
         private AutoSalvage autoSalvage;
+        private EmuConfig emuConfig;
         private DateTime lastThought = DateTime.MinValue;
 
         /// <summary>
@@ -53,6 +54,7 @@ namespace UtilityBelt
 
                 autoVendor = new AutoVendor();
                 autoSalvage = new AutoSalvage();
+                emuConfig = new EmuConfig();
 
                 Globals.Core.RenderFrame += Core_RenderFrame;
             }
@@ -79,6 +81,7 @@ namespace UtilityBelt
 
                 if (autoVendor != null) autoVendor.Dispose();
                 if (autoSalvage != null) autoSalvage.Dispose();
+                if (emuConfig != null) emuConfig.Dispose();
                 if (Globals.View != null) Globals.View.Dispose();
                 if (Globals.Config != null) Globals.Config.Dispose();
             }
