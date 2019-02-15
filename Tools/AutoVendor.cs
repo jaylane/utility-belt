@@ -581,7 +581,7 @@ namespace UtilityBelt.Tools {
         private bool PyrealsWillFitInMainPack(int amount) {
             int packSlotsNeeded = (int)Math.Ceiling(amount / PYREAL_STACK_SIZE);
 
-            return Util.GetFreeMainPackSpace() >= packSlotsNeeded;
+            return Util.GetFreeMainPackSpace() > packSlotsNeeded;
         }
 
         private int GetNextBuyItem(out int amount) {
