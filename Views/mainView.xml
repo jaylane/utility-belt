@@ -20,10 +20,7 @@
 					<control progid="DecalControls.StaticText" name="AutoVendorSpeedLabel" left="328" top="0" width="72" height="24" text="Delay (ms)"/>
 					<control progid="DecalControls.Checkbox" name="AutoVendorThink" left="8" top="80" width="208" height="16" text="Think to yourself when finished"/>
 					<control progid="DecalControls.Checkbox" name="AutoVendorDebug" left="8" top="104" width="208" height="16" text="Show Debug Messages"/>
-					<control progid="DecalControls.Slider" name="AutoVendorMaxSellCount" left="232" top="72" width="208" height="16" minimum="1" maximum="25" textcolor="0" vertical="0"/>
-					<control progid="DecalControls.StaticText" name="AutoVendorMaxSellCountLabel" left="240" top="48" width="240" height="16" text="Maximum number of items to sell at once"/>
 					<control progid="DecalControls.StaticText" name="AutoVendorSpeedText" left="456" top="24" width="40" height="16" text="0"/>
-					<control progid="DecalControls.StaticText" name="AutoVendorMaxSellCountText" left="456" top="72" width="40" height="16" text="0"/>
 				</control>
 
 			</page>

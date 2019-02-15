@@ -51,7 +51,6 @@ namespace UtilityBelt {
             public Setting<bool> Think;
             public Setting<bool> Debug;
             public Setting<int> Speed;
-            public Setting<int> MaxSellCount;
 
             private bool disposed = false;
 
@@ -63,7 +62,6 @@ namespace UtilityBelt {
                     Think = new Setting<bool>("Config/AutoVendor/Think", "Think to yourself when finished", true);
                     Debug = new Setting<bool>("Config/AutoVendor/Debug", "Show debug messages", false);
                     Speed = new Setting<int>("Config/AutoVendor/Speed", "Delay between autovendor actions", 500);
-                    MaxSellCount = new Setting<int>("Config/AutoVendor/MaxSellCount", "Maximum number of items to sell at once", 5);
                 }
                 catch (Exception e) { Util.LogException(e); }
             }
@@ -82,7 +80,6 @@ namespace UtilityBelt {
                         if (Think != null) Think.Dispose();
                         if (Speed != null) Speed.Dispose();
                         if (Debug != null) Debug.Dispose();
-                        if (MaxSellCount != null) MaxSellCount.Dispose();
                     }
                     disposed = true;
                 }

@@ -105,9 +105,7 @@ namespace UtilityBelt.Tools {
         HudCheckBox UIAutoVendorShowMerchantInfo { get; set; }
         HudCheckBox UIAutoVendorThink { get; set; }
         HudHSlider UIAutoVendorSpeed { get; set; }
-        HudHSlider UIAutoVendorMaxSellCount { get; set; }
         HudStaticText UIAutoVendorSpeedText { get; set; }
-        HudStaticText UIAutoVendorMaxSellCountText { get; set; }
 
         public AutoVendor() {
             try {
@@ -115,10 +113,7 @@ namespace UtilityBelt.Tools {
                 Directory.CreateDirectory(Util.GetCharacterDirectory() + @"autovendor\");
 
                 UIAutoVendorSpeedText = Globals.View.view != null ? (HudStaticText)Globals.View.view["AutoVendorSpeedText"] : new HudStaticText();
-                UIAutoVendorMaxSellCountText = Globals.View.view != null ? (HudStaticText)Globals.View.view["AutoVendorMaxSellCountText"] : new HudStaticText();
-
                 UIAutoVendorSpeedText.Text = Globals.Config.AutoVendor.Speed.Value.ToString();
-                UIAutoVendorMaxSellCountText.Text = Globals.Config.AutoVendor.MaxSellCount.Value.ToString();
 
                 UIAutoVendorEnable = Globals.View.view != null ? (HudCheckBox)Globals.View.view["AutoVendorEnabled"] : new HudCheckBox();
                 UIAutoVendorEnable.Checked = Globals.Config.AutoVendor.Enabled.Value;
@@ -149,15 +144,6 @@ namespace UtilityBelt.Tools {
                 UIAutoVendorSpeed.Position = (Globals.Config.AutoVendor.Speed.Value / 100) - 3;
                 UIAutoVendorSpeed.Changed += UIAutoVendorSpeed_Changed;
                 Globals.Config.AutoVendor.Speed.Changed += Config_AutoVendor_Speed_Changed;
-
-                UIAutoVendorMaxSellCount = Globals.View.view != null ? (HudHSlider)Globals.View.view["AutoVendorMaxSellCount"] : new HudHSlider();
-                UIAutoVendorMaxSellCount.Position = Globals.Config.AutoVendor.MaxSellCount.Value - 1;
-                UIAutoVendorMaxSellCount.Changed += UIAutoVendorMaxSellCount_Change;
-                Globals.Config.AutoVendor.MaxSellCount.Changed += Config_AutoVendor_MaxSellCount_Changed;
-
-                Util.WriteToChat("setting UIAutoVendorMaxSellCount to " + (Globals.Config.AutoVendor.MaxSellCount.Value - 1));
-
-                Util.WriteToChat("setting UIAutoVendorSpeed to " + ((Globals.Config.AutoVendor.Speed.Value + 300) / 100));
 
                 if (lootProfile == null) {
                     lootProfile = new VTClassic.LootCore();
@@ -218,18 +204,6 @@ namespace UtilityBelt.Tools {
 
         private void Config_AutoVendor_Speed_Changed(Setting<int> obj) {
             //UIAutoVendorSpeed.Position = (Globals.Config.AutoVendor.Speed.Value / 100) - 300;
-        }
-
-        private void UIAutoVendorMaxSellCount_Change(int min, int max, int pos) {
-            var v = pos + 1;
-            if (v != Globals.Config.AutoVendor.MaxSellCount.Value) {
-                Globals.Config.AutoVendor.MaxSellCount.Value = v;
-                UIAutoVendorMaxSellCountText.Text = v.ToString();
-            }
-        }
-
-        private void Config_AutoVendor_MaxSellCount_Changed(Setting<int> obj) {
-            //UIAutoVendorMaxSellCount.Position = Globals.Config.AutoVendor.MaxSellCount.Value;
         }
 
         private void WorldFilter_ApproachVendor(object sender, ApproachVendorEventArgs e) {
@@ -418,7 +392,10 @@ namespace UtilityBelt.Tools {
                     return;
                 }
 
-                
+                if (Globals.Config.AutoVendor.Debug.Value == true) {
+                    Util.WriteToChat("AutoVendor:DoVendoring");
+                }
+
                 using (var nextBuyItem = Globals.Core.WorldFilter.OpenVendor[nextBuyItemId]) {
                     Globals.Core.Actions.VendorClearBuyList();
                     Globals.Core.Actions.VendorClearSellList();
@@ -444,7 +421,7 @@ namespace UtilityBelt.Tools {
                     int totalSellValue = 0;
                     int sellItemCount = 0;
 
-                    while (sellItemCount < Globals.Config.AutoVendor.MaxSellCount.Value && sellItemCount < sellItems.Count) {
+                    while (sellItemCount < sellItems.Count && sellItemCount < Util.GetFreeMainPackSpace()) {
                         var item = sellItems[sellItemCount];
                         var value = GetVendorBuyPrice(item);
                         var stackSize = item.Values(LongValueKey.StackCount, 1);
@@ -452,6 +429,10 @@ namespace UtilityBelt.Tools {
 
                         // dont sell notes if we are trying to buy notes...
                         if (((nextBuyItem != null && nextBuyItem.ObjectClass == ObjectClass.TradeNote) || nextBuyItem == null) && item.ObjectClass == ObjectClass.TradeNote) {
+
+                            if (Globals.Config.AutoVendor.Debug.Value == true) {
+                                Util.WriteToChat(string.Format("AutoVendor bail: buyItem: {0} sellItem: {1}", nextBuyItem == null ? "null" : nextBuyItem.Name, item.Name));
+                            }
                             break;
                         }
 
@@ -508,15 +489,17 @@ namespace UtilityBelt.Tools {
                             }
                         }
                         else {
-                            if (!PyrealsWillFitInMainPack(totalSellValue + value)) {
-                                needsToSell = true;
-                                return;
-                            }
+                            stackCount = 1;
+                        }
+
+                        if (!PyrealsWillFitInMainPack(totalSellValue + (value * stackCount))) {
+                            break;
                         }
 
                         if (Globals.Config.AutoVendor.Debug.Value == true) {
                             Util.WriteToChat(string.Format("AutoVendor Adding {0} to sell list", item.Name));
                         }
+
                         Globals.Core.Actions.VendorAddSellList(item.Id);
 
                         totalSellValue += value * stackCount;
