@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
-<view icon="100" title="UtilityBelt" width="500" height="400">
-		<control progid="DecalControls.Notebook" name="Notebook">
-		<page label="Settings">
-			<control progid="DecalControls.Notebook" name="Notebook">
-			<page label="AutoSalvage">
-				<control progid="DecalControls.FixedLayout" clipped="">
-					<control progid="DecalControls.Checkbox" name="AutoSalvageThink" left="8" top="8" width="184" height="16" text="Think to yourself when finished"/>
-					<control progid="DecalControls.Checkbox" name="AutoSalvageDebug" left="8" top="32" width="184" height="16" text="Show Debug Messages"/>
-					<control progid="DecalControls.PushButton" name="AutoSalvageStart" left="192" top="280" width="112" height="32" text="Start"/>
-				</control>
+<view icon="100" title="UtilityBelt" width="450" height="450">
+  <control progid="DecalControls.Notebook" name="Notebook">
+    <page label="Settings">
+      <control progid="DecalControls.Notebook" name="Notebook">
+        <page label="AutoSalvage">
+          <control progid="DecalControls.FixedLayout" clipped="">
+            <control progid="DecalControls.Checkbox" name="AutoSalvageThink" left="8" top="8" width="184" height="16" text="Think to yourself when finished"/>
+            <control progid="DecalControls.Checkbox" name="AutoSalvageDebug" left="8" top="32" width="184" height="16" text="Show Debug Messages"/>
+            <control progid="DecalControls.PushButton" name="AutoSalvageStart" left="192" top="280" width="112" height="32" text="Start"/>
+          </control>
 
 			</page>
 			<page label="AutoVendor">
@@ -23,10 +23,43 @@
 					<control progid="DecalControls.StaticText" name="AutoVendorSpeedText" left="456" top="24" width="40" height="16" text="0"/>
 				</control>
 
-			</page>
-			</control>
 
-		</page>
-		</control>
+        </page>
+      </control>
+    </page>
+    <page label="QuestTracker">
+      <control progid="DecalControls.Notebook" name="nbMain">
+        <page label="QuestTimers">
+          <control progid="DecalControls.FixedLayout" clipped="">
+            <control progid="DecalControls.List" name="myQuestList" left="0" top="0" width="450" height="380">
+              <column progid="DecalControls.TextColumn" name="Quest" fixedwidth="250" />
+              <column progid="DecalControls.TextColumn" name="repeatTimeTest" fixedwidth="90" />
+              <column progid="DecalControls.TextColumn" name="solveCountTest" fixedwidth="80" />
+            </control>
+            <control progid="DecalControls.PushButton" name="PopulateQuestList" left="5" top="385" width="110" height="20" text="Refresh List" />
+          </control>
+        </page>
 
+        <page label="KillTasks">
+          <control progid="DecalControls.FixedLayout" clipped="">
+            <control progid="DecalControls.List" name="myKillTaskList" left="0" top="0" width="450" height="380">
+              <column progid="DecalControls.TextColumn" name="QuestName" fixedwidth="280" />
+              <column progid="DecalControls.TextColumn" name="solveCountTest" fixedwidth="60" />
+              <column progid="DecalControls.TextColumn" name="maxCompletionsTest" fixedwidth="80" />
+            </control>
+            <control progid="DecalControls.PushButton" name="PopulateKillTaskList" left="5" top="385" width="110" height="20" text="Refresh List" />
+          </control>
+        </page>
+
+        <page label="OneTimeQuests">
+          <control progid="DecalControls.FixedLayout" clipped="">
+            <control progid="DecalControls.List" name="myOneTimeList" left="0" top="0" width="450" height="380">
+              <column progid="DecalControls.TextColumn" name="Quest" fixedwidth="400" />
+            </control>
+            <control progid="DecalControls.PushButton" name="PopulateOneTimeList" left="5" top="385" width="110" height="20" text="Refresh List" />
+          </control>
+        </page>
+      </control>
+    </page>
+  </control>
 </view>
