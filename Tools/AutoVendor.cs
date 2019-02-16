@@ -9,72 +9,62 @@ using UtilityBelt.Views;
 using VirindiViewService.Controls;
 
 namespace UtilityBelt.Tools {
+    public class VendorItem {
+        public ObjectClass ObjectClass = ObjectClass.Unknown;
+        public int Id = 0;
+        public int Value = 0;
+        public string Name = "Unknown";
+        public int StackMax = 0;
+        public int StackCount = 0;
+
+        public VendorItem(WorldObject item) {
+            Id = item.Id;
+            Value = item.Values(LongValueKey.Value, 0);
+            Name = item.Name;
+            StackMax = item.Values(LongValueKey.StackMax, 1);
+            StackCount = item.Values(LongValueKey.StackCount, 1);
+        }
+    }
+
+    public class VendorInfo {
+        public int Id = 0;
+        public double BuyRate = 0;
+        public double SellRate = 0;
+        public int MaxValue = 0;
+        public int Categories = 0;
+        public Dictionary<int, VendorItem> Items = new Dictionary<int, VendorItem>();
+
+        public VendorInfo(Vendor vendor) {
+            Id = vendor.MerchantId;
+            BuyRate = vendor.BuyRate;
+            SellRate = vendor.SellRate;
+            MaxValue = vendor.MaxValue;
+            Categories = vendor.Categories;
+
+            foreach (var wo in vendor) {
+                Items.Add(wo.Id, new VendorItem(wo));
+            }
+        }
+    }
+
     public static class VendorCache {
-        public static Dictionary<int, double> SellRates = new Dictionary<int, double>();
-        public static Dictionary<int, double> BuyRates = new Dictionary<int, double>();
-        public static Dictionary<int, int> MaxValues = new Dictionary<int, int>();
-        public static Dictionary<int, int> Categories = new Dictionary<int, int>();
+        public static Dictionary<int, VendorInfo> Vendors = new Dictionary<int, VendorInfo>();
 
         public static void AddVendor(Vendor vendor) {
-            if (SellRates.ContainsKey(vendor.MerchantId)) {
-                SellRates[vendor.MerchantId] = vendor.SellRate;
+            if (Vendors.ContainsKey(vendor.MerchantId)) {
+                Vendors[vendor.MerchantId] = new VendorInfo(vendor);
             }
             else {
-                SellRates.Add(vendor.MerchantId, vendor.SellRate);
-            }
-
-            if (BuyRates.ContainsKey(vendor.MerchantId)) {
-                BuyRates[vendor.MerchantId] = vendor.BuyRate;
-            }
-            else {
-                BuyRates.Add(vendor.MerchantId, vendor.BuyRate);
-            }
-
-            if (MaxValues.ContainsKey(vendor.MerchantId)) {
-                MaxValues[vendor.MerchantId] = vendor.MaxValue;
-            }
-            else {
-                MaxValues.Add(vendor.MerchantId, vendor.MaxValue);
-            }
-
-            if (Categories.ContainsKey(vendor.MerchantId)) {
-                Categories[vendor.MerchantId] = vendor.Categories;
-            }
-            else {
-                Categories.Add(vendor.MerchantId, vendor.Categories);
+                Vendors.Add(vendor.MerchantId, new VendorInfo(vendor));
             }
         }
 
-        public static double GetSellRate(int vendorId) {
-            if (SellRates.ContainsKey(vendorId)) {
-                return SellRates[vendorId];
+        public static VendorInfo GetVendor(int vendorId) {
+            if (Vendors.ContainsKey(vendorId)) {
+                return Vendors[vendorId];
             }
 
-            return 1;
-        }
-
-        public static double GetBuyRate(int vendorId) {
-            if (BuyRates.ContainsKey(vendorId)) {
-                return BuyRates[vendorId];
-            }
-
-            return 1;
-        }
-
-        public static int GetMaxValue(int vendorId) {
-            if (MaxValues.ContainsKey(vendorId)) {
-                return MaxValues[vendorId];
-            }
-
-            return 1;
-        }
-
-        public static int GetCategories(int vendorId) {
-            if (Categories.ContainsKey(vendorId)) {
-                return Categories[vendorId];
-            }
-
-            return 0;
+            return null;
         }
     }
 
@@ -95,10 +85,12 @@ namespace UtilityBelt.Tools {
         private bool needsToSell = false;
         private int stackItem = 0;
         private bool shouldStack = false;
+        private int vendorId = 0;
         private string vendorName = "";
         private bool waitingForIds = false;
         private DateTime lastIdSpam = DateTime.MinValue;
         private bool needsToUse = false;
+
         HudCheckBox UIAutoVendorEnable { get; set; }
         HudCheckBox UIAutoVendorTestMode { get; set; }
         HudCheckBox UIAutoVendorDebug { get; set; }
@@ -213,13 +205,14 @@ namespace UtilityBelt.Tools {
                     return;
                 }
 
-                if (needsVendoring) return;
+                if (needsVendoring && vendorId == e.Vendor.MerchantId) return;
 
                 VendorCache.AddVendor(e.Vendor);
 
                 var merchant = Globals.Core.WorldFilter[e.MerchantId];
                 var profilePath = GetMerchantProfilePath(merchant);
 
+                vendorId = merchant.Id;
                 vendorName = merchant.Name;
 
                 if (!File.Exists(profilePath)) {
@@ -246,6 +239,7 @@ namespace UtilityBelt.Tools {
                 needsVendoring = true;
                 needsToBuy = false;
                 needsToSell = false;
+                shouldStack = false;
                 startedVendoring = DateTime.UtcNow;
 
                 Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
@@ -292,6 +286,7 @@ namespace UtilityBelt.Tools {
             needsToBuy = false;
             needsToSell = false;
             vendorName = "";
+            vendorId = 0;
 
             Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
 
@@ -385,7 +380,7 @@ namespace UtilityBelt.Tools {
             try {
                 int amount = 0;
                 int nextBuyItemId = GetNextBuyItem(out amount);
-                WorldObject nextBuyItem = null;
+                VendorItem nextBuyItem = null;
                 List<WorldObject> sellItems = GetSellItems();
 
                 if (!HasVendorOpen()) {
@@ -401,10 +396,10 @@ namespace UtilityBelt.Tools {
                 }
 
                 if (nextBuyItemId != 0) {
-                    using (var vendorItem = Globals.Core.WorldFilter.OpenVendor[nextBuyItemId]) {
-                        if (vendorItem != null) {
-                            nextBuyItem = vendorItem;
-                        }
+                    var vendor = VendorCache.GetVendor(Globals.Core.Actions.VendorId);
+
+                    if (vendor != null && vendor.Items.ContainsKey(nextBuyItemId)) {
+                        nextBuyItem = vendor.Items[nextBuyItemId];
                     }
                 }
 
@@ -537,16 +532,17 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Util.LogException(ex); }
         }
 
-        private int GetVendorSellPrice(WorldObject wo) {
+        private int GetVendorSellPrice(VendorItem item) {
             var price = 0;
-            int vendorId = Globals.Core.Actions.VendorId;
-            var rate = VendorCache.GetSellRate(vendorId);
+            var vendor = VendorCache.GetVendor(Globals.Core.Actions.VendorId);
 
             try {
-                if (vendorId == 0) return 0;
-                if (wo.ObjectClass == ObjectClass.TradeNote) rate = 1.15;
+                if (vendorId == 0 || vendor == null) return 0;
 
-                price = (int)Math.Ceiling((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * rate);
+                // notes are always 1.15 when buying
+                if (item.ObjectClass == ObjectClass.TradeNote) vendor.SellRate = 1.15;
+
+                price = (int)Math.Ceiling((item.Value / item.StackCount) * vendor.SellRate);
             }
             catch (Exception ex) { }
 
@@ -555,21 +551,22 @@ namespace UtilityBelt.Tools {
 
         private int GetVendorBuyPrice(WorldObject wo) {
             var price = 0;
-            int vendorId = Globals.Core.Actions.VendorId;
-            var rate = VendorCache.GetBuyRate(vendorId);
+            var vendor = VendorCache.GetVendor(Globals.Core.Actions.VendorId);
 
             try {
-                if (vendorId == 0) return 0;
-                if (wo.ObjectClass == ObjectClass.TradeNote) rate = 1;
+                if (vendorId == 0 || vendor == null) return 0;
 
-                price = (int)Math.Floor((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * rate);
+                // notes are always 1 when selling
+                if (wo.ObjectClass == ObjectClass.TradeNote) vendor.BuyRate = 1;
+
+                price = (int)Math.Floor((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * vendor.BuyRate);
             }
             catch (Exception ex) { }
 
             return price;
         }
 
-        private bool CanBuy(WorldObject nextBuyItem) {
+        private bool CanBuy(VendorItem nextBuyItem) {
             if (nextBuyItem == null) return false;
 
             return Util.PyrealCount() >= GetVendorSellPrice(nextBuyItem);
@@ -582,59 +579,61 @@ namespace UtilityBelt.Tools {
         }
 
         private int GetNextBuyItem(out int amount) {
-            using (Vendor openVendor = Globals.Core.WorldFilter.OpenVendor) {
-                amount = 0;
+            VendorInfo vendor = VendorCache.GetVendor(Globals.Core.Actions.VendorId);
 
-                if (openVendor == null || openVendor.MerchantId == 0) {
-                    Util.WriteToChat("AutoVendor Bad Merchant");
-                    return 0;
+            amount = 0;
+
+            if (vendor == null) return 0;
+
+
+            // keepUpTo rules first, just like mag-tools
+            foreach (VendorItem item in vendor.Items.Values) {
+                uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithVendorObjectTemplateID(item.Id);
+
+                if (itemInfo == null) continue;
+
+                uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
+
+                if (!result.IsKeepUpTo) continue;
+
+                amount = result.Data1 - Util.GetItemCountInInventoryByName(item.Name);
+
+                if (amount > item.StackMax) {
+                    amount = item.StackMax;
                 }
 
-                // keepUpTo rules first, just like mag-tools
-                foreach (WorldObject wo in openVendor) {
-                    uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithVendorObjectTemplateID(wo.Id);
+                if (amount > MAX_VENDOR_BUY_COUNT) amount = MAX_VENDOR_BUY_COUNT;
 
-                    if (itemInfo == null) continue;
-
-                    uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
-
-                    if (!result.IsKeepUpTo) continue;
-
-                    amount = result.Data1 - Util.GetItemCountInInventoryByName(wo.Name);
-
-                    if (amount > wo.Values(LongValueKey.StackMax, 1)) {
-                        amount = wo.Values(LongValueKey.StackMax, 1);
+                if (amount > 0) {
+                    if (Globals.Config.AutoVendor.Debug.Value == true) {
+                        Util.WriteToChat("Buy " + item.Name);
                     }
-
-                    if (amount > MAX_VENDOR_BUY_COUNT) amount = MAX_VENDOR_BUY_COUNT;
-
-                    if (amount > 0) {
-                        if (Globals.Config.AutoVendor.Debug.Value == true) {
-                            Util.WriteToChat("Buy " + wo.Name);
-                        }
-                        return wo.Id;
-                    }
+                    return item.Id;
                 }
+            }
 
-                // keep rules next
-                foreach (WorldObject wo in openVendor) {
-                    uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithVendorObjectTemplateID(wo.Id);
+            // keep rules next
+            foreach (VendorItem item in vendor.Items.Values) {
+                uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithVendorObjectTemplateID(item.Id);
 
-                    if (itemInfo == null) continue;
+                if (itemInfo == null) continue;
 
-                    uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
+                uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
 
-                    if (!result.IsKeep) continue;
+                if (!result.IsKeep) continue;
 
-                    amount = MAX_VENDOR_BUY_COUNT;
-                    return wo.Id;
-                }
+                amount = MAX_VENDOR_BUY_COUNT;
+                return item.Id;
             }
 
             return 0;
         }
         private List<WorldObject> GetSellItems() {
             List<WorldObject> sellObjects = new List<WorldObject>();
+            var vendor = VendorCache.GetVendor(Globals.Core.Actions.VendorId);
+
+            if (vendor == null) return sellObjects;
+
             foreach (WorldObject wo in Globals.Core.WorldFilter.GetInventory()) {
                 if (!Util.ItemIsSafeToGetRidOf(wo) || !ItemIsSafeToGetRidOf(wo)) continue;
 
@@ -649,13 +648,11 @@ namespace UtilityBelt.Tools {
                 if (!result.IsSell)
                     continue;
                 
-
                 // too expensive for this vendor
-                if (VendorCache.GetMaxValue(Globals.Core.Actions.VendorId) < wo.Values(LongValueKey.Value, 0)) continue;
-
+                if (vendor.MaxValue < wo.Values(LongValueKey.Value, 0)) continue;
                 
                 // will vendor buy this item?
-                if (wo.ObjectClass != ObjectClass.TradeNote && (VendorCache.GetCategories(Globals.Core.Actions.VendorId) & wo.Category) == 0) {
+                if (wo.ObjectClass != ObjectClass.TradeNote && (vendor.Categories & wo.Category) == 0) {
                     continue;
                 }
 
