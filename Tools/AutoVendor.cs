@@ -522,10 +522,10 @@ namespace UtilityBelt.Tools {
                 }
 
                 if (Globals.Config.AutoVendor.Think.Value == true) {
-                    Util.Think("AutoVendor " + vendorName + " finished.");
+                    Util.Think("AutoVendor finished: " + vendorName);
                 }
                 else {
-                    Util.WriteToChat("AutoVendor " + vendorName + " finished.");
+                    Util.WriteToChat("AutoVendor finished: " + vendorName);
                 }
                 Stop();
             }
