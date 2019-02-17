@@ -448,8 +448,7 @@ namespace UtilityBelt.Tools {
                         if (Globals.Config.AutoVendor.Debug.Value == true) {
                             Util.WriteToChat(string.Format("AutoVendor bail: buyItem: {0} sellItem: {1}", nextBuyItem == null ? "null" : nextBuyItem.Name, item.Name));
                         }
-                        Stop();
-                        return;
+                        break;
                     }
 
                     // if we are selling notes to buy something, sell the minimum amount...
