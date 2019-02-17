@@ -1,4 +1,5 @@
 ﻿using Decal.Adapter.Wrappers;
+using Decal.Filters;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -225,6 +226,23 @@ namespace UtilityBelt
                 DispatchChatToBoxWithPluginIntercept(string.Format("/tell {0}, {1}", Globals.Core.CharacterFilter.Name, message));
             }
             catch (Exception ex) { Util.LogException(ex); }
+        }
+
+        public static string GetObjectName(int id) {
+            if (!Globals.Core.Actions.IsValidObject(id)) {
+                return string.Format("<{0}>", id);
+            }
+            var wo = Globals.Core.WorldFilter[id];
+
+            if (wo == null) return string.Format("<{0}>", id);
+
+            if (wo.Values(LongValueKey.Material, 0) > 0) {
+                FileService service = Globals.Core.Filter<FileService>();
+                return string.Format("{0} {1}", service.MaterialTable.GetById(id), wo.Name); 
+            }
+            else {
+                return string.Format("{0}", wo.Name);
+            }
         }
     }
 }
