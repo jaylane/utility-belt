@@ -23,6 +23,7 @@ namespace UtilityBelt.Tools {
             Name = item.Name;
             StackMax = item.Values(LongValueKey.StackMax, 1);
             StackCount = item.Values(LongValueKey.StackCount, 1);
+            ObjectClass = item.ObjectClass;
         }
     }
 
@@ -225,6 +226,9 @@ namespace UtilityBelt.Tools {
                     Util.WriteToChat(string.Format("BuyRate: {0}% SellRate: {1}% MaxValue: {2:n0}", e.Vendor.BuyRate*100, e.Vendor.SellRate*100, e.Vendor.MaxValue));
                 }
 
+                // Load our loot profile
+                ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
+
                 /*
                 if (Assessor.NeedsInventoryData()) {
                     Assessor.RequestAll();
@@ -232,9 +236,6 @@ namespace UtilityBelt.Tools {
                     lastIdSpam = DateTime.UtcNow;
                 }
                 */
-
-                // Load our loot profile
-                ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
                 
                 needsVendoring = true;
                 needsToBuy = false;
@@ -278,8 +279,11 @@ namespace UtilityBelt.Tools {
         }
 
         public void Stop() {
-            if (Globals.Config.AutoVendor.Debug.Value == true) {
-                Util.WriteToChat("AutoVendor:Stop");
+            if (Globals.Config.AutoVendor.Think.Value == true) {
+                Util.Think("AutoVendor finished: " + vendorName);
+            }
+            else {
+                Util.WriteToChat("AutoVendor finished: " + vendorName);
             }
 
             needsVendoring = false;
@@ -336,14 +340,14 @@ namespace UtilityBelt.Tools {
                         }
                     }
 
-                    if (needsToUse) {
-                        if (Globals.Core.Actions.VendorId != 0) {
-                            Globals.Core.Actions.UseItem(Globals.Core.Actions.VendorId, 0);
-                        }
+                    //if (needsToUse) {
+                    //    if (Globals.Core.Actions.VendorId != 0) {
+                    //        Globals.Core.Actions.UseItem(Globals.Core.Actions.VendorId, 0);
+                    //    }
 
-                        needsToUse = false;
-                        return;
-                    }
+                    //    needsToUse = false;
+                    //    return;
+                    //}
 
                     if (needsVendoring == true && HasVendorOpen()) {
                         if (DateTime.UtcNow - startedVendoring > TimeSpan.FromSeconds(AutoVendorTimeout)) {
@@ -403,6 +407,11 @@ namespace UtilityBelt.Tools {
                     }
                 }
 
+                if (Globals.Config.AutoVendor.Debug.Value == true) {
+                    Util.WriteToChat(string.Format("AutoVendor Wants Buy: {0}", nextBuyItem==null ? "null" : nextBuyItem.Name));
+                    Util.WriteToChat(string.Format("AutoVendor Wants Sell: {0}", sellItems.Count>0 ? sellItems[0].Name : "null"));
+                }
+
                 Globals.Core.Actions.VendorClearBuyList();
                 Globals.Core.Actions.VendorClearSellList();
 
@@ -439,7 +448,8 @@ namespace UtilityBelt.Tools {
                         if (Globals.Config.AutoVendor.Debug.Value == true) {
                             Util.WriteToChat(string.Format("AutoVendor bail: buyItem: {0} sellItem: {1}", nextBuyItem == null ? "null" : nextBuyItem.Name, item.Name));
                         }
-                        break;
+                        Stop();
+                        return;
                     }
 
                     // if we are selling notes to buy something, sell the minimum amount...
@@ -521,12 +531,6 @@ namespace UtilityBelt.Tools {
                     return;
                 }
 
-                if (Globals.Config.AutoVendor.Think.Value == true) {
-                    Util.Think("AutoVendor finished: " + vendorName);
-                }
-                else {
-                    Util.WriteToChat("AutoVendor finished: " + vendorName);
-                }
                 Stop();
             }
             catch (Exception ex) { Util.LogException(ex); }
