@@ -267,10 +267,10 @@ namespace UtilityBelt.Tools {
         private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
             try {
                 if (!Globals.Config.AutoVendor.Enabled.Value || !needsVendoring) return;
-                
-                //if (shouldStack && e.New.Values(LongValueKey.StackMax, 1) > 1) {
-                //    lastThought = DateTime.UtcNow;
-                //}
+                                
+                if (shouldStack && e.New.Values(LongValueKey.StackMax, 1) > 1) {
+                    lastThought = DateTime.UtcNow;
+                }
             }
             catch (Exception ex) { Util.LogException(ex); }
         }

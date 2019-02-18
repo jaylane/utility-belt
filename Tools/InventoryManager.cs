@@ -103,6 +103,9 @@ namespace UtilityBelt.Tools {
                 if (movingObjectId == e.Changed.Id) {
                     movingObjectId = 0;
                 }
+                else if (e.Changed.Container == Globals.Core.CharacterFilter.Id && !IsRunning()) {
+                    //Start();
+                }
             }
             catch (Exception ex) { Util.LogException(ex); }
         }
@@ -111,7 +114,7 @@ namespace UtilityBelt.Tools {
             try {
                 // created in main backpack?
                 if (e.New.Container == Globals.Core.CharacterFilter.Id && !IsRunning()) {
-                    Start();
+                    //Start();
                 }
             }
             catch (Exception ex) { Util.LogException(ex); }
