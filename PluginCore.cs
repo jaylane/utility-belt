@@ -16,6 +16,7 @@ namespace UtilityBelt
 	public class PluginCore : PluginBase {
         private AutoVendor autoVendor;
         private AutoSalvage autoSalvage;
+        private DungeonMaps dungeonMaps;
         private QuestTracker questTracker;
         private DateTime lastThought = DateTime.MinValue;
 
@@ -55,6 +56,7 @@ namespace UtilityBelt
 
                 autoVendor = new AutoVendor();
                 autoSalvage = new AutoSalvage();
+                dungeonMaps = new DungeonMaps();
                 questTracker = new QuestTracker();
 
                 Globals.Core.RenderFrame += Core_RenderFrame;
@@ -66,6 +68,7 @@ namespace UtilityBelt
             try {
                 if (autoSalvage != null) autoSalvage.Think();
                 if (autoVendor != null) autoVendor.Think();
+                if (dungeonMaps != null) dungeonMaps.Think();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Think();
             }
             catch (Exception ex) { Util.LogException(ex); }
@@ -79,6 +82,7 @@ namespace UtilityBelt
 
                 if (autoVendor != null) autoVendor.Dispose();
                 if (autoSalvage != null) autoSalvage.Dispose();
+                if (dungeonMaps != null) dungeonMaps.Dispose();
                 if (questTracker != null) questTracker.Dispose();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();
                 if (Globals.View != null) Globals.View.Dispose();

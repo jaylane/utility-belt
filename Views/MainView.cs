@@ -27,7 +27,7 @@ namespace UtilityBelt.Views {
             catch (Exception ex) { Util.LogException(ex); }
         }
 
-        private ACImage GetIcon() {
+        public ACImage GetIcon() {
             ACImage acImage = null;
 
             try {

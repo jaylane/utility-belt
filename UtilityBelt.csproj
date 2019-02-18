@@ -84,6 +84,7 @@
     <Compile Include="Tools\AutoSalvage.cs" />
     <Compile Include="Tools\AutoVendor.cs" />
     <Compile Include="Tools\InventoryManager.cs" />
+    <Compile Include="Tools\DungeonMaps.cs" />
     <Compile Include="Tools\QuestTracker.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="Views\MainView.cs" />
@@ -123,6 +124,9 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="icons\dungeonmaps.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
