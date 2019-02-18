@@ -10,6 +10,8 @@ using VirindiViewService.Controls;
 namespace UtilityBelt.Tools {
     public class InventoryManager : IDisposable {
         private const int THINK_INTERVAL = 300;
+        private const int ITEM_BLACKLIST_TIMEOUT = 60; // in seconds
+        private const int CONTAINER_BLACKLIST_TIMEOUT = 60; // in seconds
 
         private bool disposed = false;
         private bool isRunning = false;
@@ -17,6 +19,9 @@ namespace UtilityBelt.Tools {
         private bool isForced = false;
         private DateTime lastThought = DateTime.MinValue;
         private int movingObjectId = 0;
+        private int tryCount = 0;
+        private Dictionary<int, DateTime> blacklistedItems = new Dictionary<int, DateTime>();
+        private Dictionary<int,DateTime> blacklistedContainers = new Dictionary<int, DateTime>();
 
         HudCheckBox UIInventoryManagerAutoCram { get; set; }
         HudCheckBox UIInventoryManagerAutoStack { get; set; }
@@ -101,6 +106,7 @@ namespace UtilityBelt.Tools {
                 if (e.Change != WorldChangeType.StorageChange) return;
 
                 if (movingObjectId == e.Changed.Id) {
+                    tryCount = 0;
                     movingObjectId = 0;
                 }
                 else if (e.Changed.Container == Globals.Core.CharacterFilter.Id && !IsRunning()) {
@@ -125,15 +131,19 @@ namespace UtilityBelt.Tools {
             isPaused = false;
             isForced = force;
             movingObjectId = 0;
+            tryCount = 0;
             if (Globals.Config.InventoryManager.Debug.Value == true) {
                 Util.WriteToChat("InventoryManager Started");
             }
+
+            CleanupBlacklists();
         }
 
         public void Stop() {
             isForced = false;
             isRunning = false;
             movingObjectId = 0;
+            tryCount = 0;
             if (Globals.Config.InventoryManager.Debug.Value == true) {
                 Util.WriteToChat("InventoryManager Finished");
             }
@@ -153,6 +163,25 @@ namespace UtilityBelt.Tools {
             isPaused = false;
         }
 
+        private void CleanupBlacklists() {
+            var containerKeys = blacklistedContainers.Keys.ToArray();
+            var itemKeys = blacklistedItems.Keys.ToArray();
+
+            // containers
+            foreach (var key in containerKeys) {
+                if (blacklistedContainers.ContainsKey(key) && DateTime.UtcNow - blacklistedContainers[key] >= TimeSpan.FromSeconds(CONTAINER_BLACKLIST_TIMEOUT)) {
+                    blacklistedContainers.Remove(key);
+                }
+            }
+
+            // items
+            foreach (var key in itemKeys) {
+                if (blacklistedItems.ContainsKey(key) && DateTime.UtcNow - blacklistedItems[key] >= TimeSpan.FromSeconds(ITEM_BLACKLIST_TIMEOUT)) {
+                    blacklistedItems.Remove(key);
+                }
+            }
+        }
+
         public bool AutoCram(List<int> excludeList = null, bool excludeMoney=true) {
             if (Globals.Config.InventoryManager.Debug.Value == true) {
                 Util.WriteToChat("InventoryManager::AutoCram started");
@@ -160,6 +189,7 @@ namespace UtilityBelt.Tools {
             foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
                 if (excludeMoney && (wo.Values(LongValueKey.Type, 0) == 273/* pyreals */ || wo.ObjectClass == ObjectClass.TradeNote)) continue;
                 if (excludeList != null && excludeList.Contains(wo.Id)) continue;
+                if (blacklistedItems.ContainsKey(wo.Id)) continue;
 
                 if (ShouldCramItem(wo) && wo.Values(LongValueKey.Container) == Globals.Core.CharacterFilter.Id) {
                     if (TryCramItem(wo)) return true;
@@ -226,7 +256,7 @@ namespace UtilityBelt.Tools {
             // try to cram in side pack
             foreach (var container in Globals.Core.WorldFilter.GetInventory()) {
                 int slot = container.Values(LongValueKey.Slot, -1);
-                if (container.ObjectClass == ObjectClass.Container && slot >= 0) {
+                if (container.ObjectClass == ObjectClass.Container && slot >= 0 && !blacklistedContainers.ContainsKey(container.Id)) {
                     int freePackSpace = Util.GetFreePackSpace(container);
 
                     if (freePackSpace <= 0) continue;
@@ -236,7 +266,16 @@ namespace UtilityBelt.Tools {
                             Util.GetObjectName(stackThis.Id), container.Name, slot, freePackSpace));
                     }
 
+                    // blacklist this container
+                    if (tryCount > 10) {
+                        tryCount = 0;
+                        blacklistedContainers.Add(container.Id, DateTime.UtcNow);
+                        continue;
+                    }
+
                     movingObjectId = stackThis.Id;
+                    tryCount++;
+
                     Globals.Core.Actions.MoveItem(stackThis.Id, container.Id, slot, false);
                     return true;
                 }
@@ -252,6 +291,7 @@ namespace UtilityBelt.Tools {
             foreach (var container in Globals.Core.WorldFilter.GetInventory()) {
                 if (container.ObjectClass == ObjectClass.Container && container.Values(LongValueKey.Slot, -1) >= 0) {
                     foreach (var wo in Globals.Core.WorldFilter.GetByContainer(container.Id)) {
+                        if (blacklistedContainers.ContainsKey(container.Id)) continue;
                         if (TryStackItemTo(wo, stackThis, container.Values(LongValueKey.Slot))) return true;
                     }
                 }
@@ -274,6 +314,13 @@ namespace UtilityBelt.Tools {
             if (woStackMax <= 1 || stackThis.Values(LongValueKey.StackMax, 1) <= 1) return false;
 
             if (wo.Name == stackThis.Name && wo.Id != stackThis.Id && stackThisCount < woStackMax) {
+                // blacklist this item
+                if (tryCount > 10) {
+                    tryCount = 0;
+                    blacklistedItems.Add(stackThis.Id, DateTime.UtcNow);
+                    return false;
+                }
+
                 if (woStackCount + stackThisCount <= woStackMax) {
                     if (Globals.Config.InventoryManager.Debug.Value == true) {
                         Util.WriteToChat(string.Format("InventoryManager::AutoStack stack {0}({1}) on {2}({3})",
@@ -302,6 +349,7 @@ namespace UtilityBelt.Tools {
                     Globals.Core.Actions.MoveItem(stackThis.Id, wo.Container, slot, true);
                 }
 
+                tryCount++;
                 movingObjectId = stackThis.Id;
                 return true;
             }
