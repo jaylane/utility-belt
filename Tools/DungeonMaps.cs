@@ -1,12 +1,8 @@
 ﻿using Decal.Adapter.Wrappers;
 using Decal.Filters;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.IO;
-using System.Linq;
-using System.Text;
 using UtilityBelt.Views;
 
 namespace UtilityBelt.Tools {
@@ -55,17 +51,35 @@ namespace UtilityBelt.Tools {
 
                 try {
                     FileService service = Globals.Core.Filter<FileService>();
+                    byte[] cellFile = service.GetCellFile(Globals.Core.Actions.Landcell);
 
-                    byte[] cellData = service.GetCellFile(Globals.Core.Actions.Landcell);
+                    try {
+                        if (cellFile == null) {
+                            throw new Exception();
+                        }
 
-                    if (cellData == null) {
-                        Util.WriteToChat("No such cell file: " + Globals.Core.Actions.Landcell);
-                        throw new Exception("No such cell file: " + Globals.Core.Actions.Landcell);
+                        ushort environmentId = BitConverter.ToUInt16(cellFile, 16 + (int)cellFile[12] * 2);
+                        Vector3Object position = new Vector3Object(
+                            BitConverter.ToSingle(cellFile, 20 + (int)cellFile[12] * 2),
+                            BitConverter.ToSingle(cellFile, 24 + (int)cellFile[12] * 2),
+                            BitConverter.ToSingle(cellFile, 28 + (int)cellFile[12] * 2)
+                        );
+
+                        float rotW = BitConverter.ToSingle(cellFile, 32 + (int)cellFile[12] * 2);
+                        float rotX = BitConverter.ToSingle(cellFile, 36 + (int)cellFile[12] * 2);
+                        float rotY = BitConverter.ToSingle(cellFile, 40 + (int)cellFile[12] * 2);
+                        float rotZ = BitConverter.ToSingle(cellFile, 44 + (int)cellFile[12] * 2);
+
+                        Util.WriteToChat(string.Format("{0}: environment: {1} position: x:{2} y:{3} z:{4} r: {5}",
+                            (Globals.Core.Actions.Landcell).ToString("X"),
+                            environmentId,
+                            Math.Round(position.X),
+                            Math.Round(position.Y),
+                            Math.Round(position.Z),
+                            rotW));
+
                     }
-                    else {
-                        //Util.WriteToChat("Found cell file: " + Globals.Core.Actions.Landcell);
-                    }
-
+                    catch (Exception ex) { Util.LogException(ex); }
                     
                     using (Stream manifestResourceStream = typeof(MainView).Assembly.GetManifestResourceStream("UtilityBelt.icons.dungeonmaps.png")) {
                         if (manifestResourceStream != null) {
