@@ -87,25 +87,27 @@ namespace UtilityBelt
         public static int GetFreePackSpace(WorldObject container) {
             int packSlots = container.Values(LongValueKey.ItemSlots, 0);
 
-            using (IEnumerator<WorldObject> enumerator = Globals.Core.WorldFilter.GetInventory().GetEnumerator()) {
-                while (enumerator.MoveNext()) {
-                    if (enumerator.Current != null) {
-                        // skip packs
-                        if (enumerator.Current.ObjectClass == ObjectClass.Container) continue;
+            // side pack count
+            if (container.Id != Globals.Core.CharacterFilter.Id) {
+                return packSlots - Globals.Core.WorldFilter.GetByContainer(container.Id).Count;
+            }
 
-                        // skip foci
-                        if (enumerator.Current.ObjectClass == ObjectClass.Foci) continue;
+            // main pack count
+            foreach (var wo in Globals.Core.WorldFilter.GetByContainer(container.Id)) {
+                if (wo != null) {
+                    // skip packs
+                    if (wo.ObjectClass == ObjectClass.Container) continue;
 
-                        // skip equipped
-                        if (enumerator.Current.Values(LongValueKey.EquippedSlots, 0) > 0) continue;
+                    // skip foci
+                    if (wo.ObjectClass == ObjectClass.Foci) continue;
 
-                        // skip wielded
-                        if (enumerator.Current.Values(LongValueKey.Slot, -1) == -1) continue;
+                    // skip equipped
+                    if (wo.Values(LongValueKey.EquippedSlots, 0) > 0) continue;
 
-                        if (enumerator.Current.Container == container.Id) {
-                            --packSlots;
-                        }
-                    }
+                    // skip wielded
+                    if (wo.Values(LongValueKey.Slot, -1) == -1) continue;
+
+                    --packSlots;
                 }
             }
 

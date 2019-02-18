@@ -250,11 +250,13 @@ namespace UtilityBelt.Tools {
                     lastIdSpam = DateTime.UtcNow;
                 }
                 */
+
+                Globals.InventoryManager.Pause();
                 
                 needsVendoring = true;
                 needsToBuy = false;
                 needsToSell = false;
-                shouldStack = false;
+                shouldStack = true;
                 startedVendoring = DateTime.UtcNow;
 
                 Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
@@ -264,12 +266,11 @@ namespace UtilityBelt.Tools {
 
         private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
             try {
-                if (shouldStack && e.New.Values(LongValueKey.StackMax, 1) > 1) {
-                    // TODO: multipass stacking
-                    stackItem = e.New.Id;
-
-                    lastThought = DateTime.UtcNow;
-                }
+                if (!Globals.Config.AutoVendor.Enabled.Value || !needsVendoring) return;
+                
+                //if (shouldStack && e.New.Values(LongValueKey.StackMax, 1) > 1) {
+                //    lastThought = DateTime.UtcNow;
+                //}
             }
             catch (Exception ex) { Util.LogException(ex); }
         }
@@ -299,6 +300,8 @@ namespace UtilityBelt.Tools {
             else {
                 Util.WriteToChat("AutoVendor finished: " + vendorName);
             }
+
+            Globals.InventoryManager.Resume();
 
             needsVendoring = false;
             needsToBuy = false;
@@ -344,14 +347,14 @@ namespace UtilityBelt.Tools {
                         Stop();
                         return;
                     }
+                    
+                    if (needsVendoring && shouldStack && Globals.Config.InventoryManager.AutoStack.Value == true) {
+                        if (Globals.InventoryManager.AutoStack() == true) return;
+                    }
+                    shouldStack = false;
 
-                    if (stackItem != 0 && Globals.Core.Actions.IsValidObject(stackItem)) {
-                        var wo = Globals.Core.WorldFilter[stackItem];
-                        if (wo != null) {
-                            Util.StackItem(wo);
-                            stackItem = 0;
-                            return;
-                        }
+                    if (needsVendoring && Globals.Config.InventoryManager.AutoCram.Value == true) {
+                        if (Globals.InventoryManager.AutoCram() == true) return;
                     }
 
                     //if (needsToUse) {
@@ -443,6 +446,11 @@ namespace UtilityBelt.Tools {
                         needsToBuy = true;
                         return;
                     }
+                }
+
+                if (totalBuyCount > 0) {
+                    needsToBuy = true;
+                    return;
                 }
 
                 VendorItem nextBuyItem = null;
@@ -565,7 +573,6 @@ namespace UtilityBelt.Tools {
                 if (item.ObjectClass == ObjectClass.TradeNote) vendor.SellRate = 1.15;
 
                 price = (int)Math.Ceiling((item.Value / item.StackCount) * vendor.SellRate);
-                Util.WriteToChat(string.Format("VendorSellPrice: {0} is {1}", item.Name, price));
             }
             catch (Exception ex) { Util.LogException(ex); }
 
@@ -668,7 +675,7 @@ namespace UtilityBelt.Tools {
                     continue;
                 
                 // too expensive for this vendor
-                if (vendor.MaxValue < wo.Values(LongValueKey.Value, 0)) continue;
+                if (vendor.MaxValue < wo.Values(LongValueKey.Value, 0) && wo.ObjectClass != ObjectClass.TradeNote) continue;
                 
                 // will vendor buy this item?
                 if (wo.ObjectClass != ObjectClass.TradeNote && (vendor.Categories & wo.Category) == 0) {

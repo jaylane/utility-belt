@@ -23,6 +23,15 @@
 
 
     </page>
+    <page label="InventoryManager">
+      <control progid="DecalControls.FixedLayout" clipped="">
+        <control progid="DecalControls.Checkbox" name="InventoryManagerAutoCram" left="8" top="8" width="400" height="16" text="Automatically cram items into side packs"/>
+        <control progid="DecalControls.Checkbox" name="InventoryManagerAutoStack" left="8" top="32" width="400" height="16" text="Automatically combine stacked items"/>
+        <control progid="DecalControls.Checkbox" name="InventoryManagerDebug" left="8" top="56" width="184" height="16" text="Show Debug Messages"/>
+        <control progid="DecalControls.PushButton" name="InventoryManagerTest" left="100" top="280" width="100" height="32" text="AutoStack"/>
+      </control>
+
+    </page>
     <page label="QuestTracker">
       <control progid="DecalControls.Notebook" name="nbMain">
         <page label="QuestTimers">

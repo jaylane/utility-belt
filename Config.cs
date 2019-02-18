@@ -13,6 +13,40 @@ namespace UtilityBelt {
 
         public AutoSalvageConfig AutoSalvage;
         public AutoVendorConfig AutoVendor;
+        public InventoryManagerConfig InventoryManager;
+
+        public class InventoryManagerConfig : IDisposable {
+            public Setting<bool> AutoCram;
+            public Setting<bool> AutoStack;
+            public Setting<bool> Debug;
+
+            private bool disposed = false;
+
+            public InventoryManagerConfig() {
+                try {
+                    AutoCram = new Setting<bool>("Config/InventoryManager/AutoCram", "Automatically cram items into side packs", false);
+                    AutoStack = new Setting<bool>("Config/InventoryManager/AutoStack", "Automatically combine stacked items", false);
+                    Debug = new Setting<bool>("Config/InventoryManager/Debug", "Show debug messages", false);
+                }
+                catch (Exception e) { Util.LogException(e); }
+            }
+
+            public void Dispose() {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
+            protected virtual void Dispose(bool disposing) {
+                if (!disposed) {
+                    if (disposing) {
+                        if (AutoCram != null) Debug.Dispose();
+                        if (AutoStack != null) Debug.Dispose();
+                        if (Debug != null) Debug.Dispose();
+                    }
+                    disposed = true;
+                }
+            }
+        }
 
         public class AutoSalvageConfig : IDisposable {
             public Setting<bool> Think;
@@ -89,6 +123,7 @@ namespace UtilityBelt {
         public Config() {
             AutoSalvage = new AutoSalvageConfig();
             AutoVendor = new AutoVendorConfig();
+            InventoryManager = new InventoryManagerConfig();
         }
 
         public void Dispose() {
@@ -101,6 +136,7 @@ namespace UtilityBelt {
                 if (disposing) {
                     if (AutoSalvage != null) AutoSalvage.Dispose();
                     if (AutoVendor != null) AutoVendor.Dispose();
+                    if (InventoryManager != null) InventoryManager.Dispose();
                 }
                 disposed = true;
             }
