@@ -240,7 +240,7 @@ namespace UtilityBelt
 
             if (wo.Values(LongValueKey.Material, 0) > 0) {
                 FileService service = Globals.Core.Filter<FileService>();
-                return string.Format("{0} {1}", service.MaterialTable.GetById(id), wo.Name); 
+                return string.Format("{0} {1}", service.MaterialTable.GetById(wo.Values(LongValueKey.Material, 0)), wo.Name); 
             }
             else {
                 return string.Format("{0}", wo.Name);

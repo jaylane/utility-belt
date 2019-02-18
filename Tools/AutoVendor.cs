@@ -347,14 +347,16 @@ namespace UtilityBelt.Tools {
                         Stop();
                         return;
                     }
-                    
+
+
                     if (needsVendoring && shouldStack && Globals.Config.InventoryManager.AutoStack.Value == true) {
                         if (Globals.InventoryManager.AutoStack() == true) return;
                     }
                     shouldStack = false;
 
+                    List<int> cramExcludeList = GetSellItems().Select((x) => { return x.Id; }).ToList();
                     if (needsVendoring && Globals.Config.InventoryManager.AutoCram.Value == true) {
-                        if (Globals.InventoryManager.AutoCram() == true) return;
+                        if (Globals.InventoryManager.AutoCram(cramExcludeList, true) == true) return;
                     }
 
                     //if (needsToUse) {
@@ -685,22 +687,21 @@ namespace UtilityBelt.Tools {
                 sellObjects.Add(wo);
             }
 
-            sellObjects.Sort(
-                delegate (WorldObject wo1, WorldObject wo2) {
+            sellObjects.Sort(delegate (WorldObject wo1, WorldObject wo2) {
                 // tradenotes last
                 if (wo1.ObjectClass == ObjectClass.TradeNote && wo2.ObjectClass != ObjectClass.TradeNote) return 1;
+                if (wo1.ObjectClass != ObjectClass.TradeNote && wo2.ObjectClass == ObjectClass.TradeNote) return -1;
 
                 // then cheapest first
                 if (wo1.Values(LongValueKey.Value, 0) > wo2.Values(LongValueKey.Value, 0)) return 1;
-                    if (wo1.Values(LongValueKey.Value, 0) < wo2.Values(LongValueKey.Value, 0)) return -1;
+                if (wo1.Values(LongValueKey.Value, 0) < wo2.Values(LongValueKey.Value, 0)) return -1;
 
                 // then smallest stack size
                 if (wo1.Values(LongValueKey.StackCount, 1) > wo2.Values(LongValueKey.StackCount, 1)) return 1;
-                    if (wo1.Values(LongValueKey.StackCount, 1) < wo2.Values(LongValueKey.StackCount, 1)) return -1;
+                if (wo1.Values(LongValueKey.StackCount, 1) < wo2.Values(LongValueKey.StackCount, 1)) return -1;
 
-                    return 0;
-                }
-            );
+                return 0;
+            });
 
             return sellObjects;
         }

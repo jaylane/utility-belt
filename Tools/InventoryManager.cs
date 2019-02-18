@@ -137,18 +137,27 @@ namespace UtilityBelt.Tools {
         }
 
         public void Pause() {
+            if (Globals.Config.InventoryManager.Debug.Value == true) {
+                Util.WriteToChat("InventoryManager Paused");
+            }
             isPaused = true;
         }
 
         public void Resume() {
+            if (Globals.Config.InventoryManager.Debug.Value == true) {
+                Util.WriteToChat("InventoryManager Resumed");
+            }
             isPaused = false;
         }
 
-        public bool AutoCram() {
+        public bool AutoCram(List<int> excludeList = null, bool excludeMoney=true) {
             if (Globals.Config.InventoryManager.Debug.Value == true) {
                 Util.WriteToChat("InventoryManager::AutoCram started");
             }
             foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
+                if (excludeMoney && (wo.Values(LongValueKey.Type, 0) == 273/* pyreals */ || wo.ObjectClass == ObjectClass.TradeNote)) continue;
+                if (excludeList != null && excludeList.Contains(wo.Id)) continue;
+
                 if (ShouldCramItem(wo) && wo.Values(LongValueKey.Container) == Globals.Core.CharacterFilter.Id) {
                     if (TryCramItem(wo)) return true;
                 }
@@ -157,11 +166,13 @@ namespace UtilityBelt.Tools {
             return false;
         }
 
-        public bool AutoStack() {
+        public bool AutoStack(List<int> excludeList = null) {
             if (Globals.Config.InventoryManager.Debug.Value == true) {
                 Util.WriteToChat("InventoryManager::AutoStack started");
             }
             foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
+                if (excludeList != null && excludeList.Contains(wo.Id)) continue;
+
                 if (wo != null && wo.Values(LongValueKey.StackMax, 1) > 1) {
                     if (TryStackItem(wo)) return true;
                 }
