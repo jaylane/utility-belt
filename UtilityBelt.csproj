@@ -53,6 +53,9 @@
     <Reference Include="Decal.Adapter">
       <HintPath>..\..\..\Decal\Decal.Adapter.dll</HintPath>
     </Reference>
+    <Reference Include="Decal.FileService">
+      <HintPath>C:\Program Files (x86)\Decal 3.0\Decal.FileService.dll</HintPath>
+    </Reference>
     <Reference Include="Decal.Interop.Filters, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
@@ -80,6 +83,7 @@
     <Compile Include="Tools\Assessor.cs" />
     <Compile Include="Tools\AutoSalvage.cs" />
     <Compile Include="Tools\AutoVendor.cs" />
+    <Compile Include="Tools\InventoryManager.cs" />
     <Compile Include="Tools\QuestTracker.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="Views\MainView.cs" />
@@ -99,6 +103,26 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="MagTools\license.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="Decal">
+      <Guid>{FF7F5F6D-34E0-4B6F-B3BB-8141DE2EF732}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="DecalNet">
+      <Guid>{572B87C4-93BD-46B3-A291-CD58181D25DC}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
