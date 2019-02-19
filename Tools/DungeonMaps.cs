@@ -1,4 +1,5 @@
-﻿using Decal.Adapter.Wrappers;
+﻿using Decal.Adapter;
+using Decal.Adapter.Wrappers;
 using Decal.Filters;
 using System;
 using System.Collections.Generic;
@@ -194,7 +195,6 @@ namespace UtilityBelt.Tools {
 
         private void DrawDungeon(LandBlock currentBlock) {
             var playerZ = Globals.Core.WorldFilter[Globals.Core.CharacterFilter.Id].RawCoordinates().Z;
-
             var c = Globals.Core.WorldFilter[Globals.Core.CharacterFilter.Id].RawCoordinates();
 
             if (drawBitmap == null) drawBitmap.Dispose();
@@ -205,7 +205,7 @@ namespace UtilityBelt.Tools {
             Graphics g = Graphics.FromImage(drawBitmap);
             // center
             g.TranslateTransform(200,200);
-            g.TranslateTransform((float)c.X, (float)c.Y);
+            g.TranslateTransform((float)Globals.Core.Actions.LocationX, (float)Globals.Core.Actions.LocationY);
             g.RotateTransform(360 - (float)Globals.Core.Actions.Heading);
 
             //g.RotateTransform(360 - (float)Globals.Core.Actions.Heading);
@@ -231,7 +231,7 @@ namespace UtilityBelt.Tools {
                    rotated.RotateFlip(RotateFlipType.Rotate270FlipNone);
                 }
 
-                g.DrawImage(rotated, (cell.X * -1)- (float)(c.X*-1), (float)c.Y - cell.Y, 10, 10);
+                g.DrawImage(rotated, (cell.X * -1)- (float)(Globals.Core.Actions.LocationX * -1), (float)Globals.Core.Actions.LocationY - cell.Y, 10, 10);
                 //g.DrawString(cell.EnvironmentId.ToString(), new Font("Arial", 5), new SolidBrush(Color.Red), cell.X*-1, cell.Y);
                 //Util.WriteToChat(string.Format("Draw: {0} {1} {2} {3}", cell.CellId, cell.EnvironmentId, cell.X, cell.Y));
 
