@@ -109,9 +109,7 @@ namespace UtilityBelt.Tools {
             var list = new List<DungeonCell>();
 
             foreach (var key in Cells.Keys) {
-                //if (Cells[key].X % 10 == 0) {
-                    list.Add(Cells[key]);
-                //}
+                list.Add(Cells[key]);
             }
 
             return list;
@@ -150,11 +148,9 @@ namespace UtilityBelt.Tools {
 
             if (File.Exists(bitmapFile)) {
                 image = new Bitmap(bitmapFile);
-                Util.WriteToChat("found: " + bitmapFile);
             }
             else {
                 image = new Bitmap(16, 16);
-                Util.WriteToChat("not found: " + bitmapFile);
             }
 
             cache.Add(environmentId, image);
@@ -170,7 +166,9 @@ namespace UtilityBelt.Tools {
         private bool disposed = false;
         private Hud hud = null;
         private Rectangle hudRect;
-        private Bitmap drawBitmap = new Bitmap(100,100);
+        private Bitmap drawBitmap;
+        private int counter = 0;
+        private float scale = 3;
 
         public DungeonMaps() {
             Draw();
@@ -178,16 +176,6 @@ namespace UtilityBelt.Tools {
 
         public void Draw() {
             try {
-                /*
-                if (Globals.View.view.Visible != true) {
-                    if (hud != null) {
-                        hud.Clear();
-                        hud.Enabled = false;
-                    }
-                    return;
-                }
-                */
-
                 if (hudRect == null) {
                     hudRect = new Rectangle(Globals.View.view.Location, Globals.View.view.TotalSize);
                 }
@@ -228,20 +216,8 @@ namespace UtilityBelt.Tools {
             drawBitmap.MakeTransparent();
 
             Graphics g = Graphics.FromImage(drawBitmap);
-            int scale = 3;
-            // center
-            //g.TranslateTransform(200,200);
+            //g.InterpolationMode = InterpolationMode.NearestNeighbor;
             g.TranslateTransform((float)drawBitmap.Width / 2, (float)drawBitmap.Height / 2);
-            //g.RotateTransform(360 - (float)Globals.Core.Actions.Heading);
-            //g.TranslateTransform(-(float)drawBitmap.Width / 2, -(float)drawBitmap.Height / 2);
-
-
-            var currentCell = currentBlock.GetCurrentCell();
-            if (currentCell != null) {
-                g.DrawString("EnvironmentId: " + currentCell.EnvironmentId, new Font("Arial", 12), new SolidBrush(Color.White), -(drawBitmap.Width / 2), (drawBitmap.Height/2)-30);
-                g.DrawString("Rotation: " + currentCell.R, new Font("Arial", 12), new SolidBrush(Color.White), -(drawBitmap.Width / 2), (drawBitmap.Height/2)-15);
-            }
-
             g.RotateTransform(360 - (((float)Globals.Core.Actions.Heading + 180) % 360));
             g.ScaleTransform(scale, scale);
 
@@ -252,7 +228,6 @@ namespace UtilityBelt.Tools {
                 var rotated = new Bitmap(TileCache.Get(cell.EnvironmentId));
 
                 rotated.MakeTransparent(Color.White);
-
 
                 if (cell.R == 1) {
                     rotated.RotateFlip(RotateFlipType.Rotate180FlipNone);
@@ -269,18 +244,21 @@ namespace UtilityBelt.Tools {
 
                 // floors above your char
                 if (Globals.Core.Actions.LocationZ - cell.Z < -3) {
+                    float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) / 6) * 0.4F;
                     ColorMatrix matrix = new ColorMatrix();
                     // opacity
-                    matrix.Matrix33 = 0.3F;
+                    matrix.Matrix33 = b;
                     ImageAttributes attributes = new ImageAttributes();
                     attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-                    g.DrawImage(rotated, new Rectangle((int)Math.Round(cell.X), (int)Math.Round(cell.Y), rotated.Width, rotated.Height), 0, 0, rotated.Width, rotated.Height, GraphicsUnit.Pixel, attributes);
+                    g.DrawImage(rotated, new Rectangle((int)Math.Round(cell.X), (int)Math.Round(cell.Y), rotated.Width, rotated.Height), 0, 0, rotated.Width-1, rotated.Height-1, GraphicsUnit.Pixel, attributes);
                 }
                 else if (Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) < 3) {
-                    g.DrawImage(rotated, cell.X, cell.Y, 10, 10);
+                    ImageAttributes attributes = new ImageAttributes();
+                    g.DrawImage(rotated, new Rectangle((int)Math.Round(cell.X), (int)Math.Round(cell.Y), rotated.Width, rotated.Height), 0, 0, rotated.Width - 1, rotated.Height - 1, GraphicsUnit.Pixel, attributes);
+
                 }
                 else {
-                    float b = 0.5F;
+                    float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) / 6) * 0.4F;
                     ColorMatrix matrix = new ColorMatrix(new float[][]{
                             new float[] {b, 0, 0, 0, 0},
                             new float[] {0, b, 0, 0, 0},
@@ -290,43 +268,21 @@ namespace UtilityBelt.Tools {
                         });
                     ImageAttributes attributes = new ImageAttributes();
                     attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-                    g.DrawImage(rotated, new Rectangle((int)Math.Round(cell.X), (int)Math.Round(cell.Y), rotated.Width, rotated.Height), 0, 0, rotated.Width, rotated.Height, GraphicsUnit.Pixel, attributes);
+                    g.DrawImage(rotated, new Rectangle((int)Math.Round(cell.X), (int)Math.Round(cell.Y), rotated.Width, rotated.Height), 0, 0, rotated.Width-1, rotated.Height-1, GraphicsUnit.Pixel, attributes);
                 }
-                //g.DrawString(Math.Round(cell.Z).ToString(), new Font("Arial", 4), new SolidBrush(Color.Red), cell.X, cell.Y);
-                //Util.WriteToChat(string.Format("Draw: {0} {1} {2} {3}", cell.CellId, cell.EnvironmentId, cell.X, cell.Y));
-
-                //g.DrawImage()
 
                 rotated.Dispose();
             }
-            //g.TranslateTransform((float)drawBitmap.Width / 2, (float)drawBitmap.Height / 2);
 
             int playerSize = 2;
             int pY = (int)Math.Round(Globals.Core.Actions.LocationY + (playerSize*2));
             int pX = -(int)Math.Round(Globals.Core.Actions.LocationX - (playerSize*2));
             g.FillRectangle(new SolidBrush(Color.Red), new Rectangle(pX, pY, playerSize, playerSize));
 
-
             g.Save();
-            /*
-            var renderBitmap = new Bitmap(drawBitmap.Width, drawBitmap.Height);
-            var graph = Graphics.FromImage(renderBitmap);
-
-            // uncomment for higher quality output
-            graph.InterpolationMode = InterpolationMode.High;
-            graph.CompositingQuality = CompositingQuality.HighQuality;
-            graph.SmoothingMode = SmoothingMode.AntiAlias;
-            
-            scale = 2;
-            var scaleWidth = (int)(drawBitmap.Width * scale);
-            var scaleHeight = (int)(drawBitmap.Height * scale);
-
-            graph.FillRectangle(new SolidBrush(Color.Transparent), new RectangleF(0, 0, drawBitmap.Width, drawBitmap.Height));
-            graph.DrawImage(drawBitmap, ((int)drawBitmap.Width - scaleWidth) / 2, ((int)drawBitmap.Height - scaleHeight) / 2, scaleWidth, scaleHeight);
-            //*/
             hud.DrawImage(drawBitmap, new Rectangle(0, 0, Globals.View.view.TotalSize.Width, Globals.View.view.TotalSize.Height));
         }
-        private int counter = 0;
+
         public void Think() {
             var watch = System.Diagnostics.Stopwatch.StartNew();
             Draw();
