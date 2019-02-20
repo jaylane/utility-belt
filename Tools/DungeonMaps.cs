@@ -241,9 +241,9 @@ namespace UtilityBelt.Tools {
 
     class DungeonMaps : IDisposable {
         private const int THINK_INTERVAL = 100;
-        private const int DRAW_INTERVAL = 30;
+        private const int DRAW_INTERVAL = 50;
         private SolidBrush PLAYER_BRUSH = new SolidBrush(Color.Red);
-        private const int PLAYER_SIZE = 2;
+        private const int PLAYER_SIZE = 5;
         private Rectangle PLAYER_RECT = new Rectangle(-(PLAYER_SIZE / 2), -(PLAYER_SIZE / 2), PLAYER_SIZE, PLAYER_SIZE);
         private DateTime lastDrawTime = DateTime.MinValue;
         private bool disposed = false;
@@ -301,11 +301,12 @@ namespace UtilityBelt.Tools {
             float xOffset = (float)Globals.Core.Actions.LocationX;
             float yOffset = -(float)Globals.Core.Actions.LocationY;
 
-            drawGfx.SmoothingMode = SmoothingMode.AntiAlias;
+            drawGfx.SmoothingMode = SmoothingMode.HighSpeed;
             drawGfx.Clear(Color.Transparent);
 
             drawGfx.TranslateTransform((float)Globals.View.view.TotalSize.Width / 2, (float)Globals.View.view.TotalSize.Height / 2);
             drawGfx.RotateTransform(360 - (((float)Globals.Core.Actions.Heading + 180) % 360));
+            drawGfx.ScaleTransform(scale, scale);
             drawGfx.TranslateTransform(xOffset, yOffset);
             foreach (var zLayer in currentBlock.bitmapLayers.Keys) {
                 ImageAttributes attributes = new ImageAttributes();
@@ -345,6 +346,7 @@ namespace UtilityBelt.Tools {
                 attributes.Dispose();
             }
             drawGfx.TranslateTransform(-xOffset, -yOffset);
+            drawGfx.ScaleTransform(1/scale, 1/scale);
             drawGfx.RotateTransform(-(360 - (((float)Globals.Core.Actions.Heading + 180) % 360)));
             drawGfx.FillRectangle(PLAYER_BRUSH, PLAYER_RECT);
             drawGfx.TranslateTransform(-(float)Globals.View.view.TotalSize.Width / 2, -(float)Globals.View.view.TotalSize.Height / 2);
@@ -357,14 +359,14 @@ namespace UtilityBelt.Tools {
             if (DateTime.UtcNow - lastDrawTime > TimeSpan.FromMilliseconds(DRAW_INTERVAL)) {
                 lastDrawTime = DateTime.UtcNow;
 
-                var watch = System.Diagnostics.Stopwatch.StartNew();
+                //var watch = System.Diagnostics.Stopwatch.StartNew();
                 Draw();
-                watch.Stop();
-                if (counter % 50 == 0) {
-                    counter = 0;
-                    Util.WriteToChat(string.Format("DungeonMaps: took {0}ms to draw", watch.ElapsedMilliseconds));
-                }
-                ++counter;
+                //watch.Stop();
+                //if (counter % 50 == 0) {
+                //    counter = 0;
+                    //Util.WriteToChat(string.Format("DungeonMaps: took {0}ms to draw", watch.ElapsedMilliseconds));
+                //}
+                //++counter;
             }
         }
 
