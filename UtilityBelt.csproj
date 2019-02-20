@@ -51,6 +51,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Test|AnyCPU'">
     <OutputPath>bin\Test\</OutputPath>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Test|x86'">
     <OutputPath>bin\x86\Test\</OutputPath>
@@ -79,8 +81,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config.cs" />
-    <Compile Include="Constants\CharacterOptions2.cs" />
-    <Compile Include="Constants\CharacterOptions.cs" />
+    <Compile Include="Constants\CharOptions2.cs" />
+    <Compile Include="Constants\CharOptions.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="MagTools\Shared\Settings\Setting.cs" />
     <Compile Include="MagTools\Shared\Settings\SettingsFile.cs" />
