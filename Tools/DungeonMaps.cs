@@ -55,6 +55,17 @@ namespace UtilityBelt.Tools {
                             R = 0.77F;
                         }
                         break;
+
+                    // right inside town meeting halls
+                    case 2:
+                        EnvironmentId = 443;
+                        break;
+
+                    // right inside town meeting halls
+                    case 331:
+                        EnvironmentId = 411;
+                        R = 1;
+                        break;
                 }
             }
             catch (Exception ex) { Util.LogException(ex); }
@@ -217,6 +228,16 @@ namespace UtilityBelt.Tools {
 
             Graphics g = Graphics.FromImage(drawBitmap);
             //g.InterpolationMode = InterpolationMode.NearestNeighbor;
+
+            var cCell = currentBlock.GetCurrentCell();
+            if (cCell != null) {
+                g.DrawString(string.Format("CellID: {0}, EnvID: {1}, Rot: {2}",
+                    cCell.CellId.ToString("X"),
+                    cCell.EnvironmentId,
+                    cCell.R
+                ), new Font("Arial", 10), new SolidBrush(Color.White), 0, 0);
+            }
+
             g.TranslateTransform((float)drawBitmap.Width / 2, (float)drawBitmap.Height / 2);
             g.RotateTransform(360 - (((float)Globals.Core.Actions.Heading + 180) % 360));
             g.ScaleTransform(scale, scale);
