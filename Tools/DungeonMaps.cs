@@ -298,7 +298,6 @@ namespace UtilityBelt.Tools {
         }
 
         private void DrawDungeon(LandBlock currentBlock) {
-            ImageAttributes attributes = new ImageAttributes();
             float xOffset = (float)Globals.Core.Actions.LocationX;
             float yOffset = -(float)Globals.Core.Actions.LocationY;
 
@@ -309,11 +308,41 @@ namespace UtilityBelt.Tools {
             drawGfx.RotateTransform(360 - (((float)Globals.Core.Actions.Heading + 180) % 360));
             drawGfx.TranslateTransform(xOffset, yOffset);
             foreach (var zLayer in currentBlock.bitmapLayers.Keys) {
+                ImageAttributes attributes = new ImageAttributes();
                 var bmp = currentBlock.bitmapLayers[zLayer];
+
+                // floors above your char
+                if (Globals.Core.Actions.LocationZ - zLayer < -3) {
+                    // opacity
+                    float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - zLayer) / 6) * 0.4F;
+                    ColorMatrix matrix = new ColorMatrix();
+                    matrix.Matrix33 = b;
+                    attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                }
+                // floor we are on
+                else if (Math.Abs(Globals.Core.Actions.LocationZ - zLayer) < 3) {
+                    
+                }
+                // floors below your char
+                else {
+                    // darken
+                    float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - zLayer) / 6) * 0.4F;
+                    ColorMatrix matrix = new ColorMatrix(new float[][]{
+                            new float[] {b, 0, 0, 0, 0},
+                            new float[] {0, b, 0, 0, 0},
+                            new float[] {0, 0, b, 0, 0},
+                            new float[] {0, 0, 0, 1, 0},
+                            new float[] {0, 0, 0, 0, 1},
+                        });
+                    attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                }
+
                 drawGfx.DrawImage(bmp,
                     new Rectangle(-bmp.Width + 5, -bmp.Height + 5, bmp.Width, bmp.Height),
                     0, 0, bmp.Width, bmp.Height,
                     GraphicsUnit.Pixel, attributes);
+
+                attributes.Dispose();
             }
             drawGfx.TranslateTransform(-xOffset, -yOffset);
             drawGfx.RotateTransform(-(360 - (((float)Globals.Core.Actions.Heading + 180) % 360)));
