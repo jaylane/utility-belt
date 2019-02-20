@@ -92,6 +92,7 @@
     <Compile Include="Tools\AutoSalvage.cs" />
     <Compile Include="Tools\AutoVendor.cs" />
     <Compile Include="Tools\EmuConfig.cs" />
+    <Compile Include="Tools\QuestTracker.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="Views\MainView.cs" />
     <Compile Include="VirindiViews\ViewSystemSelector.cs" />

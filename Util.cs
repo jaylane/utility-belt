@@ -186,7 +186,7 @@ namespace UtilityBelt
             int total = 0;
 
             foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
-                if (wo.Name == "Pyreal") {
+                if (wo.Values(LongValueKey.Type, 0) == 273/* pyreals */) {
                     total += wo.Values(LongValueKey.StackCount, 1);
                 }
             }

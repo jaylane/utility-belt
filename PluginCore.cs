@@ -16,7 +16,11 @@ namespace UtilityBelt
 	public class PluginCore : PluginBase {
         private AutoVendor autoVendor;
         private AutoSalvage autoSalvage;
+<<<<<<< HEAD
         private EmuConfig emuConfig;
+=======
+        private QuestTracker questTracker;
+>>>>>>> master
         private DateTime lastThought = DateTime.MinValue;
 
         /// <summary>
@@ -54,7 +58,11 @@ namespace UtilityBelt
 
                 autoVendor = new AutoVendor();
                 autoSalvage = new AutoSalvage();
+<<<<<<< HEAD
                 emuConfig = new EmuConfig();
+=======
+                questTracker = new QuestTracker();
+>>>>>>> master
 
                 Globals.Core.RenderFrame += Core_RenderFrame;
             }
