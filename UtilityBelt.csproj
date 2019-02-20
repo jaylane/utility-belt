@@ -49,14 +49,22 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Test|AnyCPU'">
+    <OutputPath>bin\Test\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Test|x86'">
+    <OutputPath>bin\x86\Test\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Decal.Adapter">
-      <HintPath>C:\Program Files (x86)\Decal 3.0\Decal.Adapter.dll</HintPath>
+      <HintPath>..\..\..\Decal\Decal.Adapter.dll</HintPath>
     </Reference>
     <Reference Include="Decal.Interop.Filters, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="utank2-i">
@@ -71,6 +79,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config.cs" />
+    <Compile Include="Constants\CharacterOptions2.cs" />
+    <Compile Include="Constants\CharacterOptions.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="MagTools\Shared\Settings\Setting.cs" />
     <Compile Include="MagTools\Shared\Settings\SettingsFile.cs" />

@@ -27,9 +27,12 @@
 				  </control>
 
 			  </page>
-        <page label="EmuConfig">
+        <page label="EmuConfig"> 
           <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.PushButton" name="EmuConfigUseDeception" left="8" top="8" width="128" height="24" text="Toggle UseDeception"/>
+            <control progid="DecalControls.List" name="EmuConfigList" left="0" top="0" width="490" height="380">
+              <column progid="DecalControls.TextColumn" name="ConfigValue" fixedwidth="350" />
+              <column progid="DecalControls.CheckColumn" name="Enabled"/>
+            </control>
           </control>
 
         </page>
