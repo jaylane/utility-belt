@@ -417,8 +417,6 @@ namespace UtilityBelt.Tools {
             try {
                 switch (e.EventType) {
                     case VirindiViewService.Controls.ControlMouseEventArgs.MouseEventType.MouseWheel:
-                        Util.WriteToChat(e.WheelAmount.ToString());
-
                         if ((e.WheelAmount < 0 && rawScale < MAX_SCALE) || (e.WheelAmount > 0 && rawScale > MIN_SCALE)) {
                             var s = e.WheelAmount < 0 ? ++rawScale : --rawScale;
 
