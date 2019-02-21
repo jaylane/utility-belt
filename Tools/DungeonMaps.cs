@@ -1,6 +1,7 @@
 ﻿using Decal.Adapter;
 using Decal.Adapter.Wrappers;
 using Decal.Filters;
+using Mag.Shared.Settings;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -12,6 +13,7 @@ using System.Reflection;
 using UtilityBelt;
 using UtilityBelt.Tools;
 using UtilityBelt.Views;
+using VirindiViewService.Controls;
 
 namespace UtilityBelt.Tools {
     public class DungeonCell {
@@ -67,6 +69,11 @@ namespace UtilityBelt.Tools {
                         EnvironmentId = 411;
                         rot = 1;
                         break;
+
+                    // diagonal hallway
+                    //case 402:
+                    //    EnvironmentId = 238;
+                    //    break;
                 }
 
                 if (rot == 1) {
@@ -94,6 +101,7 @@ namespace UtilityBelt.Tools {
         private List<int> checkedCells = new List<int>();
         private List<string> filledCoords = new List<string>();
         private Dictionary<int, List<DungeonCell>> zLayers = new Dictionary<int, List<DungeonCell>>();
+        private Dictionary<int, DungeonCell> allCells = new Dictionary<int, DungeonCell>();
         private bool? isDungeon;
         private float minX = 0;
         private float maxX = 0;
@@ -108,17 +116,15 @@ namespace UtilityBelt.Tools {
 
             LandBlockId = landCell >> 16 << 16;
 
-            LoadAll();
+            LoadCells();
 
             dungeonWidth = (int)(Math.Abs(maxX) + Math.Abs(minX) + CELL_SIZE);
             dungeonHeight = (int)(Math.Abs(maxY) + Math.Abs(minY) + CELL_SIZE);
 
-            Util.WriteToChat("w:" + dungeonWidth + " h:" + dungeonHeight);
-
             DrawZLayers();
         }
 
-        internal void LoadAll() {
+        internal void LoadCells() {
             FileService service = Globals.Core.Filter<FileService>();
             int int32 = BitConverter.ToInt32(service.GetCellFile(65534 + LandBlockId), 4);
             for (uint index = 0; (long)index < (long)int32; ++index) {
@@ -135,6 +141,8 @@ namespace UtilityBelt.Tools {
                     if (cell.X > maxX) maxX = cell.X;
                     if (cell.Y < minY) minY = cell.Y;
                     if (cell.Y > maxY) maxY = cell.Y;
+
+                    allCells.Add(num, cell);
 
                     zLayers[roundedZ].Add(cell);
                 }
@@ -196,6 +204,19 @@ namespace UtilityBelt.Tools {
             
             return isDungeon.Value;
         }
+
+        public List<DungeonCell> GetCurrentCells() {
+            var cells = new List<DungeonCell>();
+            foreach (var zKey in zLayers.Keys) {
+                foreach (var cell in zLayers[zKey]) {
+                    if (-Math.Round(cell.X / 10) == Math.Round(Globals.Core.Actions.LocationX / 10) && Math.Round(cell.Y / 10) == Math.Round(Globals.Core.Actions.LocationY / 10)) {
+                        cells.Add(cell);
+                    }
+                }
+            }
+
+            return cells;
+        }
     }
 
     public static class LandBlockCache {
@@ -214,6 +235,10 @@ namespace UtilityBelt.Tools {
 
             return Get(cellId);
         }
+
+        public static void Clear() {
+            cache.Clear();
+        }
     }
 
     public static class TileCache {
@@ -227,7 +252,9 @@ namespace UtilityBelt.Tools {
             string bitmapFile = Path.Combine(assemblyFolder, @"tiles\" + environmentId + @".bmp");
 
             if (File.Exists(bitmapFile)) {
-                image = new Bitmap(bitmapFile);
+                using (Bitmap bmp = new Bitmap(bitmapFile)) {
+                    image = new Bitmap(bmp);
+                }
             }
             else {
                 image = new Bitmap(10, 10);
@@ -237,12 +264,22 @@ namespace UtilityBelt.Tools {
 
             return Get(environmentId);
         }
+
+        public static void Clear() {
+            foreach (var key in cache.Keys) {
+                cache[key].Dispose();
+            }
+
+            cache.Clear();
+        }
     }
 
     class DungeonMaps : IDisposable {
         private const int THINK_INTERVAL = 100;
         private const int DRAW_INTERVAL = 50;
         private SolidBrush PLAYER_BRUSH = new SolidBrush(Color.Red);
+        private SolidBrush TEXT_BRUSH = new SolidBrush(Color.White);
+        private Font DEFAULT_FONT = new Font("Mono", 8);
         private const int PLAYER_SIZE = 5;
         private Rectangle PLAYER_RECT = new Rectangle(-(PLAYER_SIZE / 2), -(PLAYER_SIZE / 2), PLAYER_SIZE, PLAYER_SIZE);
         private DateTime lastDrawTime = DateTime.UtcNow;
@@ -257,9 +294,13 @@ namespace UtilityBelt.Tools {
         private  int MAX_SCALE = 16;
         private Graphics drawGfx;
 
+        HudCheckBox UIDungeonMapsEnabled { get; set; }
+        HudCheckBox UIDungeonMapsDebug { get; set; }
+        HudCheckBox UIDungeonMapsDrawWhenClosed { get; set; }
+        HudHSlider UIDungeonMapsOpacity { get; set; }
+        HudButton UIDungeonMapsClearTileCache { get; set; }
+
         public DungeonMaps() {
-            //Draw();
-            Util.WriteToChat(Globals.MapView.view.Width +"   " + Globals.MapView.view.Height);
             drawBitmap = new Bitmap(Globals.MapView.view.Width, Globals.MapView.view.Height);
             drawBitmap.MakeTransparent();
 
@@ -267,6 +308,109 @@ namespace UtilityBelt.Tools {
             scale = 8.4F - Map(rawScale, MIN_SCALE, MAX_SCALE, 0.4F, 8);
 
             Globals.MapView.view["DungeonMapsRenderContainer"].MouseEvent += DungeonMaps_MouseEvent;
+
+            UIDungeonMapsClearTileCache = (HudButton)Globals.MainView.view["DungeonMapsClearTileCache"];
+            UIDungeonMapsClearTileCache.Hit += UIDungeonMapsClearTileCache_Hit;
+
+            UIDungeonMapsEnabled = (HudCheckBox)Globals.MainView.view["DungeonMapsEnabled"];
+            UIDungeonMapsEnabled.Checked = Globals.Config.DungeonMaps.Enabled.Value;
+            UIDungeonMapsEnabled.Change += UIDungeonMapsEnabled_Change;
+            Globals.Config.DungeonMaps.Enabled.Changed += Config_DungeonMaps_Enabled_Changed;
+
+            UIDungeonMapsDebug = (HudCheckBox)Globals.MainView.view["DungeonMapsDebug"];
+            UIDungeonMapsDebug.Checked = Globals.Config.DungeonMaps.Enabled.Value;
+            UIDungeonMapsDebug.Change += UIDungeonMapsDebug_Change;
+            Globals.Config.DungeonMaps.Debug.Changed += Config_DungeonMaps_Debug_Changed;
+
+            UIDungeonMapsDrawWhenClosed = (HudCheckBox)Globals.MainView.view["DungeonMapsDrawWhenClosed"];
+            UIDungeonMapsDrawWhenClosed.Checked = Globals.Config.DungeonMaps.DrawWhenClosed.Value;
+            UIDungeonMapsDrawWhenClosed.Change += UIDungeonMapsDrawWhenClosed_Change;
+            Globals.Config.DungeonMaps.DrawWhenClosed.Changed += Config_DungeonMaps_DrawWhenClosed_Changed;
+
+            UIDungeonMapsOpacity = (HudHSlider)Globals.MainView.view["DungeonMapsOpacity"];
+            UIDungeonMapsOpacity.Position = Globals.Config.DungeonMaps.Opacity.Value;
+            UIDungeonMapsOpacity.Changed += UIDungeonMapsOpacity_Changed;
+            Globals.Config.DungeonMaps.Opacity.Changed += Config_DungeonMaps_Opacity_Changed;
+        }
+
+        private void Toggle() {
+            try {
+                var enabled = Globals.Config.DungeonMaps.Enabled.Value;
+                Globals.MapView.view.ShowInBar = enabled;
+
+                if (!enabled) {
+                    if (Globals.MapView.view.Visible) {
+                        Globals.MapView.view.Visible = false;
+                    }
+                    if (hud.Enabled) {
+                        hud.Clear();
+                        hud.Enabled = false;
+                    }
+                }
+            }
+            catch (Exception ex) { Util.LogException(ex); }
+        }
+
+        private void Config_DungeonMaps_Enabled_Changed(Setting<bool> obj) {
+            try {
+                UIDungeonMapsEnabled.Checked = Globals.Config.DungeonMaps.Enabled.Value;
+                Toggle();
+            }
+            catch (Exception ex) { Util.LogException(ex); }
+        }
+
+        private void UIDungeonMapsEnabled_Change(object sender, EventArgs e) {
+            try {
+                Globals.Config.DungeonMaps.Enabled.Value = UIDungeonMapsEnabled.Checked;
+                Toggle();
+            }
+            catch (Exception ex) { Util.LogException(ex); }
+        }
+
+        private void Config_DungeonMaps_Debug_Changed(Setting<bool> obj) {
+            try {
+                UIDungeonMapsDebug.Checked = Globals.Config.DungeonMaps.Debug.Value;
+            }
+            catch (Exception ex) { Util.LogException(ex); }
+        }
+
+        private void UIDungeonMapsDebug_Change(object sender, EventArgs e) {
+            try {
+                Globals.Config.DungeonMaps.Debug.Value = UIDungeonMapsDebug.Checked;
+            }
+            catch (Exception ex) { Util.LogException(ex); }
+        }
+
+        private void Config_DungeonMaps_DrawWhenClosed_Changed(Setting<bool> obj) {
+            try {
+                UIDungeonMapsDrawWhenClosed.Checked = Globals.Config.DungeonMaps.DrawWhenClosed.Value;
+            }
+            catch (Exception ex) { Util.LogException(ex); }
+        }
+
+        private void UIDungeonMapsDrawWhenClosed_Change(object sender, EventArgs e) {
+            try {
+                Globals.Config.DungeonMaps.DrawWhenClosed.Value = UIDungeonMapsDrawWhenClosed.Checked;
+            }
+            catch (Exception ex) { Util.LogException(ex); }
+        }
+
+        private void UIDungeonMapsOpacity_Changed(int min, int max, int pos) {
+            if (pos != Globals.Config.DungeonMaps.Opacity.Value) {
+                Globals.Config.DungeonMaps.Opacity.Value = pos;
+            }
+        }
+
+        private void Config_DungeonMaps_Opacity_Changed(Setting<int> obj) {
+            //UIDungeonMapsOpacity.Position = (Globals.Config.DungeonMaps.Opacity.Value / 100) - 300;
+        }
+
+        private void UIDungeonMapsClearTileCache_Hit(object sender, EventArgs e) {
+            try {
+                LandBlockCache.Clear();
+                TileCache.Clear();
+            }
+            catch (Exception ex) { Util.LogException(ex); }
         }
 
         private void DungeonMaps_MouseEvent(object sender, VirindiViewService.Controls.ControlMouseEventArgs e) {
@@ -279,8 +423,6 @@ namespace UtilityBelt.Tools {
                             var s = e.WheelAmount < 0 ? ++rawScale : --rawScale;
 
                             scale = 8.4F - Map(s, MIN_SCALE, MAX_SCALE, 0.4F, 8);
-
-                            Util.WriteToChat(scale + " .. " + rawScale);
                         }
                         break;
                 }
@@ -294,6 +436,19 @@ namespace UtilityBelt.Tools {
 
         public void Draw() {
             try {
+                if (!Globals.Config.DungeonMaps.Enabled.Value) return;
+
+                if (Globals.Config.DungeonMaps.DrawWhenClosed.Value == false && Globals.MapView.view.Visible == false) {
+                    if (hud != null) hud.Clear();
+                    return;
+                }
+                LandBlock currentBlock = LandBlockCache.Get(Globals.Core.Actions.Landcell);
+
+                if (!currentBlock.IsDungeon()) {
+                    if (hud != null) hud.Clear();
+                    return;
+                }
+
                 if (hudRect == null) {
                     hudRect = new Rectangle(Globals.MapView.view.Location.X, Globals.MapView.view.Location.Y,
                         Globals.MapView.view.Width, Globals.MapView.view.Height);
@@ -334,14 +489,13 @@ namespace UtilityBelt.Tools {
                 hud.BeginRender();
 
                 try {
-                    LandBlock currentBlock = LandBlockCache.Get(Globals.Core.Actions.Landcell);
 
                     DrawDungeon(currentBlock);
                 }
                 catch (Exception ex) { Util.LogException(ex); }
                 finally {
                     hud.EndRender();
-                    hud.Alpha = 200;
+                    hud.Alpha = (int)Math.Round(((Globals.Config.DungeonMaps.Opacity.Value * 5) / 100F)*255);
                     hud.Enabled = true;
                 }
             }
@@ -373,7 +527,6 @@ namespace UtilityBelt.Tools {
                 }
                 // floor we are on
                 else if (Math.Abs(Globals.Core.Actions.LocationZ - zLayer) < 3) {
-                    
                 }
                 // floors below your char
                 else {
@@ -402,6 +555,21 @@ namespace UtilityBelt.Tools {
             drawGfx.FillRectangle(PLAYER_BRUSH, PLAYER_RECT);
             drawGfx.TranslateTransform(-(float)Globals.MapView.view.Width / 2, -(float)Globals.MapView.view.Height / 2);
 
+            if (Globals.Config.DungeonMaps.Debug.Value) {
+                var cells = currentBlock.GetCurrentCells();
+                var offset = 0;
+                foreach (var cell in cells) {
+                    drawGfx.DrawString(string.Format("landcell: {0}, env: {1}, r: {2}, c: {3},{4},{5}",
+                        Globals.Core.Actions.Landcell.ToString("X"),
+                        cell.EnvironmentId,
+                        cell.R,
+                        cell.X,
+                        cell.Y,
+                        cell.Z), DEFAULT_FONT, TEXT_BRUSH, 0, offset);
+                    offset += 15;
+                }
+            }
+
             drawGfx.Save();
             hud.DrawImage(drawBitmap, new Rectangle(0, 0, Globals.MapView.view.Width, Globals.MapView.view.Height));
         }
@@ -410,14 +578,16 @@ namespace UtilityBelt.Tools {
             if (DateTime.UtcNow - lastDrawTime > TimeSpan.FromMilliseconds(DRAW_INTERVAL)) {
                 lastDrawTime = DateTime.UtcNow;
 
-                //var watch = System.Diagnostics.Stopwatch.StartNew();
+                var watch = System.Diagnostics.Stopwatch.StartNew();
                 Draw();
-                //watch.Stop();
-                //if (counter % 50 == 0) {
-                //    counter = 0;
-                    //Util.WriteToChat(string.Format("DungeonMaps: took {0}ms to draw", watch.ElapsedMilliseconds));
-                //}
-                //++counter;
+                watch.Stop();
+                if (counter % 50 == 0) {
+                    counter = 0;
+                    if (Globals.Config.DungeonMaps.Debug.Value) {
+                        Util.WriteToChat(string.Format("DungeonMaps: took {0}ms to draw", watch.ElapsedMilliseconds));
+                    }
+                }
+                ++counter;
             }
         }
 
@@ -429,10 +599,13 @@ namespace UtilityBelt.Tools {
         protected virtual void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
-                    Globals.Core.RenderService.RemoveHud(hud);
-                    hud.Dispose();
-                    drawGfx.Dispose();
-                    drawBitmap.Dispose();
+                    Globals.MapView.view["DungeonMapsRenderContainer"].MouseEvent -= DungeonMaps_MouseEvent;
+                    if (hud != null) {
+                        Globals.Core.RenderService.RemoveHud(hud);
+                        hud.Dispose();
+                    }
+                    if (drawGfx != null) drawGfx.Dispose();
+                    if (drawBitmap != null) drawBitmap.Dispose();
                 }
                 disposed = true;
             }
