@@ -16,6 +16,7 @@ namespace UtilityBelt
 	public class PluginCore : PluginBase {
         private AutoVendor autoVendor;
         private AutoSalvage autoSalvage;
+        private EmuConfig emuConfig;
         private QuestTracker questTracker;
         private DateTime lastThought = DateTime.MinValue;
 
@@ -55,6 +56,7 @@ namespace UtilityBelt
 
                 autoVendor = new AutoVendor();
                 autoSalvage = new AutoSalvage();
+                emuConfig = new EmuConfig();
                 questTracker = new QuestTracker();
 
                 Globals.Core.RenderFrame += Core_RenderFrame;
@@ -79,6 +81,7 @@ namespace UtilityBelt
 
                 if (autoVendor != null) autoVendor.Dispose();
                 if (autoSalvage != null) autoSalvage.Dispose();
+                if (emuConfig != null) emuConfig.Dispose();
                 if (questTracker != null) questTracker.Dispose();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();
                 if (Globals.View != null) Globals.View.Dispose();

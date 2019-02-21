@@ -7,8 +7,8 @@
         <control progid="DecalControls.Checkbox" name="AutoSalvageDebug" left="8" top="32" width="184" height="16" text="Show Debug Messages"/>
         <control progid="DecalControls.PushButton" name="AutoSalvageStart" left="192" top="280" width="112" height="32" text="Start"/>
       </control>
-
-    </page>
+			</page>
+    
     <page label="AutoVendor">
       <control progid="DecalControls.FixedLayout" clipped="">
         <control progid="DecalControls.Checkbox" name="AutoVendorEnabled" left="8" top="8" width="184" height="16" text="Enable AutoVendor"/>
@@ -20,9 +20,18 @@
         <control progid="DecalControls.Checkbox" name="AutoVendorDebug" left="8" top="104" width="208" height="16" text="Show Debug Messages"/>
         <control progid="DecalControls.StaticText" name="AutoVendorSpeedText" left="456" top="24" width="40" height="16" text="0"/>
       </control>
-
-
     </page>
+
+        <page label="EmuConfig">
+          <control progid="DecalControls.FixedLayout" clipped="">
+            <control progid="DecalControls.List" name="EmuConfigList" left="0" top="0" width="490" height="380">
+              <column progid="DecalControls.TextColumn" name="ConfigValue" fixedwidth="350" />
+              <column progid="DecalControls.CheckColumn" name="Enabled"/>
+            </control>
+          </control>
+        </page>
+    
+    
     <page label="InventoryManager">
       <control progid="DecalControls.FixedLayout" clipped="">
         <control progid="DecalControls.Checkbox" name="InventoryManagerAutoCram" left="8" top="8" width="400" height="16" text="Automatically cram items into side packs"/>
@@ -30,8 +39,8 @@
         <control progid="DecalControls.Checkbox" name="InventoryManagerDebug" left="8" top="56" width="184" height="16" text="Show Debug Messages"/>
         <control progid="DecalControls.PushButton" name="InventoryManagerTest" left="100" top="280" width="100" height="32" text="AutoStack"/>
       </control>
-
     </page>
+    
     <page label="QuestTracker">
       <control progid="DecalControls.Notebook" name="nbMain">
         <page label="QuestTimers">

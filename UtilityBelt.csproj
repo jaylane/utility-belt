@@ -49,18 +49,27 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Test|AnyCPU'">
+    <OutputPath>bin\Test\</OutputPath>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Test|x86'">
+    <OutputPath>bin\x86\Test\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Decal.Adapter">
       <HintPath>..\..\..\Decal\Decal.Adapter.dll</HintPath>
     </Reference>
     <Reference Include="Decal.FileService">
-      <HintPath>C:\Program Files (x86)\Decal 3.0\Decal.FileService.dll</HintPath>
+      <HintPath>..\..\..\Decal\Decal.FileService.dll</HintPath>
     </Reference>
     <Reference Include="Decal.Interop.Filters, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="utank2-i">
@@ -75,6 +84,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config.cs" />
+    <Compile Include="Constants\CharOptions2.cs" />
+    <Compile Include="Constants\CharOptions.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="MagTools\Shared\Settings\Setting.cs" />
     <Compile Include="MagTools\Shared\Settings\SettingsFile.cs" />
@@ -83,6 +94,7 @@
     <Compile Include="Tools\Assessor.cs" />
     <Compile Include="Tools\AutoSalvage.cs" />
     <Compile Include="Tools\AutoVendor.cs" />
+    <Compile Include="Tools\EmuConfig.cs" />
     <Compile Include="Tools\InventoryManager.cs" />
     <Compile Include="Tools\QuestTracker.cs" />
     <Compile Include="Util.cs" />
@@ -107,6 +119,15 @@
   <ItemGroup>
     <COMReference Include="Decal">
       <Guid>{FF7F5F6D-34E0-4B6F-B3BB-8141DE2EF732}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="DecalFilters">
+      <Guid>{DA16DAA9-7F16-45D9-A59F-8C45A7F2ACB1}</Guid>
       <VersionMajor>2</VersionMajor>
       <VersionMinor>0</VersionMinor>
       <Lcid>0</Lcid>
