@@ -251,7 +251,10 @@ namespace UtilityBelt.Tools {
         private Rectangle hudRect;
         private Bitmap drawBitmap;
         private int counter = 0;
-        private float scale = 3;
+        private float scale = 1;
+        private int rawScale = 5;
+        private  int MIN_SCALE = 0;
+        private  int MAX_SCALE = 16;
         private Graphics drawGfx;
 
         public DungeonMaps() {
@@ -261,6 +264,32 @@ namespace UtilityBelt.Tools {
             drawBitmap.MakeTransparent();
 
             drawGfx = Graphics.FromImage(drawBitmap);
+            scale = 8.4F - Map(rawScale, MIN_SCALE, MAX_SCALE, 0.4F, 8);
+
+            Globals.MapView.view["DungeonMapsRenderContainer"].MouseEvent += DungeonMaps_MouseEvent;
+        }
+
+        private void DungeonMaps_MouseEvent(object sender, VirindiViewService.Controls.ControlMouseEventArgs e) {
+            try {
+                switch (e.EventType) {
+                    case VirindiViewService.Controls.ControlMouseEventArgs.MouseEventType.MouseWheel:
+                        Util.WriteToChat(e.WheelAmount.ToString());
+
+                        if ((e.WheelAmount < 0 && rawScale < MAX_SCALE) || (e.WheelAmount > 0 && rawScale > MIN_SCALE)) {
+                            var s = e.WheelAmount < 0 ? ++rawScale : --rawScale;
+
+                            scale = 8.4F - Map(s, MIN_SCALE, MAX_SCALE, 0.4F, 8);
+
+                            Util.WriteToChat(scale + " .. " + rawScale);
+                        }
+                        break;
+                }
+            }
+            catch (Exception ex) { Util.LogException(ex); }
+        }
+
+        public float Map(float value, float fromSource, float toSource, float fromTarget, float toTarget) {
+            return (value - fromSource) / (toSource - fromSource) * (toTarget - fromTarget) + fromTarget;
         }
 
         public void Draw() {
