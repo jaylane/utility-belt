@@ -87,6 +87,7 @@
     <Compile Include="Tools\DungeonMaps.cs" />
     <Compile Include="Tools\QuestTracker.cs" />
     <Compile Include="Util.cs" />
+    <Compile Include="Views\MapView.cs" />
     <Compile Include="Views\MainView.cs" />
     <Compile Include="VirindiViews\ViewSystemSelector.cs" />
     <Compile Include="VirindiViews\Wrapper.cs" />
@@ -127,6 +128,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="icons\dungeonmaps.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\MapView.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -256,7 +256,7 @@ namespace UtilityBelt.Tools {
 
         public DungeonMaps() {
             //Draw();
-            drawBitmap = new Bitmap(Globals.View.view.TotalSize.Width, Globals.View.view.TotalSize.Height);
+            drawBitmap = new Bitmap(Globals.MainView.view.TotalSize.Width, Globals.MainView.view.TotalSize.Height);
             drawBitmap.MakeTransparent();
 
             drawGfx = Graphics.FromImage(drawBitmap);
@@ -265,11 +265,11 @@ namespace UtilityBelt.Tools {
         public void Draw() {
             try {
                 if (hudRect == null) {
-                    hudRect = new Rectangle(Globals.View.view.Location, Globals.View.view.TotalSize);
+                    hudRect = new Rectangle(Globals.MainView.view.Location, Globals.MainView.view.TotalSize);
                 }
 
-                hudRect.Location = Globals.View.view.Location;
-                hudRect.Size = Globals.View.view.TotalSize;
+                hudRect.Location = Globals.MainView.view.Location;
+                hudRect.Size = Globals.MainView.view.TotalSize;
 
                 if (hud == null) {
                     hud = Globals.Core.RenderService.CreateHud(hudRect);
@@ -304,7 +304,7 @@ namespace UtilityBelt.Tools {
             drawGfx.SmoothingMode = SmoothingMode.HighSpeed;
             drawGfx.Clear(Color.Transparent);
 
-            drawGfx.TranslateTransform((float)Globals.View.view.TotalSize.Width / 2, (float)Globals.View.view.TotalSize.Height / 2);
+            drawGfx.TranslateTransform((float)Globals.MainView.view.TotalSize.Width / 2, (float)Globals.MainView.view.TotalSize.Height / 2);
             drawGfx.RotateTransform(360 - (((float)Globals.Core.Actions.Heading + 180) % 360));
             drawGfx.ScaleTransform(scale, scale);
             drawGfx.TranslateTransform(xOffset, yOffset);
@@ -349,10 +349,10 @@ namespace UtilityBelt.Tools {
             drawGfx.ScaleTransform(1/scale, 1/scale);
             drawGfx.RotateTransform(-(360 - (((float)Globals.Core.Actions.Heading + 180) % 360)));
             drawGfx.FillRectangle(PLAYER_BRUSH, PLAYER_RECT);
-            drawGfx.TranslateTransform(-(float)Globals.View.view.TotalSize.Width / 2, -(float)Globals.View.view.TotalSize.Height / 2);
+            drawGfx.TranslateTransform(-(float)Globals.MainView.view.TotalSize.Width / 2, -(float)Globals.MainView.view.TotalSize.Height / 2);
 
             drawGfx.Save();
-            hud.DrawImage(drawBitmap, new Rectangle(0, 0, Globals.View.view.TotalSize.Width, Globals.View.view.TotalSize.Height));
+            hud.DrawImage(drawBitmap, new Rectangle(0, 0, Globals.MainView.view.TotalSize.Width, Globals.MainView.view.TotalSize.Height));
         }
 
         public void Think() {

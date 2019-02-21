@@ -115,35 +115,35 @@ namespace UtilityBelt.Tools {
                 Directory.CreateDirectory(Util.GetPluginDirectory() + @"autovendor\");
                 Directory.CreateDirectory(Util.GetCharacterDirectory() + @"autovendor\");
 
-                UIAutoVendorSpeedText = Globals.View.view != null ? (HudStaticText)Globals.View.view["AutoVendorSpeedText"] : new HudStaticText();
+                UIAutoVendorSpeedText = Globals.MainView.view != null ? (HudStaticText)Globals.MainView.view["AutoVendorSpeedText"] : new HudStaticText();
                 UIAutoVendorSpeedText.Text = Globals.Config.AutoVendor.Speed.Value.ToString();
 
-                UIAutoVendorEnable = Globals.View.view != null ? (HudCheckBox)Globals.View.view["AutoVendorEnabled"] : new HudCheckBox();
+                UIAutoVendorEnable = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoVendorEnabled"] : new HudCheckBox();
                 UIAutoVendorEnable.Checked = Globals.Config.AutoVendor.Enabled.Value;
                 UIAutoVendorEnable.Change += UIAutoVendorEnable_Change;
                 Globals.Config.AutoVendor.Enabled.Changed += Config_AutoVendor_Enabled_Changed;
 
-                UIAutoVendorTestMode = Globals.View.view != null ? (HudCheckBox)Globals.View.view["AutoVendorTestMode"] : new HudCheckBox();
+                UIAutoVendorTestMode = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoVendorTestMode"] : new HudCheckBox();
                 UIAutoVendorTestMode.Checked = Globals.Config.AutoVendor.TestMode.Value;
                 UIAutoVendorTestMode.Change += UIAutoVendorTestMode_Change;
                 Globals.Config.AutoVendor.TestMode.Changed += Config_AutoVendor_TestMode_Changed;
 
-                UIAutoVendorDebug = Globals.View.view != null ? (HudCheckBox)Globals.View.view["AutoVendorDebug"] : new HudCheckBox();
+                UIAutoVendorDebug = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoVendorDebug"] : new HudCheckBox();
                 UIAutoVendorDebug.Checked = Globals.Config.AutoVendor.Debug.Value;
                 UIAutoVendorDebug.Change += UIAutoVendorDebug_Change;
                 Globals.Config.AutoVendor.Debug.Changed += Config_AutoVendor_Debug_Changed;
 
-                UIAutoVendorShowMerchantInfo = Globals.View.view != null ? (HudCheckBox)Globals.View.view["AutoVendorShowMerchantInfo"] : new HudCheckBox();
+                UIAutoVendorShowMerchantInfo = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoVendorShowMerchantInfo"] : new HudCheckBox();
                 UIAutoVendorShowMerchantInfo.Checked = Globals.Config.AutoVendor.ShowMerchantInfo.Value;
                 UIAutoVendorShowMerchantInfo.Change += UIAutoVendorShowMerchantInfo_Change;
                 Globals.Config.AutoVendor.ShowMerchantInfo.Changed += Config_AutoVendor_ShowMerchantInfo_Changed;
 
-                UIAutoVendorThink = Globals.View.view != null ? (HudCheckBox)Globals.View.view["AutoVendorThink"] : new HudCheckBox();
+                UIAutoVendorThink = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoVendorThink"] : new HudCheckBox();
                 UIAutoVendorThink.Checked = Globals.Config.AutoVendor.Think.Value;
                 UIAutoVendorThink.Change += UIAutoVendorThink_Change;
                 Globals.Config.AutoVendor.Think.Changed += Config_AutoVendor_Think_Changed;
 
-                UIAutoVendorSpeed = Globals.View.view != null ? (HudHSlider)Globals.View.view["AutoVendorSpeed"] : new HudHSlider();
+                UIAutoVendorSpeed = Globals.MainView.view != null ? (HudHSlider)Globals.MainView.view["AutoVendorSpeed"] : new HudHSlider();
                 UIAutoVendorSpeed.Position = (Globals.Config.AutoVendor.Speed.Value / 100) - 3;
                 UIAutoVendorSpeed.Changed += UIAutoVendorSpeed_Changed;
                 Globals.Config.AutoVendor.Speed.Changed += Config_AutoVendor_Speed_Changed;

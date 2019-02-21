@@ -22,8 +22,9 @@ namespace UtilityBelt
 
         public static CoreManager Core { get; private set; }
 
-        public static MainView View { get; set; }
-        public static Config Config { get; set; }
-        public static InventoryManager InventoryManager { get; set; }
+        public static MainView MainView { get; internal set; }
+        public static Config Config { get; internal set; }
+        public static InventoryManager InventoryManager { get; internal set; }
+        public static MapView MapView { get; internal set; }
     }
 }

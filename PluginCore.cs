@@ -51,7 +51,8 @@ namespace UtilityBelt
                 Util.CreateDataDirectories();
 
                 Globals.Config = new Config();
-                Globals.View = new MainView();
+                Globals.MainView = new MainView();
+                Globals.MapView = new MapView();
                 Globals.InventoryManager = new InventoryManager();
 
                 autoVendor = new AutoVendor();
@@ -85,7 +86,7 @@ namespace UtilityBelt
                 if (dungeonMaps != null) dungeonMaps.Dispose();
                 if (questTracker != null) questTracker.Dispose();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();
-                if (Globals.View != null) Globals.View.Dispose();
+                if (Globals.MainView != null) Globals.MainView.Dispose();
                 if (Globals.Config != null) Globals.Config.Dispose();
             }
 			catch (Exception ex) { Util.LogException(ex); }
