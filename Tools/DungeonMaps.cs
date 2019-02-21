@@ -245,7 +245,7 @@ namespace UtilityBelt.Tools {
         private SolidBrush PLAYER_BRUSH = new SolidBrush(Color.Red);
         private const int PLAYER_SIZE = 5;
         private Rectangle PLAYER_RECT = new Rectangle(-(PLAYER_SIZE / 2), -(PLAYER_SIZE / 2), PLAYER_SIZE, PLAYER_SIZE);
-        private DateTime lastDrawTime = DateTime.MinValue;
+        private DateTime lastDrawTime = DateTime.UtcNow + TimeSpan.FromSeconds(3);
         private bool disposed = false;
         private Hud hud = null;
         private Rectangle hudRect;
@@ -256,7 +256,8 @@ namespace UtilityBelt.Tools {
 
         public DungeonMaps() {
             //Draw();
-            drawBitmap = new Bitmap(Globals.MainView.view.TotalSize.Width, Globals.MainView.view.TotalSize.Height);
+            Util.WriteToChat(Globals.MapView.view.Width +"   " + Globals.MapView.view.Height);
+            drawBitmap = new Bitmap(Globals.MapView.view.Width, Globals.MapView.view.Height);
             drawBitmap.MakeTransparent();
 
             drawGfx = Graphics.FromImage(drawBitmap);
@@ -265,17 +266,35 @@ namespace UtilityBelt.Tools {
         public void Draw() {
             try {
                 if (hudRect == null) {
-                    hudRect = new Rectangle(Globals.MainView.view.Location, Globals.MainView.view.TotalSize);
+                    hudRect = new Rectangle(Globals.MapView.view.Location.X, Globals.MapView.view.Location.Y,
+                        Globals.MapView.view.Width, Globals.MapView.view.Height);
                 }
 
-                hudRect.Location = Globals.MainView.view.Location;
-                hudRect.Size = Globals.MainView.view.TotalSize;
+                hudRect.Location = Globals.MapView.view.Location;
+
+                hudRect.Height = Globals.MapView.view.Height;
+                hudRect.Width = Globals.MapView.view.Width;
+
+                if (hud != null && (hud.Region.Width != hudRect.Width || hud.Region.Height != hudRect.Height)) {
+                    hud.Enabled = false;
+                    hud.Clear();
+                    hud.Dispose();
+                    hud = null;
+                    /*
+                    drawBitmap.Dispose();
+                    drawBitmap = null;
+                    drawBitmap = new Bitmap(hudRect.Width, hudRect.Height);
+                    drawBitmap.MakeTransparent();
+
+                    drawGfx.Dispose();
+                    drawGfx = null;
+                    drawGfx = Graphics.FromImage(drawBitmap);
+                    */
+                }
 
                 if (hud == null) {
                     hud = Globals.Core.RenderService.CreateHud(hudRect);
                 }
-
-                hud.Region = hudRect;
 
                 hud.Clear();
 
@@ -304,7 +323,7 @@ namespace UtilityBelt.Tools {
             drawGfx.SmoothingMode = SmoothingMode.HighSpeed;
             drawGfx.Clear(Color.Transparent);
 
-            drawGfx.TranslateTransform((float)Globals.MainView.view.TotalSize.Width / 2, (float)Globals.MainView.view.TotalSize.Height / 2);
+            drawGfx.TranslateTransform((float)Globals.MapView.view.Width / 2, (float)Globals.MapView.view.Height / 2);
             drawGfx.RotateTransform(360 - (((float)Globals.Core.Actions.Heading + 180) % 360));
             drawGfx.ScaleTransform(scale, scale);
             drawGfx.TranslateTransform(xOffset, yOffset);
@@ -349,10 +368,10 @@ namespace UtilityBelt.Tools {
             drawGfx.ScaleTransform(1/scale, 1/scale);
             drawGfx.RotateTransform(-(360 - (((float)Globals.Core.Actions.Heading + 180) % 360)));
             drawGfx.FillRectangle(PLAYER_BRUSH, PLAYER_RECT);
-            drawGfx.TranslateTransform(-(float)Globals.MainView.view.TotalSize.Width / 2, -(float)Globals.MainView.view.TotalSize.Height / 2);
+            drawGfx.TranslateTransform(-(float)Globals.MapView.view.Width / 2, -(float)Globals.MapView.view.Height / 2);
 
             drawGfx.Save();
-            hud.DrawImage(drawBitmap, new Rectangle(0, 0, Globals.MainView.view.TotalSize.Width, Globals.MainView.view.TotalSize.Height));
+            hud.DrawImage(drawBitmap, new Rectangle(0, 0, Globals.MapView.view.Width, Globals.MapView.view.Height));
         }
 
         public void Think() {

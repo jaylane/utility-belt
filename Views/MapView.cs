@@ -24,9 +24,9 @@ namespace UtilityBelt.Views {
                 view = new VirindiViewService.HudView(properties, controls);
 
                 view.Width = 400;
-                view.Height = 400;
+                view.Height = 300;
 
-                //view.UserResizeable = true;
+                view.UserResizeable = true;
             }
             catch (Exception ex) { Util.LogException(ex); }
         }

@@ -86,6 +86,7 @@ namespace UtilityBelt
                 if (dungeonMaps != null) dungeonMaps.Dispose();
                 if (questTracker != null) questTracker.Dispose();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();
+                if (Globals.MapView != null) Globals.MapView.Dispose();
                 if (Globals.MainView != null) Globals.MainView.Dispose();
                 if (Globals.Config != null) Globals.Config.Dispose();
             }
