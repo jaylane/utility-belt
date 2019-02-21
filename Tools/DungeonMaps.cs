@@ -249,7 +249,7 @@ namespace UtilityBelt.Tools {
 
             Bitmap image;
             string assemblyFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string bitmapFile = Path.Combine(assemblyFolder, @"tiles\" + environmentId + @".bmp");
+            string bitmapFile = Path.Combine(assemblyFolder, @"Resources\tiles\" + environmentId + @".bmp");
 
             if (File.Exists(bitmapFile)) {
                 using (Bitmap bmp = new Bitmap(bitmapFile)) {
