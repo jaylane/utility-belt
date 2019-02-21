@@ -31,7 +31,7 @@ namespace UtilityBelt.Tools {
         
 
         public EmuConfig() {
-            UIEmuConfigList = Globals.View.view != null ? (HudList)Globals.View.view["EmuConfigList"] : new HudList();
+            UIEmuConfigList = (HudList)Globals.MainView.view["EmuConfigList"];
             UIEmuConfigList.Click += new HudList.delClickedControl(EmuConfigList_Click);
             //UIConfigCheckBox = Globals.View.view != null ? (HudCheckBox)Globals.View.view["ConfigCheckBox"] : new HudCheckBox();
             Globals.Core.ChatBoxMessage += new EventHandler<ChatTextInterceptEventArgs>(Current_ChatBoxMessage);

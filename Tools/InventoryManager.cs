@@ -34,20 +34,20 @@ namespace UtilityBelt.Tools {
             Globals.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
             Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
 
-            UIInventoryManagerTest = Globals.View.view != null ? (HudButton)Globals.View.view["InventoryManagerTest"] : new HudButton();
+            UIInventoryManagerTest = Globals.MainView.view != null ? (HudButton)Globals.MainView.view["InventoryManagerTest"] : new HudButton();
             UIInventoryManagerTest.Hit += UIInventoryManagerTest_Hit;
 
-            UIInventoryManagerDebug = Globals.View.view != null ? (HudCheckBox)Globals.View.view["InventoryManagerDebug"] : new HudCheckBox();
+            UIInventoryManagerDebug = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["InventoryManagerDebug"] : new HudCheckBox();
             UIInventoryManagerDebug.Checked = Globals.Config.InventoryManager.Debug.Value;
             UIInventoryManagerDebug.Change += UIInventoryManagerDebug_Change;
             Globals.Config.InventoryManager.Debug.Changed += Config_InventoryManager_Debug_Changed;
 
-            UIInventoryManagerAutoCram = Globals.View.view != null ? (HudCheckBox)Globals.View.view["InventoryManagerAutoCram"] : new HudCheckBox();
+            UIInventoryManagerAutoCram = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["InventoryManagerAutoCram"] : new HudCheckBox();
             UIInventoryManagerAutoCram.Checked = Globals.Config.InventoryManager.AutoCram.Value;
             UIInventoryManagerAutoCram.Change += UIInventoryManagerAutoCram_Change;
             Globals.Config.InventoryManager.AutoCram.Changed += Config_InventoryManager_AutoCram_Changed;
 
-            UIInventoryManagerAutoStack = Globals.View.view != null ? (HudCheckBox)Globals.View.view["InventoryManagerAutoStack"] : new HudCheckBox();
+            UIInventoryManagerAutoStack = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["InventoryManagerAutoStack"] : new HudCheckBox();
             UIInventoryManagerAutoStack.Checked = Globals.Config.InventoryManager.AutoStack.Value;
             UIInventoryManagerAutoStack.Change += UIInventoryManagerAutoStack_Change;
             Globals.Config.InventoryManager.AutoStack.Changed += Config_InventoryManager_AutoStack_Changed;

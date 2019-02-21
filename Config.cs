@@ -13,6 +13,7 @@ namespace UtilityBelt {
 
         public AutoSalvageConfig AutoSalvage;
         public AutoVendorConfig AutoVendor;
+        public DungeonMapsConfig DungeonMaps;
         public InventoryManagerConfig InventoryManager;
 
         public class InventoryManagerConfig : IDisposable {
@@ -120,9 +121,52 @@ namespace UtilityBelt {
             }
         }
 
+        public class DungeonMapsConfig : IDisposable {
+            public Setting<bool> Enabled;
+            public Setting<bool> DrawWhenClosed;
+            public Setting<bool> Debug;
+            public Setting<int> Opacity;
+            public Setting<int> MapWindowX;
+            public Setting<int> MapWindowY;
+
+            private bool disposed = false;
+
+            public DungeonMapsConfig() {
+                try {
+                    Enabled = new Setting<bool>("Config/DungeonMaps/Enabled", "Enable Dungeon Maps", false);
+                    DrawWhenClosed = new Setting<bool>("Config/DungeonMaps/DrawWhenClosed", "Draw maps even when the decal window is closed", true);
+                    Debug = new Setting<bool>("Config/DungeonMaps/Debug", "Show debug messages", false);
+                    Opacity = new Setting<int>("Config/DungeonMaps/Opacity", "Overall map opacity (0-20, 20 is opaque)", 15);
+                    MapWindowX = new Setting<int>("Config/DungeonMaps/MapWindowX", "Saved map window X position (left is 0)", 200);
+                    MapWindowY = new Setting<int>("Config/DungeonMaps/MapWindowY", "Saved map window Y position (top is 0)", 200);
+                }
+                catch (Exception e) { Util.LogException(e); }
+            }
+
+            public void Dispose() {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
+            protected virtual void Dispose(bool disposing) {
+                if (!disposed) {
+                    if (disposing) {
+                        if (Enabled != null) Enabled.Dispose();
+                        if (DrawWhenClosed != null) DrawWhenClosed.Dispose();
+                        if (Opacity != null) Opacity.Dispose();
+                        if (Debug != null) Debug.Dispose();
+                        if (MapWindowX != null) MapWindowX.Dispose();
+                        if (MapWindowY != null) MapWindowY.Dispose();
+                    }
+                    disposed = true;
+                }
+            }
+        }
+
         public Config() {
             AutoSalvage = new AutoSalvageConfig();
             AutoVendor = new AutoVendorConfig();
+            DungeonMaps = new DungeonMapsConfig();
             InventoryManager = new InventoryManagerConfig();
         }
 

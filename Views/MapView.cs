@@ -8,7 +8,7 @@ using VirindiViewService;
 using VirindiViewService.XMLParsers;
 
 namespace UtilityBelt.Views {
-    public class MainView : IDisposable {
+    public class MapView : IDisposable {
         public readonly VirindiViewService.HudView view;
 
         private ViewProperties properties;
@@ -16,13 +16,17 @@ namespace UtilityBelt.Views {
 
         private bool disposed;
 
-        public MainView() {
+        public MapView() {
             try {
-                new Decal3XMLParser().ParseFromResource("UtilityBelt.Views.MainView.xml", out properties, out controls);
-
-                properties.Icon = GetIcon();
+                new Decal3XMLParser().ParseFromResource("UtilityBelt.Views.MapView.xml", out properties, out controls);
+                //properties.Icon = GetIcon();
 
                 view = new VirindiViewService.HudView(properties, controls);
+
+                view.Width = 400;
+                view.Height = 300;
+
+                view.UserResizeable = true;
             }
             catch (Exception ex) { Util.LogException(ex); }
         }

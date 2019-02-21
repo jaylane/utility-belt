@@ -62,7 +62,7 @@
       <HintPath>..\..\..\Decal\Decal.Adapter.dll</HintPath>
     </Reference>
     <Reference Include="Decal.FileService">
-      <HintPath>..\..\..\Decal\Decal.FileService.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Decal 3.0\Decal.FileService.dll</HintPath>
     </Reference>
     <Reference Include="Decal.Interop.Filters, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65">
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -96,8 +96,10 @@
     <Compile Include="Tools\AutoVendor.cs" />
     <Compile Include="Tools\EmuConfig.cs" />
     <Compile Include="Tools\InventoryManager.cs" />
+    <Compile Include="Tools\DungeonMaps.cs" />
     <Compile Include="Tools\QuestTracker.cs" />
     <Compile Include="Util.cs" />
+    <Compile Include="Views\MapView.cs" />
     <Compile Include="Views\MainView.cs" />
     <Compile Include="VirindiViews\ViewSystemSelector.cs" />
     <Compile Include="VirindiViews\Wrapper.cs" />
@@ -144,6 +146,12 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="icons\dungeonmaps.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\MapView.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

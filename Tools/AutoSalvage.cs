@@ -24,15 +24,15 @@ namespace UtilityBelt.Tools {
         public AutoSalvage() {
             Globals.Core.CommandLineText += Current_CommandLineText;
 
-            UIAutoSalvageStart = Globals.View.view != null ? (HudButton)Globals.View.view["AutoSalvageStart"] : new HudButton();
+            UIAutoSalvageStart = Globals.MainView.view != null ? (HudButton)Globals.MainView.view["AutoSalvageStart"] : new HudButton();
             UIAutoSalvageStart.Hit += UIAutoSalvageStart_Hit;
 
-            UIAutoSalvageDebug = Globals.View.view != null ? (HudCheckBox)Globals.View.view["AutoSalvageDebug"] : new HudCheckBox();
+            UIAutoSalvageDebug = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoSalvageDebug"] : new HudCheckBox();
             UIAutoSalvageDebug.Checked = Globals.Config.AutoSalvage.Debug.Value;
             UIAutoSalvageDebug.Change += UIAutoSalvageDebug_Change;
             Globals.Config.AutoSalvage.Debug.Changed += Config_AutoSalvage_Debug_Changed;
 
-            UIAutoSalvageThink = Globals.View.view != null ? (HudCheckBox)Globals.View.view["AutoSalvageThink"] : new HudCheckBox();
+            UIAutoSalvageThink = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoSalvageThink"] : new HudCheckBox();
             UIAutoSalvageThink.Checked = Globals.Config.AutoSalvage.Think.Value;
             UIAutoSalvageThink.Change += UIAutoSalvageThink_Change;
             Globals.Config.AutoSalvage.Think.Changed += Config_AutoSalvage_Think_Changed;

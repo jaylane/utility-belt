@@ -16,6 +16,7 @@ namespace UtilityBelt
 	public class PluginCore : PluginBase {
         private AutoVendor autoVendor;
         private AutoSalvage autoSalvage;
+        private DungeonMaps dungeonMaps;
         private EmuConfig emuConfig;
         private QuestTracker questTracker;
         private DateTime lastThought = DateTime.MinValue;
@@ -51,11 +52,13 @@ namespace UtilityBelt
                 Util.CreateDataDirectories();
 
                 Globals.Config = new Config();
-                Globals.View = new MainView();
+                Globals.MainView = new MainView();
+                Globals.MapView = new MapView();
                 Globals.InventoryManager = new InventoryManager();
 
                 autoVendor = new AutoVendor();
                 autoSalvage = new AutoSalvage();
+                dungeonMaps = new DungeonMaps();
                 emuConfig = new EmuConfig();
                 questTracker = new QuestTracker();
 
@@ -68,6 +71,7 @@ namespace UtilityBelt
             try {
                 if (autoSalvage != null) autoSalvage.Think();
                 if (autoVendor != null) autoVendor.Think();
+                if (dungeonMaps != null) dungeonMaps.Think();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Think();
             }
             catch (Exception ex) { Util.LogException(ex); }
@@ -81,10 +85,12 @@ namespace UtilityBelt
 
                 if (autoVendor != null) autoVendor.Dispose();
                 if (autoSalvage != null) autoSalvage.Dispose();
+                if (dungeonMaps != null) dungeonMaps.Dispose();
                 if (emuConfig != null) emuConfig.Dispose();
                 if (questTracker != null) questTracker.Dispose();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();
-                if (Globals.View != null) Globals.View.Dispose();
+                if (Globals.MapView != null) Globals.MapView.Dispose();
+                if (Globals.MainView != null) Globals.MainView.Dispose();
                 if (Globals.Config != null) Globals.Config.Dispose();
             }
 			catch (Exception ex) { Util.LogException(ex); }

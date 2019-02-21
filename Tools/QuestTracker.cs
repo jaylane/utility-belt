@@ -29,19 +29,19 @@ namespace UtilityBelt.Tools {
             //CoreManager.Current.ChatBoxMessage += new EventHandler<ChatTextInterceptEventArgs>(Current_ChatBoxMessage);
             Globals.Core.ChatBoxMessage += new EventHandler<ChatTextInterceptEventArgs>(Current_ChatBoxMessage);
 
-            UIMyQuestList = Globals.View.view != null ? (HudList)Globals.View.view["myQuestList"] : new HudList();
-            UIMyKillTaskList = Globals.View.view != null ? (HudList)Globals.View.view["myKillTaskList"] : new HudList();
-            UIMyOneTimeList = Globals.View.view != null ? (HudList)Globals.View.view["myOneTimeList"] : new HudList();
+            UIMyQuestList = Globals.MainView.view != null ? (HudList)Globals.MainView.view["myQuestList"] : new HudList();
+            UIMyKillTaskList = Globals.MainView.view != null ? (HudList)Globals.MainView.view["myKillTaskList"] : new HudList();
+            UIMyOneTimeList = Globals.MainView.view != null ? (HudList)Globals.MainView.view["myOneTimeList"] : new HudList();
 
             //UIMyQuestList.Click += new HudList.delClickedControl(UIMyQuestList_Click);
 
-            UIPopulateQuestList = Globals.View.view != null ? (HudButton)Globals.View.view["PopulateQuestList"] : new HudButton();
+            UIPopulateQuestList = Globals.MainView.view != null ? (HudButton)Globals.MainView.view["PopulateQuestList"] : new HudButton();
             UIPopulateQuestList.Hit += PopulateQuestList_Click;
 
-            PopulateKillTaskList = Globals.View.view != null ? (HudButton)Globals.View.view["PopulateKillTaskList"] : new HudButton();
+            PopulateKillTaskList = Globals.MainView.view != null ? (HudButton)Globals.MainView.view["PopulateKillTaskList"] : new HudButton();
             PopulateKillTaskList.Hit += PopulateKillTaskList_Click;
 
-            PopulateOneTimeList = Globals.View.view != null ? (HudButton)Globals.View.view["PopulateOneTimeList"] : new HudButton();
+            PopulateOneTimeList = Globals.MainView.view != null ? (HudButton)Globals.MainView.view["PopulateOneTimeList"] : new HudButton();
             PopulateOneTimeList.Hit += PopulateOneTimeList_Click;
         }
         public string GetFriendlyTimeDifference(TimeSpan difference) {
