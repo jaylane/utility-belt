@@ -2,6 +2,7 @@
 
 using Decal.Adapter;
 using Decal.Adapter.Wrappers;
+using UtilityBelt.Tools;
 using UtilityBelt.Views;
 
 namespace UtilityBelt
@@ -23,5 +24,6 @@ namespace UtilityBelt
 
         public static MainView View { get; set; }
         public static Config Config { get; set; }
+        public static InventoryManager InventoryManager { get; set; }
     }
 }

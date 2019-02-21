@@ -52,6 +52,7 @@ namespace UtilityBelt
 
                 Globals.Config = new Config();
                 Globals.View = new MainView();
+                Globals.InventoryManager = new InventoryManager();
 
                 autoVendor = new AutoVendor();
                 autoSalvage = new AutoSalvage();
@@ -65,12 +66,9 @@ namespace UtilityBelt
 
         private void Core_RenderFrame(object sender, EventArgs e) {
             try {
-                //if (DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(1000/60)) {
-                    lastThought = DateTime.UtcNow;
-
-                    if (autoSalvage != null) autoSalvage.Think();
-                    if (autoVendor != null) autoVendor.Think();
-                //}
+                if (autoSalvage != null) autoSalvage.Think();
+                if (autoVendor != null) autoVendor.Think();
+                if (Globals.InventoryManager != null) Globals.InventoryManager.Think();
             }
             catch (Exception ex) { Util.LogException(ex); }
         }
@@ -84,6 +82,8 @@ namespace UtilityBelt
                 if (autoVendor != null) autoVendor.Dispose();
                 if (autoSalvage != null) autoSalvage.Dispose();
                 if (emuConfig != null) emuConfig.Dispose();
+                if (questTracker != null) questTracker.Dispose();
+                if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();
                 if (Globals.View != null) Globals.View.Dispose();
                 if (Globals.Config != null) Globals.Config.Dispose();
             }
