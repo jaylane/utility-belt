@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Decal.Adapter;
 using Decal.Adapter.Wrappers;
 using Mag.Shared.Settings;
 using UtilityBelt.Views;
@@ -153,6 +154,7 @@ namespace UtilityBelt.Tools {
                 }
 
                 Globals.Core.WorldFilter.ApproachVendor += WorldFilter_ApproachVendor;
+                Globals.Core.CommandLineText += Current_CommandLineText;
             }
             catch (Exception ex) { Util.LogException(ex); }
         }
@@ -211,6 +213,8 @@ namespace UtilityBelt.Tools {
 
         private void WorldFilter_ApproachVendor(object sender, ApproachVendorEventArgs e) {
             try {
+                VendorCache.AddVendor(e.Vendor);
+
                 if (Globals.Config.AutoVendor.Enabled.Value == false) {
                     return;
                 }
@@ -222,44 +226,26 @@ namespace UtilityBelt.Tools {
 
                 if (needsVendoring && vendorId == e.Vendor.MerchantId) return;
 
-                VendorCache.AddVendor(e.Vendor);
+                if (Globals.Config.AutoVendor.ShowMerchantInfo.Value == true) {
+                    Util.WriteToChat(string.Format("{0}: BuyRate: {1}% SellRate: {2}% MaxValue: {3:n0}", 
+                        Globals.Core.WorldFilter[e.Vendor.MerchantId].Name, e.Vendor.BuyRate * 100, e.Vendor.SellRate * 100, e.Vendor.MaxValue));
+                }
 
-                var merchant = Globals.Core.WorldFilter[e.MerchantId];
-                var profilePath = GetMerchantProfilePath(merchant);
+                Start(e.Vendor.MerchantId);
+            }
+            catch (Exception ex) { Util.LogException(ex); }
+        }
 
-                vendorId = merchant.Id;
-                vendorName = merchant.Name;
+        private void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
+            try {
+                if (e.Text.StartsWith("/ub autovendor ")) {
+                    string path = e.Text.Replace("/ub autovendor ", "").Trim();
+                    e.Eat = true;
 
-                if (!File.Exists(profilePath)) {
-                    Util.WriteToChat("No vendor profile exists: " + profilePath);
+                    Start(0, path);
+
                     return;
                 }
-
-                if (Globals.Config.AutoVendor.ShowMerchantInfo.Value == true) {
-                    Util.WriteToChat(merchant.Name);
-                    Util.WriteToChat(string.Format("BuyRate: {0}% SellRate: {1}% MaxValue: {2:n0}", e.Vendor.BuyRate*100, e.Vendor.SellRate*100, e.Vendor.MaxValue));
-                }
-
-                // Load our loot profile
-                ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
-
-                /*
-                if (Assessor.NeedsInventoryData()) {
-                    Assessor.RequestAll();
-                    waitingForIds = true;
-                    lastIdSpam = DateTime.UtcNow;
-                }
-                */
-
-                Globals.InventoryManager.Pause();
-                
-                needsVendoring = true;
-                needsToBuy = false;
-                needsToSell = false;
-                shouldStack = true;
-                startedVendoring = DateTime.UtcNow;
-
-                Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
             }
             catch (Exception ex) { Util.LogException(ex); }
         }
@@ -275,13 +261,12 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Util.LogException(ex); }
         }
         
-        private string GetMerchantProfilePath(WorldObject merchant) {
-            // TODO: support more than utl?
-            if (File.Exists(Util.GetCharacterDirectory() + @"autovendor\" + merchant.Name + ".utl")) {
-                return Util.GetCharacterDirectory() + @"autovendor\" + merchant.Name + ".utl";
+        private string GetProfilePath(string profileName) {
+            if (File.Exists(Util.GetCharacterDirectory() + @"autovendor\" + profileName)) {
+                return Util.GetCharacterDirectory() + @"autovendor\" + profileName;
             }
-            else if (File.Exists(Util.GetPluginDirectory() + @"autovendor\" + merchant.Name + ".utl")) {
-                return Util.GetPluginDirectory() + @"autovendor\" + merchant.Name + ".utl";
+            else if (File.Exists(Util.GetPluginDirectory() + @"autovendor\" + profileName)) {
+                return Util.GetPluginDirectory() + @"autovendor\" + profileName;
             }
             else if (File.Exists(Util.GetCharacterDirectory() + @"autovendor\default.utl")) {
                 return Util.GetCharacterDirectory() + @"autovendor\default.utl";
@@ -290,15 +275,65 @@ namespace UtilityBelt.Tools {
                 return Util.GetPluginDirectory() + @"autovendor\default.utl";
             }
 
-            return Util.GetPluginDirectory() + @"autovendor\" + merchant.Name + ".utl";
+            return Util.GetPluginDirectory() + @"autovendor\" + profileName;
         }
 
-        public void Stop() {
-            if (Globals.Config.AutoVendor.Think.Value == true) {
-                Util.Think("AutoVendor finished: " + vendorName);
+        public void Start(int merchantId = 0, string useProfilePath = "") {
+            if (merchantId == 0) {
+                merchantId = Globals.Core.Actions.VendorId;
             }
-            else {
-                Util.WriteToChat("AutoVendor finished: " + vendorName);
+
+            if (merchantId == 0 || Globals.Core.WorldFilter[merchantId] == null) {
+                Util.WriteToChat("AutoVendor: no open vendor, cannot start!");
+                return;
+            }
+
+            if (needsVendoring) {
+                Stop(true);
+            }
+
+            var merchant = Globals.Core.WorldFilter[merchantId];
+            var profilePath = GetProfilePath(string.IsNullOrEmpty(useProfilePath) ? (merchant.Name + ".utl") : useProfilePath);
+
+            vendorId = merchant.Id;
+            vendorName = merchant.Name;
+
+            if (!File.Exists(profilePath)) {
+                Util.WriteToChat("No vendor profile exists: " + profilePath);
+                Stop();
+                return;
+            }
+
+            // Load our loot profile
+            ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
+
+            /*
+            if (Assessor.NeedsInventoryData()) {
+                Assessor.RequestAll();
+                waitingForIds = true;
+                lastIdSpam = DateTime.UtcNow;
+            }
+            */
+
+            Globals.InventoryManager.Pause();
+
+            needsVendoring = true;
+            needsToBuy = false;
+            needsToSell = false;
+            shouldStack = true;
+            startedVendoring = DateTime.UtcNow;
+
+            Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
+        }
+
+        public void Stop(bool silent = false) {
+            if (!silent) {
+                if (Globals.Config.AutoVendor.Think.Value == true) {
+                    Util.Think("AutoVendor finished: " + vendorName);
+                }
+                else {
+                    Util.WriteToChat("AutoVendor finished: " + vendorName);
+                }
             }
 
             Globals.InventoryManager.Resume();
@@ -309,7 +344,7 @@ namespace UtilityBelt.Tools {
             vendorName = "";
             vendorId = 0;
 
-            Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
+            Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
 
             if (lootProfile != null) ((VTClassic.LootCore)lootProfile).UnloadProfile();
         }
@@ -317,8 +352,6 @@ namespace UtilityBelt.Tools {
         public void Think() {
             try {
                 var thinkInterval = TimeSpan.FromMilliseconds(Globals.Config.AutoVendor.Speed.Value);
-
-                if (Globals.Config.AutoVendor.Enabled.Value == false) return;
 
                 if (DateTime.UtcNow - lastThought >= thinkInterval && DateTime.UtcNow - startedVendoring >= thinkInterval) {
                     lastThought = DateTime.UtcNow;
@@ -774,6 +807,7 @@ namespace UtilityBelt.Tools {
             if (!disposed) {
                 if (disposing) {
                     Globals.Core.WorldFilter.ApproachVendor -= WorldFilter_ApproachVendor;
+                    Globals.Core.CommandLineText -= Current_CommandLineText;
                 }
                 disposed = true;
             }

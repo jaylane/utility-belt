@@ -289,7 +289,7 @@ namespace UtilityBelt.Tools {
         private Bitmap drawBitmap;
         private int counter = 0;
         private float scale = 1;
-        private int rawScale = 5;
+        private int rawScale = 9;
         private  int MIN_SCALE = 0;
         private  int MAX_SCALE = 16;
         private Graphics drawGfx;

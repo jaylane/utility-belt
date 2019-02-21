@@ -17,6 +17,7 @@ namespace UtilityBelt
         private AutoVendor autoVendor;
         private AutoSalvage autoSalvage;
         private DungeonMaps dungeonMaps;
+        private EmuConfig emuConfig;
         private QuestTracker questTracker;
         private DateTime lastThought = DateTime.MinValue;
 
@@ -58,6 +59,7 @@ namespace UtilityBelt
                 autoVendor = new AutoVendor();
                 autoSalvage = new AutoSalvage();
                 dungeonMaps = new DungeonMaps();
+                emuConfig = new EmuConfig();
                 questTracker = new QuestTracker();
 
                 Globals.Core.RenderFrame += Core_RenderFrame;
@@ -84,6 +86,7 @@ namespace UtilityBelt
                 if (autoVendor != null) autoVendor.Dispose();
                 if (autoSalvage != null) autoSalvage.Dispose();
                 if (dungeonMaps != null) dungeonMaps.Dispose();
+                if (emuConfig != null) emuConfig.Dispose();
                 if (questTracker != null) questTracker.Dispose();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();
                 if (Globals.MapView != null) Globals.MapView.Dispose();
