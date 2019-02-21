@@ -245,7 +245,7 @@ namespace UtilityBelt.Tools {
         private SolidBrush PLAYER_BRUSH = new SolidBrush(Color.Red);
         private const int PLAYER_SIZE = 5;
         private Rectangle PLAYER_RECT = new Rectangle(-(PLAYER_SIZE / 2), -(PLAYER_SIZE / 2), PLAYER_SIZE, PLAYER_SIZE);
-        private DateTime lastDrawTime = DateTime.UtcNow + TimeSpan.FromSeconds(3);
+        private DateTime lastDrawTime = DateTime.UtcNow;
         private bool disposed = false;
         private Hud hud = null;
         private Rectangle hudRect;
@@ -270,8 +270,9 @@ namespace UtilityBelt.Tools {
                         Globals.MapView.view.Width, Globals.MapView.view.Height);
                 }
 
-                hudRect.Location = Globals.MapView.view.Location;
-
+                hudRect.Y = Globals.MapView.view.Location.Y + Globals.MapView.view["DungeonMapsRenderContainer"].ClipRegion.Y;
+                hudRect.X = Globals.MapView.view.Location.X + Globals.MapView.view["DungeonMapsRenderContainer"].ClipRegion.X;
+                
                 hudRect.Height = Globals.MapView.view.Height;
                 hudRect.Width = Globals.MapView.view.Width;
 
@@ -280,21 +281,23 @@ namespace UtilityBelt.Tools {
                     hud.Clear();
                     hud.Dispose();
                     hud = null;
-                    /*
+
+                    drawGfx.Dispose();
+                    drawGfx = null;
+
                     drawBitmap.Dispose();
                     drawBitmap = null;
                     drawBitmap = new Bitmap(hudRect.Width, hudRect.Height);
                     drawBitmap.MakeTransparent();
 
-                    drawGfx.Dispose();
-                    drawGfx = null;
                     drawGfx = Graphics.FromImage(drawBitmap);
-                    */
                 }
 
                 if (hud == null) {
                     hud = Globals.Core.RenderService.CreateHud(hudRect);
                 }
+
+                hud.Region = hudRect;
 
                 hud.Clear();
 
