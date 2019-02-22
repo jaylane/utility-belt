@@ -46,36 +46,6 @@ namespace UtilityBelt.Tools {
                     return;
                 }
 
-                switch (EnvironmentId) {
-                    // 3 window bridge/tunnel thing e/w direction? (facility hub)
-                    case 679:
-                    case 672:
-                        EnvironmentId = 671;
-                        if (Math.Abs(rot) > 0.6 && Math.Abs(rot) < 0.8) {
-                            rot = 1F;
-                        }
-                        else {
-                            rot = 0.77F;
-                        }
-                        break;
-
-                    // right inside town meeting halls
-                    case 2:
-                        EnvironmentId = 443;
-                        break;
-
-                    // right inside town meeting halls
-                    case 331:
-                        EnvironmentId = 411;
-                        rot = 1;
-                        break;
-
-                    // diagonal hallway
-                    //case 402:
-                    //    EnvironmentId = 238;
-                    //    break;
-                }
-
                 if (rot == 1) {
                     R = RotateFlipType.Rotate180FlipNone;
                 }
