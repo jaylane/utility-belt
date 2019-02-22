@@ -19,7 +19,7 @@ namespace UtilityBelt.Views {
         public MapView() {
             try {
                 new Decal3XMLParser().ParseFromResource("UtilityBelt.Views.MapView.xml", out properties, out controls);
-                //properties.Icon = GetIcon();
+                properties.Icon = GetIcon();
 
                 view = new VirindiViewService.HudView(properties, controls);
 
@@ -35,7 +35,7 @@ namespace UtilityBelt.Views {
             ACImage acImage = null;
 
             try {
-                using (Stream manifestResourceStream = typeof(MainView).Assembly.GetManifestResourceStream("UtilityBelt.icons.utilitybelt.png")) {
+                using (Stream manifestResourceStream = typeof(MainView).Assembly.GetManifestResourceStream("UtilityBelt.icons.dungeonmaps.png")) {
                     if (manifestResourceStream != null) {
                         using (Bitmap bitmap = new Bitmap(manifestResourceStream))
                             acImage = new ACImage(bitmap);

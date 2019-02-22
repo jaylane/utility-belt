@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<view icon="7923" title="Decal Plugin" width="299" height="281">
+<view icon="7923" title="Utility Belt Maps" width="299" height="281">
 		<control progid="DecalControls.FixedLayout" clipped="" name="DungeonMapsRenderContainer">
 		</control>
 </view>
