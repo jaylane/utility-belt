@@ -19,6 +19,7 @@ namespace UtilityBelt.Tools {
         private DateTime lastThought = DateTime.MinValue;
         private DateTime lastAction = DateTime.MinValue;
         private bool readyToSalvage = false;
+        private bool openedSalvageWindow = false;
         private bool disposed = false;
 
         public AutoSalvage() {
@@ -77,6 +78,7 @@ namespace UtilityBelt.Tools {
 
         public void Start(bool force = false) {
             isRunning = true;
+            openedSalvageWindow = false;
             shouldSalvage = force;
 
             Reset();
@@ -87,6 +89,13 @@ namespace UtilityBelt.Tools {
         private void Stop() {
             Reset();
             isRunning = false;
+
+            if (Globals.Config.AutoSalvage.Think.Value == true) {
+                Util.Think("AutoSalvage complete.");
+            }
+            else {
+                Util.WriteToChat("AutoSalvage complete.");
+            }
         }
 
         public void Reset() {
@@ -117,15 +126,13 @@ namespace UtilityBelt.Tools {
             return uTank2.PluginCore.PC.FLootPluginQueryNeedsID(id);
         }
 
-        private void OpenSalvageWindow() {
+        private bool OpenSalvageWindow() {
             var foundUst = false;
 
-            foreach (var id in inventoryItems) {
-                var item = Globals.Core.WorldFilter[id];
-
+            foreach (var item in Globals.Core.WorldFilter.GetInventory()) {
                 if (item != null && item.Name == "Ust") {
                     foundUst = true;
-                    Globals.Core.Actions.UseItem(id, 0);
+                    Globals.Core.Actions.UseItem(item.Id, 0);
                     break;
                 }
             }
@@ -133,12 +140,12 @@ namespace UtilityBelt.Tools {
             if (!foundUst) {
                 Util.WriteToChat("AutoSalvage: No ust in inventory, can't salvage.");
             }
+
+            return foundUst;
         }
 
-        private void AddSalvageToWindow() {
-            int salvageableItemCount = 0;
-
-            // TODO: do multiple passes taking workmanship and loot rules into account
+        private List<int> GetSalvageIds() {
+            var salvageIds = new List<int>();
             foreach (var id in inventoryItems) {
                 try {
                     var result = uTank2.PluginCore.PC.FLootPluginClassifyImmediate(id);
@@ -163,8 +170,8 @@ namespace UtilityBelt.Tools {
                     if (item.Name.StartsWith("Salvage")) continue;
 
                     if (result.SimpleAction == uTank2.eLootAction.Salvage) {
-                        Globals.Core.Actions.SalvagePanelAdd(id);
-                        salvageableItemCount++;
+                        salvageIds.Add(id);
+
                         if (Globals.Config.AutoSalvage.Debug.Value == true) {
                             Util.WriteToChat(String.Format("AutoSalvage: Add: {0}", item.Name));
                         }
@@ -173,11 +180,17 @@ namespace UtilityBelt.Tools {
                 catch (Exception ex) { Util.LogException(ex); }
             }
 
-            if (salvageableItemCount > 0) {
-                Util.WriteToChat(String.Format("AutoSalvage: Found {0} items to salvage.", salvageableItemCount));
-            }
-            else {
-                Util.WriteToChat("AutoSalvage: No salvageable items found.");
+            return salvageIds;
+        }
+
+        private void AddSalvageToWindow() {
+            var salvageIds = GetSalvageIds();
+
+            Util.WriteToChat(String.Format("AutoSalvage: Found {0} items to salvage.", salvageIds.Count));
+                
+            // TODO: do multiple passes taking workmanship and loot rules into account
+            foreach (var id in salvageIds) {
+                Globals.Core.Actions.SalvagePanelAdd(id);
             }
 
             readyToSalvage = true;
@@ -205,20 +218,29 @@ namespace UtilityBelt.Tools {
                             Globals.Core.Actions.SalvagePanelSalvage();
                         }
 
-                        if (Globals.Config.AutoSalvage.Think.Value == true) {
-                            Util.Think("AutoSalvage complete.");
-                        }
-                        else {
-                            Globals.Host.Actions.AddChatText("AutoSalvage complete.", 5);
-                        }
-
                         return;
                     }
 
-                    if (isRunning && hasAllItemData && !readyToSalvage) {
-                        OpenSalvageWindow();
-                        AddSalvageToWindow();
-                        lastThought = DateTime.UtcNow;
+                    if (isRunning && hasAllItemData) {
+                        if (GetSalvageIds().Count == 0) {
+                            if (Globals.Config.AutoSalvage.Debug.Value) {
+                                Util.WriteToChat("AutoSalvage: No salvageable items found.");
+                            }
+                            Stop();
+                            return;
+                        }
+
+                        if (openedSalvageWindow) {
+                            AddSalvageToWindow();
+                            return;
+                        }
+
+                        if (OpenSalvageWindow()) {
+                            openedSalvageWindow = true;
+                        }
+                        else {
+                            Stop();
+                        }
                     }
                 }
             }
