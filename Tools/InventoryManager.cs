@@ -52,6 +52,11 @@ namespace UtilityBelt.Tools {
             UIInventoryManagerAutoStack.Change += UIInventoryManagerAutoStack_Change;
             Globals.Config.InventoryManager.AutoStack.Changed += Config_InventoryManager_AutoStack_Changed;
 
+            // temporary until ui gets added back in
+            Globals.Config.InventoryManager.AutoCram.Value = true;
+            Globals.Config.InventoryManager.AutoStack.Value = true;
+            Globals.Config.InventoryManager.Debug.Value = true;
+
             if (Globals.Config.InventoryManager.AutoCram.Value || Globals.Config.InventoryManager.AutoStack.Value) {
                 //Start();
             }
@@ -87,8 +92,7 @@ namespace UtilityBelt.Tools {
 
         private void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
             try {
-                /*
-                if (e.Text.StartsWith("/ub autocram")) {
+                if (e.Text.StartsWith("/ub autoinventory")) {
                     bool force = e.Text.Contains("force");
                     e.Eat = true;
 
@@ -96,7 +100,6 @@ namespace UtilityBelt.Tools {
 
                     return;
                 }
-                */
             }
             catch (Exception ex) { Util.LogException(ex); }
         }
@@ -144,6 +147,9 @@ namespace UtilityBelt.Tools {
             isRunning = false;
             movingObjectId = 0;
             tryCount = 0;
+
+            Util.Think("AutoInventory finished.");
+
             if (Globals.Config.InventoryManager.Debug.Value == true) {
                 Util.WriteToChat("InventoryManager Finished");
             }
@@ -240,7 +246,7 @@ namespace UtilityBelt.Tools {
             if (force || DateTime.UtcNow - lastThought > TimeSpan.FromMilliseconds(THINK_INTERVAL)) {
                 lastThought = DateTime.UtcNow;
 
-                // dont run automatically while vendoring
+                // dont run while vendoring
                 if (Globals.Core.Actions.VendorId != 0) return;
 
                 if ((!isRunning || isPaused) && !isForced) return;
