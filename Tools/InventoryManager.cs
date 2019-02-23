@@ -53,7 +53,7 @@ namespace UtilityBelt.Tools {
             Globals.Config.InventoryManager.AutoStack.Changed += Config_InventoryManager_AutoStack_Changed;
 
             if (Globals.Config.InventoryManager.AutoCram.Value || Globals.Config.InventoryManager.AutoStack.Value) {
-                Start();
+                //Start();
             }
         }
 
