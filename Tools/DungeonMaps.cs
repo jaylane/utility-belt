@@ -252,6 +252,7 @@ namespace UtilityBelt.Tools {
         private SolidBrush TEXT_BRUSH_GREEN = new SolidBrush(Color.LightGreen);
         private const float QUALITY = 2.5F;
         private Font DEFAULT_FONT = new Font("Mono", 8);
+        private Font PORTAL_FONT = new Font("Mono", 3);
         private const int PLAYER_SIZE = (int)(2 * QUALITY);
         private Rectangle PLAYER_RECT = new Rectangle(-(PLAYER_SIZE / 2), -(PLAYER_SIZE / 2), PLAYER_SIZE, PLAYER_SIZE);
         private DateTime lastDrawTime = DateTime.UtcNow;
@@ -264,6 +265,7 @@ namespace UtilityBelt.Tools {
         private int rawScale = 12;
         private  int MIN_SCALE = 0;
         private  int MAX_SCALE = 16;
+        private int currentLandCell = 0;
         private Graphics drawGfx;
 
         HudCheckBox UIDungeonMapsEnabled { get; set; }
@@ -521,11 +523,11 @@ namespace UtilityBelt.Tools {
 
                 try {
                     DrawDungeon(currentBlock);
+
+                    hud.BeginText("mono", 14, FontWeight.Heavy, false);
                     if (Globals.Config.DungeonMaps.Debug.Value) {
                         var cells = currentBlock.GetCurrentCells();
                         var offset = 0;
-
-                        hud.BeginText("mono", 14, FontWeight.Heavy, false);
 
                         foreach (var cell in cells) {
                             var message = string.Format("cell: {0}, env: {1}, r: {2}, pos: {3},{4},{5}",
@@ -541,15 +543,29 @@ namespace UtilityBelt.Tools {
                             hud.WriteText(message, color, WriteTextFormats.SingleLine, rect);
                             offset += 15;
                         }
-
-                        hud.EndText();
                     }
+                    hud.EndText();
                 }
                 catch (Exception ex) { Util.LogException(ex); }
                 finally {
                     hud.EndRender();
                     hud.Alpha = (int)Math.Round(((Globals.Config.DungeonMaps.Opacity.Value * 5) / 100F)*255);
                     hud.Enabled = true;
+                }
+            }
+            catch (Exception ex) { Util.LogException(ex); }
+        }
+
+        private void DrawPortals() {
+            try {
+                foreach (var portal in Globals.Core.WorldFilter.GetByObjectClass(ObjectClass.Portal)) {
+                    var loc = portal.RawCoordinates();
+                    var os = portal.Offset();
+
+                    // right now only draw on the same z level
+                    if (Math.Abs(loc.Z - Globals.Core.Actions.LocationZ) > 4) continue;
+
+                    drawGfx.DrawEllipse(new Pen(new SolidBrush(Color.Purple)), -(float)(os.X+1), (float)(os.Y-1), 2F, 2F);
                 }
             }
             catch (Exception ex) { Util.LogException(ex); }
@@ -568,7 +584,10 @@ namespace UtilityBelt.Tools {
             drawGfx.RotateTransform(360 - (((float)Globals.Core.Actions.Heading + 180) % 360));
             drawGfx.ScaleTransform(scale, scale);
             drawGfx.TranslateTransform(xOffset, yOffset);
-            foreach (var zLayer in currentBlock.bitmapLayers.Keys) {
+            var zLayers = currentBlock.bitmapLayers.Keys.ToList();
+            var portals = Globals.Core.WorldFilter.GetByObjectClass(ObjectClass.Portal);
+
+            foreach (var zLayer in zLayers) {
                 ImageAttributes attributes = new ImageAttributes();
                 var bmp = currentBlock.bitmapLayers[zLayer];
 
@@ -602,8 +621,24 @@ namespace UtilityBelt.Tools {
                     0, 0, bmp.Width, bmp.Height,
                     GraphicsUnit.Pixel, attributes);
 
+                var opacity = Math.Max(Math.Min(1 - (Math.Abs(Globals.Core.Actions.LocationZ - zLayer) / 6) * 0.4F, 1), 0) * 255;
+                var brush = new SolidBrush(Color.FromArgb((int)opacity, 153, 0, 204));
+
+                // draw portal markers
+                foreach (var portal in portals) {
+                    var loc = portal.RawCoordinates();
+                    var os = portal.Offset();
+                    
+                    // only draw this z level
+                    // TODO: cache all portals
+                    if (Math.Abs(zLayer - loc.Z) > 1) continue;
+
+                    drawGfx.FillEllipse(brush, -(float)(os.X + 2), (float)(os.Y - 2), 3F, 3F);
+                }
+
                 attributes.Dispose();
             }
+
             drawGfx.TranslateTransform(-xOffset, -yOffset);
             drawGfx.ScaleTransform(1/scale, 1/scale);
             drawGfx.RotateTransform(-(360 - (((float)Globals.Core.Actions.Heading + 180) % 360)));
@@ -612,6 +647,7 @@ namespace UtilityBelt.Tools {
 
             drawGfx.TranslateTransform(-(currentBlock.dungeonWidth * QUALITY) / 2, -(currentBlock.dungeonHeight * QUALITY) / 2);
 
+
             drawGfx.Save();
             hud.DrawImage(drawBitmap, new Rectangle(0, 0, Globals.MapView.view.Width, Globals.MapView.view.Height));
         }
@@ -619,6 +655,16 @@ namespace UtilityBelt.Tools {
         public void Think() {
             if (DateTime.UtcNow - lastDrawTime > TimeSpan.FromMilliseconds(DRAW_INTERVAL)) {
                 lastDrawTime = DateTime.UtcNow;
+
+                if (currentLandCell != Globals.Core.Actions.Landcell >> 16) {
+                    DestroyHud();
+                    CreateHud();
+                    currentLandCell = Globals.Core.Actions.Landcell >> 16;
+
+                    if (Globals.Config.DungeonMaps.Debug.Value) {
+                        Util.WriteToChat("DungeonMaps: Redraw hud because landcell changed");
+                    }
+                }
 
                 var watch = System.Diagnostics.Stopwatch.StartNew();
                 UpdateHud();
