@@ -64,6 +64,25 @@ namespace UtilityBelt.Tools {
         }
     }
 
+    public class Portal {
+        public int Id;
+        public string Name;
+        public double X;
+        public double Y;
+        public double Z;
+
+        public Portal(WorldObject portal) {
+            Id = portal.Id;
+            Name = portal.Name;
+
+            var offset = portal.Offset();
+
+            X = offset.X;
+            Y = offset.Y;
+            Z = Math.Round(offset.Z);
+        }
+    }
+
     public class LandBlock {
         public const int CELL_SIZE = 10;
         public Color TRANSPARENT_COLOR = Color.White;
@@ -72,6 +91,8 @@ namespace UtilityBelt.Tools {
         private List<string> filledCoords = new List<string>();
         private Dictionary<int, List<DungeonCell>> zLayers = new Dictionary<int, List<DungeonCell>>();
         private Dictionary<int, DungeonCell> allCells = new Dictionary<int, DungeonCell>();
+        public static List<int> portalIds = new List<int>();
+        public Dictionary<int, List<Portal>> zPortals = new Dictionary<int, List<Portal>>();
         private bool? isDungeon;
         private float minX = 0;
         private float maxX = 0;
@@ -186,6 +207,20 @@ namespace UtilityBelt.Tools {
             }
 
             return cells;
+        }
+
+        public void AddPortal(WorldObject portalObject) {
+            if (portalIds.Contains(portalObject.Id)) return;
+
+            var portal = new Portal(portalObject);
+            var portalZ = (int)Math.Floor(portal.Z / 6) * 6;
+
+            if (!zPortals.Keys.Contains(portalZ)) {
+                zPortals.Add(portalZ, new List<Portal>());
+            }
+
+            portalIds.Add(portal.Id);
+            zPortals[portalZ].Add(portal);
         }
     }
 
@@ -303,6 +338,7 @@ namespace UtilityBelt.Tools {
             Globals.Config.DungeonMaps.Opacity.Changed += Config_DungeonMaps_Opacity_Changed;
 
             Globals.Core.RegionChange3D += Core_RegionChange3D;
+            Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
 
             Globals.MapView.view.Resize += View_Resize;
             Globals.MapView.view.Moved += View_Moved;
@@ -388,6 +424,7 @@ namespace UtilityBelt.Tools {
             try {
                 LandBlockCache.Clear();
                 TileCache.Clear();
+                LandBlock.portalIds.Clear();
                 DestroyHud();
                 CreateHud();
             }
@@ -433,6 +470,21 @@ namespace UtilityBelt.Tools {
 
                 DestroyHud();
                 CreateHud();
+            }
+            catch (Exception ex) { Util.LogException(ex); }
+        }
+
+        private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
+            try {
+                if (!Globals.Config.DungeonMaps.Enabled.Value) return;
+
+                if (e.New.ObjectClass == ObjectClass.Portal) {
+                    var currentLandblock = LandBlockCache.Get(Globals.Core.Actions.Landcell);
+
+                    if (currentLandblock != null && e.New.Name != "Gateway") {
+                        currentLandblock.AddPortal(e.New);
+                    }
+                }
             }
             catch (Exception ex) { Util.LogException(ex); }
         }
@@ -556,21 +608,6 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Util.LogException(ex); }
         }
 
-        private void DrawPortals() {
-            try {
-                foreach (var portal in Globals.Core.WorldFilter.GetByObjectClass(ObjectClass.Portal)) {
-                    var loc = portal.RawCoordinates();
-                    var os = portal.Offset();
-
-                    // right now only draw on the same z level
-                    if (Math.Abs(loc.Z - Globals.Core.Actions.LocationZ) > 4) continue;
-
-                    drawGfx.DrawEllipse(new Pen(new SolidBrush(Color.Purple)), -(float)(os.X+1), (float)(os.Y-1), 2F, 2F);
-                }
-            }
-            catch (Exception ex) { Util.LogException(ex); }
-        }
-
         private void DrawDungeon(LandBlock currentBlock) {
             float xOffset = (float)Globals.Core.Actions.LocationX;
             float yOffset = -(float)Globals.Core.Actions.LocationY;
@@ -623,17 +660,12 @@ namespace UtilityBelt.Tools {
 
                 var opacity = Math.Max(Math.Min(1 - (Math.Abs(Globals.Core.Actions.LocationZ - zLayer) / 6) * 0.4F, 1), 0) * 255;
                 var brush = new SolidBrush(Color.FromArgb((int)opacity, 153, 0, 204));
-
+                
                 // draw portal markers
-                foreach (var portal in portals) {
-                    var loc = portal.RawCoordinates();
-                    var os = portal.Offset();
-                    
-                    // only draw this z level
-                    // TODO: cache all portals
-                    if (Math.Abs(zLayer - loc.Z) > 1) continue;
-
-                    drawGfx.FillEllipse(brush, -(float)(os.X + 2), (float)(os.Y - 2), 3F, 3F);
+                if (currentBlock.zPortals.ContainsKey(zLayer)) {
+                    foreach (var portal in currentBlock.zPortals[zLayer]) {
+                        drawGfx.FillEllipse(brush, -(float)(portal.X + 1.5), (float)(portal.Y - 1.5), 2F, 2F);
+                    }
                 }
 
                 attributes.Dispose();
@@ -688,7 +720,11 @@ namespace UtilityBelt.Tools {
             if (!disposed) {
                 if (disposing) {
                     Globals.Core.RegionChange3D -= Core_RegionChange3D;
+                    Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
                     Globals.MapView.view["DungeonMapsRenderContainer"].MouseEvent -= DungeonMaps_MouseEvent;
+                    Globals.MapView.view.Resize -= View_Resize;
+                    Globals.MapView.view.Moved -= View_Moved;
+
                     if (hud != null) {
                         Globals.Core.RenderService.RemoveHud(hud);
                         hud.Dispose();
