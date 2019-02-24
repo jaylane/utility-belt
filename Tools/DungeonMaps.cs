@@ -73,7 +73,7 @@ namespace UtilityBelt.Tools {
 
         public Portal(WorldObject portal) {
             Id = portal.Id;
-            Name = portal.Name;
+            Name = portal.Name.Replace("Portal to", "").Replace("Portal", "");
 
             var offset = portal.Offset();
 
@@ -588,9 +588,10 @@ namespace UtilityBelt.Tools {
                     var zLayer = (int)Math.Floor(Globals.Core.Actions.LocationZ / 6) * 6;
                     if (currentBlock.zPortals.ContainsKey(zLayer)) {
                         hud.BeginText("mono", 12, FontWeight.Normal, false);
+                        double ratio = GetBitmapToWindowRatio();
                         foreach (var portal in currentBlock.zPortals[zLayer]) {
-                            var x = ((portal.X - Globals.Core.Actions.LocationX)) * scale * 1.2;
-                            var y = ((Globals.Core.Actions.LocationY - portal.Y)) * scale * 1.1;
+                            var x = ((portal.X - Globals.Core.Actions.LocationX)) * scale * ratio;
+                            var y = ((Globals.Core.Actions.LocationY - portal.Y)) * scale * ratio;
                             var rpoint = Util.RotatePoint(new Point((int)x, (int)y), new Point(0, 0), 360-Globals.Core.Actions.Heading); 
                             var rect = new Rectangle(rpoint.X + (hud.Region.Width/2), rpoint.Y + (hud.Region.Height / 2), 300, 12);
 
@@ -704,7 +705,25 @@ namespace UtilityBelt.Tools {
 
 
             drawGfx.Save();
-            hud.DrawImage(drawBitmap, new Rectangle(0, 0, Globals.MapView.view.Width, Globals.MapView.view.Height));
+
+            // Figure out the ratio
+            var ratio = GetBitmapToWindowRatio();
+            // now we can get the new height and width
+            int newHeight = Convert.ToInt32(drawBitmap.Height * ratio);
+            int newWidth = Convert.ToInt32(drawBitmap.Width * ratio);
+
+            // Now calculate the X,Y position of the upper-left corner 
+            // (one of these will always be zero)
+            int posX = Convert.ToInt32((Globals.MapView.view.Width - (drawBitmap.Width * ratio)) / 2);
+            int posY = Convert.ToInt32((Globals.MapView.view.Height - (drawBitmap.Height * ratio)) / 2);
+            
+            hud.DrawImage(drawBitmap, new Rectangle(posX, posY, newWidth, newHeight));
+        }
+
+        private double GetBitmapToWindowRatio() {
+            double ratioX = (double)Globals.MapView.view.Width / (double)drawBitmap.Width;
+            double ratioY = (double)Globals.MapView.view.Height / (double)drawBitmap.Height;
+            return ratioX > ratioY ? ratioX : ratioY;
         }
 
         public void Think() {
