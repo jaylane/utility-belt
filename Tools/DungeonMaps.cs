@@ -249,8 +249,10 @@ namespace UtilityBelt.Tools {
         private const int DRAW_INTERVAL = 50;
         private SolidBrush PLAYER_BRUSH = new SolidBrush(Color.Red);
         private SolidBrush TEXT_BRUSH = new SolidBrush(Color.White);
+        private SolidBrush TEXT_BRUSH_GREEN = new SolidBrush(Color.LightGreen);
+        private const float QUALITY = 2.5F;
         private Font DEFAULT_FONT = new Font("Mono", 8);
-        private const int PLAYER_SIZE = 5;
+        private const int PLAYER_SIZE = (int)(2 * QUALITY);
         private Rectangle PLAYER_RECT = new Rectangle(-(PLAYER_SIZE / 2), -(PLAYER_SIZE / 2), PLAYER_SIZE, PLAYER_SIZE);
         private DateTime lastDrawTime = DateTime.UtcNow;
         private bool disposed = false;
@@ -259,7 +261,7 @@ namespace UtilityBelt.Tools {
         private Bitmap drawBitmap;
         private int counter = 0;
         private float scale = 1;
-        private int rawScale = 9;
+        private int rawScale = 12;
         private  int MIN_SCALE = 0;
         private  int MAX_SCALE = 16;
         private Graphics drawGfx;
@@ -271,10 +273,6 @@ namespace UtilityBelt.Tools {
         HudButton UIDungeonMapsClearTileCache { get; set; }
 
         public DungeonMaps() {
-            drawBitmap = new Bitmap(Globals.MapView.view.Width, Globals.MapView.view.Height);
-            drawBitmap.MakeTransparent();
-
-            drawGfx = Graphics.FromImage(drawBitmap);
             scale = 8.4F - Map(rawScale, MIN_SCALE, MAX_SCALE, 0.4F, 8);
 
             Globals.MapView.view["DungeonMapsRenderContainer"].MouseEvent += DungeonMaps_MouseEvent;
@@ -301,6 +299,13 @@ namespace UtilityBelt.Tools {
             UIDungeonMapsOpacity.Position = Globals.Config.DungeonMaps.Opacity.Value;
             UIDungeonMapsOpacity.Changed += UIDungeonMapsOpacity_Changed;
             Globals.Config.DungeonMaps.Opacity.Changed += Config_DungeonMaps_Opacity_Changed;
+
+            Globals.Core.RegionChange3D += Core_RegionChange3D;
+
+            Globals.MapView.view.Resize += View_Resize;
+            Globals.MapView.view.Moved += View_Moved;
+
+            Toggle();
         }
 
         private void Toggle() {
@@ -312,10 +317,12 @@ namespace UtilityBelt.Tools {
                     if (Globals.MapView.view.Visible) {
                         Globals.MapView.view.Visible = false;
                     }
-                    if (hud.Enabled) {
-                        hud.Clear();
-                        hud.Enabled = false;
+                    if (hud != null) {
+                        DestroyHud();
                     }
+                }
+                else {
+                    CreateHud();
                 }
             }
             catch (Exception ex) { Util.LogException(ex); }
@@ -379,6 +386,16 @@ namespace UtilityBelt.Tools {
             try {
                 LandBlockCache.Clear();
                 TileCache.Clear();
+                DestroyHud();
+                CreateHud();
+            }
+            catch (Exception ex) { Util.LogException(ex); }
+        }
+
+        private void View_Resize(object sender, EventArgs e) {
+            try {
+                DestroyHud();
+                CreateHud();
             }
             catch (Exception ex) { Util.LogException(ex); }
         }
@@ -398,8 +415,87 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Util.LogException(ex); }
         }
 
+        private void Core_RegionChange3D(object sender, RegionChange3DEventArgs e) {
+            try {
+                if (!Globals.Config.DungeonMaps.Enabled.Value) return;
+
+                DestroyHud();
+                CreateHud();
+            }
+            catch (Exception ex) { Util.LogException(ex); }
+        }
+
+        private void View_Moved(object sender, EventArgs e) {
+            try {
+                if (!Globals.Config.DungeonMaps.Enabled.Value) return;
+
+                DestroyHud();
+                CreateHud();
+            }
+            catch (Exception ex) { Util.LogException(ex); }
+        }
+
         public float Map(float value, float fromSource, float toSource, float fromTarget, float toTarget) {
             return (value - fromSource) / (toSource - fromSource) * (toTarget - fromTarget) + fromTarget;
+        }
+
+        public Rectangle GetHudRect() {
+            var rect = (hudRect != null) ? hudRect : new Rectangle(Globals.MapView.view.Location.X, Globals.MapView.view.Location.Y,
+                    Globals.MapView.view.Width, Globals.MapView.view.Height);
+
+            hudRect.Y = Globals.MapView.view.Location.Y + Globals.MapView.view["DungeonMapsRenderContainer"].ClipRegion.Y;
+            hudRect.X = Globals.MapView.view.Location.X + Globals.MapView.view["DungeonMapsRenderContainer"].ClipRegion.X;
+
+            hudRect.Height = Globals.MapView.view.Height;
+            hudRect.Width = Globals.MapView.view.Width;
+
+            return hudRect;
+        }
+
+        public void CreateHud() {
+            if (hud != null) Util.WriteToChat("Tried to create hud when it already exists!");
+
+            hud = Globals.Core.RenderService.CreateHud(GetHudRect());
+
+            hud.Region = GetHudRect();
+
+            LandBlock currentBlock = LandBlockCache.Get(Globals.Core.Actions.Landcell);
+
+            drawBitmap = new Bitmap((int)(currentBlock.dungeonWidth * QUALITY), (int)(currentBlock.dungeonHeight * QUALITY));
+            drawBitmap.MakeTransparent();
+
+            drawGfx = Graphics.FromImage(drawBitmap);
+        }
+
+        public void DestroyHud() {
+            if (hud != null) {
+                hud.Enabled = false;
+                hud.Clear();
+                hud.Dispose();
+                hud = null;
+            }
+
+            if (drawGfx != null) {
+                drawGfx.Dispose();
+                drawGfx = null;
+            }
+
+            if (drawBitmap != null) {
+                drawBitmap.Dispose();
+                drawBitmap = null;
+            }
+        }
+
+        public void UpdateHud() {
+            if (!Globals.Config.DungeonMaps.Enabled.Value) return;
+
+            Draw();
+        }
+
+        public bool DoesHudNeedUpdate() {
+            if (!Globals.Config.DungeonMaps.Enabled.Value) return false;
+
+            return false;
         }
 
         public void Draw() {
@@ -410,6 +506,7 @@ namespace UtilityBelt.Tools {
                     if (hud != null) hud.Clear();
                     return;
                 }
+
                 LandBlock currentBlock = LandBlockCache.Get(Globals.Core.Actions.Landcell);
 
                 if (!currentBlock.IsDungeon()) {
@@ -417,48 +514,36 @@ namespace UtilityBelt.Tools {
                     return;
                 }
 
-                if (hudRect == null) {
-                    hudRect = new Rectangle(Globals.MapView.view.Location.X, Globals.MapView.view.Location.Y,
-                        Globals.MapView.view.Width, Globals.MapView.view.Height);
-                }
-
-                hudRect.Y = Globals.MapView.view.Location.Y + Globals.MapView.view["DungeonMapsRenderContainer"].ClipRegion.Y;
-                hudRect.X = Globals.MapView.view.Location.X + Globals.MapView.view["DungeonMapsRenderContainer"].ClipRegion.X;
-                
-                hudRect.Height = Globals.MapView.view.Height;
-                hudRect.Width = Globals.MapView.view.Width;
-
-                if (hud != null && (hud.Region.Width != hudRect.Width || hud.Region.Height != hudRect.Height)) {
-                    hud.Enabled = false;
-                    hud.Clear();
-                    hud.Dispose();
-                    hud = null;
-
-                    drawGfx.Dispose();
-                    drawGfx = null;
-
-                    drawBitmap.Dispose();
-                    drawBitmap = null;
-                    drawBitmap = new Bitmap(hudRect.Width, hudRect.Height);
-                    drawBitmap.MakeTransparent();
-
-                    drawGfx = Graphics.FromImage(drawBitmap);
-                }
-
-                if (hud == null) {
-                    hud = Globals.Core.RenderService.CreateHud(hudRect);
-                }
-
-                hud.Region = hudRect;
-
                 hud.Clear();
-
                 hud.Fill(Color.Transparent);
+
                 hud.BeginRender();
 
                 try {
-
                     DrawDungeon(currentBlock);
+                    if (Globals.Config.DungeonMaps.Debug.Value) {
+                        var cells = currentBlock.GetCurrentCells();
+                        var offset = 0;
+
+                        hud.BeginText("mono", 14, FontWeight.Heavy, false);
+
+                        foreach (var cell in cells) {
+                            var message = string.Format("cell: {0}, env: {1}, r: {2}, pos: {3},{4},{5}",
+                                cell.CellId.ToString("X8"),
+                                cell.EnvironmentId,
+                                cell.R.ToString(),
+                                cell.X,
+                                cell.Y,
+                                cell.Z);
+                            var color = Math.Abs(cell.Z - Globals.Core.Actions.LocationZ) < 2 ? Color.LightGreen : Color.White;
+                            var rect = new Rectangle(0, offset, hud.Region.Width, offset + 15);
+
+                            hud.WriteText(message, color, WriteTextFormats.SingleLine, rect);
+                            offset += 15;
+                        }
+
+                        hud.EndText();
+                    }
                 }
                 catch (Exception ex) { Util.LogException(ex); }
                 finally {
@@ -474,10 +559,12 @@ namespace UtilityBelt.Tools {
             float xOffset = (float)Globals.Core.Actions.LocationX;
             float yOffset = -(float)Globals.Core.Actions.LocationY;
 
-            drawGfx.SmoothingMode = SmoothingMode.HighSpeed;
+            drawGfx.SmoothingMode = SmoothingMode.AntiAlias;
+            // lol this is so slow
+            //drawGfx.InterpolationMode = InterpolationMode.Bicubic;
             drawGfx.Clear(Color.Transparent);
 
-            drawGfx.TranslateTransform((float)Globals.MapView.view.Width / 2, (float)Globals.MapView.view.Height / 2);
+            drawGfx.TranslateTransform((currentBlock.dungeonWidth * QUALITY) / 2, (currentBlock.dungeonHeight * QUALITY) / 2);
             drawGfx.RotateTransform(360 - (((float)Globals.Core.Actions.Heading + 180) % 360));
             drawGfx.ScaleTransform(scale, scale);
             drawGfx.TranslateTransform(xOffset, yOffset);
@@ -520,23 +607,10 @@ namespace UtilityBelt.Tools {
             drawGfx.TranslateTransform(-xOffset, -yOffset);
             drawGfx.ScaleTransform(1/scale, 1/scale);
             drawGfx.RotateTransform(-(360 - (((float)Globals.Core.Actions.Heading + 180) % 360)));
-            drawGfx.FillRectangle(PLAYER_BRUSH, PLAYER_RECT);
-            drawGfx.TranslateTransform(-(float)Globals.MapView.view.Width / 2, -(float)Globals.MapView.view.Height / 2);
 
-            if (Globals.Config.DungeonMaps.Debug.Value) {
-                var cells = currentBlock.GetCurrentCells();
-                var offset = 0;
-                foreach (var cell in cells) {
-                    drawGfx.DrawString(string.Format("landcell: {0}, env: {1}, r: {2}, c: {3},{4},{5}",
-                        Globals.Core.Actions.Landcell.ToString("X"),
-                        cell.EnvironmentId,
-                        cell.R,
-                        cell.X,
-                        cell.Y,
-                        cell.Z), DEFAULT_FONT, TEXT_BRUSH, 0, offset);
-                    offset += 15;
-                }
-            }
+            drawGfx.FillRectangle(PLAYER_BRUSH, PLAYER_RECT);
+
+            drawGfx.TranslateTransform(-(currentBlock.dungeonWidth * QUALITY) / 2, -(currentBlock.dungeonHeight * QUALITY) / 2);
 
             drawGfx.Save();
             hud.DrawImage(drawBitmap, new Rectangle(0, 0, Globals.MapView.view.Width, Globals.MapView.view.Height));
@@ -547,7 +621,7 @@ namespace UtilityBelt.Tools {
                 lastDrawTime = DateTime.UtcNow;
 
                 var watch = System.Diagnostics.Stopwatch.StartNew();
-                Draw();
+                UpdateHud();
                 watch.Stop();
                 if (counter % 50 == 0) {
                     counter = 0;
@@ -567,6 +641,7 @@ namespace UtilityBelt.Tools {
         protected virtual void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
+                    Globals.Core.RegionChange3D -= Core_RegionChange3D;
                     Globals.MapView.view["DungeonMapsRenderContainer"].MouseEvent -= DungeonMaps_MouseEvent;
                     if (hud != null) {
                         Globals.Core.RenderService.RemoveHud(hud);
