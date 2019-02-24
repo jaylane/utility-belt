@@ -344,6 +344,14 @@ namespace UtilityBelt.Tools {
             Globals.MapView.view.Moved += View_Moved;
 
             Toggle();
+
+            var currentLandblock = LandBlockCache.Get(Globals.Core.Actions.Landcell);
+
+            if (currentLandblock != null) {
+                foreach (var portal in Globals.Core.WorldFilter.GetByObjectClass(ObjectClass.Portal)) {
+                    currentLandblock.AddPortal(portal);
+                }
+            }
         }
 
         private void Toggle() {
@@ -576,8 +584,23 @@ namespace UtilityBelt.Tools {
                 try {
                     DrawDungeon(currentBlock);
 
-                    hud.BeginText("mono", 14, FontWeight.Heavy, false);
+                    // draw portal markers
+                    var zLayer = (int)Math.Floor(Globals.Core.Actions.LocationZ / 6) * 6;
+                    if (currentBlock.zPortals.ContainsKey(zLayer)) {
+                        hud.BeginText("mono", 12, FontWeight.Normal, false);
+                        foreach (var portal in currentBlock.zPortals[zLayer]) {
+                            var x = ((portal.X - Globals.Core.Actions.LocationX)) * scale * 1.2;
+                            var y = ((Globals.Core.Actions.LocationY - portal.Y)) * scale * 1.1;
+                            var rpoint = Util.RotatePoint(new Point((int)x, (int)y), new Point(0, 0), 360-Globals.Core.Actions.Heading); 
+                            var rect = new Rectangle(rpoint.X + (hud.Region.Width/2), rpoint.Y + (hud.Region.Height / 2), 300, 12);
+
+                            hud.WriteText(portal.Name, Color.White, WriteTextFormats.None, rect);
+                        }
+                        hud.EndText();
+                    }
+
                     if (Globals.Config.DungeonMaps.Debug.Value) {
+                        hud.BeginText("mono", 14, FontWeight.Heavy, false);
                         var cells = currentBlock.GetCurrentCells();
                         var offset = 0;
 
@@ -595,8 +618,8 @@ namespace UtilityBelt.Tools {
                             hud.WriteText(message, color, WriteTextFormats.SingleLine, rect);
                             offset += 15;
                         }
+                        hud.EndText();
                     }
-                    hud.EndText();
                 }
                 catch (Exception ex) { Util.LogException(ex); }
                 finally {
