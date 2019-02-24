@@ -64,6 +64,25 @@ namespace UtilityBelt.Tools {
         }
     }
 
+    public class Portal {
+        public int Id;
+        public string Name;
+        public double X;
+        public double Y;
+        public double Z;
+
+        public Portal(WorldObject portal) {
+            Id = portal.Id;
+            Name = portal.Name.Replace("Portal to", "").Replace("Portal", "");
+
+            var offset = portal.Offset();
+
+            X = offset.X;
+            Y = offset.Y;
+            Z = Math.Round(offset.Z);
+        }
+    }
+
     public class LandBlock {
         public const int CELL_SIZE = 10;
         public Color TRANSPARENT_COLOR = Color.White;
@@ -72,6 +91,8 @@ namespace UtilityBelt.Tools {
         private List<string> filledCoords = new List<string>();
         private Dictionary<int, List<DungeonCell>> zLayers = new Dictionary<int, List<DungeonCell>>();
         private Dictionary<int, DungeonCell> allCells = new Dictionary<int, DungeonCell>();
+        public static List<int> portalIds = new List<int>();
+        public Dictionary<int, List<Portal>> zPortals = new Dictionary<int, List<Portal>>();
         private bool? isDungeon;
         private float minX = 0;
         private float maxX = 0;
@@ -187,6 +208,20 @@ namespace UtilityBelt.Tools {
 
             return cells;
         }
+
+        public void AddPortal(WorldObject portalObject) {
+            if (portalIds.Contains(portalObject.Id)) return;
+
+            var portal = new Portal(portalObject);
+            var portalZ = (int)Math.Floor(portal.Z / 6) * 6;
+
+            if (!zPortals.Keys.Contains(portalZ)) {
+                zPortals.Add(portalZ, new List<Portal>());
+            }
+
+            portalIds.Add(portal.Id);
+            zPortals[portalZ].Add(portal);
+        }
     }
 
     public static class LandBlockCache {
@@ -252,6 +287,7 @@ namespace UtilityBelt.Tools {
         private SolidBrush TEXT_BRUSH_GREEN = new SolidBrush(Color.LightGreen);
         private const float QUALITY = 2.5F;
         private Font DEFAULT_FONT = new Font("Mono", 8);
+        private Font PORTAL_FONT = new Font("Mono", 3);
         private const int PLAYER_SIZE = (int)(2 * QUALITY);
         private Rectangle PLAYER_RECT = new Rectangle(-(PLAYER_SIZE / 2), -(PLAYER_SIZE / 2), PLAYER_SIZE, PLAYER_SIZE);
         private DateTime lastDrawTime = DateTime.UtcNow;
@@ -264,6 +300,7 @@ namespace UtilityBelt.Tools {
         private int rawScale = 12;
         private  int MIN_SCALE = 0;
         private  int MAX_SCALE = 16;
+        private int currentLandCell = 0;
         private Graphics drawGfx;
 
         HudCheckBox UIDungeonMapsEnabled { get; set; }
@@ -301,11 +338,20 @@ namespace UtilityBelt.Tools {
             Globals.Config.DungeonMaps.Opacity.Changed += Config_DungeonMaps_Opacity_Changed;
 
             Globals.Core.RegionChange3D += Core_RegionChange3D;
+            Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
 
             Globals.MapView.view.Resize += View_Resize;
             Globals.MapView.view.Moved += View_Moved;
 
             Toggle();
+
+            var currentLandblock = LandBlockCache.Get(Globals.Core.Actions.Landcell);
+
+            if (currentLandblock != null) {
+                foreach (var portal in Globals.Core.WorldFilter.GetByObjectClass(ObjectClass.Portal)) {
+                    currentLandblock.AddPortal(portal);
+                }
+            }
         }
 
         private void Toggle() {
@@ -386,6 +432,7 @@ namespace UtilityBelt.Tools {
             try {
                 LandBlockCache.Clear();
                 TileCache.Clear();
+                LandBlock.portalIds.Clear();
                 DestroyHud();
                 CreateHud();
             }
@@ -431,6 +478,21 @@ namespace UtilityBelt.Tools {
 
                 DestroyHud();
                 CreateHud();
+            }
+            catch (Exception ex) { Util.LogException(ex); }
+        }
+
+        private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
+            try {
+                if (!Globals.Config.DungeonMaps.Enabled.Value) return;
+
+                if (e.New.ObjectClass == ObjectClass.Portal) {
+                    var currentLandblock = LandBlockCache.Get(Globals.Core.Actions.Landcell);
+
+                    if (currentLandblock != null && e.New.Name != "Gateway") {
+                        currentLandblock.AddPortal(e.New);
+                    }
+                }
             }
             catch (Exception ex) { Util.LogException(ex); }
         }
@@ -521,11 +583,27 @@ namespace UtilityBelt.Tools {
 
                 try {
                     DrawDungeon(currentBlock);
+
+                    // draw portal markers
+                    var zLayer = (int)Math.Floor(Globals.Core.Actions.LocationZ / 6) * 6;
+                    if (currentBlock.zPortals.ContainsKey(zLayer)) {
+                        hud.BeginText("mono", 12, FontWeight.Normal, false);
+                        double ratio = GetBitmapToWindowRatio();
+                        foreach (var portal in currentBlock.zPortals[zLayer]) {
+                            var x = ((portal.X - Globals.Core.Actions.LocationX)) * scale * ratio;
+                            var y = ((Globals.Core.Actions.LocationY - portal.Y)) * scale * ratio;
+                            var rpoint = Util.RotatePoint(new Point((int)x, (int)y), new Point(0, 0), 360-Globals.Core.Actions.Heading); 
+                            var rect = new Rectangle(rpoint.X + (hud.Region.Width/2), rpoint.Y + (hud.Region.Height / 2), 300, 12);
+
+                            hud.WriteText(portal.Name, Color.White, WriteTextFormats.None, rect);
+                        }
+                        hud.EndText();
+                    }
+
                     if (Globals.Config.DungeonMaps.Debug.Value) {
+                        hud.BeginText("mono", 14, FontWeight.Heavy, false);
                         var cells = currentBlock.GetCurrentCells();
                         var offset = 0;
-
-                        hud.BeginText("mono", 14, FontWeight.Heavy, false);
 
                         foreach (var cell in cells) {
                             var message = string.Format("cell: {0}, env: {1}, r: {2}, pos: {3},{4},{5}",
@@ -541,7 +619,6 @@ namespace UtilityBelt.Tools {
                             hud.WriteText(message, color, WriteTextFormats.SingleLine, rect);
                             offset += 15;
                         }
-
                         hud.EndText();
                     }
                 }
@@ -568,7 +645,10 @@ namespace UtilityBelt.Tools {
             drawGfx.RotateTransform(360 - (((float)Globals.Core.Actions.Heading + 180) % 360));
             drawGfx.ScaleTransform(scale, scale);
             drawGfx.TranslateTransform(xOffset, yOffset);
-            foreach (var zLayer in currentBlock.bitmapLayers.Keys) {
+            var zLayers = currentBlock.bitmapLayers.Keys.ToList();
+            var portals = Globals.Core.WorldFilter.GetByObjectClass(ObjectClass.Portal);
+
+            foreach (var zLayer in zLayers) {
                 ImageAttributes attributes = new ImageAttributes();
                 var bmp = currentBlock.bitmapLayers[zLayer];
 
@@ -602,8 +682,19 @@ namespace UtilityBelt.Tools {
                     0, 0, bmp.Width, bmp.Height,
                     GraphicsUnit.Pixel, attributes);
 
+                var opacity = Math.Max(Math.Min(1 - (Math.Abs(Globals.Core.Actions.LocationZ - zLayer) / 6) * 0.4F, 1), 0) * 255;
+                var brush = new SolidBrush(Color.FromArgb((int)opacity, 153, 0, 204));
+                
+                // draw portal markers
+                if (currentBlock.zPortals.ContainsKey(zLayer)) {
+                    foreach (var portal in currentBlock.zPortals[zLayer]) {
+                        drawGfx.FillEllipse(brush, -(float)(portal.X + 1.5), (float)(portal.Y - 1.5), 2F, 2F);
+                    }
+                }
+
                 attributes.Dispose();
             }
+
             drawGfx.TranslateTransform(-xOffset, -yOffset);
             drawGfx.ScaleTransform(1/scale, 1/scale);
             drawGfx.RotateTransform(-(360 - (((float)Globals.Core.Actions.Heading + 180) % 360)));
@@ -612,13 +703,42 @@ namespace UtilityBelt.Tools {
 
             drawGfx.TranslateTransform(-(currentBlock.dungeonWidth * QUALITY) / 2, -(currentBlock.dungeonHeight * QUALITY) / 2);
 
+
             drawGfx.Save();
-            hud.DrawImage(drawBitmap, new Rectangle(0, 0, Globals.MapView.view.Width, Globals.MapView.view.Height));
+
+            // Figure out the ratio
+            var ratio = GetBitmapToWindowRatio();
+            // now we can get the new height and width
+            int newHeight = Convert.ToInt32(drawBitmap.Height * ratio);
+            int newWidth = Convert.ToInt32(drawBitmap.Width * ratio);
+
+            // Now calculate the X,Y position of the upper-left corner 
+            // (one of these will always be zero)
+            int posX = Convert.ToInt32((Globals.MapView.view.Width - (drawBitmap.Width * ratio)) / 2);
+            int posY = Convert.ToInt32((Globals.MapView.view.Height - (drawBitmap.Height * ratio)) / 2);
+            
+            hud.DrawImage(drawBitmap, new Rectangle(posX, posY, newWidth, newHeight));
+        }
+
+        private double GetBitmapToWindowRatio() {
+            double ratioX = (double)Globals.MapView.view.Width / (double)drawBitmap.Width;
+            double ratioY = (double)Globals.MapView.view.Height / (double)drawBitmap.Height;
+            return ratioX > ratioY ? ratioX : ratioY;
         }
 
         public void Think() {
             if (DateTime.UtcNow - lastDrawTime > TimeSpan.FromMilliseconds(DRAW_INTERVAL)) {
                 lastDrawTime = DateTime.UtcNow;
+
+                if (currentLandCell != Globals.Core.Actions.Landcell >> 16) {
+                    DestroyHud();
+                    CreateHud();
+                    currentLandCell = Globals.Core.Actions.Landcell >> 16;
+
+                    if (Globals.Config.DungeonMaps.Debug.Value) {
+                        Util.WriteToChat("DungeonMaps: Redraw hud because landcell changed");
+                    }
+                }
 
                 var watch = System.Diagnostics.Stopwatch.StartNew();
                 UpdateHud();
@@ -642,7 +762,11 @@ namespace UtilityBelt.Tools {
             if (!disposed) {
                 if (disposing) {
                     Globals.Core.RegionChange3D -= Core_RegionChange3D;
+                    Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
                     Globals.MapView.view["DungeonMapsRenderContainer"].MouseEvent -= DungeonMaps_MouseEvent;
+                    Globals.MapView.view.Resize -= View_Resize;
+                    Globals.MapView.view.Moved -= View_Moved;
+
                     if (hud != null) {
                         Globals.Core.RenderService.RemoveHud(hud);
                         hud.Dispose();
