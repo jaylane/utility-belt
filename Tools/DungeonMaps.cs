@@ -13,6 +13,7 @@ using System.Reflection;
 using UtilityBelt;
 using UtilityBelt.Tools;
 using UtilityBelt.Views;
+using VirindiViewService;
 using VirindiViewService.Controls;
 
 namespace UtilityBelt.Tools {
@@ -585,26 +586,41 @@ namespace UtilityBelt.Tools {
                 hud.BeginRender();
 
                 try {
-                    DrawDungeon(currentBlock);
+
+                    // Figure out the ratio
+                    var ratio = GetBitmapToWindowRatio();
+                    // now we can get the new height and width
+                    int newHeight = Convert.ToInt32(drawBitmap.Height * ratio);
+                    int newWidth = Convert.ToInt32(drawBitmap.Width * ratio);
+
+                    // Now calculate the X,Y position of the upper-left corner 
+                    // (one of these will always be zero)
+                    int posX = Convert.ToInt32((Globals.MapView.view.Width - (drawBitmap.Width * ratio)) / 2);
+                    int posY = Convert.ToInt32((Globals.MapView.view.Height - (drawBitmap.Height * ratio)) / 2);
+
+                    //DxTexture t = new DxTexture(drawBitmap);
+                    //t.Dispose();
+                    
+                    //HudEmulator x = new HudEmulator();
+                    hud.DrawImage(drawBitmap, new Rectangle(posX, posY, newWidth, newHeight));
 
                     // draw portal markers
                     var zLayer = (int)Math.Floor(Globals.Core.Actions.LocationZ / 6) * 6;
                     if (currentBlock.zPortals.ContainsKey(zLayer)) {
-                        hud.BeginText("mono", 12, FontWeight.Normal, false);
-                        double ratio = GetBitmapToWindowRatio();
+                        hud.BeginText("mono", 12, Decal.Adapter.Wrappers.FontWeight.Normal, false);
                         foreach (var portal in currentBlock.zPortals[zLayer]) {
                             var x = ((portal.X - Globals.Core.Actions.LocationX)) * scale * ratio;
                             var y = ((Globals.Core.Actions.LocationY - portal.Y)) * scale * ratio;
                             var rpoint = Util.RotatePoint(new Point((int)x, (int)y), new Point(0, 0), 360-Globals.Core.Actions.Heading); 
                             var rect = new Rectangle(rpoint.X + (hud.Region.Width/2), rpoint.Y + (hud.Region.Height / 2), 300, 12);
 
-                            hud.WriteText(portal.Name, Color.White, WriteTextFormats.None, rect);
+                            hud.WriteText(portal.Name, Color.White, Decal.Adapter.Wrappers.WriteTextFormats.None, rect);
                         }
                         hud.EndText();
                     }
 
                     if (Globals.Config.DungeonMaps.Debug.Value) {
-                        hud.BeginText("mono", 14, FontWeight.Heavy, false);
+                        hud.BeginText("mono", 14, Decal.Adapter.Wrappers.FontWeight.Heavy, false);
                         var cells = currentBlock.GetCurrentCells();
                         var offset = 0;
 
@@ -619,7 +635,7 @@ namespace UtilityBelt.Tools {
                             var color = Math.Abs(cell.Z - Globals.Core.Actions.LocationZ) < 2 ? Color.LightGreen : Color.White;
                             var rect = new Rectangle(0, offset, hud.Region.Width, offset + 15);
 
-                            hud.WriteText(message, color, WriteTextFormats.SingleLine, rect);
+                            hud.WriteText(message, color, Decal.Adapter.Wrappers.WriteTextFormats.SingleLine, rect);
                             offset += 15;
                         }
                         hud.EndText();
@@ -640,9 +656,8 @@ namespace UtilityBelt.Tools {
             float yOffset = -(float)Globals.Core.Actions.LocationY;
 
             drawGfx.SmoothingMode = SmoothingMode.AntiAlias;
-            drawGfx.InterpolationMode = InterpolationMode.Bilinear;
-            //drawGfx.CompositingMode = CompositingMode.SourceCopy;
-            drawGfx.CompositingQuality = CompositingQuality.HighSpeed;
+            drawGfx.InterpolationMode = InterpolationMode.NearestNeighbor;
+            drawGfx.CompositingQuality = CompositingQuality.Default;
             drawGfx.Clear(Color.Transparent);
 
             drawGfx.TranslateTransform((currentBlock.dungeonWidth * QUALITY) / 2, (currentBlock.dungeonHeight * QUALITY) / 2);
@@ -709,19 +724,6 @@ namespace UtilityBelt.Tools {
 
 
             drawGfx.Save();
-
-            // Figure out the ratio
-            var ratio = GetBitmapToWindowRatio();
-            // now we can get the new height and width
-            int newHeight = Convert.ToInt32(drawBitmap.Height * ratio);
-            int newWidth = Convert.ToInt32(drawBitmap.Width * ratio);
-
-            // Now calculate the X,Y position of the upper-left corner 
-            // (one of these will always be zero)
-            int posX = Convert.ToInt32((Globals.MapView.view.Width - (drawBitmap.Width * ratio)) / 2);
-            int posY = Convert.ToInt32((Globals.MapView.view.Height - (drawBitmap.Height * ratio)) / 2);
-            
-            hud.DrawImage(drawBitmap, new Rectangle(posX, posY, newWidth, newHeight));
         }
 
         private double GetBitmapToWindowRatio() {
@@ -745,9 +747,11 @@ namespace UtilityBelt.Tools {
                 }
 
                 var watch = System.Diagnostics.Stopwatch.StartNew();
+                LandBlock currentBlock = LandBlockCache.Get(Globals.Core.Actions.Landcell);
+                DrawDungeon(currentBlock);
                 UpdateHud();
                 watch.Stop();
-                if (counter % 50 == 0) {
+                if (counter % 30 == 0) {
                     counter = 0;
                     if (Globals.Config.DungeonMaps.Debug.Value) {
                         Util.WriteToChat(string.Format("DungeonMaps: took {0}ms to draw", watch.ElapsedMilliseconds));
