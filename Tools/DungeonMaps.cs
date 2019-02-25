@@ -151,9 +151,12 @@ namespace UtilityBelt.Tools {
 
                 g.TranslateTransform((float)dungeonWidth - CELL_SIZE, (float)dungeonHeight - CELL_SIZE);
                 foreach (DungeonCell cell in zLayers[zKey]) {
-                    Bitmap rotated = new Bitmap(TileCache.Get(cell.EnvironmentId));
+                    Bitmap rotated;
+                    using (Bitmap b = new Bitmap(TileCache.Get(cell.EnvironmentId))) {
+                        rotated = b.Clone(new Rectangle(0, 0, b.Width, b.Height), PixelFormat.Format32bppPArgb);
+                    }
 
-                    rotated.MakeTransparent(TRANSPARENT_COLOR);
+                        rotated.MakeTransparent(TRANSPARENT_COLOR);
                     rotated.RotateFlip(cell.R);
 
                     g.DrawImage(rotated, new Rectangle((int)Math.Round(cell.X), (int)Math.Round(cell.Y), rotated.Width, rotated.Height), 0, 0, rotated.Width, rotated.Height, GraphicsUnit.Pixel, attributes);
@@ -258,7 +261,7 @@ namespace UtilityBelt.Tools {
 
             if (File.Exists(bitmapFile)) {
                 using (Bitmap bmp = new Bitmap(bitmapFile)) {
-                    image = new Bitmap(bmp);
+                    image = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format32bppPArgb);
                 }
             }
             else {
@@ -285,7 +288,7 @@ namespace UtilityBelt.Tools {
         private SolidBrush PLAYER_BRUSH = new SolidBrush(Color.Red);
         private SolidBrush TEXT_BRUSH = new SolidBrush(Color.White);
         private SolidBrush TEXT_BRUSH_GREEN = new SolidBrush(Color.LightGreen);
-        private const float QUALITY = 2.5F;
+        private const float QUALITY = 1F;
         private Font DEFAULT_FONT = new Font("Mono", 8);
         private Font PORTAL_FONT = new Font("Mono", 3);
         private const int PLAYER_SIZE = (int)(2 * QUALITY);
@@ -523,7 +526,7 @@ namespace UtilityBelt.Tools {
 
             LandBlock currentBlock = LandBlockCache.Get(Globals.Core.Actions.Landcell);
 
-            drawBitmap = new Bitmap((int)(currentBlock.dungeonWidth * QUALITY), (int)(currentBlock.dungeonHeight * QUALITY));
+            drawBitmap = new Bitmap((int)(currentBlock.dungeonWidth * QUALITY), (int)(currentBlock.dungeonHeight * QUALITY), PixelFormat.Format32bppPArgb);
             drawBitmap.MakeTransparent();
 
             drawGfx = Graphics.FromImage(drawBitmap);
@@ -637,8 +640,7 @@ namespace UtilityBelt.Tools {
             float yOffset = -(float)Globals.Core.Actions.LocationY;
 
             drawGfx.SmoothingMode = SmoothingMode.AntiAlias;
-            // lol this is so slow
-            //drawGfx.InterpolationMode = InterpolationMode.Bicubic;
+            drawGfx.InterpolationMode = InterpolationMode.Bilinear;
             drawGfx.Clear(Color.Transparent);
 
             drawGfx.TranslateTransform((currentBlock.dungeonWidth * QUALITY) / 2, (currentBlock.dungeonHeight * QUALITY) / 2);
