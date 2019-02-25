@@ -262,7 +262,7 @@ namespace UtilityBelt.Tools {
 
             if (File.Exists(bitmapFile)) {
                 using (Bitmap bmp = new Bitmap(bitmapFile)) {
-                    image = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format32bppPArgb);
+                    image = new Bitmap(bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format32bppPArgb));
                 }
             }
             else {
