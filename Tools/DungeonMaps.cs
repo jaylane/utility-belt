@@ -288,7 +288,7 @@ namespace UtilityBelt.Tools {
         private SolidBrush PLAYER_BRUSH = new SolidBrush(Color.Red);
         private SolidBrush TEXT_BRUSH = new SolidBrush(Color.White);
         private SolidBrush TEXT_BRUSH_GREEN = new SolidBrush(Color.LightGreen);
-        private const float QUALITY = 1F;
+        private const float QUALITY = 2F;
         private Font DEFAULT_FONT = new Font("Mono", 8);
         private Font PORTAL_FONT = new Font("Mono", 3);
         private const int PLAYER_SIZE = (int)(2 * QUALITY);
@@ -641,6 +641,8 @@ namespace UtilityBelt.Tools {
 
             drawGfx.SmoothingMode = SmoothingMode.AntiAlias;
             drawGfx.InterpolationMode = InterpolationMode.Bilinear;
+            //drawGfx.CompositingMode = CompositingMode.SourceCopy;
+            drawGfx.CompositingQuality = CompositingQuality.HighSpeed;
             drawGfx.Clear(Color.Transparent);
 
             drawGfx.TranslateTransform((currentBlock.dungeonWidth * QUALITY) / 2, (currentBlock.dungeonHeight * QUALITY) / 2);
