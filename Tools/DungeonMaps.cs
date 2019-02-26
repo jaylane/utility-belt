@@ -568,12 +568,12 @@ namespace UtilityBelt.Tools {
                     if (currentBlock.zPortals.ContainsKey(zLayer)) {
                         hud.BeginText("mono", 12, Decal.Adapter.Wrappers.FontWeight.Normal, false);
                         foreach (var portal in currentBlock.zPortals[zLayer]) {
-                            var x = ((portal.X - Globals.Core.Actions.LocationX)) * scale * ratio;
-                            var y = ((Globals.Core.Actions.LocationY - portal.Y)) * scale * ratio;
+                            var x = ((portal.X - Globals.Core.Actions.LocationX)) * scale;
+                            var y = (((Globals.Core.Actions.LocationY - portal.Y)) * scale);
                             var rpoint = Util.RotatePoint(new Point((int)x, (int)y), new Point(0, 0), 360-Globals.Core.Actions.Heading); 
-                            var rect = new Rectangle(rpoint.X + (hud.Region.Width/2), rpoint.Y + (hud.Region.Height / 2), 300, 12);
+                            var rect = new Rectangle(rpoint.X + (hud.Region.Width/2), rpoint.Y + (hud.Region.Height / 2), 200, 12);
 
-                            hud.WriteText(portal.Name, Color.White, Decal.Adapter.Wrappers.WriteTextFormats.None, rect);
+                            hud.WriteText(portal.Name, Color.White, Decal.Adapter.Wrappers.WriteTextFormats.SingleLine, rect);
                         }
                         hud.EndText();
                     }
@@ -611,8 +611,8 @@ namespace UtilityBelt.Tools {
         }
 
         private void DrawDungeon(LandBlock currentBlock) {
-            float playerXOffset = (int)Globals.Core.Actions.LocationX;
-            float playerYOffset = -(int)Globals.Core.Actions.LocationY;
+            float playerXOffset = (float)Globals.Core.Actions.LocationX;
+            float playerYOffset = -(float)Globals.Core.Actions.LocationY;
             int offsetX = (int)(drawBitmap.Width / 2);
             int offsetY = (int)(drawBitmap.Height / 2);
             int rotation = (int)(360 - (((float)Globals.Core.Actions.Heading + 180) % 360));
