@@ -652,6 +652,7 @@ namespace UtilityBelt.Tools {
             drawGfx.InterpolationMode = InterpolationMode.NearestNeighbor;
             drawGfx.CompositingQuality = CompositingQuality.Default;
             drawGfx.Clear(Color.Transparent);
+            GraphicsState gs = drawGfx.Save();
 
             drawGfx.TranslateTransform(offsetX, offsetY);
             drawGfx.RotateTransform(rotation);
@@ -665,7 +666,7 @@ namespace UtilityBelt.Tools {
                     var rotated = TileCache.Get(cell.EnvironmentId);
                     var x = (int)Math.Round(cell.X);
                     var y = (int)Math.Round(cell.Y);
-
+                    GraphicsState gs1 = drawGfx.Save();
                     drawGfx.TranslateTransform(x, y);
                     drawGfx.RotateTransform(cell.R);
 
@@ -674,6 +675,7 @@ namespace UtilityBelt.Tools {
                     drawGfx.RotateTransform(-cell.R);
                     drawGfx.TranslateTransform(-x, -y);
                     attributes.Dispose();
+                    drawGfx.Restore(gs1);
 
                     /*
                     // floors above your char
@@ -716,11 +718,7 @@ namespace UtilityBelt.Tools {
 
             drawGfx.FillRectangle(PLAYER_BRUSH, PLAYER_RECT);
 
-            drawGfx.TranslateTransform(-offsetX, -offsetY);
-
-
-            drawGfx.Save();
-
+            drawGfx.Restore(gs);
 
             /*
             foreach (var zLayer in zLayers) {
