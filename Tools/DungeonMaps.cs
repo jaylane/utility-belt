@@ -23,7 +23,7 @@ namespace UtilityBelt.Tools {
         public float X;
         public float Y;
         public float Z;
-        public RotateFlipType R = RotateFlipType.RotateNoneFlipNone;
+        public int R = 0;
 
         public DungeonCell(int landCell) {
             FileService service = Globals.Core.Filter<FileService>();
@@ -48,13 +48,13 @@ namespace UtilityBelt.Tools {
                 }
 
                 if (rot == 1) {
-                    R = RotateFlipType.Rotate180FlipNone;
+                    R = 180;
                 }
                 else if (rot < -0.70 && rot > -0.8) {
-                    R = RotateFlipType.Rotate90FlipNone;
+                    R = 90;
                 }
                 else if (rot > 0.70 && rot < 0.8) {
-                    R = RotateFlipType.Rotate270FlipNone;
+                    R = 270;
                 }
             }
             catch (Exception ex) { Util.LogException(ex); }
@@ -90,7 +90,7 @@ namespace UtilityBelt.Tools {
         public int LandBlockId;
         private List<int> checkedCells = new List<int>();
         private List<string> filledCoords = new List<string>();
-        private Dictionary<int, List<DungeonCell>> zLayers = new Dictionary<int, List<DungeonCell>>();
+        public Dictionary<int, List<DungeonCell>> zLayers = new Dictionary<int, List<DungeonCell>>();
         private Dictionary<int, DungeonCell> allCells = new Dictionary<int, DungeonCell>();
         public static List<int> portalIds = new List<int>();
         public Dictionary<int, List<Portal>> zPortals = new Dictionary<int, List<Portal>>();
@@ -142,6 +142,7 @@ namespace UtilityBelt.Tools {
         }
 
         public void DrawZLayers() {
+            /*
             ImageAttributes attributes = new ImageAttributes();
 
             foreach (var zKey in zLayers.Keys) {
@@ -169,6 +170,7 @@ namespace UtilityBelt.Tools {
             }
 
             attributes.Dispose();
+            */
         }
 
         public bool IsDungeon() {
@@ -262,6 +264,7 @@ namespace UtilityBelt.Tools {
 
             if (File.Exists(bitmapFile)) {
                 using (Bitmap bmp = new Bitmap(bitmapFile)) {
+                    bmp.MakeTransparent(Color.White);
                     image = new Bitmap(bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format32bppPArgb));
                 }
             }
@@ -289,7 +292,7 @@ namespace UtilityBelt.Tools {
         private SolidBrush PLAYER_BRUSH = new SolidBrush(Color.Red);
         private SolidBrush TEXT_BRUSH = new SolidBrush(Color.White);
         private SolidBrush TEXT_BRUSH_GREEN = new SolidBrush(Color.LightGreen);
-        private const float QUALITY = 2F;
+        private const float QUALITY = 1F;
         private Font DEFAULT_FONT = new Font("Mono", 8);
         private Font PORTAL_FONT = new Font("Mono", 3);
         private const int PLAYER_SIZE = (int)(2 * QUALITY);
@@ -527,7 +530,7 @@ namespace UtilityBelt.Tools {
 
             LandBlock currentBlock = LandBlockCache.Get(Globals.Core.Actions.Landcell);
 
-            drawBitmap = new Bitmap((int)(currentBlock.dungeonWidth * QUALITY), (int)(currentBlock.dungeonHeight * QUALITY), PixelFormat.Format32bppPArgb);
+            drawBitmap = new Bitmap(hud.Region.Width, hud.Region.Height, PixelFormat.Format32bppPArgb);
             drawBitmap.MakeTransparent();
 
             drawGfx = Graphics.FromImage(drawBitmap);
@@ -586,23 +589,9 @@ namespace UtilityBelt.Tools {
                 hud.BeginRender();
 
                 try {
-
-                    // Figure out the ratio
                     var ratio = GetBitmapToWindowRatio();
-                    // now we can get the new height and width
-                    int newHeight = Convert.ToInt32(drawBitmap.Height * ratio);
-                    int newWidth = Convert.ToInt32(drawBitmap.Width * ratio);
 
-                    // Now calculate the X,Y position of the upper-left corner 
-                    // (one of these will always be zero)
-                    int posX = Convert.ToInt32((Globals.MapView.view.Width - (drawBitmap.Width * ratio)) / 2);
-                    int posY = Convert.ToInt32((Globals.MapView.view.Height - (drawBitmap.Height * ratio)) / 2);
-
-                    //DxTexture t = new DxTexture(drawBitmap);
-                    //t.Dispose();
-                    
-                    //HudEmulator x = new HudEmulator();
-                    hud.DrawImage(drawBitmap, new Rectangle(posX, posY, newWidth, newHeight));
+                    hud.DrawImage(drawBitmap, new Rectangle(0, 0, hud.Region.Width, hud.Region.Height));
 
                     // draw portal markers
                     var zLayer = (int)Math.Floor(Globals.Core.Actions.LocationZ / 6) * 6;
@@ -652,21 +641,88 @@ namespace UtilityBelt.Tools {
         }
 
         private void DrawDungeon(LandBlock currentBlock) {
-            float xOffset = (float)Globals.Core.Actions.LocationX;
-            float yOffset = -(float)Globals.Core.Actions.LocationY;
+            float playerXOffset = (int)Globals.Core.Actions.LocationX;
+            float playerYOffset = -(int)Globals.Core.Actions.LocationY;
+            int offsetX = (int)((currentBlock.dungeonWidth * QUALITY) / 2);
+            int offsetY = (int)((currentBlock.dungeonHeight * QUALITY) / 2);
+            int rotation = (int)(360 - (((float)Globals.Core.Actions.Heading + 180) % 360));
+
 
             drawGfx.SmoothingMode = SmoothingMode.AntiAlias;
             drawGfx.InterpolationMode = InterpolationMode.NearestNeighbor;
             drawGfx.CompositingQuality = CompositingQuality.Default;
             drawGfx.Clear(Color.Transparent);
 
-            drawGfx.TranslateTransform((currentBlock.dungeonWidth * QUALITY) / 2, (currentBlock.dungeonHeight * QUALITY) / 2);
-            drawGfx.RotateTransform(360 - (((float)Globals.Core.Actions.Heading + 180) % 360));
+            drawGfx.TranslateTransform(offsetX, offsetY);
+            drawGfx.RotateTransform(rotation);
             drawGfx.ScaleTransform(scale, scale);
-            drawGfx.TranslateTransform(xOffset, yOffset);
+            drawGfx.TranslateTransform(playerXOffset, playerYOffset);
             var zLayers = currentBlock.bitmapLayers.Keys.ToList();
             var portals = Globals.Core.WorldFilter.GetByObjectClass(ObjectClass.Portal);
 
+            foreach (var zLayer in currentBlock.zLayers.Keys) {
+                foreach (var cell in currentBlock.zLayers[zLayer]) {
+                    var rotated = TileCache.Get(cell.EnvironmentId);
+                    var x = (int)Math.Round(cell.X);
+                    var y = (int)Math.Round(cell.Y);
+
+                    drawGfx.TranslateTransform(x, y);
+                    drawGfx.RotateTransform(cell.R);
+
+                    ImageAttributes attributes = new ImageAttributes();
+                    drawGfx.DrawImage(rotated, new Rectangle(-5, -5, rotated.Width+1, rotated.Height+1), 0, 0, rotated.Width, rotated.Height, GraphicsUnit.Pixel, attributes);
+                    drawGfx.RotateTransform(-cell.R);
+                    drawGfx.TranslateTransform(-x, -y);
+                    attributes.Dispose();
+
+                    /*
+                    // floors above your char
+                    if (Globals.Core.Actions.LocationZ - cell.Z < -3) {
+                        float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) / 6) * 0.4F;
+                        ColorMatrix matrix = new ColorMatrix();
+                        // opacity
+                        matrix.Matrix33 = b;
+                        ImageAttributes attributes = new ImageAttributes();
+                        attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                        drawGfx.DrawImage(rotated, new Rectangle((int)Math.Round(cell.X), (int)Math.Round(cell.Y), rotated.Width, rotated.Height), 0, 0, rotated.Width - 1, rotated.Height - 1, GraphicsUnit.Pixel, attributes);
+                    }
+                    else if (Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) < 3) {
+                        ImageAttributes attributes = new ImageAttributes();
+                        drawGfx.DrawImage(rotated, new Rectangle((int)Math.Round(cell.X), (int)Math.Round(cell.Y), rotated.Width, rotated.Height), 0, 0, rotated.Width - 1, rotated.Height - 1, GraphicsUnit.Pixel, attributes);
+
+                    }
+                    else {
+                        float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) / 6) * 0.4F;
+                        ColorMatrix matrix = new ColorMatrix(new float[][]{
+                            new float[] {b, 0, 0, 0, 0},
+                            new float[] {0, b, 0, 0, 0},
+                            new float[] {0, 0, b, 0, 0},
+                            new float[] {0, 0, 0, 1, 0},
+                            new float[] {0, 0, 0, 0, 1},
+                        });
+                        ImageAttributes attributes = new ImageAttributes();
+                        attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                        drawGfx.DrawImage(rotated, new Rectangle((int)Math.Round(cell.X), (int)Math.Round(cell.Y), rotated.Width, rotated.Height), 0, 0, rotated.Width - 1, rotated.Height - 1, GraphicsUnit.Pixel, attributes);
+                    }
+
+                    rotated.Dispose();
+                    */
+                }
+            }
+
+            drawGfx.TranslateTransform(-playerXOffset, -playerYOffset);
+            drawGfx.ScaleTransform(1 / scale, 1 / scale);
+            drawGfx.RotateTransform(-rotation);
+
+            drawGfx.FillRectangle(PLAYER_BRUSH, PLAYER_RECT);
+
+            drawGfx.TranslateTransform(-offsetX, -offsetY);
+
+
+            drawGfx.Save();
+
+
+            /*
             foreach (var zLayer in zLayers) {
                 ImageAttributes attributes = new ImageAttributes();
                 var bmp = currentBlock.bitmapLayers[zLayer];
@@ -713,17 +769,7 @@ namespace UtilityBelt.Tools {
 
                 attributes.Dispose();
             }
-
-            drawGfx.TranslateTransform(-xOffset, -yOffset);
-            drawGfx.ScaleTransform(1/scale, 1/scale);
-            drawGfx.RotateTransform(-(360 - (((float)Globals.Core.Actions.Heading + 180) % 360)));
-
-            drawGfx.FillRectangle(PLAYER_BRUSH, PLAYER_RECT);
-
-            drawGfx.TranslateTransform(-(currentBlock.dungeonWidth * QUALITY) / 2, -(currentBlock.dungeonHeight * QUALITY) / 2);
-
-
-            drawGfx.Save();
+            */
         }
 
         private double GetBitmapToWindowRatio() {
@@ -749,12 +795,14 @@ namespace UtilityBelt.Tools {
                 var watch = System.Diagnostics.Stopwatch.StartNew();
                 LandBlock currentBlock = LandBlockCache.Get(Globals.Core.Actions.Landcell);
                 DrawDungeon(currentBlock);
-                UpdateHud();
                 watch.Stop();
+                var watch2 = System.Diagnostics.Stopwatch.StartNew();
+                UpdateHud();
+                watch2.Stop();
                 if (counter % 30 == 0) {
                     counter = 0;
                     if (Globals.Config.DungeonMaps.Debug.Value) {
-                        Util.WriteToChat(string.Format("DungeonMaps: took {0}ms to draw", watch.ElapsedMilliseconds));
+                        Util.WriteToChat(string.Format("DungeonMaps: draw: {0}ms update: {1}ms", watch.ElapsedMilliseconds, watch2.ElapsedMilliseconds));
                     }
                 }
                 ++counter;
