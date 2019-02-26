@@ -235,7 +235,7 @@ namespace UtilityBelt.Tools {
                 }
             }
             else {
-                image = new Bitmap(10, 10);
+                image = null;
             }
 
             cache.Add(environmentId, image);
@@ -636,6 +636,9 @@ namespace UtilityBelt.Tools {
                     var rotated = TileCache.Get(cell.EnvironmentId);
                     var x = (int)Math.Round(cell.X);
                     var y = (int)Math.Round(cell.Y);
+
+                    if (rotated == null) continue;
+
                     GraphicsState gs1 = drawGfx.Save();
                     drawGfx.TranslateTransform(x, y);
                     drawGfx.RotateTransform(cell.R);
