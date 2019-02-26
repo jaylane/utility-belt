@@ -647,10 +647,14 @@ namespace UtilityBelt.Tools {
 
                     // floors above your char
                     if (Globals.Core.Actions.LocationZ - cell.Z < -3) {
-                        float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) / 6) * 0.4F;
-                        ColorMatrix matrix = new ColorMatrix();
-                        // opacity
-                        matrix.Matrix33 = b;
+                        float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) / 6) * 0.5F;
+                        ColorMatrix matrix = new ColorMatrix(new float[][]{
+                            new float[] {1, 0, 0, 0, 0},
+                            new float[] {0, 1, 0, 0, 0},
+                            new float[] {0, 0, 1, 0, 0},
+                            new float[] {0, 0, 0, b, 0},
+                            new float[] {0, 0, 0, 0, 1},
+                        });
                         attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
                     }
                     // current floor
