@@ -581,7 +581,6 @@ namespace UtilityBelt.Tools {
 
                     if (!PyrealsWillFitInMainPack(totalSellValue + (value * stackCount))) {
                         Util.WriteToChat(string.Format("break to sell 2: {0} - {1}", sellItemCount, stackCount));
-                        Stop();
                         break;
                     }
 

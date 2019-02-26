@@ -254,7 +254,7 @@ namespace UtilityBelt.Tools {
 
     class DungeonMaps : IDisposable {
         private const int THINK_INTERVAL = 100;
-        private const int DRAW_INTERVAL = 50;
+        private const int DRAW_INTERVAL = 60;
         private SolidBrush PLAYER_BRUSH = new SolidBrush(Color.Red);
         private SolidBrush TEXT_BRUSH = new SolidBrush(Color.White);
         private SolidBrush TEXT_BRUSH_GREEN = new SolidBrush(Color.LightGreen);
@@ -641,28 +641,20 @@ namespace UtilityBelt.Tools {
                     drawGfx.RotateTransform(cell.R);
 
                     ImageAttributes attributes = new ImageAttributes();
-                    drawGfx.DrawImage(rotated, new Rectangle(-5, -5, rotated.Width+1, rotated.Height+1), 0, 0, rotated.Width, rotated.Height, GraphicsUnit.Pixel, attributes);
-                    drawGfx.RotateTransform(-cell.R);
-                    drawGfx.TranslateTransform(-x, -y);
-                    attributes.Dispose();
-                    drawGfx.Restore(gs1);
 
-                    /*
                     // floors above your char
                     if (Globals.Core.Actions.LocationZ - cell.Z < -3) {
                         float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) / 6) * 0.4F;
                         ColorMatrix matrix = new ColorMatrix();
                         // opacity
                         matrix.Matrix33 = b;
-                        ImageAttributes attributes = new ImageAttributes();
                         attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-                        drawGfx.DrawImage(rotated, new Rectangle((int)Math.Round(cell.X), (int)Math.Round(cell.Y), rotated.Width, rotated.Height), 0, 0, rotated.Width - 1, rotated.Height - 1, GraphicsUnit.Pixel, attributes);
                     }
+                    // current floor
                     else if (Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) < 3) {
-                        ImageAttributes attributes = new ImageAttributes();
-                        drawGfx.DrawImage(rotated, new Rectangle((int)Math.Round(cell.X), (int)Math.Round(cell.Y), rotated.Width, rotated.Height), 0, 0, rotated.Width - 1, rotated.Height - 1, GraphicsUnit.Pixel, attributes);
 
                     }
+                    // floors below
                     else {
                         float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) / 6) * 0.4F;
                         ColorMatrix matrix = new ColorMatrix(new float[][]{
@@ -672,13 +664,16 @@ namespace UtilityBelt.Tools {
                             new float[] {0, 0, 0, 1, 0},
                             new float[] {0, 0, 0, 0, 1},
                         });
-                        ImageAttributes attributes = new ImageAttributes();
                         attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-                        drawGfx.DrawImage(rotated, new Rectangle((int)Math.Round(cell.X), (int)Math.Round(cell.Y), rotated.Width, rotated.Height), 0, 0, rotated.Width - 1, rotated.Height - 1, GraphicsUnit.Pixel, attributes);
                     }
 
-                    rotated.Dispose();
-                    */
+                    // TODO: bitblt/LockBitmap
+                    drawGfx.DrawImage(rotated, new Rectangle(-5, -5, rotated.Width + 1, rotated.Height + 1), 0, 0, rotated.Width, rotated.Height, GraphicsUnit.Pixel, attributes);
+
+                    drawGfx.RotateTransform(-cell.R);
+                    drawGfx.TranslateTransform(-x, -y);
+                    attributes.Dispose();
+                    drawGfx.Restore(gs1);
                 }
                 var opacity = Math.Max(Math.Min(1 - (Math.Abs(Globals.Core.Actions.LocationZ - zLayer) / 6) * 0.4F, 1), 0) * 255;
                 var portalBrush = new SolidBrush(Color.FromArgb((int)opacity, 153, 0, 204));
