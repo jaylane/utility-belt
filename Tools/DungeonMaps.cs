@@ -112,8 +112,6 @@ namespace UtilityBelt.Tools {
 
             dungeonWidth = (int)(Math.Abs(maxX) + Math.Abs(minX) + CELL_SIZE);
             dungeonHeight = (int)(Math.Abs(maxY) + Math.Abs(minY) + CELL_SIZE);
-
-            DrawZLayers();
         }
 
         internal void LoadCells() {
@@ -139,38 +137,6 @@ namespace UtilityBelt.Tools {
                     zLayers[roundedZ].Add(cell);
                 }
             }
-        }
-
-        public void DrawZLayers() {
-            /*
-            ImageAttributes attributes = new ImageAttributes();
-
-            foreach (var zKey in zLayers.Keys) {
-                bitmapLayers[zKey] = new Bitmap(dungeonWidth, dungeonHeight);
-                bitmapLayers[zKey].MakeTransparent();
-
-                Graphics g = Graphics.FromImage(bitmapLayers[zKey]);
-
-                g.TranslateTransform((float)dungeonWidth - CELL_SIZE, (float)dungeonHeight - CELL_SIZE);
-                foreach (DungeonCell cell in zLayers[zKey]) {
-                    Bitmap rotated;
-                    using (Bitmap b = new Bitmap(TileCache.Get(cell.EnvironmentId))) {
-                        rotated = b.Clone(new Rectangle(0, 0, b.Width, b.Height), PixelFormat.Format32bppPArgb);
-                    }
-
-                        rotated.MakeTransparent(TRANSPARENT_COLOR);
-                    rotated.RotateFlip(cell.R);
-
-                    g.DrawImage(rotated, new Rectangle((int)Math.Round(cell.X), (int)Math.Round(cell.Y), rotated.Width, rotated.Height), 0, 0, rotated.Width, rotated.Height, GraphicsUnit.Pixel, attributes);
-                    rotated.Dispose();
-                }
-                //g.TranslateTransform(-(float)dungeonWidth / 2, -(float)dungeonHeight / 2);
-                g.Save();
-                g.Dispose();
-            }
-
-            attributes.Dispose();
-            */
         }
 
         public bool IsDungeon() {
@@ -295,7 +261,7 @@ namespace UtilityBelt.Tools {
         private const float QUALITY = 1F;
         private Font DEFAULT_FONT = new Font("Mono", 8);
         private Font PORTAL_FONT = new Font("Mono", 3);
-        private const int PLAYER_SIZE = (int)(2 * QUALITY);
+        private const int PLAYER_SIZE = 4;
         private Rectangle PLAYER_RECT = new Rectangle(-(PLAYER_SIZE / 2), -(PLAYER_SIZE / 2), PLAYER_SIZE, PLAYER_SIZE);
         private DateTime lastDrawTime = DateTime.UtcNow;
         private bool disposed = false;
@@ -437,13 +403,17 @@ namespace UtilityBelt.Tools {
 
         private void UIDungeonMapsClearTileCache_Hit(object sender, EventArgs e) {
             try {
-                LandBlockCache.Clear();
-                TileCache.Clear();
-                LandBlock.portalIds.Clear();
-                DestroyHud();
-                CreateHud();
+                ClearCache();
             }
             catch (Exception ex) { Util.LogException(ex); }
+        }
+
+        private void ClearCache() {
+            LandBlockCache.Clear();
+            TileCache.Clear();
+            LandBlock.portalIds.Clear();
+            DestroyHud();
+            CreateHud();
         }
 
         private void View_Resize(object sender, EventArgs e) {
@@ -593,8 +563,8 @@ namespace UtilityBelt.Tools {
 
                     hud.DrawImage(drawBitmap, new Rectangle(0, 0, hud.Region.Width, hud.Region.Height));
 
-                    // draw portal markers
-                    var zLayer = (int)Math.Floor(Globals.Core.Actions.LocationZ / 6) * 6;
+                    // draw portal labels
+                    var zLayer = (int)Math.Round(Globals.Core.Actions.LocationZ / 6) * 6;
                     if (currentBlock.zPortals.ContainsKey(zLayer)) {
                         hud.BeginText("mono", 12, Decal.Adapter.Wrappers.FontWeight.Normal, false);
                         foreach (var portal in currentBlock.zPortals[zLayer]) {
@@ -643,13 +613,13 @@ namespace UtilityBelt.Tools {
         private void DrawDungeon(LandBlock currentBlock) {
             float playerXOffset = (int)Globals.Core.Actions.LocationX;
             float playerYOffset = -(int)Globals.Core.Actions.LocationY;
-            int offsetX = (int)((currentBlock.dungeonWidth * QUALITY) / 2);
-            int offsetY = (int)((currentBlock.dungeonHeight * QUALITY) / 2);
+            int offsetX = (int)(drawBitmap.Width / 2);
+            int offsetY = (int)(drawBitmap.Height / 2);
             int rotation = (int)(360 - (((float)Globals.Core.Actions.Heading + 180) % 360));
 
 
             drawGfx.SmoothingMode = SmoothingMode.AntiAlias;
-            drawGfx.InterpolationMode = InterpolationMode.NearestNeighbor;
+            drawGfx.InterpolationMode = InterpolationMode.Bilinear;
             drawGfx.CompositingQuality = CompositingQuality.Default;
             drawGfx.Clear(Color.Transparent);
             GraphicsState gs = drawGfx.Save();
@@ -710,6 +680,17 @@ namespace UtilityBelt.Tools {
                     rotated.Dispose();
                     */
                 }
+                var opacity = Math.Max(Math.Min(1 - (Math.Abs(Globals.Core.Actions.LocationZ - zLayer) / 6) * 0.4F, 1), 0) * 255;
+                var portalBrush = new SolidBrush(Color.FromArgb((int)opacity, 153, 0, 204));
+
+                // draw portal markers
+                if (currentBlock.zPortals.ContainsKey(zLayer)) {
+                    foreach (var portal in currentBlock.zPortals[zLayer]) {
+                        drawGfx.FillEllipse(portalBrush, -(float)(portal.X + 1.5), (float)(portal.Y - 1.5), 2F, 2F);
+                    }
+                }
+
+                portalBrush.Dispose();
             }
 
             drawGfx.TranslateTransform(-playerXOffset, -playerYOffset);
@@ -719,55 +700,6 @@ namespace UtilityBelt.Tools {
             drawGfx.FillRectangle(PLAYER_BRUSH, PLAYER_RECT);
 
             drawGfx.Restore(gs);
-
-            /*
-            foreach (var zLayer in zLayers) {
-                ImageAttributes attributes = new ImageAttributes();
-                var bmp = currentBlock.bitmapLayers[zLayer];
-
-                // floors above your char
-                if (Globals.Core.Actions.LocationZ - zLayer < -3) {
-                    // opacity
-                    float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - zLayer) / 6) * 0.4F;
-                    ColorMatrix matrix = new ColorMatrix();
-                    matrix.Matrix33 = b;
-                    attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-                }
-                // floor we are on
-                else if (Math.Abs(Globals.Core.Actions.LocationZ - zLayer) < 3) {
-                }
-                // floors below your char
-                else {
-                    // darken
-                    float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - zLayer) / 6) * 0.4F;
-                    ColorMatrix matrix = new ColorMatrix(new float[][]{
-                            new float[] {b, 0, 0, 0, 0},
-                            new float[] {0, b, 0, 0, 0},
-                            new float[] {0, 0, b, 0, 0},
-                            new float[] {0, 0, 0, 1, 0},
-                            new float[] {0, 0, 0, 0, 1},
-                        });
-                    attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-                }
-
-                drawGfx.DrawImage(bmp,
-                    new Rectangle(-bmp.Width + 5, -bmp.Height + 5, bmp.Width, bmp.Height),
-                    0, 0, bmp.Width, bmp.Height,
-                    GraphicsUnit.Pixel, attributes);
-
-                var opacity = Math.Max(Math.Min(1 - (Math.Abs(Globals.Core.Actions.LocationZ - zLayer) / 6) * 0.4F, 1), 0) * 255;
-                var brush = new SolidBrush(Color.FromArgb((int)opacity, 153, 0, 204));
-                
-                // draw portal markers
-                if (currentBlock.zPortals.ContainsKey(zLayer)) {
-                    foreach (var portal in currentBlock.zPortals[zLayer]) {
-                        drawGfx.FillEllipse(brush, -(float)(portal.X + 1.5), (float)(portal.Y - 1.5), 2F, 2F);
-                    }
-                }
-
-                attributes.Dispose();
-            }
-            */
         }
 
         private double GetBitmapToWindowRatio() {
@@ -820,6 +752,9 @@ namespace UtilityBelt.Tools {
                     Globals.MapView.view["DungeonMapsRenderContainer"].MouseEvent -= DungeonMaps_MouseEvent;
                     Globals.MapView.view.Resize -= View_Resize;
                     Globals.MapView.view.Moved -= View_Moved;
+
+                    ClearCache();
+                    DestroyHud();
 
                     if (hud != null) {
                         Globals.Core.RenderService.RemoveHud(hud);
