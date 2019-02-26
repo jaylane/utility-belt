@@ -1,5 +1,5 @@
 # UtilityBelt
-UtilityBelt is a multipurpose decal plugin, specifically for use with [gdleac](https://www.gdleac.com/). Currently it has the following "modules".
+UtilityBelt is a multipurpose decal plugin. Currently it has the following "modules".
 - [AutoVendor](https://gitlab.com/trevis/utilitybelt/wikis/AutoVendor) - Automatically buy/sell based on a vtank loot profile when using a vendor.
 - [AutoSalvage](https://gitlab.com/trevis/utilitybelt/wikis/AutoSalvage) - Automatically salvage items in your inventory that match salvage rules from the currently loaded vtank loot profile.
 - [DungeonMaps](https://gitlab.com/trevis/utilitybelt/wikis/DungeonMaps) - Shows a map of the current dungeon on your screen.
