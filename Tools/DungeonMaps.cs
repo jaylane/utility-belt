@@ -618,9 +618,9 @@ namespace UtilityBelt.Tools {
             int rotation = (int)(360 - (((float)Globals.Core.Actions.Heading + 180) % 360));
 
 
-            drawGfx.SmoothingMode = SmoothingMode.AntiAlias;
-            drawGfx.InterpolationMode = InterpolationMode.Bilinear;
-            drawGfx.CompositingQuality = CompositingQuality.Default;
+            drawGfx.SmoothingMode = SmoothingMode.HighSpeed;
+            drawGfx.InterpolationMode = InterpolationMode.Low;
+            drawGfx.CompositingQuality = CompositingQuality.HighSpeed;
             drawGfx.Clear(Color.Transparent);
             GraphicsState gs = drawGfx.Save();
 
