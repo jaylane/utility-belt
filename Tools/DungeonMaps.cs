@@ -115,31 +115,46 @@ namespace UtilityBelt.Tools {
         }
 
         internal void LoadCells() {
-            FileService service = Globals.Core.Filter<FileService>();
-            int int32 = BitConverter.ToInt32(service.GetCellFile(65534 + LandBlockId), 4);
-            for (uint index = 0; (long)index < (long)int32; ++index) {
-                int num = ((int)index + LandBlockId + 256);
-                var cell = new DungeonCell(num);
-                if (cell.CellId != 0 && !this.filledCoords.Contains(cell.GetCoords())) {
-                    this.filledCoords.Add(cell.GetCoords());
-                    int roundedZ = (int)Math.Round(cell.Z);
-                    if (!zLayers.ContainsKey(roundedZ)) {
-                        zLayers.Add(roundedZ, new List<DungeonCell>());
+            try {
+                int cellCount;
+                FileService service = Globals.Core.Filter<FileService>();
+
+                try {
+                    cellCount = BitConverter.ToInt32(service.GetCellFile(65534 + LandBlockId), 4);
+                }
+                catch (Exception ex) {
+                    return;
+                }
+
+                for (uint index = 0; (long)index < (long)cellCount; ++index) {
+                    int num = ((int)index + LandBlockId + 256);
+                    var cell = new DungeonCell(num);
+                    if (cell.CellId != 0 && !this.filledCoords.Contains(cell.GetCoords())) {
+                        this.filledCoords.Add(cell.GetCoords());
+                        int roundedZ = (int)Math.Round(cell.Z);
+                        if (!zLayers.ContainsKey(roundedZ)) {
+                            zLayers.Add(roundedZ, new List<DungeonCell>());
+                        }
+
+                        if (cell.X < minX) minX = cell.X;
+                        if (cell.X > maxX) maxX = cell.X;
+                        if (cell.Y < minY) minY = cell.Y;
+                        if (cell.Y > maxY) maxY = cell.Y;
+
+                        allCells.Add(num, cell);
+
+                        zLayers[roundedZ].Add(cell);
                     }
-
-                    if (cell.X < minX) minX = cell.X;
-                    if (cell.X > maxX) maxX = cell.X;
-                    if (cell.Y < minY) minY = cell.Y;
-                    if (cell.Y > maxY) maxY = cell.Y;
-
-                    allCells.Add(num, cell);
-
-                    zLayers[roundedZ].Add(cell);
                 }
             }
+            catch (Exception ex) { Util.LogException(ex); }
         }
 
         public bool IsDungeon() {
+            if ((uint)(Globals.Core.Actions.Landcell << 16 >> 16) < 0x0100) {
+                return false;
+            }
+
             if (isDungeon.HasValue) {
                 return isDungeon.Value;
             }
@@ -150,13 +165,14 @@ namespace UtilityBelt.Tools {
             if (zLayers.Count > 0) {
                 foreach (var zKey in zLayers.Keys) {
                     foreach (var cell in zLayers[zKey]) {
-                        _hasCells = true;
-                        break;
                         // When this value is >= 0x0100 you are inside (either in a building or in a dungeon).
-                        //if ((cell.CellId << 16) < 0x0100) {
-                        //    _hasOutdoorCells = true;
-                        //    break;
-                        //}
+                        if ((uint)(cell.CellId << 16 >> 16) < 0x0100) {
+                            _hasOutdoorCells = true;
+                            break;
+                        }
+                        else {
+                            _hasCells = true;
+                        }
                     }
 
                     if (_hasOutdoorCells) break;
@@ -201,12 +217,13 @@ namespace UtilityBelt.Tools {
 
         public static LandBlock Get(int cellId) {
             if (cache.ContainsKey(cellId >> 16 << 16)) return cache[cellId >> 16 << 16];
+            if ((uint)(cellId << 16 >> 16) < 0x0100) return null;
 
             var watch = System.Diagnostics.Stopwatch.StartNew();
             var block = new LandBlock(cellId);
             watch.Stop();
 
-            Util.WriteToChat(string.Format("DungeonMaps: took {0}ms to cache LandBlock {1} (isDungeon? {2})", watch.ElapsedMilliseconds, (cellId >> 16).ToString("X"), block.IsDungeon()));
+            Util.WriteToChat(string.Format("DungeonMaps: took {0}ms to cache LandBlock {1} (isDungeon? {2} ({3}))", watch.ElapsedMilliseconds, (cellId).ToString("X8"), block.IsDungeon(), ((uint)(Globals.Core.Actions.Landcell << 16 >> 16)).ToString("X4")));
 
             cache.Add(block.LandBlockId, block);
 
@@ -244,7 +261,8 @@ namespace UtilityBelt.Tools {
         }
 
         public static void Clear() {
-            foreach (var key in cache.Keys) {
+            var keys = cache.Keys.ToArray();
+            foreach (var key in keys) {
                 if (cache[key] != null) {
                     cache[key].Dispose();
                     cache[key] = null;
@@ -501,8 +519,6 @@ namespace UtilityBelt.Tools {
 
             hud.Region = GetHudRect();
 
-            LandBlock currentBlock = LandBlockCache.Get(Globals.Core.Actions.Landcell);
-
             drawBitmap = new Bitmap(hud.Region.Width, hud.Region.Height, PixelFormat.Format32bppPArgb);
             drawBitmap.MakeTransparent();
 
@@ -543,6 +559,9 @@ namespace UtilityBelt.Tools {
         public void Draw() {
             try {
                 if (!Globals.Config.DungeonMaps.Enabled.Value) return;
+                if (hud == null) {
+                    CreateHud();
+                }
 
                 if (Globals.Config.DungeonMaps.DrawWhenClosed.Value == false && Globals.MapView.view.Visible == false) {
                     if (hud != null) hud.Clear();
@@ -551,11 +570,11 @@ namespace UtilityBelt.Tools {
 
                 LandBlock currentBlock = LandBlockCache.Get(Globals.Core.Actions.Landcell);
 
-                if (!currentBlock.IsDungeon()) {
+                if (currentBlock == null || (currentBlock != null && !currentBlock.IsDungeon())) {
                     if (hud != null) hud.Clear();
                     return;
                 }
-
+                
                 hud.Clear();
                 hud.Fill(Color.Transparent);
 
@@ -614,6 +633,8 @@ namespace UtilityBelt.Tools {
         }
 
         private void DrawDungeon(LandBlock currentBlock) {
+            if (drawBitmap == null || drawGfx == null) return;
+
             float playerXOffset = (float)Globals.Core.Actions.LocationX;
             float playerYOffset = -(float)Globals.Core.Actions.LocationY;
             int offsetX = (int)(drawBitmap.Width / 2);
@@ -717,10 +738,19 @@ namespace UtilityBelt.Tools {
             if (DateTime.UtcNow - lastDrawTime > TimeSpan.FromMilliseconds(DRAW_INTERVAL)) {
                 lastDrawTime = DateTime.UtcNow;
 
-                if (currentLandCell != Globals.Core.Actions.Landcell >> 16) {
+                if ((uint)(Globals.Core.Actions.Landcell << 16 >> 16) < 0x0100) {
+                    if (hud != null) {
+                        hud.Clear();
+                        DestroyHud();
+                    }
+                    currentLandCell = Globals.Core.Actions.Landcell >> 16 << 16;
+                    return;
+                }
+
+                if (currentLandCell != Globals.Core.Actions.Landcell >> 16 << 16) {
                     DestroyHud();
                     CreateHud();
-                    currentLandCell = Globals.Core.Actions.Landcell >> 16;
+                    currentLandCell = Globals.Core.Actions.Landcell >> 16 << 16;
 
                     if (Globals.Config.DungeonMaps.Debug.Value) {
                         Util.WriteToChat("DungeonMaps: Redraw hud because landcell changed");
@@ -729,6 +759,7 @@ namespace UtilityBelt.Tools {
 
                 var watch = System.Diagnostics.Stopwatch.StartNew();
                 LandBlock currentBlock = LandBlockCache.Get(Globals.Core.Actions.Landcell);
+
                 DrawDungeon(currentBlock);
                 watch.Stop();
                 var watch2 = System.Diagnostics.Stopwatch.StartNew();
