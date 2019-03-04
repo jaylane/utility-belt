@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace UtilityBelt
@@ -11,15 +12,21 @@ namespace UtilityBelt
 	public static class Util
 	{
         public static string GetPluginDirectory() {
-            return Environment.GetFolderPath(Environment.SpecialFolder.Personal) + @"\Decal Plugins\" + Globals.PluginName + @"\";
+            return Path.Combine(GetDecalPluginsDirectory(), Globals.PluginName);
+        }
+
+        private static string GetDecalPluginsDirectory() {
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins");
         }
 
         public static string GetCharacterDirectory() {
-            return GetPluginDirectory() + Globals.Core.CharacterFilter.Server + @"\" + Globals.Core.CharacterFilter.Name + @"\";
+            String path = Path.Combine(GetPluginDirectory(), Globals.Core.CharacterFilter.Server);
+            path = Path.Combine(path, Globals.Core.CharacterFilter.Name);
+            return path;
         }
 
         private static string GetLogDirectory() {
-            return GetCharacterDirectory() + @"logs\";
+            return Path.Combine(GetCharacterDirectory(), "logs");
         }
 
         public static void CreateDataDirectories() {
@@ -32,7 +39,7 @@ namespace UtilityBelt
 		{
 			try
 			{
-				using (StreamWriter writer = new StreamWriter(GetPluginDirectory() + "exceptions.txt", true))
+				using (StreamWriter writer = new StreamWriter(Path.Combine(GetPluginDirectory(), "exceptions.txt"), true))
 				{
 					writer.WriteLine("============================================================================");
 					writer.WriteLine(DateTime.Now.ToString());
@@ -66,7 +73,7 @@ namespace UtilityBelt
                 message = String.Format("{0} {1}", DateTime.Now.ToString("yy/MM/dd H:mm:ss"), message);
             }
 
-            File.AppendAllText(Util.GetLogDirectory() + logFileName, message + Environment.NewLine);
+            File.AppendAllText(Path.Combine(Util.GetLogDirectory(), logFileName), message + Environment.NewLine);
         }
 
         public static void WriteToChat(string message)
@@ -222,6 +229,12 @@ namespace UtilityBelt
         public static void DispatchChatToBoxWithPluginIntercept(string cmd) {
             if (!Decal_DispatchOnChatCommand(cmd))
                 Globals.Core.Actions.InvokeChatParser(cmd);
+        }
+
+        internal static string GetTilePath() {
+            string assemblyFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            return Path.Combine(Path.Combine(assemblyFolder, "Resources"), "tiles");
         }
 
         internal static void Think(string message) {
