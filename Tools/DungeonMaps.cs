@@ -245,7 +245,10 @@ namespace UtilityBelt.Tools {
 
         public static void Clear() {
             foreach (var key in cache.Keys) {
-                cache[key].Dispose();
+                if (cache[key] != null) {
+                    cache[key].Dispose();
+                    cache[key] = null;
+                }
             }
 
             cache.Clear();
