@@ -45,7 +45,7 @@ namespace UtilityBelt
 		private void CharacterFilter_LoginComplete(object sender, EventArgs e)
 		{
 			try {
-                string configFilePath = Util.GetCharacterDirectory() + "config.xml";
+                string configFilePath = System.IO.Path.Combine(Util.GetCharacterDirectory(), "config.xml");
 
                 Mag.Shared.Settings.SettingsFile.Init(configFilePath, Globals.PluginName);
 

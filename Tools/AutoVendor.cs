@@ -269,20 +269,23 @@ namespace UtilityBelt.Tools {
         }
         
         private string GetProfilePath(string profileName) {
-            if (File.Exists(Util.GetCharacterDirectory() + @"autovendor\" + profileName)) {
-                return Util.GetCharacterDirectory() + @"autovendor\" + profileName;
+            var charPath = Path.Combine(Util.GetCharacterDirectory(), "autovendor");
+            var mainPath = Path.Combine(Util.GetPluginDirectory(), "autovendor");
+
+            if (File.Exists(Path.Combine(charPath, profileName))) {
+                return Path.Combine(charPath, profileName);
             }
-            else if (File.Exists(Util.GetPluginDirectory() + @"autovendor\" + profileName)) {
-                return Util.GetPluginDirectory() + @"autovendor\" + profileName;
+            else if (File.Exists(Path.Combine(mainPath, profileName))) {
+                return Path.Combine(mainPath, profileName);
             }
-            else if (File.Exists(Util.GetCharacterDirectory() + @"autovendor\default.utl")) {
-                return Util.GetCharacterDirectory() + @"autovendor\default.utl";
+            else if (File.Exists(Path.Combine(charPath, "default.utl"))) {
+                return Path.Combine(charPath, "default.utl");
             }
-            else if (File.Exists(Util.GetPluginDirectory() + @"autovendor\default.utl")) {
-                return Util.GetPluginDirectory() + @"autovendor\default.utl";
+            else if (File.Exists(Path.Combine(mainPath, "default.utl"))) {
+                return Path.Combine(mainPath, "default.utl");
             }
 
-            return Util.GetPluginDirectory() + @"autovendor\" + profileName;
+            return Path.Combine(mainPath, profileName);
         }
 
         public void Start(int merchantId = 0, string useProfilePath = "") {
