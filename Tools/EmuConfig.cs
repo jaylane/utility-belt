@@ -48,7 +48,7 @@ namespace UtilityBelt.Tools {
                 string configName = ((HudStaticText)myRow[0]).Text.Replace(" ", "");
                 //Util.WriteToChat("Toggling " + configName);
                 ToggleConfig(configName);
-            } catch (Exception ex) { Util.LogException(ex); }
+            } catch (Exception ex) { Logger.LogException(ex); }
         } 
 
 
@@ -137,7 +137,7 @@ namespace UtilityBelt.Tools {
                         }
                     }
                 }
-            } catch (Exception ex) { Util.LogException(ex); }
+            } catch (Exception ex) { Logger.LogException(ex); }
         }
 
         //HudList.HudListRowAccessor myRow = UIMyKillTaskList[row];
@@ -152,7 +152,7 @@ namespace UtilityBelt.Tools {
             try {
                 Util.DispatchChatToBoxWithPluginIntercept(string.Format("/config {0}", setting));
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public void Dispose() {

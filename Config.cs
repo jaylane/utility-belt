@@ -29,7 +29,7 @@ namespace UtilityBelt {
                     AutoStack = new Setting<bool>("Config/InventoryManager/AutoStack", "Automatically combine stacked items", false);
                     Debug = new Setting<bool>("Config/InventoryManager/Debug", "Show debug messages", false);
                 }
-                catch (Exception e) { Util.LogException(e); }
+                catch (Exception e) { Logger.LogException(e); }
             }
 
             public void Dispose() {
@@ -60,7 +60,7 @@ namespace UtilityBelt {
                     Think = new Setting<bool>("Config/AutoSalvage/Think", "Think to yourself when finished", true);
                     Debug = new Setting<bool>("Config/AutoSalvage/Debug", "Show debug messages", false);
                 }
-                catch (Exception e) { Util.LogException(e); }
+                catch (Exception e) { Logger.LogException(e); }
             }
 
             public void Dispose() {
@@ -98,7 +98,7 @@ namespace UtilityBelt {
                     Debug = new Setting<bool>("Config/AutoVendor/Debug", "Show debug messages", false);
                     Speed = new Setting<int>("Config/AutoVendor/Speed", "Delay between autovendor actions", 500);
                 }
-                catch (Exception e) { Util.LogException(e); }
+                catch (Exception e) { Logger.LogException(e); }
             }
 
             public void Dispose() {
@@ -142,7 +142,7 @@ namespace UtilityBelt {
                     MapWindowY = new Setting<int>("Config/DungeonMaps/MapWindowY", "Saved map window Y position (top is 0)", 200);
                     ShowVisitedTiles = new Setting<bool>("Config/DungeonMaps/ShowVisitedTiles", "Show visited tiles", true);
                 }
-                catch (Exception e) { Util.LogException(e); }
+                catch (Exception e) { Logger.LogException(e); }
             }
 
             public void Dispose() {

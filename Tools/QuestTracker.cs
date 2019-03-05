@@ -179,7 +179,7 @@ namespace UtilityBelt.Tools {
                         e.Eat = true;
                     }
                 }
-            } catch (Exception ex) { Util.LogException(ex); }
+            } catch (Exception ex) { Logger.LogException(ex); }
         }
 
 
@@ -245,11 +245,11 @@ namespace UtilityBelt.Tools {
                         }
                         buttonClicked = false;
                         timer.Dispose();
-                    } catch (Exception ex) { Util.LogException(ex); }
+                    } catch (Exception ex) { Logger.LogException(ex); }
 
                 },
                             null, 500, System.Threading.Timeout.Infinite);
-            } catch (Exception ex) { Util.LogException(ex); }
+            } catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void PopulateQuestList_Click(object sender, EventArgs e) {

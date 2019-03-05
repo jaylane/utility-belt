@@ -43,7 +43,7 @@ namespace UtilityBelt.Tools {
             try {
                 Start();
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UIAutoSalvageDebug_Change(object sender, EventArgs e) {
@@ -73,7 +73,7 @@ namespace UtilityBelt.Tools {
                     return;
                 }
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public void Start(bool force = false) {
@@ -177,7 +177,7 @@ namespace UtilityBelt.Tools {
                         }
                     }
                 }
-                catch (Exception ex) { Util.LogException(ex); }
+                catch (Exception ex) { Logger.LogException(ex); }
             }
 
             return salvageIds;

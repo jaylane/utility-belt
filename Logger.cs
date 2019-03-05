@@ -10,6 +10,8 @@ namespace UtilityBelt {
     public static class Logger {
         private const int MAX_LOG_SIZE = 1024 * 1024 * 20; // 20mb
         private const int MAX_LOG_AGE = 14; // in days
+        private const int MAX_LOG_EXCEPTION = 50;
+        private static uint exceptionCount = 0;
 
         public static void Init() {
             TruncateLogFiles();
@@ -39,7 +41,7 @@ namespace UtilityBelt {
                     }
                 }
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private static void TruncateLogFiles() {
@@ -56,7 +58,33 @@ namespace UtilityBelt {
                     File.Delete(logFile);
                 }
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        public static void LogException(Exception ex) {
+            try {
+
+                if (exceptionCount > MAX_LOG_EXCEPTION) return;
+
+                exceptionCount++;
+
+                using (StreamWriter writer = new StreamWriter(Path.Combine(Util.GetPluginDirectory(), "exceptions.txt"), true)) {
+                    writer.WriteLine("============================================================================");
+                    writer.WriteLine(DateTime.Now.ToString());
+                    writer.WriteLine("Error: " + ex.Message);
+                    writer.WriteLine("Source: " + ex.Source);
+                    writer.WriteLine("Stack: " + ex.StackTrace);
+                    if (ex.InnerException != null) {
+                        writer.WriteLine("Inner: " + ex.InnerException.Message);
+                        writer.WriteLine("Inner Stack: " + ex.InnerException.StackTrace);
+                    }
+                    writer.WriteLine("============================================================================");
+                    writer.WriteLine("");
+                    writer.Close();
+                }
+            }
+            catch {
+            }
         }
     }
 }

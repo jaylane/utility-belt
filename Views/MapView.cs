@@ -28,7 +28,7 @@ namespace UtilityBelt.Views {
 
                 view.UserResizeable = true;
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public ACImage GetIcon() {
@@ -42,7 +42,7 @@ namespace UtilityBelt.Views {
                     }
                 }
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
             return acImage;
         }
 
