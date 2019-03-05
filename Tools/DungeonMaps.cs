@@ -316,7 +316,7 @@ namespace UtilityBelt.Tools {
             Globals.Config.DungeonMaps.Enabled.Changed += Config_DungeonMaps_Enabled_Changed;
 
             UIDungeonMapsDebug = (HudCheckBox)Globals.MainView.view["DungeonMapsDebug"];
-            UIDungeonMapsDebug.Checked = Globals.Config.DungeonMaps.Enabled.Value;
+            UIDungeonMapsDebug.Checked = Globals.Config.DungeonMaps.Debug.Value;
             UIDungeonMapsDebug.Change += UIDungeonMapsDebug_Change;
             Globals.Config.DungeonMaps.Debug.Changed += Config_DungeonMaps_Debug_Changed;
 
