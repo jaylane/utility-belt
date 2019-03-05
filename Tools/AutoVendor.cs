@@ -113,8 +113,8 @@ namespace UtilityBelt.Tools {
 
         public AutoVendor() {
             try {
-                Directory.CreateDirectory(Util.GetPluginDirectory() + @"autovendor\");
-                Directory.CreateDirectory(Util.GetCharacterDirectory() + @"autovendor\");
+                Directory.CreateDirectory(Path.Combine(Util.GetPluginDirectory(), "autovendor"));
+                Directory.CreateDirectory(Path.Combine(Util.GetCharacterDirectory(), @"autovendor"));
 
                 UIAutoVendorSpeedText = Globals.MainView.view != null ? (HudStaticText)Globals.MainView.view["AutoVendorSpeedText"] : new HudStaticText();
                 UIAutoVendorSpeedText.Text = Globals.Config.AutoVendor.Speed.Value.ToString();
@@ -157,7 +157,7 @@ namespace UtilityBelt.Tools {
                 Globals.Core.CommandLineText += Current_CommandLineText;
                 Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UIAutoVendorEnable_Change(object sender, EventArgs e) {
@@ -234,7 +234,7 @@ namespace UtilityBelt.Tools {
 
                 Start(e.Vendor.MerchantId);
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
@@ -248,7 +248,7 @@ namespace UtilityBelt.Tools {
                     return;
                 }
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
@@ -265,7 +265,7 @@ namespace UtilityBelt.Tools {
                     lastThought = DateTime.UtcNow;
                 }
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         
         private string GetProfilePath(string profileName) {
@@ -438,7 +438,7 @@ namespace UtilityBelt.Tools {
                     }
                 }
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void DoVendoring() {
@@ -604,7 +604,7 @@ namespace UtilityBelt.Tools {
 
                 Stop();
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private int GetVendorSellPrice(VendorItem item) {
@@ -620,7 +620,7 @@ namespace UtilityBelt.Tools {
 
                 price = (int)Math.Ceiling((item.Value / item.StackCount) * sellRate);
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
 
             return price;
         }
@@ -638,7 +638,7 @@ namespace UtilityBelt.Tools {
 
                 price = (int)Math.Floor((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * buyRate);
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
 
             return price;
         }
@@ -805,7 +805,7 @@ namespace UtilityBelt.Tools {
 
                 hasVendorOpen = true;
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
 
             return hasVendorOpen;
         }

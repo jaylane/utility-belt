@@ -101,7 +101,7 @@ namespace UtilityBelt.Tools {
                     return;
                 }
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void WorldFilter_ChangeObject(object sender, ChangeObjectEventArgs e) {
@@ -116,7 +116,7 @@ namespace UtilityBelt.Tools {
                     //Start();
                 }
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
@@ -126,7 +126,7 @@ namespace UtilityBelt.Tools {
                     //Start();
                 }
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public void Start(bool force=false) {

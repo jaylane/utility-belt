@@ -41,7 +41,7 @@ namespace Mag.Shared.Settings {
                     XmlDocument.LoadXml("<" + _rootNodeName + "></" + _rootNodeName + ">");
             }
             catch (Exception ex) {
-                Util.LogException(ex);
+                Logger.LogException(ex);
 
                 XmlDocument.LoadXml("<" + _rootNodeName + "></" + _rootNodeName + ">");
             }
@@ -78,7 +78,7 @@ namespace Mag.Shared.Settings {
 
                 return defaultValue;
             }
-            catch (Exception e) { Util.LogException(e); return defaultValue; }
+            catch (Exception e) { Logger.LogException(e); return defaultValue; }
         }
 
         public static T GetSetting<T>(string xPath, List<string> defaultValue, string description = "") {
@@ -104,7 +104,7 @@ namespace Mag.Shared.Settings {
 
                 return (T)Convert.ChangeType(returnVals, typeof(T));
             }
-            catch (Exception e) { Util.LogException(e); return (T)Convert.ChangeType(defaultValue, typeof(T)); }
+            catch (Exception e) { Logger.LogException(e); return (T)Convert.ChangeType(defaultValue, typeof(T)); }
         }
 
         public static T GetSetting<T>(string xPath, List<int> defaultValue, string description = "") {
@@ -136,7 +136,7 @@ namespace Mag.Shared.Settings {
 
                 return (T)Convert.ChangeType(returnVals, typeof(T));
             }
-            catch (Exception e) { Util.LogException(e); return (T)Convert.ChangeType(defaultValue, typeof(T)); }
+            catch (Exception e) { Logger.LogException(e); return (T)Convert.ChangeType(defaultValue, typeof(T)); }
         }
 
         public static void PutSetting(string xPath, List<int> values, string helpText, bool doSave) {
@@ -166,7 +166,7 @@ namespace Mag.Shared.Settings {
                     SaveXmlDocument();
                 }
             }
-            catch (Exception e) { Util.LogException(e); }
+            catch (Exception e) { Logger.LogException(e); }
         }
 
         public static void PutSetting(string xPath, List<string> values, string helpText, bool doSave) {
@@ -198,7 +198,7 @@ namespace Mag.Shared.Settings {
                     SaveXmlDocument();
                 }
             }
-            catch (Exception e) { Util.LogException(e); }
+            catch (Exception e) { Logger.LogException(e); }
         }
 
         public static void PutSetting<T>(string xPath, T value, string helpText, bool doSave) {
@@ -237,7 +237,7 @@ namespace Mag.Shared.Settings {
                     }
                 }
             }
-            catch (Exception e) { Util.LogException(e); }
+            catch (Exception e) { Logger.LogException(e); }
         }
 
         static XmlNode createMissingNode(string xPath) {

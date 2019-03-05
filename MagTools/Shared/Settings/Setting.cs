@@ -62,7 +62,7 @@ namespace Mag.Shared.Settings {
                     if (Changed != null)
                         Changed(this);
                 }
-                catch (Exception e) { Util.LogException(e); }
+                catch (Exception e) { Logger.LogException(e); }
             }
         }
 
@@ -79,21 +79,21 @@ namespace Mag.Shared.Settings {
 
                 LoadValueFromConfig(defaultValue);
             }
-            catch (Exception e) { Util.LogException(e); }
+            catch (Exception e) { Logger.LogException(e); }
         }
 
         void LoadValueFromConfig(T defaultValue) {
             try {
                 value = SettingsFile.GetSetting(Xpath, defaultValue, Description);
             }
-            catch (Exception e) { Util.LogException(e); }
+            catch (Exception e) { Logger.LogException(e); }
         }
 
         void StoreValueInConfigFile() {
             try {
                 SettingsFile.PutSetting(Xpath, value, Description, true);
             }
-            catch (Exception e) { Util.LogException(e); }
+            catch (Exception e) { Logger.LogException(e); }
         }
 
         public void Dispose() {

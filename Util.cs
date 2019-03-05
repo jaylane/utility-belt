@@ -35,32 +35,6 @@ namespace UtilityBelt
             System.IO.Directory.CreateDirectory(GetLogDirectory());
         }
 
-        public static void LogException(Exception ex)
-		{
-			try
-			{
-				using (StreamWriter writer = new StreamWriter(Path.Combine(GetPluginDirectory(), "exceptions.txt"), true))
-				{
-					writer.WriteLine("============================================================================");
-					writer.WriteLine(DateTime.Now.ToString());
-					writer.WriteLine("Error: " + ex.Message);
-					writer.WriteLine("Source: " + ex.Source);
-					writer.WriteLine("Stack: " + ex.StackTrace);
-					if (ex.InnerException != null)
-					{
-						writer.WriteLine("Inner: " + ex.InnerException.Message);
-						writer.WriteLine("Inner Stack: " + ex.InnerException.StackTrace);
-					}
-					writer.WriteLine("============================================================================");
-					writer.WriteLine("");
-					writer.Close();
-				}
-			}
-			catch
-			{
-			}
-        }
-
         public static void WriteToDebugLog(string message) {
             WriteToLogFile("debug", message, true);
         }
@@ -83,7 +57,7 @@ namespace UtilityBelt
 				Globals.Host.Actions.AddChatText("[" + Globals.PluginName + "] " + message, 5);
                 WriteToDebugLog(message);
 			}
-			catch (Exception ex) { LogException(ex); }
+			catch (Exception ex) { Logger.LogException(ex); }
 		}
 
         public static int GetFreeMainPackSpace() {
@@ -241,7 +215,7 @@ namespace UtilityBelt
             try {
                 DispatchChatToBoxWithPluginIntercept(string.Format("/tell {0}, {1}", Globals.Core.CharacterFilter.Name, message));
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public static string GetObjectName(int id) {

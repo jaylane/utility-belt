@@ -57,7 +57,7 @@ namespace UtilityBelt.Tools {
                     R = 270;
                 }
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public string GetCoords() {
@@ -147,7 +147,7 @@ namespace UtilityBelt.Tools {
                     }
                 }
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public bool IsDungeon() {
@@ -373,7 +373,7 @@ namespace UtilityBelt.Tools {
                     CreateHud();
                 }
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Config_DungeonMaps_Enabled_Changed(Setting<bool> obj) {
@@ -381,7 +381,7 @@ namespace UtilityBelt.Tools {
                 UIDungeonMapsEnabled.Checked = Globals.Config.DungeonMaps.Enabled.Value;
                 Toggle();
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UIDungeonMapsEnabled_Change(object sender, EventArgs e) {
@@ -389,49 +389,49 @@ namespace UtilityBelt.Tools {
                 Globals.Config.DungeonMaps.Enabled.Value = UIDungeonMapsEnabled.Checked;
                 Toggle();
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Config_DungeonMaps_Debug_Changed(Setting<bool> obj) {
             try {
                 UIDungeonMapsDebug.Checked = Globals.Config.DungeonMaps.Debug.Value;
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UIDungeonMapsDebug_Change(object sender, EventArgs e) {
             try {
                 Globals.Config.DungeonMaps.Debug.Value = UIDungeonMapsDebug.Checked;
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Config_DungeonMaps_DrawWhenClosed_Changed(Setting<bool> obj) {
             try {
                 UIDungeonMapsDrawWhenClosed.Checked = Globals.Config.DungeonMaps.DrawWhenClosed.Value;
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UIDungeonMapsDrawWhenClosed_Change(object sender, EventArgs e) {
             try {
                 Globals.Config.DungeonMaps.DrawWhenClosed.Value = UIDungeonMapsDrawWhenClosed.Checked;
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Config_DungeonMaps_ShowVisitedTiles_Changed(Setting<bool> obj) {
             try {
                 UIDungeonMapsShowVisitedTiles.Checked = Globals.Config.DungeonMaps.ShowVisitedTiles.Value;
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UIDungeonMapsShowVisitedTiles_Change(object sender, EventArgs e) {
             try {
                 Globals.Config.DungeonMaps.ShowVisitedTiles.Value = UIDungeonMapsShowVisitedTiles.Checked;
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UIDungeonMapsOpacity_Changed(int min, int max, int pos) {
@@ -448,7 +448,7 @@ namespace UtilityBelt.Tools {
             try {
                 ClearCache();
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void ClearCache() {
@@ -468,7 +468,7 @@ namespace UtilityBelt.Tools {
                 DestroyHud();
                 CreateHud();
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void DungeonMaps_MouseEvent(object sender, VirindiViewService.Controls.ControlMouseEventArgs e) {
@@ -483,7 +483,7 @@ namespace UtilityBelt.Tools {
                         break;
                 }
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Core_RegionChange3D(object sender, RegionChange3DEventArgs e) {
@@ -493,7 +493,7 @@ namespace UtilityBelt.Tools {
                 DestroyHud();
                 CreateHud();
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void View_Moved(object sender, EventArgs e) {
@@ -503,7 +503,7 @@ namespace UtilityBelt.Tools {
                 DestroyHud();
                 CreateHud();
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
@@ -518,7 +518,7 @@ namespace UtilityBelt.Tools {
                     }
                 }
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public float Map(float value, float fromSource, float toSource, float fromTarget, float toTarget) {
@@ -648,14 +648,14 @@ namespace UtilityBelt.Tools {
                         hud.EndText();
                     }
                 }
-                catch (Exception ex) { Util.LogException(ex); }
+                catch (Exception ex) { Logger.LogException(ex); }
                 finally {
                     hud.EndRender();
                     hud.Alpha = (int)Math.Round(((Globals.Config.DungeonMaps.Opacity.Value * 5) / 100F)*255);
                     hud.Enabled = true;
                 }
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void DrawDungeon(LandBlock currentBlock) {

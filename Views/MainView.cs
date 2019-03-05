@@ -24,7 +24,7 @@ namespace UtilityBelt.Views {
 
                 view = new VirindiViewService.HudView(properties, controls);
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public ACImage GetIcon() {
@@ -38,7 +38,7 @@ namespace UtilityBelt.Views {
                     }
                 }
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
             return acImage;
         }
 

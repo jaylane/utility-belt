@@ -28,7 +28,7 @@ namespace UtilityBelt
 			try {
 				Globals.Init("UtilityBelt", Host, Core);
             }
-			catch (Exception ex) { Util.LogException(ex); }
+			catch (Exception ex) { Logger.LogException(ex); }
 		}
 
 		/// <summary>
@@ -38,7 +38,7 @@ namespace UtilityBelt
 			try {
 
 			}
-			catch (Exception ex) { Util.LogException(ex); }
+			catch (Exception ex) { Logger.LogException(ex); }
 		}
 
 		[BaseEvent("LoginComplete", "CharacterFilter")]
@@ -50,6 +50,7 @@ namespace UtilityBelt
                 Mag.Shared.Settings.SettingsFile.Init(configFilePath, Globals.PluginName);
 
                 Util.CreateDataDirectories();
+                Logger.Init();
 
                 Globals.Config = new Config();
                 Globals.MainView = new MainView();
@@ -64,7 +65,7 @@ namespace UtilityBelt
 
                 Globals.Core.RenderFrame += Core_RenderFrame;
             }
-			catch (Exception ex) { Util.LogException(ex); }
+			catch (Exception ex) { Logger.LogException(ex); }
 		}
 
         private void Core_RenderFrame(object sender, EventArgs e) {
@@ -74,7 +75,7 @@ namespace UtilityBelt
                 if (dungeonMaps != null) dungeonMaps.Think();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Think();
             }
-            catch (Exception ex) { Util.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         [BaseEvent("Logoff", "CharacterFilter")]
@@ -93,7 +94,7 @@ namespace UtilityBelt
                 if (Globals.MainView != null) Globals.MainView.Dispose();
                 if (Globals.Config != null) Globals.Config.Dispose();
             }
-			catch (Exception ex) { Util.LogException(ex); }
+			catch (Exception ex) { Logger.LogException(ex); }
 		}
 	}
 }
