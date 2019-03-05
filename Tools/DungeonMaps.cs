@@ -297,10 +297,12 @@ namespace UtilityBelt.Tools {
         private  int MAX_SCALE = 16;
         private int currentLandCell = 0;
         private Graphics drawGfx;
+        private List<uint> visitedTiles = new List<uint>();
 
         HudCheckBox UIDungeonMapsEnabled { get; set; }
         HudCheckBox UIDungeonMapsDebug { get; set; }
         HudCheckBox UIDungeonMapsDrawWhenClosed { get; set; }
+        HudCheckBox UIDungeonMapsShowVisitedTiles { get; set; }
         HudHSlider UIDungeonMapsOpacity { get; set; }
         HudButton UIDungeonMapsClearTileCache { get; set; }
 
@@ -326,6 +328,11 @@ namespace UtilityBelt.Tools {
             UIDungeonMapsDrawWhenClosed.Checked = Globals.Config.DungeonMaps.DrawWhenClosed.Value;
             UIDungeonMapsDrawWhenClosed.Change += UIDungeonMapsDrawWhenClosed_Change;
             Globals.Config.DungeonMaps.DrawWhenClosed.Changed += Config_DungeonMaps_DrawWhenClosed_Changed;
+
+            UIDungeonMapsShowVisitedTiles = (HudCheckBox)Globals.MainView.view["DungeonMapsShowVisitedTiles"];
+            UIDungeonMapsShowVisitedTiles.Checked = Globals.Config.DungeonMaps.ShowVisitedTiles.Value;
+            UIDungeonMapsShowVisitedTiles.Change += UIDungeonMapsShowVisitedTiles_Change;
+            Globals.Config.DungeonMaps.ShowVisitedTiles.Changed += Config_DungeonMaps_ShowVisitedTiles_Changed;
 
             UIDungeonMapsOpacity = (HudHSlider)Globals.MainView.view["DungeonMapsOpacity"];
             UIDungeonMapsOpacity.Position = Globals.Config.DungeonMaps.Opacity.Value;
@@ -413,6 +420,20 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Util.LogException(ex); }
         }
 
+        private void Config_DungeonMaps_ShowVisitedTiles_Changed(Setting<bool> obj) {
+            try {
+                UIDungeonMapsShowVisitedTiles.Checked = Globals.Config.DungeonMaps.ShowVisitedTiles.Value;
+            }
+            catch (Exception ex) { Util.LogException(ex); }
+        }
+
+        private void UIDungeonMapsShowVisitedTiles_Change(object sender, EventArgs e) {
+            try {
+                Globals.Config.DungeonMaps.ShowVisitedTiles.Value = UIDungeonMapsShowVisitedTiles.Checked;
+            }
+            catch (Exception ex) { Util.LogException(ex); }
+        }
+
         private void UIDungeonMapsOpacity_Changed(int min, int max, int pos) {
             if (pos != Globals.Config.DungeonMaps.Opacity.Value) {
                 Globals.Config.DungeonMaps.Opacity.Value = pos;
@@ -436,6 +457,10 @@ namespace UtilityBelt.Tools {
             LandBlock.portalIds.Clear();
             DestroyHud();
             CreateHud();
+        }
+
+        private void ClearVisitedTiles() {
+            visitedTiles.Clear();
         }
 
         private void View_Resize(object sender, EventArgs e) {
@@ -656,6 +681,21 @@ namespace UtilityBelt.Tools {
             var zLayers = currentBlock.bitmapLayers.Keys.ToList();
             var portals = Globals.Core.WorldFilter.GetByObjectClass(ObjectClass.Portal);
 
+            ColorMatrix matrix = new ColorMatrix(new float[][]{
+                            new float[] {1, 0, 0, 0, 0},
+                            new float[] {0, 1, 0, 0, 0},
+                            new float[] {0, 0, 1, 0, 0},
+                            new float[] {0, 0, 0, 1, 0},
+                            new float[] {0, 0, 0, 0, 1},
+                        });
+            ColorMatrix visitedMatrix = new ColorMatrix(new float[][] {
+                            new float[] {.3f, .3f, .3f, 0, 0},
+                            new float[] {.59f, .59f, .59f, 0, 0},
+                            new float[] {.11f, .11f, .11f, 0, 0},
+                            new float[] {0, 0, 0, 1, 0},
+                            new float[] {0, 0, 0, 0, 1}
+                        });
+
             foreach (var zLayer in currentBlock.zLayers.Keys) {
                 foreach (var cell in currentBlock.zLayers[zLayer]) {
                     var rotated = TileCache.Get(cell.EnvironmentId);
@@ -669,38 +709,61 @@ namespace UtilityBelt.Tools {
                     drawGfx.RotateTransform(cell.R);
 
                     ImageAttributes attributes = new ImageAttributes();
+                    var isVisited = false;
+
+                    //visited cells
+                    if (Globals.Config.DungeonMaps.ShowVisitedTiles.Value && visitedTiles.Contains((uint)(cell.CellId << 16 >> 16))) {
+                        isVisited = true;
+                    }
 
                     // floors above your char
                     if (Globals.Core.Actions.LocationZ - cell.Z < -3) {
                         float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) / 6) * 0.5F;
-                        ColorMatrix matrix = new ColorMatrix(new float[][]{
+                        matrix = new ColorMatrix(new float[][]{
                             new float[] {1, 0, 0, 0, 0},
                             new float[] {0, 1, 0, 0, 0},
                             new float[] {0, 0, 1, 0, 0},
                             new float[] {0, 0, 0, b, 0},
                             new float[] {0, 0, 0, 0, 1},
                         });
-                        attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
                     }
                     // current floor
                     else if (Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) < 3) {
-
+                        float b = 1.0F;
+                        matrix = new ColorMatrix(new float[][]{
+                            new float[] {1, 0, 0, 0, 0},
+                            new float[] {0, 1, 0, 0, 0},
+                            new float[] {0, 0, 1, 0, 0},
+                            new float[] {0, 0, 0, b, 0},
+                            new float[] {0, 0, 0, 0, 1},
+                        });
                     }
                     // floors below
                     else {
                         float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) / 6) * 0.4F;
-                        ColorMatrix matrix = new ColorMatrix(new float[][]{
+                        matrix = new ColorMatrix(new float[][]{
                             new float[] {b, 0, 0, 0, 0},
                             new float[] {0, b, 0, 0, 0},
                             new float[] {0, 0, b, 0, 0},
                             new float[] {0, 0, 0, 1, 0},
                             new float[] {0, 0, 0, 0, 1},
                         });
-                        attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
                     }
 
-                    // TODO: bitblt/LockBitmap
-                    drawGfx.DrawImage(rotated, new Rectangle(-5, -5, rotated.Width + 1, rotated.Height + 1), 0, 0, rotated.Width, rotated.Height, GraphicsUnit.Pixel, attributes);
+                    if (isVisited) {
+                        using (Bitmap rotatedVisited = new Bitmap(rotated)) {
+                            using (var rotatedGfx = Graphics.FromImage(rotatedVisited)) {
+                                attributes.SetColorMatrix(visitedMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                                rotatedGfx.DrawImage(rotated, new Rectangle(0, 0, rotated.Width, rotated.Height), 0, 0, rotated.Width, rotated.Height, GraphicsUnit.Pixel, attributes);
+                                attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                                drawGfx.DrawImage(rotatedVisited, new Rectangle(-5, -5, rotatedVisited.Width + 1, rotatedVisited.Height + 1), 0, 0, rotatedVisited.Width, rotatedVisited.Height, GraphicsUnit.Pixel, attributes);
+                            }
+                        }
+                    }
+                    else {
+                        attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                        drawGfx.DrawImage(rotated, new Rectangle(-5, -5, rotated.Width + 1, rotated.Height + 1), 0, 0, rotated.Width, rotated.Height, GraphicsUnit.Pixel, attributes);
+                    }
 
                     drawGfx.RotateTransform(-cell.R);
                     drawGfx.TranslateTransform(-x, -y);
@@ -739,11 +802,16 @@ namespace UtilityBelt.Tools {
             if (DateTime.UtcNow - lastDrawTime > TimeSpan.FromMilliseconds(DRAW_INTERVAL)) {
                 lastDrawTime = DateTime.UtcNow;
 
+                if (!visitedTiles.Contains((uint)(Globals.Core.Actions.Landcell << 16 >> 16))) {
+                    visitedTiles.Add((uint)(Globals.Core.Actions.Landcell << 16 >> 16));
+                }
+
                 if ((uint)(Globals.Core.Actions.Landcell << 16 >> 16) < 0x0100) {
                     if (hud != null) {
                         hud.Clear();
                         DestroyHud();
                     }
+                    ClearVisitedTiles();
                     currentLandCell = Globals.Core.Actions.Landcell >> 16 << 16;
                     return;
                 }
@@ -752,6 +820,8 @@ namespace UtilityBelt.Tools {
                     DestroyHud();
                     CreateHud();
                     currentLandCell = Globals.Core.Actions.Landcell >> 16 << 16;
+
+                    ClearVisitedTiles();
 
                     if (Globals.Config.DungeonMaps.Debug.Value) {
                         Util.WriteToChat("DungeonMaps: Redraw hud because landcell changed");

@@ -128,6 +128,7 @@ namespace UtilityBelt {
             public Setting<int> Opacity;
             public Setting<int> MapWindowX;
             public Setting<int> MapWindowY;
+            public Setting<bool> ShowVisitedTiles;
 
             private bool disposed = false;
 
@@ -139,6 +140,7 @@ namespace UtilityBelt {
                     Opacity = new Setting<int>("Config/DungeonMaps/Opacity", "Overall map opacity (0-20, 20 is opaque)", 15);
                     MapWindowX = new Setting<int>("Config/DungeonMaps/MapWindowX", "Saved map window X position (left is 0)", 200);
                     MapWindowY = new Setting<int>("Config/DungeonMaps/MapWindowY", "Saved map window Y position (top is 0)", 200);
+                    ShowVisitedTiles = new Setting<bool>("Config/DungeonMaps/ShowVisitedTiles", "Show visited tiles", true);
                 }
                 catch (Exception e) { Util.LogException(e); }
             }
@@ -157,6 +159,7 @@ namespace UtilityBelt {
                         if (Debug != null) Debug.Dispose();
                         if (MapWindowX != null) MapWindowX.Dispose();
                         if (MapWindowY != null) MapWindowY.Dispose();
+                        if (ShowVisitedTiles != null) ShowVisitedTiles.Dispose();
                     }
                     disposed = true;
                 }

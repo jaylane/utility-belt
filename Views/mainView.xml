@@ -29,7 +29,8 @@
         <control progid="DecalControls.Slider" name="DungeonMapsOpacity" left="280" top="24" width="208" height="16" minimum="0" maximum="20" textcolor="0" vertical="0"/>
         <control progid="DecalControls.StaticText" name="DungeonMapsOpacityLabel" left="280" top="8" width="200" height="16" justify="Center" text="Map Opacity"/>
         <control progid="DecalControls.Checkbox" name="DungeonMapsDebug" left="8" top="56" width="208" height="16" text="Show Debug Messages"/>
-        <control progid="DecalControls.PushButton" name="DungeonMapsClearTileCache" left="8" top="96" width="120" height="24" text="Clear Tile Cache"/>
+        <control progid="DecalControls.Checkbox" name="DungeonMapsShowVisitedTiles" left="8" top="80" width="208" height="16" text="Show visited tiles"/>
+        <control progid="DecalControls.PushButton" name="DungeonMapsClearTileCache" left="8" top="110" width="120" height="24" text="Clear Tile Cache"/>
       </control>
 
     </page>
