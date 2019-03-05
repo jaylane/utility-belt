@@ -50,6 +50,7 @@ namespace UtilityBelt
                 Mag.Shared.Settings.SettingsFile.Init(configFilePath, Globals.PluginName);
 
                 Util.CreateDataDirectories();
+                Logger.Init();
 
                 Globals.Config = new Config();
                 Globals.MainView = new MainView();

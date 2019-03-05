@@ -87,6 +87,7 @@
     <Compile Include="Constants\CharOptions2.cs" />
     <Compile Include="Constants\CharOptions.cs" />
     <Compile Include="Globals.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="MagTools\Shared\Settings\Setting.cs" />
     <Compile Include="MagTools\Shared\Settings\SettingsFile.cs" />
     <Compile Include="PluginCore.cs" />
