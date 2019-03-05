@@ -12,6 +12,9 @@ Download and run the installer: [UtilityBeltyInstaller-0.0.1.exe](https://gitlab
 ## Usage
 Check the [wiki](https://gitlab.com/trevis/utilitybelt/wikis/home) 
 
+## Known Issues
+* VirindiHotkeySystem will throw an error when changing emuconfig options.
+
 ## Contributors
 * Harli
 * Schneebly
