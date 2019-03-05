@@ -223,7 +223,9 @@ namespace UtilityBelt.Tools {
             var block = new LandBlock(cellId);
             watch.Stop();
 
-            Util.WriteToChat(string.Format("DungeonMaps: took {0}ms to cache LandBlock {1} (isDungeon? {2} ({3}))", watch.ElapsedMilliseconds, (cellId).ToString("X8"), block.IsDungeon(), ((uint)(Globals.Core.Actions.Landcell << 16 >> 16)).ToString("X4")));
+            if (Globals.Config.DungeonMaps.Debug.Value == true) {
+                Util.WriteToChat(string.Format("DungeonMaps: took {0}ms to cache LandBlock {1} (isDungeon? {2} ({3}))", watch.ElapsedMilliseconds, (cellId).ToString("X8"), block.IsDungeon(), ((uint)(Globals.Core.Actions.Landcell << 16 >> 16)).ToString("X4")));
+            }
 
             cache.Add(block.LandBlockId, block);
 
@@ -316,7 +318,7 @@ namespace UtilityBelt.Tools {
             Globals.Config.DungeonMaps.Enabled.Changed += Config_DungeonMaps_Enabled_Changed;
 
             UIDungeonMapsDebug = (HudCheckBox)Globals.MainView.view["DungeonMapsDebug"];
-            UIDungeonMapsDebug.Checked = Globals.Config.DungeonMaps.Enabled.Value;
+            UIDungeonMapsDebug.Checked = Globals.Config.DungeonMaps.Debug.Value;
             UIDungeonMapsDebug.Change += UIDungeonMapsDebug_Change;
             Globals.Config.DungeonMaps.Debug.Changed += Config_DungeonMaps_Debug_Changed;
 
