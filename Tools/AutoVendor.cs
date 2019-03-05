@@ -113,8 +113,8 @@ namespace UtilityBelt.Tools {
 
         public AutoVendor() {
             try {
-                Directory.CreateDirectory(Util.GetPluginDirectory() + @"autovendor\");
-                Directory.CreateDirectory(Util.GetCharacterDirectory() + @"autovendor\");
+                Directory.CreateDirectory(Path.Combine(Util.GetPluginDirectory(), "autovendor"));
+                Directory.CreateDirectory(Path.Combine(Util.GetCharacterDirectory(), @"autovendor"));
 
                 UIAutoVendorSpeedText = Globals.MainView.view != null ? (HudStaticText)Globals.MainView.view["AutoVendorSpeedText"] : new HudStaticText();
                 UIAutoVendorSpeedText.Text = Globals.Config.AutoVendor.Speed.Value.ToString();
