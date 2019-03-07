@@ -124,7 +124,7 @@ namespace UtilityBelt.Tools {
                         //Util.WriteToChat("test");
                         questType = "killTask";
                     }
-                    if (maxCompletions == "1" || maxCompletions == "" || maxCompletions.Length == 0) {
+                    if (string.IsNullOrEmpty(maxCompletions) || maxCompletions == "1"){
                         questType = "oneTimeQuest";
                     }
 
