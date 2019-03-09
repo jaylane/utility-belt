@@ -149,10 +149,6 @@ namespace UtilityBelt.Tools {
                 UIAutoVendorSpeed.Changed += UIAutoVendorSpeed_Changed;
                 Globals.Config.AutoVendor.Speed.Changed += Config_AutoVendor_Speed_Changed;
 
-                if (lootProfile == null) {
-                    lootProfile = new VTClassic.LootCore();
-                }
-
                 Globals.Core.WorldFilter.ApproachVendor += WorldFilter_ApproachVendor;
                 Globals.Core.CommandLineText += Current_CommandLineText;
                 Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
@@ -289,6 +285,20 @@ namespace UtilityBelt.Tools {
         }
 
         public void Start(int merchantId = 0, string useProfilePath = "") {
+            var hasLootCore = false;
+            if (lootProfile == null) {
+                try {
+                    lootProfile = new VTClassic.LootCore();
+                    hasLootCore = true;
+                }
+                catch (Exception ex) { Logger.LogException(ex); }
+
+                if (!hasLootCore) {
+                    Util.WriteToChat("Unable to load VTClassic, something went wrong.");
+                    return;
+                }
+            }
+
             if (merchantId == 0) {
                 merchantId = Globals.Core.Actions.VendorId;
             }

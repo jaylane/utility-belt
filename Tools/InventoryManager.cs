@@ -296,8 +296,10 @@ namespace UtilityBelt.Tools {
             // try to stack in side pack
             foreach (var container in Globals.Core.WorldFilter.GetInventory()) {
                 if (container.ObjectClass == ObjectClass.Container && container.Values(LongValueKey.Slot, -1) >= 0) {
+                    if (blacklistedContainers.ContainsKey(container.Id)) continue;
+
                     foreach (var wo in Globals.Core.WorldFilter.GetByContainer(container.Id)) {
-                        if (blacklistedContainers.ContainsKey(container.Id)) continue;
+                        if (blacklistedItems.ContainsKey(stackThis.Id)) continue;
                         if (TryStackItemTo(wo, stackThis, container.Values(LongValueKey.Slot))) return true;
                     }
                 }
@@ -323,7 +325,9 @@ namespace UtilityBelt.Tools {
                 // blacklist this item
                 if (tryCount > 10) {
                     tryCount = 0;
-                    blacklistedItems.Add(stackThis.Id, DateTime.UtcNow);
+                    if (!blacklistedItems.ContainsKey(stackThis.Id)) {
+                        blacklistedItems.Add(stackThis.Id, DateTime.UtcNow);
+                    }
                     return false;
                 }
 
