@@ -52,11 +52,6 @@ namespace UtilityBelt.Tools {
             UIInventoryManagerAutoStack.Change += UIInventoryManagerAutoStack_Change;
             Globals.Config.InventoryManager.AutoStack.Changed += Config_InventoryManager_AutoStack_Changed;
 
-            // temporary until ui gets added back in
-            Globals.Config.InventoryManager.AutoCram.Value = true;
-            Globals.Config.InventoryManager.AutoStack.Value = true;
-            Globals.Config.InventoryManager.Debug.Value = true;
-
             if (Globals.Config.InventoryManager.AutoCram.Value || Globals.Config.InventoryManager.AutoStack.Value) {
                 //Start();
             }
