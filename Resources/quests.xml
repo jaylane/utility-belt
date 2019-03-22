@@ -1,0 +1,2033 @@
+<root>
+	<turshscalp>Tursh Scalp</turshscalp>
+	<polarursuin>Polar Ursuin Kill Task Main Flag Timer</polarursuin>
+	<polarursuinkillcount>Polar Ursuin Kill Counter</polarursuinkillcount>
+	<blankaug>Blank Aug Gem Pickup Timer</blankaug>
+	<greatcavepenguinegg>Great Cave Penguin Egg Pickup Timer</greatcavepenguinegg>
+	<polardillotask>Polar Dillo Kill Task Main Flag</polardillotask>
+	<polardillokills>Polar Dillo Kill Counter</polardillokills>
+	<repugnanteaterkilltask>Repugnant Eater Kill Task</repugnanteaterkilltask>
+	<repugeaterkillcount>Repugnant Eater Kill Counter</repugeaterkillcount>
+	<deathcap>Deathcap Thrungus Kill Task</deathcap>
+	<deathcapkillcount>Deathcap Thrungus Kill Counter</deathcapkillcount>
+	<grievverv>Grievver Violator Kill Task</grievverv>
+	<grievvervkillcount>Grievver Violator Kill Counter</grievvervkillcount>
+	<tuskerg>Tusker Guard Kill Task Main Flag</tuskerg>
+	<tuskergkillcount>Tusker Guard Kill Counter</tuskergkillcount>
+	<deathallurecd>Death's Allure Timer Flag</deathallurecd>
+	<brewmastercover>Brew Master Quest Pickup Timer Cover</brewmastercover>
+	<brewmasterback>Brew Master Quest Pickup Timer Back</brewmasterback>
+	<brewmasterpages>Brew Master Quest Pickup Timer Pages</brewmasterpages>
+	<brewmasterspine>Brew Master Quest Pickup Timer Spine</brewmasterspine>
+	<maraudersjaw>Marauder's Lair Quest</maraudersjaw>
+	<eleonorasheart>Elanora's Heart Quest Pickup Timer</eleonorasheart>
+	<fledgemastertusk>Fledge Master's Tusk Quest</fledgemastertusk>
+	<stolenfryingpan>Thrungus Hovels</stolenfryingpan>
+	<stolenring>Thrungus Hovels</stolenring>
+	<stolenbrewkettle>Thrungus Hovels</stolenbrewkettle>
+	<stolenamulet>Thrungus Hovels</stolenamulet>
+	<stolenewer>Thrungus Hovels</stolenewer>
+	<stolennecklace>Thrungus Hovels</stolennecklace>
+	<stolenplatter>Thrungus Hovels</stolenplatter>
+	<stolenbracelet>Thrungus Hovels</stolenbracelet>
+	<ringofkarlun>Knights of Karlun</ringofkarlun>
+	<trainingacademycomplete>Completion of Training Academy for Exit</trainingacademycomplete>
+	<cowtipcounter>Counter for Cow Tipping</cowtipcounter>
+	<cowtip>Main Timed Flag for Cow Tipping</cowtip>
+	<orbhealingmachine>Healing Machine Orb</orbhealingmachine>
+	<pedestalhealingmachine>Healing Machine Pedestal</pedestalhealingmachine>
+	<tihnhealingmachine>Healing Machine Tihn</tihnhealingmachine>
+	<lavushealingmachine>Healing Machine Lavus</lavushealingmachine>
+	<hookhealingmachine>Healing Machine Hook</hookhealingmachine>
+	<ravenouseaterjaw>Ravenous Eater Jaw</ravenouseaterjaw>
+	<insatiableeaterjaw>Insatiable Eater Jaw</insatiableeaterjaw>
+	<engorgedeaterjaw>Engorged Eater Jaw</engorgedeaterjaw>
+	<voraciouseaterjaw>Voracious Eater Jaw</voraciouseaterjaw>
+	<abhorrenteaterjaw>Abhorrent Eater Jaw</abhorrenteaterjaw>
+	<beacongemobtained>Cooldown for obtaining another beacon gem</beacongemobtained>
+	<beaconcomplete>Beacon Quest Complete Timer</beaconcomplete>
+	<sirginaziosword>Pick up of Sir Ginazio's Sword</sirginaziosword>
+	<crystallinekiller>Crystalline Killer</crystallinekiller>
+	<darkisledelivery>Dark Isle Delivery</darkisledelivery>
+	<defeatingvaeshok>Defeating Vaeshok</defeatingvaeshok>
+	<hollyjollyhelperquest>Holly Jolly Helper Quest</hollyjollyhelperquest>
+	<moarsmenjailbreak>Moarsmen Jailbreak</moarsmenjailbreak>
+	<shamblingarchivistdestroyer>Shambling Archivist Destroyer</shamblingarchivistdestroyer>
+	<tracingthestone>Tracing The Stone</tracingthestone>
+	<undeadjawcollection>Undead Jaw Collection</undeadjawcollection>
+	<weedingofthederutree>Weeding of the Deru Tree</weedingofthederutree>
+	<ironbladecommander>Iron Blade Commander</ironbladecommander>
+	<mumiyahhuntingneftet>Mumiyah Hunting Neftet</mumiyahhuntingneftet>
+	<torgashstasks>Torgash's Tasks</torgashstasks>
+	<skillloweringgempickedup>Picked up a forgetfulness gem.</skillloweringgempickedup>
+	<altereddrudgekilltask>Altered Drudge Kill Task</altereddrudgekilltask>
+	<altereddrudgekillcount>Altered Drudge Kill Counter</altereddrudgekillcount>
+	<arcticmattekarkilltask>Arctic Mattekar Kill Task</arcticmattekarkilltask>
+	<arcticmattekarkillcount>Arctic Mattekar Kill Counter</arcticmattekarkillcount>
+	<armoredillohuntingneftetkilltask>Armoredillo Hunting Neftet Kill Task</armoredillohuntingneftetkilltask>
+	<armoredillohuntingneftetkillcount>Armoredillo Hunting Neftet Kill Counter</armoredillohuntingneftetkillcount>
+	<augmenteddrudgekilltask>Augmented Drudge Kill Task</augmenteddrudgekilltask>
+	<augmenteddrudgekillcount>Augmented Drudge Kill Counter</augmenteddrudgekillcount>
+	<banishedcreaturekilltask>Banished Creature Kill Task</banishedcreaturekilltask>
+	<banishedcreaturekillcount>Banished Creature Kill Counter</banishedcreaturekillcount>
+	<benekniffiskilltask>Benek Niffis Kill Task</benekniffiskilltask>
+	<benekniffiskillcount>Benek Niffis Kill Counter</benekniffiskillcount>
+	<blackcoralgolemkilltask>Black Coral Golem Kill Task</blackcoralgolemkilltask>
+	<blackcoralgolemkillcount>Black Coral Golem Kill Counter</blackcoralgolemkillcount>
+	<blessedmoarsmankilltask>Blessed Moarsman Kill Task</blessedmoarsmankilltask>
+	<blessedmoarsmankillcount>Blessed Moarsman Kill Counter</blessedmoarsmankillcount>
+	<blightedcoralgolemkilltask>Blighted Coral Golem Kill Task</blightedcoralgolemkilltask>
+	<blightedcoralgolemkillcount>Blighted Coral Golem Kill Counter</blightedcoralgolemkillcount>
+	<bloodshrethkilltask>Blood Shreth Kill Task</bloodshrethkilltask>
+	<bloodshrethkillcount>Blood Shreth Kill Counter</bloodshrethkillcount>
+	<bronzegauntlettrooperkilltask>Bronze Gauntlet Trooper Kill Task</bronzegauntlettrooperkilltask>
+	<bronzegauntlettrooperkillcount>Bronze Gauntlet Trooper Kill Counter</bronzegauntlettrooperkillcount>
+	<coppercogtrooperkilltask>Copper Cog Trooper Kill Task</coppercogtrooperkilltask>
+	<coppercogtrooperkillcount>Copper Cog Trooper Kill Counter</coppercogtrooperkillcount>
+	<coppergolemkingpinkilltask>Copper Golem Kingpin Kill Task</coppergolemkingpinkilltask>
+	<coppergolemkingpinkillcount>Copper Golem Kingpin Kill Counter</coppergolemkingpinkillcount>
+	<coralgolemkilltask>Coral Golem Kill Task</coralgolemkilltask>
+	<coralgolemkillcount>Coral Golem Kill Counter</coralgolemkillcount>
+	<coralgolemviceroykilltask>Coral Golem Viceroy Kill Task</coralgolemviceroykilltask>
+	<coralgolemviceroykillcount>Coral Golem Viceroy Kill Counter</coralgolemviceroykillcount>
+	<corruptedgravestonekilltask>Corrupted Gravestone Kill Task</corruptedgravestonekilltask>
+	<corruptedgravestonekillcount>Corrupted Gravestone Kill Counter</corruptedgravestonekillcount>
+	<deathcapthrunguskilltask>Deathcap Thrungus Kill Task</deathcapthrunguskilltask>
+	<deathcapthrunguskillcount>Deathcap Thrungus Kill Counter</deathcapthrunguskillcount>
+	<desertcactuskilltask>Desert Cactus Kill Task</desertcactuskilltask>
+	<desertcactuskillcount>Desert Cactus Kill Counter</desertcactuskillcount>
+	<devourermargulkilltask>Devourer Margul Kill Task</devourermargulkilltask>
+	<devourermargulkillcount>Devourer Margul Kill Counter</devourermargulkillcount>
+	<diremattekarkilltask>Dire Mattekar Kill Task</diremattekarkilltask>
+	<diremattekarkillcount>Dire Mattekar Kill Counter</diremattekarkillcount>
+	<drudgelurkerkilltask>Drudge Lurker Kill Task</drudgelurkerkilltask>
+	<drudgelurkerkillcount>Drudge Lurker Kill Counter</drudgelurkerkillcount>
+	<drudgeravenerkilltask>Drudge Ravener Kill Task</drudgeravenerkilltask>
+	<drudgeravenerkillcount>Drudge Ravener Kill Counter</drudgeravenerkillcount>
+	<drudgestalkerkilltask>Drudge Stalker Kill Task</drudgestalkerkilltask>
+	<drudgestalkerkillcount>Drudge Stalker Kill Counter</drudgestalkerkillcount>
+	<ebongromnietask>Ebon Gromnie Kill Task</ebongromnietask>
+	<ebongromniekills>Ebon Gromnie Kill Counter</ebongromniekills>
+	<elementalkilltask>Elemental Kill Task</elementalkilltask>
+	<elementalkillcount>Elemental Kill Counter</elementalkillcount>
+	<empoweredwispskilltask>Empowered Wisps Kill Task</empoweredwispskilltask>
+	<empoweredwispskillcount>Empowered Wisps Kill Counter</empoweredwispskillcount>
+	<fallencreaturekilltask>Fallen Creature Kill Task</fallencreaturekilltask>
+	<fallencreaturekillcount>Fallen Creature Kill Counter</fallencreaturekillcount>
+	<floesharkkilltask>Floeshark Kill Task</floesharkkilltask>
+	<floesharkkillcount>Floeshark Kill Counter</floesharkkillcount>
+	<frostgolemkilltask>Frost Golem Kill Task</frostgolemkilltask>
+	<frostgolemkillcount>Frost Golem Kill Counter</frostgolemkillcount>
+	<frozencrystalkilltask>Frozen Crystal Kill Task</frozencrystalkilltask>
+	<frozencrystalkillcount>Frozen Crystal Kill Counter</frozencrystalkillcount>
+	<frozendreadkilltask>Frozen Dread Kill Task</frozendreadkilltask>
+	<frozendreadkillcount>Frozen Dread Kill Counter</frozendreadkillcount>
+	<frozenwightkilltask>Frozen Wight Kill Task</frozenwightkilltask>
+	<frozenwightkillcount>Frozen Wight Kill Counter</frozenwightkillcount>
+	<gearknightkilltask>Gear Knight Kill Task</gearknightkilltask>
+	<gearknightkillcount>Gear Knight Kill Counter</gearknightkillcount>
+	<gearknightphalanxkilltask>Gear Knight Phalanx Kill Task</gearknightphalanxkilltask>
+	<gearknightphalanxkillcount>Gear Knight Phalanx Kill Counter</gearknightphalanxkillcount>
+	<gearknightsquirekilltask>Gear Knight Squire Kill Task</gearknightsquirekilltask>
+	<gearknightsquirekillcount>Gear Knight Squire Kill Counter</gearknightsquirekillcount>
+	<glacialgolemmargravekilltask>Glacial Golem Margrave Kill Task</glacialgolemmargravekilltask>
+	<glacialgolemmargravekillcount>Glacial Golem Margrave Kill Counter</glacialgolemmargravekillcount>
+	<goldgeartrooperkilltask>Gold Gear Trooper Kill Task</goldgeartrooperkilltask>
+	<goldgeartrooperkillcount>Gold Gear Trooper Kill Counter</goldgeartrooperkillcount>
+	<golemhuntingneftetkilltask>Golem Hunting Neftet Kill Task</golemhuntingneftetkilltask>
+	<golemhuntingneftetkillcount>Golem Hunting Neftet Kill Counter</golemhuntingneftetkillcount>
+	<golemsamuraikilltask>Golem Samurai Kill Task</golemsamuraikilltask>
+	<golemsamuraikillcount>Golem Samurai Kill Counter</golemsamuraikillcount>
+	<graveratkilltask>Grave Rat Kill Task</graveratkilltask>
+	<graveratkillcount>Grave Rat Kill Counter</graveratkillcount>
+	<graveyardskeletonkilltask>Graveyard Skeleton Kill Task</graveyardskeletonkilltask>
+	<graveyardskeletonkillcount>Graveyard Skeleton Kill Counter</graveyardskeletonkillcount>
+	<graveyardspiritkilltask>Graveyard Spirit Kill Task</graveyardspiritkilltask>
+	<graveyardspiritkillcount>Graveyard Spirit Kill Counter</graveyardspiritkillcount>
+	<graveyardwightkilltask>Graveyard Wight Kill Task</graveyardwightkilltask>
+	<graveyardwightkillcount>Graveyard Wight Kill Counter</graveyardwightkillcount>
+	<graveyardwispkilltask>Graveyard Wisp Kill Task</graveyardwispkilltask>
+	<graveyardwispkillcount>Graveyard Wisp Kill Counter</graveyardwispkillcount>
+	<grievvershredderkilltask>Grievver Shredder Kill Task</grievvershredderkilltask>
+	<grievvershredderkillcount>Grievver Shredder Kill Counter</grievvershredderkillcount>
+	<guardianstatuekilltask>Guardian Statue Kill Task</guardianstatuekilltask>
+	<guardianstatuekillcount>Guardian Statue Kill Counter</guardianstatuekillcount>
+	<gurogkilltask>Gurog Kill Task</gurogkilltask>
+	<gurogkillcount>Gurog Kill Counter</gurogkillcount>
+	<gurukbasherkilltask>Guruk Basher Kill Task</gurukbasherkilltask>
+	<gurukbasherkillcount>Guruk Basher Kill Counter</gurukbasherkillcount>
+	<gurukcolossuskilltask>Guruk Colossus Kill Task</gurukcolossuskilltask>
+	<gurukcolossuskillcount>Guruk Colossus Kill Counter</gurukcolossuskillcount>
+	<gurukfiendkilltask>Guruk Fiend Kill Task</gurukfiendkilltask>
+	<gurukfiendkillcount>Guruk Fiend Kill Counter</gurukfiendkillcount>
+	<gurukmarauderkilltask>Guruk Marauder Kill Task</gurukmarauderkilltask>
+	<gurukmarauderkillcount>Guruk Marauder Kill Counter</gurukmarauderkillcount>
+	<gurukmonstrositykilltask>Guruk Monstrosity Kill Task</gurukmonstrositykilltask>
+	<gurukmonstrositykillcount>Guruk Monstrosity Kill Counter</gurukmonstrositykillcount>
+	<guruksmasherkilltask>Guruk Smasher Kill Task</guruksmasherkilltask>
+	<guruksmasherkillcount>Guruk Smasher Kill Counter</guruksmasherkillcount>
+	<harvestreaperkilltask>Harvest Reaper Kill Task</harvestreaperkilltask>
+	<harvestreaperkillcount>Harvest Reaper Kill Counter</harvestreaperkillcount>
+	<heawindreavekilltask>Hea Windreave Kill Task</heawindreavekilltask>
+	<heawindreavekillcount>Hea Windreave Kill Counter</heawindreavekillcount>
+	<highpriestoftthuunkilltask>High Priest of T'thuun Kill Task</highpriestoftthuunkilltask>
+	<highpriestoftthuunkillcount>High Priest of T'thuun Kill Counter</highpriestoftthuunkillcount>
+	<ironbladetrooperkilltask>Iron Blade Trooper Kill Task</ironbladetrooperkilltask>
+	<ironbladetrooperkillcount>Iron Blade Trooper Kill Counter</ironbladetrooperkillcount>
+	<ironspinedchitticktask>Iron Spined Chittick Kill Task</ironspinedchitticktask>
+	<ironspinedchittickkills>Iron Spined Chittick Kill Counter</ironspinedchittickkills>
+	<kilifzefirkilltask>Kilif Zefir Kill Task</kilifzefirkilltask>
+	<kilifzefirkillcount>Kilif Zefir Kill Counter</kilifzefirkillcount>
+	<killerphyntoswaspkilltask>Killer Phyntos Wasp Kill Task</killerphyntoswaspkilltask>
+	<killerphyntoswaspkillcount>Killer Phyntos Wasp Kill Counter</killerphyntoswaspkillcount>
+	<knathandraskilltask>K'nath An'dras Kill Task</knathandraskilltask>
+	<knathandraskillcount>K'nath An'dras Kill Counter</knathandraskillcount>
+	<littoralsiraluunkilltask>Littoral Siraluun Kill Task</littoralsiraluunkilltask>
+	<littoralsiraluunkillcount>Littoral Siraluun Kill Counter</littoralsiraluunkillcount>
+	<magmagolemexarchkilltask>Magma Golem Exarch Kill Task</magmagolemexarchkilltask>
+	<magmagolemexarchkillcount>Magma Golem Exarch Kill Counter</magmagolemexarchkillcount>
+	<magshuthmoarsmenkilltask>Magshuth Moarsmen Kill Task</magshuthmoarsmenkilltask>
+	<magshuthmoarsmenkillcount>Magshuth Moarsmen Kill Counter</magshuthmoarsmenkillcount>
+	<moguthmoarsmankilltask>Moguth Moarsman Kill Task</moguthmoarsmankilltask>
+	<moguthmoarsmankillcount>Moguth Moarsman Kill Counter</moguthmoarsmankillcount>
+	<mosswarttownsfolkkilltask>Mosswart Townsfolk Kill Task</mosswarttownsfolkkilltask>
+	<mosswarttownsfolkkillcount>Mosswart Townsfolk Kill Counter</mosswarttownsfolkkillcount>
+	<mosswartworshipperkilltask>Mosswart Worshipper Kill Task</mosswartworshipperkilltask>
+	<mosswartworshipperkillcount>Mosswart Worshipper Kill Counter</mosswartworshipperkillcount>
+	<mottledcarenzikilltask>Mottled Carenzi Kill Task</mottledcarenzikilltask>
+	<mottledcarenzikillcount>Mottled Carenzi Kill Counter</mottledcarenzikillcount>
+	<muckymoarsmankilltask>Mucky Moarsman Kill Task</muckymoarsmankilltask>
+	<muckymoarsmankillcount>Mucky Moarsman Kill Counter</muckymoarsmankillcount>
+	<mudgolemsludgelordkilltask>Mud Golem Sludge Lord Kill Task</mudgolemsludgelordkilltask>
+	<mudgolemsludgelordkillcount>Mud Golem Sludge Lord Kill Counter</mudgolemsludgelordkillcount>
+	<naughtyskeletonkilltask>Naughty Skeleton Kill Task</naughtyskeletonkilltask>
+	<naughtyskeletonkillcount>Naughty Skeleton Kill Counter</naughtyskeletonkillcount>
+	<nobleremainskilltask>Noble Remains Kill Task</nobleremainskilltask>
+	<nobleremainskillcount>Noble Remains Kill Counter</nobleremainskillcount>
+	<nyrlehamoarsmankilltask>Nyr'leha Moarsman Kill Task</nyrlehamoarsmankilltask>
+	<nyrlehamoarsmankillcount>Nyr'leha Moarsman Kill Counter</nyrlehamoarsmankillcount>
+	<nyrlehasclavuskilltask>Nyr'leha Sclavus Kill Task</nyrlehasclavuskilltask>
+	<nyrlehasclavuskillcount>Nyr'leha Sclavus Kill Counter</nyrlehasclavuskillcount>
+	<olthoidronekilltask>Olthoi Drone Kill Task</olthoidronekilltask>
+	<olthoidronekillcount>Olthoi Drone Kill Counter</olthoidronekillcount>
+	<olthoinettlerkilltask>Olthoi Nettler Kill Task</olthoinettlerkilltask>
+	<olthoinettlerkillcount>Olthoi Nettler Kill Counter</olthoinettlerkillcount>
+	<olthoinymphkilltask>Olthoi Nymph Kill Task</olthoinymphkilltask>
+	<olthoinymphkillcount>Olthoi Nymph Kill Counter</olthoinymphkillcount>
+	<olthoiripperkilltask>Olthoi Ripper Kill Task</olthoiripperkilltask>
+	<olthoiripperkillcount>Olthoi Ripper Kill Counter</olthoiripperkillcount>
+	<paradoxtouchedgrubkilltask>Paradox-touched Grub Kill Task</paradoxtouchedgrubkilltask>
+	<paradoxtouchedgrubkillcount>Paradox-touched Grub Kill Counter</paradoxtouchedgrubkillcount>
+	<paradoxtouchednymphkilltask>Paradox-touched Nymph Kill Task</paradoxtouchednymphkilltask>
+	<paradoxtouchednymphkillcount>Paradox-touched Nymph Kill Counter</paradoxtouchednymphkillcount>
+	<phyntoslarvakilltask>Phyntos Larva Kill Task</phyntoslarvakilltask>
+	<phyntoslarvakillcount>Phyntos Larva Kill Counter</phyntoslarvakillcount>
+	<platearmoredillokilltask>Plate Armoredillo Kill Task</platearmoredillokilltask>
+	<platearmoredillokillcount>Plate Armoredillo Kill Counter</platearmoredillokillcount>
+	<platinumgolemmountainkingkilltask>Platinum Golem Mountain King Kill Task</platinumgolemmountainkingkilltask>
+	<platinumgolemmountainkingkillcount>Platinum Golem Mountain King Kill Counter</platinumgolemmountainkingkillcount>
+	<pumpkinlordkilltask>Pumpkin Lord Kill Task</pumpkinlordkilltask>
+	<pumpkinlordkillcount>Pumpkin Lord Kill Counter</pumpkinlordkillcount>
+	<putridmoarkilltask>Putrid Moar Kill Task</putridmoarkilltask>
+	<putridmoarkillcount>Putrid Moar Kill Counter</putridmoarkillcount>
+	<raregamekilltask>Rare Game Kill Task</raregamekilltask>
+	<raregamekillcount>Rare Game Kill Counter</raregamekillcount>
+	<reedsharkhuntingneftetkilltask>Reedshark Hunting Neftet Kill Task</reedsharkhuntingneftetkilltask>
+	<reedsharkhuntingneftetkillcount>Reedshark Hunting Neftet Kill Counter</reedsharkhuntingneftetkillcount>
+	<remoransearaptorkilltask>Remoran Sea Raptor Kill Task</remoransearaptorkilltask>
+	<remoransearaptorkillcount>Remoran Sea Raptor Kill Counter</remoransearaptorkillcount>
+	<ruschkkilltask>Ruschk Kill Task</ruschkkilltask>
+	<ruschkkillcount>Ruschk Kill Counter</ruschkkillcount>
+	<rynthidcrystalkilltask>Rynthid Crystal Kill Task</rynthidcrystalkilltask>
+	<rynthidcrystalkillcount>Rynthid Crystal Kill Counter</rynthidcrystalkillcount>
+	<rynthidminionskilltask>Rynthid Minions Kill Task</rynthidminionskilltask>
+	<rynthidminionskillcount>Rynthid Minions Kill Counter</rynthidminionskillcount>
+	<rynthidragerskilltask>Rynthid Ragers Kill Task</rynthidragerskilltask>
+	<rynthidragerskillcount>Rynthid Ragers Kill Counter</rynthidragerskillcount>
+	<rynthidrarebosskilltask>Rynthid Rare Boss Kill Task</rynthidrarebosskilltask>
+	<rynthidrarebosskillcount>Rynthid Rare Boss Kill Counter</rynthidrarebosskillcount>
+	<rynthidriftskilltask>Rynthid Rifts Kill Task</rynthidriftskilltask>
+	<rynthidriftskillcount>Rynthid Rifts Kill Counter</rynthidriftskillcount>
+	<rynthidslayerskilltask>Rynthid Slayers Kill Task</rynthidslayerskilltask>
+	<rynthidslayerskillcount>Rynthid Slayers Kill Counter</rynthidslayerskillcount>
+	<rynthidsorcererskilltask>Rynthid Sorcerers Kill Task</rynthidsorcererskilltask>
+	<rynthidsorcererskillcount>Rynthid Sorcerers Kill Counter</rynthidsorcererskillcount>
+	<sarcophaguskilltask>Sarcophagus Kill Task</sarcophaguskilltask>
+	<sarcophaguskillcount>Sarcophagus Kill Counter</sarcophaguskillcount>
+	<shadowtouchedvirindiparadoxkilltask>Shadow-touched Virindi Paradox Kill Task</shadowtouchedvirindiparadoxkilltask>
+	<shadowtouchedvirindiparadoxkillcount>Shadow-touched Virindi Paradox Kill Counter</shadowtouchedvirindiparadoxkillcount>
+	<shadowtouchedvirindiquidioxkilltask>Shadow-touched Virindi Quidiox Kill Task</shadowtouchedvirindiquidioxkilltask>
+	<shadowtouchedvirindiquidioxkillcount>Shadow-touched Virindi Quidiox Kill Counter</shadowtouchedvirindiquidioxkillcount>
+	<shallowsgorgerkilltask>Shallows Gorger Kill Task</shallowsgorgerkilltask>
+	<shallowsgorgerkillcount>Shallows Gorger Kill Counter</shallowsgorgerkillcount>
+	<shoguthmoarsmankilltask>Shoguth Moarsman Kill Task</shoguthmoarsmankilltask>
+	<shoguthmoarsmankillcount>Shoguth Moarsman Kill Counter</shoguthmoarsmankillcount>
+	<silverscopetrooperkilltask>Silver Scope Trooper Kill Task</silverscopetrooperkilltask>
+	<silverscopetrooperkillcount>Silver Scope Trooper Kill Counter</silverscopetrooperkillcount>
+	<sishaltislithiskilltask>Sishalti Slithis Kill Task</sishaltislithiskilltask>
+	<sishaltislithiskillcount>Sishalti Slithis Kill Counter</sishaltislithiskillcount>
+	<slithistentacleskilltask>Slithis Tentacles Kill Task</slithistentacleskilltask>
+	<slithistentacleskillcount>Slithis Tentacles Kill Counter</slithistentacleskillcount>
+	<smallfledglingmukkirkilltask>Small Fledgling Mukkir Kill Task</smallfledglingmukkirkilltask>
+	<smallfledglingmukkirkillcount>Small Fledgling Mukkir Kill Counter</smallfledglingmukkirkillcount>
+	<snowtuskerkilltask>Snow Tusker Kill Task</snowtuskerkilltask>
+	<snowtuskerkillcount>Snow Tusker Kill Counter</snowtuskerkillcount>
+	<snowtuskerkillwarriortask>Snow Tusker Warrior Kill Task</snowtuskerkillwarriortask>
+	<snowtuskerkillwarriorcount>Snow Tusker Warrior Kill Counter</snowtuskerkillwarriorcount>
+	<snowtuskerkillleadertask>Snow Tusker Leader Kill Task</snowtuskerkillleadertask>
+	<snowtuskerkillleadercount>Snow Tusker Leader Kill Counter</snowtuskerkillleadercount>
+	<spectralarcherkilltask>Spectral Archer Kill Task</spectralarcherkilltask>
+	<spectralarcherkillcount>Spectral Archer Kill Counter</spectralarcherkillcount>
+	<spectralbladeandclawkilltask>Spectral Blade and Claw Kill Task</spectralbladeandclawkilltask>
+	<spectralbladeandclawkillcount>Spectral Blade and Claw Kill Counter</spectralbladeandclawkillcount>
+	<spectralbushikilltask>Spectral Bushi Kill Task</spectralbushikilltask>
+	<spectralbushikillcount>Spectral Bushi Kill Counter</spectralbushikillcount>
+	<spectralmagekilltask>Spectral Mage Kill Task</spectralmagekilltask>
+	<spectralmagekillcount>Spectral Mage Kill Counter</spectralmagekillcount>
+	<spectralminionkilltask>Spectral Minion Kill Task</spectralminionkilltask>
+	<spectralminionkillcount>Spectral Minion Kill Counter</spectralminionkillcount>
+	<spectralnanjoushoujenkilltask>Spectral Nanjou Shou-jen Kill Task</spectralnanjoushoujenkilltask>
+	<spectralnanjoushoujenkillcount>Spectral Nanjou Shou-jen Kill Counter</spectralnanjoushoujenkillcount>
+	<spectralsamuraikilltask>Spectral Samurai Kill Task</spectralsamuraikilltask>
+	<spectralsamuraikillcount>Spectral Samurai Kill Counter</spectralsamuraikillcount>
+	<tenebrousriftkilltask>Tenebrous Rift Kill Task</tenebrousriftkilltask>
+	<tenebrousriftkillcount>Tenebrous Rift Kill Counter</tenebrousriftkillcount>
+	<tukoralieutenantkilltask>Tukora Lieutenant Kill Task</tukoralieutenantkilltask>
+	<tukoralieutenantkillcount>Tukora Lieutenant Kill Counter</tukoralieutenantkillcount>
+	<tumerokgladiatorkilltask>Tumerok Gladiator Kill Task</tumerokgladiatorkilltask>
+	<tumerokgladiatorkillcount>Tumerok Gladiator Kill Counter</tumerokgladiatorkillcount>
+	<umbralriftkilltask>Umbral Rift Kill Task</umbralriftkilltask>
+	<umbralriftkillcount>Umbral Rift Kill Counter</umbralriftkillcount>
+	<viamontianmanatarmskilltask>Viamontian Man-at-Arms Kill Task</viamontianmanatarmskilltask>
+	<viamontianmanatarmskillcount>Viamontian Man-at-Arms Kill Counter</viamontianmanatarmskillcount>
+	<viamontianknightskilltask>Viamontian Knights Kill Task</viamontianknightskilltask>
+	<viamontianknightskillcount>Viamontian Knights Kill Counter</viamontianknightskillcount>
+	<viridiananekshenkilltask>Viridian A'nekshen Kill Task</viridiananekshenkilltask>
+	<viridiananekshenkillcount>Viridian A'nekshen Kill Counter</viridiananekshenkillcount>
+	<viridianwaspkilltask>Viridian Wasp Kill Task</viridianwaspkilltask>
+	<viridianwaspkillcount>Viridian Wasp Kill Counter</viridianwaspkillcount>
+	<viridianzefirkilltask>Viridian Zefir Kill Task</viridianzefirkilltask>
+	<viridianzefirkillcount>Viridian Zefir Kill Counter</viridianzefirkillcount>
+	<virindiparadoxkilltask>Virindi Paradox Kill Task</virindiparadoxkilltask>
+	<virindiparadoxkillcount>Virindi Paradox Kill Counter</virindiparadoxkillcount>
+	<virindiquidioxkilltask>Virindi Quidiox Kill Task</virindiquidioxkilltask>
+	<virindiquidioxkillcount>Virindi Quidiox Kill Counter</virindiquidioxkillcount>
+	<voraciouseaterkilltask>Voracious Eater Kill Task</voraciouseaterkilltask>
+	<voraciouseaterkillcount>Voracious Eater Kill Counter</voraciouseaterkillcount>
+	<voidlordkilltask>Void Lord Kill Task</voidlordkilltask>
+	<voidlordkillcount>Void Lord Kill Counter</voidlordkillcount>
+	<wickedskeletonkilltask>Wicked Skeleton Kill Task</wickedskeletonkilltask>
+	<wickedskeletonkillcount>Wicked Skeleton Kill Counter</wickedskeletonkillcount>
+	<wightbladesorcererkilltask>Wight Blade Sorcerer Kill Task</wightbladesorcererkilltask>
+	<wightbladesorcererkillcount>Wight Blade Sorcerer Kill Counter</wightbladesorcererkillcount>
+	<dericostruinpickup>Dericost Tome Pickup Timer Dericost Ruins Quest</dericostruinpickup>
+	<coveapplewine>Trade Alliance Quest Pickup Timer on Cove Apple Wine</coveapplewine>
+	<maddenedfiunheart>Red Bull of Sanamar Quest</maddenedfiunheart>
+	<platinumlegiondoorkey>Pick Up Key for Door to Platinum Legion</platinumlegiondoorkey>
+	<copperlegiondoorkey>Pick Up Key for Door to Copper Legion</copperlegiondoorkey>
+	<silverlegiondoorkey>Pick Up Key for Door to Silver Legion</silverlegiondoorkey>
+	<goldlegiondoorkey>Pick Up Key for Door to Gold Legion</goldlegiondoorkey>
+	<platinumlegionchestkey>Pick Up Key for Platinum Chest</platinumlegionchestkey>
+	<copperlegionchestkey>Pick Up Key for Copper Chest</copperlegionchestkey>
+	<silverlegionchestkey>Pick Up Key for Silver Chest</silverlegionchestkey>
+	<goldlegionchestkey>Pick Up Key for Gold Chest</goldlegionchestkey>
+	<turshchallengercomplete>Tursh Challenger Cooldown Timer</turshchallengercomplete>
+	<renaldsoldmug>Renald's Old Mug pickup</renaldsoldmug>
+	<ancientdiscoveries>Dericost Ruin Quest - Reward Item Pickup Timer</ancientdiscoveries>
+	<eleonoranote>Eleonora's Heart Quest - Note Pickup Timer</eleonoranote>
+	<upperinsatiablejaw>Upper Insatiable Eater Jaw</upperinsatiablejaw>
+	<silverknightmedallion>Defense of Zaikhal Medallion Pickup Timer Silver</silverknightmedallion>
+	<copperknightmedallion>Defense of Zaikhal Medallion Pickup Timer Copper</copperknightmedallion>
+	<goldknightmedallion>Defense of Zaikhal Medallion Pickup Timer Gold</goldknightmedallion>
+	<platinumknightmedallion>Defense of Zaikhal Medallion Pickup Timer Platinum</platinumknightmedallion>
+	<defenseofzaikhalplatinumshard>Shard of Corcima Pickup Timer - Defense of Zaikhal Platinum</defenseofzaikhalplatinumshard>
+	<defenseofzaikhalroyalblood>Royal Blood Pickup Timer - Defense of Zaikhal Platinum</defenseofzaikhalroyalblood>
+	<tradealliancemossyherb>Mossy Herb Pickup Timer - Trade Alliance quest</tradealliancemossyherb>
+	<usedfreeattributereset>Used your free attribute reset at Asheron's Castle</usedfreeattributereset>
+	<attributereset30day>Used your 30 day attribute reset at Asheron's Castle</attributereset30day>
+	<usedfreeskillreset>Used your free skill reset at Asheron's Castle</usedfreeskillreset>
+	<skillreset30day>Used your 30 day skill reset at Asheron's Castle</skillreset30day>
+	<attribute6days>1 week attribute forgetfulness timer.</attribute6days>
+	<attribute13days>2 week attribute forgetfulness timer.</attribute13days>
+	<forgetfulness6days>1 week skill forgetfulness timer.</forgetfulness6days>
+	<forgetfulness13days>2 week skill forgetfulness timer.</forgetfulness13days>
+	<forgetfulness20days>3 week skill forgetfulness timer.</forgetfulness20days>
+	<corettotestament>Pickup timer on Coretto Testament (Knights of Karlun)</corettotestament>
+	<ginsword>Knights of Karlun - Sir Ginazio</ginsword>
+	<sircoretto>Knights of Karlun - Sir Ginazio</sircoretto>
+	<spellcastinggloves>Fiun Spell Casting Gloves NPC</spellcastinggloves>
+	<abayarresearchnotes>Abayar's Research Notes (Fiun Spell Casting Gloves)</abayarresearchnotes>
+	<lorcanecklace>Lorca Sammel's Lost Necklace</lorcanecklace>
+	<witheredatollstaff0105>Soulless Staff pickup</witheredatollstaff0105>
+	<witheredatollcrossbow0105>Wretched Crossbow pickup</witheredatollcrossbow0105>
+	<witheredatollknuckles0105>Lifeless Knuckles pickup</witheredatollknuckles0105>
+	<thrungushovels>Thrungus Hovels Timer</thrungushovels>
+	<auggemflag>Flagged to Enter Augmentation Realm</auggemflag>
+	<snowlillies>Lila Fiori Snow Lillies</snowlillies>
+	<chasingoswalddone>PERMANENT - Chasing Oswald Quest</chasingoswalddone>
+	<glendeninvaderskilltask>Glenden Woods Invaders Kill Task</glendeninvaderskilltask>
+	<glendeninvaderskillcount>Glenden Woods Invaders Kill Counter</glendeninvaderskillcount>
+	<viamoman>Viamontian Man-At-Arms Kill Task</viamoman>
+	<viamomankillcount>Viamontian Man-At-Arms Kill Counter</viamomankillcount>
+	<falatcotreports>Falatcot Reports Collected Adept Society</falatcotreports>
+	<gearknightparts>Gear Knight Parts Collected Initiate Society</gearknightparts>
+	<lesserbenedictionaug>PERMANENT - Completion check for Asheron's Lesser Benediction Augment</lesserbenedictionaug>
+	<tothebarkeep>PERMANENT - Lifestone Greeter Complete</tothebarkeep>
+	<topathwarden>PERMANENT - Contract Greeter Complete</topathwarden>
+	<pathwardencomplete>PERMANENT - Pathwarden Complete</pathwardencomplete>
+	<platinuminvaderlordhelm>Timer for Platinum Lord Helm</platinuminvaderlordhelm>
+	<silverinvaderlordhelm>Timer for Silver Lord Helm</silverinvaderlordhelm>
+	<copperinvaderlordhelm>Timer for Copper Lord Helm</copperinvaderlordhelm>
+	<goldinvaderlordhelm>Timer for Gold Lord Helm</goldinvaderlordhelm>
+	<fachubfolthid>PERMANENT - FC Dagger of Tikola Quest</fachubfolthid>
+	<fachubglendenwood>PERMANENT - FC Glenden Wood Dungeon Quest</fachubglendenwood>
+	<fachubmosswartcamp>PERMANENT - FC Mosswart Ice Tachi Quest</fachubmosswartcamp>
+	<finemetalscrapspickup>FineMetalScraps Timer</finemetalscrapspickup>
+	<fineleatherscrapspickup>FineLeatherScraps Timer</fineleatherscrapspickup>
+	<haleatancamp>NPC Timer for Halaetan Beach Camps</haleatancamp>
+	<colorpuzzleballpickedup>You have picked up a colored ball.</colorpuzzleballpickedup>
+	<templeenlightenmenthyssop>Skill sellback quest.</templeenlightenmenthyssop>
+	<emotetestnpcquest>Test Emote NPC Quest</emotetestnpcquest>
+	<fellowmeleedefense6>You found a fellowship melee defense spell.</fellowmeleedefense6>
+	<mosswartidolitem>You have picked up the Mosswart Item Enchantment teaching idol.</mosswartidolitem>
+	<chestquestunlockednewbiepoie>Opened a ChestQuestUnlockedNewbie.</chestquestunlockednewbiepoie>
+	<notenuhmudiralabyrinth7pickup>This quest flag is obsolete.</notenuhmudiralabyrinth7pickup>
+	<bestowerbow2>Deadeye</bestowerbow2>
+	<noteregicideholtburgpickup>Player has picked up the Cryptic Note</noteregicideholtburgpickup>
+	<riddlestars>Player has received the corresponding Riddle.</riddlestars>
+	<receivedtoolonyxcutting>You received an Onyx Cutting Tool from Fanzen San.</receivedtoolonyxcutting>
+	<siraluunclawscissorslittoral1204>You have turned in this item already.</siraluunclawscissorslittoral1204>
+	<chestquestlockedmidpoig>Opened a ChestQuestLockedMid.</chestquestlockedmidpoig>
+	<templeliazkburun80>Player killed the boss Burun monster.</templeliazkburun80>
+	<gotolthoikatar>Picked up note</gotolthoikatar>
+	<ringquest06>Give MenhirRubbleA to MenhirDrummerNW</ringquest06>
+	<gromnietoothpickjade>You have been granted experience into your fletching skill.</gromnietoothpickjade>
+	<ongolemplatinumkingslayerquest>You are on the Mud Golem Sludge Lord Slayer Quest</ongolemplatinumkingslayerquest>
+	<kiviklircompleted>You've used the Eye.</kiviklircompleted>
+	<gromnietoothpickswamp>You have been granted experience into your fletching skill.</gromnietoothpickswamp>
+	<siraluunclawhairgelbadlands1204>You have turned in this item already.</siraluunclawhairgelbadlands1204>
+	<chestquestlockedlowratnest>Opened a ChestQuestLockedLowRatNest.</chestquestlockedlowratnest>
+	<colorpuzzlecompleted>You've compleated the Clutch of Kings color puzzle.</colorpuzzlecompleted>
+	<heatoneawacompleted>Hea Toneawa and Aun Mariona quest. Toneawa sends players on this quest only once a day.</heatoneawacompleted>
+	<chestquestaubereanmap>Opened a ChestQuest</chestquestaubereanmap>
+	<tuskguardpickup>Tusk picked up from a Tusker Guard.</tuskguardpickup>
+	<bloodjewellowpickedup>Player has collected the low Blood Jewel.</bloodjewellowpickedup>
+	<bunnyslippergiven>CragstoneSlipperCrafter stamps players with this questflag after giving them SlipperBunny or SlipperBunnyWhite</bunnyslippergiven>
+	<shadowarmorsho3>Sho Shadow Armor 3</shadowarmorsho3>
+	<shardturshtotemassaultmidacquired0105>You have acquired a shard of the Tursh totem!</shardturshtotemassaultmidacquired0105>
+	<poporight>Correct answer on Po Po</poporight>
+	<harbingerraisemissile>I want to raise this skill.</harbingerraisemissile>
+	<roadstask2>You complete the second task set forth by Nuhmudira.</roadstask2>
+	<shoushibraidbracelet1204>Retreive Bai Den's Bracelet</shoushibraidbracelet1204>
+	<eyekiviklirtrialjump>You've completed the Kivik Lir Agility Trial.</eyekiviklirtrialjump>
+	<splinterulgrimsamsur>Found Splinter4 of Ulgrim's Wand.</splinterulgrimsamsur>
+	<storehousemidwait>This quest flag is obsolete.</storehousemidwait>
+	<olthoihunting2>Olthoi Hunting 2</olthoihunting2>
+	<axebattlestatuepickup>Player has picked up this weapons and cannot pick up another one for 1 day</axebattlestatuepickup>
+	<totalgolemglacialmargravedead>You have killed some Glacial Golem Magraves</totalgolemglacialmargravedead>
+	<chestquestlockedlowpoig>Opened a ChestQuestLockedLow.</chestquestlockedlowpoig>
+	<boygrubgotbow>Has the player been given the Panaq bow?</boygrubgotbow>
+	<bestowerxbow1>Sniper</bestowerxbow1>
+	<empyreanscalemailshirt>Empyrean Scalemail Shirt</empyreanscalemailshirt>
+	<harbingerraiselockpick>I want to raise this skill.</harbingerraiselockpick>
+	<feb01clquest10>Right Mario Boot</feb01clquest10>
+	<assaultvaultaccessgranted0105>You have obtained access to the Royal Sewers!</assaultvaultaccessgranted0105>
+	<pickedupemeraldclasp>You picked up an Emerald Clasp.</pickedupemeraldclasp>
+	<virindikillerbagsiraluun3>This quest flag is obsolete.</virindikillerbagsiraluun3>
+	<usedlifestonecandethkeep>Used the Candeth Keep Lifestone.</usedlifestonecandethkeep>
+	<gotaxerenegaderaids>Picked up Renegade Axe</gotaxerenegaderaids>
+	<gaerlanpreamble>Player has given the ornate seal to the ornate pillar</gaerlanpreamble>
+	<chorizitec>Chorizite Refined C</chorizitec>
+	<bloodjewelmidpickedup>Player has collected the mid Blood Jewel.</bloodjewelmidpickedup>
+	<riddlehope>Player has received the corresponding Riddle.</riddlehope>
+	<coilzharalimgiven>Player has given this coil and cannot give another for one day.</coilzharalimgiven>
+	<hizkrientrance1>So far so good you have one part of the entrance exam right!</hizkrientrance1>
+	<virindikillerolthoiclaw>This quest flag is obsolete.</virindikillerolthoiclaw>
+	<mugoswaldtaken>Took the mug</mugoswaldtaken>
+	<colorpuzzlegreenriddle>You got a riddle from the clue card.</colorpuzzlegreenriddle>
+	<gaveolthoiscoutnote8>Turned in a note</gaveolthoiscoutnote8>
+	<donewithhiypthetoad>Done with Hiyp</donewithhiypthetoad>
+	<bestowerspear1>Spear Warrior</bestowerspear1>
+	<gromnietoothbrushswamp>You have been granted experience into your cooking skill.</gromnietoothbrushswamp>
+	<applicationgiven>Turned over the Application Form</applicationgiven>
+	<notenuhmudiralabyrinth5pickup>This quest flag is obsolete.</notenuhmudiralabyrinth5pickup>
+	<riddleblack>Player has received the corresponding Riddle.</riddleblack>
+	<axecragstatuepickup>Player has picked up this weapons and cannot pick up another one for 1 day</axecragstatuepickup>
+	<abandonednuhmudira>Player left Nuhmudira to her fate.</abandonednuhmudira>
+	<chestquestlockedhigh>Opened a ChestQuestLockedHigh.</chestquestlockedhigh>
+	<noteburunhistory5>You have learned a little about Burun History.</noteburunhistory5>
+	<greatershadowarmorsho2>Greater Sho Shadow Armor 2</greatershadowarmorsho2>
+	<templewitchosen>Player has been chosen to solve the Wit puzzle.</templewitchosen>
+	<splinterulgrimtoutou>Found Splinter7 of Ulgrim's Wand.</splinterulgrimtoutou>
+	<fellowmagicdefense5>You found a fellowship magic defense spell.</fellowmagicdefense5>
+	<riddlebed>Player has received the corresponding Riddle.</riddlebed>
+	<receivedkiviklirarmor>You've used the Eye.</receivedkiviklirarmor>
+	<championquest02>Pick up VirindiScalpelBlade</championquest02>
+	<tuskcrimsonbackpickup>Tusk picked up from a Crimsonback Tusker.</tuskcrimsonbackpickup>
+	<mowenwinner>TBD</mowenwinner>
+	<aunkillerpendantaun>This quest flag is obsolete.</aunkillerpendantaun>
+	<mosswartexodushand>You found the Hand of Vagurat.</mosswartexodushand>
+	<siraluunclawscissorskithless1204>You have turned in this item already.</siraluunclawscissorskithless1204>
+	<crimsonbrokenhaft>Crimson Broken Haft</crimsonbrokenhaft>
+	<gromnietoothpasteswamp>You have been granted experience into your alchemy skill.</gromnietoothpasteswamp>
+	<gaerlanwarhammer>Player has received the corresponding reward.</gaerlanwarhammer>
+	<roadsnuhmudira2>You have been sent to collect an urn for Nuhmudira.</roadsnuhmudira2>
+	<feb01clquest5>Organic Acid Vial</feb01clquest5>
+	<fellowmeleedefense7>You found a fellowship melee defense spell.</fellowmeleedefense7>
+	<eyekiviklirhaven4>You've used the Eye.</eyekiviklirhaven4>
+	<renegadeleggingspickedup>You have picked up the Renegade's leggings.</renegadeleggingspickedup>
+	<questbanderlinghauntacquired0105>Player is on Banderling Haunt Quest</questbanderlinghauntacquired0105>
+	<siraluunclawscissorsstrand1204>You have turned in this item already.</siraluunclawscissorsstrand1204>
+	<healthpickup>Player has picked up an Academy health potion</healthpickup>
+	<novquest3>Novemeber Quest 3</novquest3>
+	<pickedupburunfetish>You have taken a Burun Fetish from the corpse of a raiding Burun.</pickedupburunfetish>
+	<uberpalliumobtained>Aerfalle's Supreme Pallium</uberpalliumobtained>
+	<splinterulgrimsawato>Found Splinter5 of Ulgrim's Wand.</splinterulgrimsawato>
+	<aerlinthebellows>Aerlinthe Bellows Found</aerlinthebellows>
+	<letterrylanan2given>Player has delivered the full letter to Rylanan.</letterrylanan2given>
+	<ringmaelstrom>You've picked up one of the Dark Rings.</ringmaelstrom>
+	<minnowcounter>Number of Minnows turned in.</minnowcounter>
+	<aunkillerwatergolemheart>This quest flag is obsolete.</aunkillerwatergolemheart>
+	<virindiisland>Singularity Island</virindiisland>
+	<caocaoright>Correct answer on Cao Cao</caocaoright>
+	<distillerynectarquest>Distillery Nectar Quest</distillerynectarquest>
+	<morningstatuepickup>Player has picked up this weapons and cannot pick up another one for 1 day</morningstatuepickup>
+	<gotolthoispear>Picked up note</gotolthoispear>
+	<redfireinfusion>Red Fire SOLL Infusion</redfireinfusion>
+	<virindikillercarenzipeltpouchling>This quest flag is obsolete.</virindikillercarenzipeltpouchling>
+	<atlatlstatuepickup>Player has picked up this weapons and cannot pick up another one for 1 day</atlatlstatuepickup>
+	<feb01clquest1>Unkindled Thaumaturgic Girth</feb01clquest1>
+	<undeadmechanismpickup20>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup20>
+	<gaerlandagger>Player has received the corresponding reward.</gaerlandagger>
+	<roadsjournal>You found Nuhmudira's journal and know where to find her.</roadsjournal>
+	<yalainbookgiven>Player has been given the Yalain books</yalainbookgiven>
+	<harbingerraiseloyalty>I want to raise this skill.</harbingerraiseloyalty>
+	<bloodjewelhighpickedup>Player has collected the high Blood Jewel.</bloodjewelhighpickedup>
+	<emotetestdrudgekillerquest>Test Emote Drudge Quest</emotetestdrudgekillerquest>
+	<gaerlanring>Player has received the corresponding reward.</gaerlanring>
+	<craftingforgeused1204>you've used any crafting forge</craftingforgeused1204>
+	<splinterulgrimrithwic>Found Splinter3 of Ulgrim's Wand.</splinterulgrimrithwic>
+	<offerburunpickedup>You have picked up the Renegade's offer to the Burun.</offerburunpickedup>
+	<housestatueshadowgiven>Player has given received this house statue and can't get another one for a week.</housestatueshadowgiven>
+	<undeadmechanismpickup9>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup9>
+	<newbiequeststamprithwic>Rithwic Stamp Quest</newbiequeststamprithwic>
+	<orbenergycrystal>Player has been given the new Energy Crystal</orbenergycrystal>
+	<questrumubaspear>Spear Quest</questrumubaspear>
+	<provinggroundslow>Unused Questflag</provinggroundslow>
+	<bagpuzzleblackbagcorrect>You picked the correct contents for the black bag.</bagpuzzleblackbagcorrect>
+	<gotsoulshatterreward>turned in 3rd crystal</gotsoulshatterreward>
+	<turbanjalehtaken>You got the heart of Jaleh</turbanjalehtaken>
+	<knorrwait>Waiting time before returning to Knorr</knorrwait>
+	<mosswartexodusspear>You found the Spear of Kreerg.</mosswartexodusspear>
+	<holtburgredoubtbowl1204>Retreive Worcer's Antique Bowl</holtburgredoubtbowl1204>
+	<hauntedmansiondungeonpermission>Player has permission to use Dungeon portal</hauntedmansiondungeonpermission>
+	<splinterulgrimyanshi>Found Splinter9 of Ulgrim's Wand.</splinterulgrimyanshi>
+	<templeliazkburun60>Player killed the boss Burun monster.</templeliazkburun60>
+	<bucketadja>Adja Well Bucket</bucketadja>
+	<chestquestlockedlowpoia>Opened a ChestQuestLockedLow.</chestquestlockedlowpoia>
+	<harbingerraiseconversion>I want to raise this skill.</harbingerraiseconversion>
+	<shieldkitestatuepickup>Player has picked up this shield and cannot pick up another one for 1 day</shieldkitestatuepickup>
+	<gaerlandefeated>Player has finished the Gaerlan quest and can receive a reward.</gaerlandefeated>
+	<emberbrightreceived>Aulakhe has received the Bright Ember</emberbrightreceived>
+	<eventhighskeletonkiller>Player has killed this event boss</eventhighskeletonkiller>
+	<pickedupolthoiscoutnote6>Picked up note</pickedupolthoiscoutnote6>
+	<orderscontactreceived>You have taken the orders from the Renegade Fortress.</orderscontactreceived>
+	<bagpuzzlepickbagvariant2>You have varient 2 of the bag puzzle.</bagpuzzlepickbagvariant2>
+	<nantotownquest>Nanto Town Quest</nantotownquest>
+	<receivedwaxthorsten>Player has recvd wax to mould Thorsten armor or axe</receivedwaxthorsten>
+	<yaraqahyaraletter>Yaraq Ahyara Letter Quest</yaraqahyaraletter>
+	<booknoir1>You've looked at Jake's journal.</booknoir1>
+	<keycontactreceived>You have taken the key off the Renegade Lugian's corpse.</keycontactreceived>
+	<capacademypickup>Player has picked up the Academy Cap</capacademypickup>
+	<gromnietoothpastejade>You have been granted experience into your alchemy skill.</gromnietoothpastejade>
+	<tuskredeemerpickup>Tusk picked up from a Tusker Redeemer.</tuskredeemerpickup>
+	<virindikillerbagsiraluun5>This quest flag is obsolete.</virindikillerbagsiraluun5>
+	<magicitemtraining6>You have been blessed by Bleeargh to learn item enchantment.</magicitemtraining6>
+	<templeforgetfulnesshyssop>Skill sellback quest.</templeforgetfulnesshyssop>
+	<strongholdtumerokbuilder>Your status for donations to the Tumerok Stronghold Collector.</strongholdtumerokbuilder>
+	<riddlewind>Player has received the corresponding Riddle.</riddlewind>
+	<liazkbeaten>Player defeated the tests of Liazk Itzi's Temple.</liazkbeaten>
+	<yaraqciderhardcoveapple1204>Sea Temple Catacombs Quest</yaraqciderhardcoveapple1204>
+	<scepterlugian>Lugian Commander Trophy</scepterlugian>
+	<gaerlancrit>Player has gone through the portal to the inner sanctum.</gaerlancrit>
+	<chestquestunlockedlow>Opened a ChestQuestUnlockedLow.</chestquestunlockedlow>
+	<lessershadowarmorgharundim2>Lesser Gharundim Shadow Armor 2</lessershadowarmorgharundim2>
+	<statuekiviklirguardiantrial>You have spoken to the Guardian of the Trials.</statuekiviklirguardiantrial>
+	<chestquestlockedmidpoic>Opened a ChestQuestLockedMid.</chestquestlockedmidpoic>
+	<boygrubfedwrongapple>Has the player fed an apple to the grub without first being infested?</boygrubfedwrongapple>
+	<ringquest02>Give MenhirRubbleE to MenhirDrummerN</ringquest02>
+	<smolderingstonemajor>Smoldering Stone Major Quest</smolderingstonemajor>
+	<notenuhmudiralabyrinth8pickup>This quest flag is obsolete.</notenuhmudiralabyrinth8pickup>
+	<mumuright>Correct answer on Mu Mu</mumuright>
+	<templeliazkburun40>Player killed the boss Burun monster.</templeliazkburun40>
+	<pickedupzharalimforemanjournal>You've picked up the Zharalim Foreman's Journal.</pickedupzharalimforemanjournal>
+	<crimsonruby3>Crimson Ruby 3</crimsonruby3>
+	<chestquestunlockedhighpoif>Opened a ChestQuestUnlockedHigh.</chestquestunlockedhighpoif>
+	<gaerlanwar4>Player has received the War 4 reward.</gaerlanwar4>
+	<templeforgetfulnessdragonsblood>Skill sellback quest.</templeforgetfulnessdragonsblood>
+	<journalkixktipickedup>Picked up Kixkti's journal.</journalkixktipickedup>
+	<broodmatroncarapacepickedup>You have obtained a Brood Matron Carapace.</broodmatroncarapacepickedup>
+	<chestquestlockedmidmushroomaltar>Opened a ChestQuestLockedMidMushroomAltar.</chestquestlockedmidmushroomaltar>
+	<prismfragmentfirepickup>Player has picked up the Fire Fragment</prismfragmentfirepickup>
+	<geardrudgegiven>Player has given this gear and cannot give another for one day.</geardrudgegiven>
+	<regaliamaskuber>Player has collected the mask from a Virinidi Profatrix.</regaliamaskuber>
+	<journaljexkipickedup>Picked up Jexkii's journal.</journaljexkipickedup>
+	<regicidespherule>Player has turned in spherule regicide</regicidespherule>
+	<shardturshtotemassaulthighacquired0105>You have acquired a shard of the Tursh totem!</shardturshtotemassaulthighacquired0105>
+	<carloloreviamontianmages001acquired0205>You picked up page 1 of Carlo di Cenza's journal.</carloloreviamontianmages001acquired0205>
+	<pickedupsarchophagushookable>You picked up a coffin.</pickedupsarchophagushookable>
+	<ordersmorgluukpickedup>Picked up the orders from Morgluuk.</ordersmorgluukpickedup>
+	<eventgromniekiller>Player has killed this event boss</eventgromniekiller>
+	<flyingmachineplansacquired0105>Player has picked up the Flying Machine Plans.</flyingmachineplansacquired0105>
+	<harbingerraiseaxe>I want to raise this skill.</harbingerraiseaxe>
+	<receivedthorstenarmorarmor>Player has completed obtaining replica of Thorsten's Armor</receivedthorstenarmorarmor>
+	<passwordvitriaka>Have Vitriaka's password.</passwordvitriaka>
+	<fishcounter>Number of Minnows turned in.</fishcounter>
+	<lessershadowarmorsho1>Lesser Sho Shadow Armor 1</lessershadowarmorsho1>
+	<prismaticstonepickedup>Player has picked up the uncut stone.</prismaticstonepickedup>
+	<hizkrieye2>You have selected the correct eye in the Gauntlet.</hizkrieye2>
+	<giventibrispear>Player has given Tibri back her fire spear.</giventibrispear>
+	<provinggroundscomplete>Player has finished the proving grounds</provinggroundscomplete>
+	<pickedupphatlewt>Picked up Ulgrim's Stout</pickedupphatlewt>
+	<springskeletongiven>Player has given this spring and cannot give another for one day.</springskeletongiven>
+	<pickedupbookmoarsnewbieuntranslated>You picked up an Untranslated Tome.</pickedupbookmoarsnewbieuntranslated>
+	<virindikillerfeatherssiraluun>This quest flag is obsolete.</virindikillerfeatherssiraluun>
+	<chestquestlockedmidpoid>Opened a ChestQuestLockedMid.</chestquestlockedmidpoid>
+	<wieldingfishingpole>Player has the fishing pole weilded.</wieldingfishingpole>
+	<gaerlanbreastplate>Player has received the corresponding reward.</gaerlanbreastplate>
+	<ringquest05>Give MenhirRubbleB to MenhirDrummerSW</ringquest05>
+	<eventshadowkiller>Player has killed this event boss</eventshadowkiller>
+	<witheredatollsword0105>You have acquired the Sterile Sword! Now go out and kill something!</witheredatollsword0105>
+	<grievversilk>Player has picked up some Grievver Silk and cannot pick up more for 2 weeks.</grievversilk>
+	<undeadmechanismpickup18>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup18>
+	<bestowercooking2>Iron Chef</bestowercooking2>
+	<crimsonbrokenhaft2>Crimson Broken Haft 2</crimsonbrokenhaft2>
+	<gaveolthoiscoutnote3>Turned in a note</gaveolthoiscoutnote3>
+	<tuskliberatorpickup>Tusk picked up from a Tusker Liberator.</tuskliberatorpickup>
+	<orderstorgluukpickedup>Picked up the orders from Torgluuk.</orderstorgluukpickedup>
+	<novquest2>Novemeber Quest 2</novquest2>
+	<bestowerthrownweapons1>Ballisteer</bestowerthrownweapons1>
+	<chestquestunlockednewbiepoia>Opened a ChestQuestUnlockedNewbie.</chestquestunlockednewbiepoia>
+	<onbrowerkquest>You are on the Browerk Quest.</onbrowerkquest>
+	<greatershadowarmorgharundim3>Greater Gharundim Shadow Armor 3</greatershadowarmorgharundim3>
+	<artscraftscookinghigh>Player has turned in high Cooking item.</artscraftscookinghigh>
+	<storehousehiwait>This quest flag is obsolete.</storehousehiwait>
+	<pauldronlugian>Lugian Commander Trophy</pauldronlugian>
+	<bunnygardensafeguard>This quest flag is obsolete.</bunnygardensafeguard>
+	<tumerokwaraxequest>Tumerok War Axe Quest</tumerokwaraxequest>
+	<crestlugian>Lugian Commander Trophy</crestlugian>
+	<ecortochiseloct01>Ecorto's Chisel</ecortochiseloct01>
+	<gotspeartokenhalf2>got the spear token half</gotspeartokenhalf2>
+	<eyekiviklirtrial1>You've used the Eye.</eyekiviklirtrial1>
+	<collectorcookingghamid>You have turned in a Mid cooking arts&amp;crafts item.</collectorcookingghamid>
+	<templeliazkburun100>Player killed the boss Burun monster.</templeliazkburun100>
+	<talkedtosnowmanmayor>You recently talked to the Mayor of Frost Haven.</talkedtosnowmanmayor>
+	<mugoswaldgiven>Gave Celcynd his mug</mugoswaldgiven>
+	<shadowarmorsho1>Sho Shadow Armor 1</shadowarmorsho1>
+	<pickedupmapauberean>You picked up the Map of Auberean.</pickedupmapauberean>
+	<gaveleathertonanoc>Picked up note</gaveleathertonanoc>
+	<arantahboon5>Give Hea Arantah CurseObject5</arantahboon5>
+	<artscraftsalchemymid>Player has turned in mid alchemy item.</artscraftsalchemymid>
+	<harbingerraisejump>I want to raise this skill.</harbingerraisejump>
+	<hassphinxriddle>Player has received a riddle from the head.</hassphinxriddle>
+	<shirtbeltsloraquest>Retreive Beltslora's Pretty Shirt</shirtbeltsloraquest>
+	<usedheadhomunculus>You have used the Head of the Homunculus.</usedheadhomunculus>
+	<keyknorrsentinelpickedup>Picked up Sentinel Key</keyknorrsentinelpickedup>
+	<deepplaces2>You've picked up the second note in Olthoi Tunnels.</deepplaces2>
+	<deterioratedaegispickup>Picked up the Deteriorated Aegis</deterioratedaegispickup>
+	<pickeduptasselmelee>You've picked up a Woven Tassel of Discord.</pickeduptasselmelee>
+	<yaraqknifecoveapple1204>Sea Temple Catacombs Quest</yaraqknifecoveapple1204>
+	<stingingstonemajor>Stinging Stone Major Quest</stingingstonemajor>
+	<sanctumxiruenter>You have been acknowledged as one who may enter Xi Ru's temple.</sanctumxiruenter>
+	<aerbaxchestkey2pickup>Picked up the second Aerbax Key.</aerbaxchestkey2pickup>
+	<spokewithsyltyn>Spoke With Syltyn</spokewithsyltyn>
+	<eyekiviklirhaven1>You've used the Eye.</eyekiviklirhaven1>
+	<shoushinenaicheese1204>Retreive Cheese for Nen Ai</shoushinenaicheese1204>
+	<invasionquest03>Kill southeast full invasion Brood Noble</invasionquest03>
+	<chestquestlockedhighpoia>Opened a ChestQuestLockedHigh.</chestquestlockedhighpoia>
+	<chestquestlockedmidholtburgruin>Opened a ChestQuestLockedMidHoltburgRuin.</chestquestlockedmidholtburgruin>
+	<palenqualhoeroagiven>This stamp will alert Aun Imeitanua upon give that they have already spoken with him and should return the item.</palenqualhoeroagiven>
+	<renegadelockpicks>You have opened the chest containing Lockpicks.</renegadelockpicks>
+	<aerbaxchestkey1pickup>Picked up the first Aerbax Key.</aerbaxchestkey1pickup>
+	<coinattachmentpickup>You've picked up the Coin of Attachment</coinattachmentpickup>
+	<carloloreviamontianmages007acquired0205>You picked up page 7 of Carlo di Cenza's journal.</carloloreviamontianmages007acquired0205>
+	<invasionquest09>Kill Dires 3 full invasion NobleC</invasionquest09>
+	<yaraqcidercoveappleaged1204>Sea Temple Catacombs Quest</yaraqcidercoveappleaged1204>
+	<turnedindais>Player has given Slithe the Gelidate Dias</turnedindais>
+	<gaveolthoiscoutnote6>Turned in a note</gaveolthoiscoutnote6>
+	<tuskslavepickup>Tusk picked up from a Tusker Slave.</tuskslavepickup>
+	<newbiequeststampnanto>Nanto Stamp Quest</newbiequeststampnanto>
+	<spokentokielerea>You've talked to Kielerea.</spokentokielerea>
+	<pickedupnotebethelbrother>You've picked up Bewren's Journal.</pickedupnotebethelbrother>
+	<reeshankilled>You killed Reeshan.</reeshankilled>
+	<thetooth>Golems do have teeth</thetooth>
+	<tuskassailerpickup>Tusk picked up from a Tusker Assailer.</tuskassailerpickup>
+	<eventgolemkiller>Player has killed this event boss</eventgolemkiller>
+	<tumerokwarmacequest>Tumerok War Mace Quest</tumerokwarmacequest>
+	<sylsfeartreasurekey>Sylsfear Dungeon Chest Key</sylsfeartreasurekey>
+	<eventzharalimkiller>Player has killed this event boss</eventzharalimkiller>
+	<siraluunclawhairpinstrand1204>You have turned in this item already.</siraluunclawhairpinstrand1204>
+	<shardturshtotemassaultuberacquired0105>You have acquired a shard of the Tursh totem!</shardturshtotemassaultuberacquired0105>
+	<eyekiviklirtriallogic>You've completed the Kivik Lir Logic Trial.</eyekiviklirtriallogic>
+	<springsclavus>Player has picked up a Sclavus spring and cannot pick up another for 1 day.</springsclavus>
+	<spheruleregicidepickup>Player has picked up the Spherule</spheruleregicidepickup>
+	<witheredatollaxe0105>You have acquired the Insensate Axe! Now go out and kill something!</witheredatollaxe0105>
+	<roadshevkloz>You have spoken to Hevk Loz.</roadshevkloz>
+	<collectoralchemyshomid>You have turned in a Mid alchemy arts&amp;crafts item.</collectoralchemyshomid>
+	<gaerlanquest>Player has started the Gaerlan Quest.</gaerlanquest>
+	<gaerlanbracelet>Player has received the corresponding reward.</gaerlanbracelet>
+	<gaveletterthorstenarmor4copy>Player has given this letter in exchange for xp</gaveletterthorstenarmor4copy>
+	<provinggroundsfloorwalk>Player has completed the floor walk</provinggroundsfloorwalk>
+	<skeletonnoir1>You've examined the skeleton.</skeletonnoir1>
+	<harbingercompletedwaitissk>Issk says wait your turn.</harbingercompletedwaitissk>
+	<shellgameshellanswer2>You have seen the shell game.</shellgameshellanswer2>
+	<tusksilverpickup>Tusk picked up from a Silver Tusker.</tusksilverpickup>
+	<keerikbeaten>You've beaten Keerik.</keerikbeaten>
+	<gotwardingring>You've looted a warding ring recently.</gotwardingring>
+	<recruitsent>Player has finished all quests in Area B Senior Guard has sent him to Area C.</recruitsent>
+	<gromnietoothbrushivory>You have been granted experience into your cooking skill.</gromnietoothbrushivory>
+	<qinxikitbeaten>You've beaten the Qin Xikit temple.</qinxikitbeaten>
+	<templeenlightenmentbistort>Skill sellback quest.</templeenlightenmentbistort>
+	<deservesdarktiderecompense>You deserve the hook-up!</deservesdarktiderecompense>
+	<kiviklirbeaten>You've used the Eye.</kiviklirbeaten>
+	<eventmidskeletonkiller>Player has killed this event boss</eventmidskeletonkiller>
+	<artscraftsfletchingproportional>Player has turned in extreme Fletching item.</artscraftsfletchingproportional>
+	<greatershadowarmorsho1>Greater Sho Shadow Armor 1</greatershadowarmorsho1>
+	<chestblackmarrowfloatingbridge0205>You have opened this chest already.</chestblackmarrowfloatingbridge0205>
+	<tuskrampagerpickup>Tusk picked up from a Tusker Rampager.</tuskrampagerpickup>
+	<coveoswaldulgrim>Ulgrim needs the cider</coveoswaldulgrim>
+	<tuskarmoredpickup>Tusk picked up from an Armored Tusker.</tuskarmoredpickup>
+	<tuskfemalepickup>Tusk picked up from a Female Tusker.</tuskfemalepickup>
+	<virindikillersiraluunclawtimber>This quest flag is obsolete.</virindikillersiraluunclawtimber>
+	<chestquestunlockedhighpoig>Opened a ChestQuestUnlockedHigh.</chestquestunlockedhighpoig>
+	<crimsonruby2>Crimson Ruby 2</crimsonruby2>
+	<colorpuzzleorangeriddle>You got a riddle from the clue card.</colorpuzzleorangeriddle>
+	<boygrubtookahna>Has the player picked up an Ahna?</boygrubtookahna>
+	<housestatuebanderlinggiven>Player has given received this house statue and can't get another one for a week.</housestatuebanderlinggiven>
+	<talkedtoexstudentrot2>Talked to Cydna Wren</talkedtoexstudentrot2>
+	<emptysoulshield>You've received the Shield for Empty Soul.</emptysoulshield>
+	<gromnietoothpasteazure>You have been granted experience into your alchemy skill.</gromnietoothpasteazure>
+	<stonetool>Stone Tool Quest</stonetool>
+	<siraluunclawhairgeltidal1204>You have turned in this item already.</siraluunclawhairgeltidal1204>
+	<gaveunframedderethmap>Player has given unframed Dereth Map to Gharu Furniture Master.</gaveunframedderethmap>
+	<bestowerfletching2>MasterFletcher</bestowerfletching2>
+	<keyrewardpickedup>This quest flag is obsolete.</keyrewardpickedup>
+	<focusingstone>Focusing Stone from Mines of Despair</focusingstone>
+	<shieldcragstonestatuepickup>Player has picked up this shield and cannot pick up another one for 1 day</shieldcragstonestatuepickup>
+	<geargromnie>Player has picked up a Gromnie Gear and cannot pick up another for 1 day.</geargromnie>
+	<pickedupnecklaceshadowstone>You've picked up the Shadow Stone Necklace.</pickedupnecklaceshadowstone>
+	<spokewithfallenmgr>was in robbed warehouse</spokewithfallenmgr>
+	<gemnewbiepickedup>Player has picked up the portal gem (removed from game)</gemnewbiepickedup>
+	<direlandqueenkiller>Player assisted in killing a newbie nest.</direlandqueenkiller>
+	<gromnietoothbrushbrass>You have been granted experience into your cooking skill.</gromnietoothbrushbrass>
+	<hadfishinglicense>Player has already gotten a fishing license at least once.</hadfishinglicense>
+	<menacetsnote>Writ Nov Quest 2</menacetsnote>
+	<arcanumalchemistspoken1>Player has spoken to the Arcanum Alchemist the first time.</arcanumalchemistspoken1>
+	<shoushibraidring1204>Retreive Bai Den's Ring</shoushibraidring1204>
+	<formacademypickup>Player must wait 30 seconds to pick up another Academy Form</formacademypickup>
+	<nutboltgrievver>Player has picked up a Griever nuts and bolts and cannot pick up another for 1 day.</nutboltgrievver>
+	<hauberklugian>Lugian Commander Trophy</hauberklugian>
+	<notenuhmudiralabyrinth6pickup>This quest flag is obsolete.</notenuhmudiralabyrinth6pickup>
+	<magicitemtraining2>You have been blessed by Bleeargh to learn item enchantment.</magicitemtraining2>
+	<vendortimarushaman>Timaru NPCs will recognize players who return to them within the next 60 minutes</vendortimarushaman>
+	<storehouselowwait>This quest flag is obsolete.</storehouselowwait>
+	<notenuhmudiralabyrinth4pickup>This quest flag is obsolete.</notenuhmudiralabyrinth4pickup>
+	<turnedinspring>Player has given Slithe the spring</turnedinspring>
+	<eyekiviklirhaven2>You've used the Eye.</eyekiviklirhaven2>
+	<lugianstaffmind>Lugian Staff of the Mind</lugianstaffmind>
+	<gavecresttonanoc>Picked up note</gavecresttonanoc>
+	<aerfallestaffobtained>Staff of Aerfalle</aerfallestaffobtained>
+	<siraluunclawhairpintidal1204>You have turned in this item already.</siraluunclawhairpintidal1204>
+	<undeadmechanismpickup1>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup1>
+	<prismfragmentacidgiven>Player has turned in the Acid Fragment</prismfragmentacidgiven>
+	<touchedpvphateeffigy200205>You received an XP award from the Effigy of Bitterness</touchedpvphateeffigy200205>
+	<chestquestlockedlow>Opened a ChestQuestLockedLow.</chestquestlockedlow>
+	<swordshortstatuepickup>Player has picked up this weapons and cannot pick up another one for 1 day</swordshortstatuepickup>
+	<pickedupmosswartstonethanks>You have picked up a Mosswart Thanking Stone.</pickedupmosswartstonethanks>
+	<templeliazka>Liazk feeder A has taken a sacrifice.</templeliazka>
+	<falatacotmagicresistance>Teachings of the Falatacot</falatacotmagicresistance>
+	<championquest04>Pick up CropTuperea1</championquest04>
+	<notenuhmudiralabyrinth3pickup>This quest flag is obsolete.</notenuhmudiralabyrinth3pickup>
+	<roadsfailedjifloz>You failed to answer Jif loz's question correctly.</roadsfailedjifloz>
+	<gaerlanmace>Player has received the corresponding reward.</gaerlanmace>
+	<enterbattledungeon>You've entered a battle dungeon.</enterbattledungeon>
+	<springtumerok>Player has picked up a Tumerok spring and cannot pick up another for 1 day.</springtumerok>
+	<emberbrightreceivednew>Aulakhe has received the Bright Ember</emberbrightreceivednew>
+	<templeforgetfulnessyarrow>Skill sellback quest.</templeforgetfulnessyarrow>
+	<templewitcomplete>Fellowship has completed the Wit test.</templewitcomplete>
+	<eventreedsharkkiller>Player has killed this event boss</eventreedsharkkiller>
+	<golemmagmaexarchslayerquest>You are on the Mud Golem Sludge Lord Slayer Quest</golemmagmaexarchslayerquest>
+	<glyphkiviklirshardamber>You've used the Eye.</glyphkiviklirshardamber>
+	<shadowcaptainsheaume>Shadow Captain's Heaume</shadowcaptainsheaume>
+	<notenuhmudiralabyrinth2pickup>This quest flag is obsolete.</notenuhmudiralabyrinth2pickup>
+	<talkedtoladydain>Talked to Lady Dain.</talkedtoladydain>
+	<prismfragmentacidpickup>Player has picked up the Acid Fragment</prismfragmentacidpickup>
+	<ongolemglacialmargraveslayerquest>You are on the Mud Golem Sludge Lord Slayer Quest</ongolemglacialmargraveslayerquest>
+	<mowenfighter>TBD</mowenfighter>
+	<eyekiviklirhaven3>You've used the Eye.</eyekiviklirhaven3>
+	<aunkillergolemheartmud>This quest flag is obsolete.</aunkillergolemheartmud>
+	<holtburggreetinggiven>Rylanan has said hello to player</holtburggreetinggiven>
+	<collectorcookingalunewbie>You have turned in a newbie cooking arts&amp;crafts item.</collectorcookingalunewbie>
+	<collectorcookingsholow>You have turned in a Low cooking arts&amp;crafts item.</collectorcookingsholow>
+	<notenuhmudiralabyrinth1pickup>This quest flag is obsolete.</notenuhmudiralabyrinth1pickup>
+	<essencerecovered>Player has gotten essence from the essence font.</essencerecovered>
+	<gavestabclawtodanta>Picked up note</gavestabclawtodanta>
+	<spoketofadsahil>Player has spoken to Fadsahil al-Tashbi and been given the info on the quest.</spoketofadsahil>
+	<shroudvirindioct01>Virindi Shroud</shroudvirindioct01>
+	<greatershadowarmorgharundim1>Greater Gharundim Shadow Armor 1</greatershadowarmorgharundim1>
+	<splinterulgrimcombat>Found Splinter10 of Ulgrim's Wand.</splinterulgrimcombat>
+	<pickedupdailantiumcrystal>Picked up a Dailantium Crystal.</pickedupdailantiumcrystal>
+	<chestquestunlockedhighpoic>Opened a ChestQuestUnlockedHigh.</chestquestunlockedhighpoic>
+	<pickedupaquamarineprisms>You picked up a cluster of Aquamarine Prisms.</pickedupaquamarineprisms>
+	<riddledarkness>Player has received the corresponding Riddle.</riddledarkness>
+	<asheroninvasionspoken>You have spoken to the Almighty Asheron!</asheroninvasionspoken>
+	<chestblackmarrowburningtower0205>You have opened this chest already.</chestblackmarrowburningtower0205>
+	<braceletgalvanicpickup>Player has picked up Galvanic Bracelet</braceletgalvanicpickup>
+	<tanningoiltanuagiven>Tikakhe has given players the tanning oil</tanningoiltanuagiven>
+	<splintersgivenulgrim>Number of splinters handed to Ulgrim.</splintersgivenulgrim>
+	<gaerlanwar1>Player has received the War reward.</gaerlanwar1>
+	<ongolemironkingpinslayerquest>You are on the Mud Golem Sludge Lord Slayer Quest</ongolemironkingpinslayerquest>
+	<tachistatuepickup>Player has picked up this weapons and cannot pick up another one for 1 day</tachistatuepickup>
+	<templekilledjexkiki>Fellowship has killed Jexki Ki.</templekilledjexkiki>
+	<banditblades>Bandits' Blazing Blades</banditblades>
+	<regicidecomplete>Player has finished the Regicide Quest</regicidecomplete>
+	<gaveletterthorstenarmor4>Player has given this letter in exchange for xp</gaveletterthorstenarmor4>
+	<braceletfrigidpickup>Player has picked up Frigid Bracelet</braceletfrigidpickup>
+	<questlittlestniffisnoteacquired1204>You have acquired the Littlest Niffis note!</questlittlestniffisnoteacquired1204>
+	<keynoir1>You've received the prison key.</keynoir1>
+	<brooducomplete>You've completed the Broodu quest.</brooducomplete>
+	<virindikillersiraluunclawstrand>This quest flag is obsolete.</virindikillersiraluunclawstrand>
+	<emberinvokingpickup>Players can pick up EmberInvoking in 1 month. Added for the March 2004 revision.</emberinvokingpickup>
+	<tanuacompleted>Once players complete the Tanua quest Bachus Flufens will stamp them so they can only go on the quest once/week.</tanuacompleted>
+	<gromnietoothbrushcopper>You have been granted experience into your cooking skill.</gromnietoothbrushcopper>
+	<evilmazeparchment1>Evil Maze Parchment 1 Quest</evilmazeparchment1>
+	<hizkrientrance3>So far so good you have one part of the entrance exam right!</hizkrientrance3>
+	<gaerlanbow>Player has received the corresponding reward.</gaerlanbow>
+	<ringmaelstrom2>You've picked up one of the Dark Rings.</ringmaelstrom2>
+	<undeadmechanismpickup11>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup11>
+	<helpedasheron>You have entered a dungeon to try to help Asheron!</helpedasheron>
+	<bestowermace1>Mace Warrior</bestowermace1>
+	<collectoralchemyghalow>You have turned in a Low alchemy arts&amp;crafts item.</collectoralchemyghalow>
+	<nutboltshadow>Player has picked up a Shadow nuts and bolts and cannot pick up another for 1 day.</nutboltshadow>
+	<shieldsimulacra>Shield of the Simulacra</shieldsimulacra>
+	<riddlesunlight>Player has received the corresponding Riddle.</riddlesunlight>
+	<shadowarmoraluvian1>Aluvian Shadow Armor 1</shadowarmoraluvian1>
+	<arantahboon3>Give Hea Arantah CurseObject3</arantahboon3>
+	<keyhammerempyreanfirepickup>Player has picked up the Fire hammer.</keyhammerempyreanfirepickup>
+	<invasionquest10>Pick up Olthoi Carapace</invasionquest10>
+	<gromnietoothpastesable>You have been granted experience into your alchemy skill.</gromnietoothpastesable>
+	<huskregicidepickup>Player has picked up the husk</huskregicidepickup>
+	<virindikillerbagsiraluun2>This quest flag is obsolete.</virindikillerbagsiraluun2>
+	<siraluunclawhairgellittoral1204>You have turned in this item already.</siraluunclawhairgellittoral1204>
+	<strongholdbuildercomplete>You have recieved your Stronghold Flag Stamp.</strongholdbuildercomplete>
+	<shimshimfirstspeak>TBD</shimshimfirstspeak>
+	<uniformregicidepickup>Player has picked up UniformRegicide.</uniformregicidepickup>
+	<hareltahkill1>Give Aun Hareltah TribalTotemHea</hareltahkill1>
+	<vendortimarujeweler>Timaru NPCs will recognize players who return to them within the next 60 minutes</vendortimarujeweler>
+	<riddlehole>Player has received the corresponding Riddle.</riddlehole>
+	<virinditatteredcloak>Tattered Virindi Cloak</virinditatteredcloak>
+	<marriagesymbollove>Player has picked up the Symbol of Love</marriagesymbollove>
+	<audetaungagiven>Aun Shimauri will give players permission to enter the Palenqual dungeon only once per month.</audetaungagiven>
+	<braceletloueiquest>Bracelet Lou Ei Quest</braceletloueiquest>
+	<freedbrontynnthorstenarmor>Player has freed Brontynn Marshad</freedbrontynnthorstenarmor>
+	<gauntletsacademypickup>Player has picked up the Academy Gauntlets</gauntletsacademypickup>
+	<hassnowglobesnowman>Player has recieved the Snowman Snowglobe.</hassnowglobesnowman>
+	<spokentostatuekiviklirarena>You have spoken to the Guardian of the Arena.</spokentostatuekiviklirarena>
+	<championquest05>Pick up CropTuperea2</championquest05>
+	<lettertenshin2given>Player has delivered the full letter to Tenshin.</lettertenshin2given>
+	<bestowercreature2>Evoker</bestowercreature2>
+	<healingkitpickup>Player has picked up an Academy healing potion</healingkitpickup>
+	<aunkillerbagsiraluun>This quest flag is obsolete.</aunkillerbagsiraluun>
+	<axesicklestatuepickup>Player has picked up this weapons and cannot pick up another one for 1 day</axesicklestatuepickup>
+	<pickedupoverlordsword>Picked up Tumerok Overlord's Sword</pickedupoverlordsword>
+	<gaerlankiller>Player has gone through the portal to the inner sanctum.</gaerlankiller>
+	<ashbaneuberturnedin>Gave Superior Ashbane to Leikotha.</ashbaneuberturnedin>
+	<manapickup>Player has picked up an Academy mana potion</manapickup>
+	<shellgameplaying>You are currently playing the game.</shellgameplaying>
+	<hopeslayerheart>Heart of Shadow</hopeslayerheart>
+	<greatershadowarmorgharundim2>Greater Gharundim Shadow Armor 2</greatershadowarmorgharundim2>
+	<roadscomplete>You complete the first task set forth by Nuhmudira.</roadscomplete>
+	<crimsonrepairedhaft>Crimson Repaired Haft</crimsonrepairedhaft>
+	<browerkkilled>You killed Browerk.</browerkkilled>
+	<illgottenrewards3>Player has handed a reward gem to Kai and has two more trips.</illgottenrewards3>
+	<bellowsnewbiepickedup>Player has found the Blacksmith's bellows.</bellowsnewbiepickedup>
+	<labyrinthcomplete>This quest flag is obsolete.</labyrinthcomplete>
+	<boygrubgavepah>Has the player given Tekapuapuh a Pan?</boygrubgavepah>
+	<turnedincoil>Player has given Slithe the coil</turnedincoil>
+	<roadsnuhmudira1>You have been sent to collect a book for Nuhmudira.</roadsnuhmudira1>
+	<feb01clquest6>Lightweight Tome</feb01clquest6>
+	<renegaderingb>You have collected half of Kamenua's ring.</renegaderingb>
+	<ringshieldingwestacquired1204>You have picked up RingShieldingWest</ringshieldingwestacquired1204>
+	<templeforgetfulnessvervain>Skill sellback quest.</templeforgetfulnessvervain>
+	<totalgolemplatinumkingdead>You have killed some Platinum Golem Mountain Kings</totalgolemplatinumkingdead>
+	<templecunningchosen>Player has been chosen to solve the Cunning puzzle.</templecunningchosen>
+	<notemarionapickup>Hea Toneawa and Aun Mariona quest You can only pickup up NoteMariona once a day.</notemarionapickup>
+	<collectorfletchingshomid>You have turned in a Mid fletching arts&amp;crafts item.</collectorfletchingshomid>
+	<gromnietoothbrushazure>You have been granted experience into your cooking skill.</gromnietoothbrushazure>
+	<xbowstatuepickup>Player has picked up this weapons and cannot pick up another one for 1 day</xbowstatuepickup>
+	<questreconnaissanceacquired0105>Player is on Reconnaissance quest.</questreconnaissanceacquired0105>
+	<lownestkiller>Player assisted in killing a newbie nest.</lownestkiller>
+	<chestquestunlockedlowpoic>Opened a ChestQuestUnlockedLow.</chestquestunlockedlowpoic>
+	<eventbanderlingkiller>Player has killed this event boss</eventbanderlingkiller>
+	<arantahboon4>Give Hea Arantah CurseObject4</arantahboon4>
+	<bestoweraxe2>Skullsplitter</bestoweraxe2>
+	<shiveringstoneminor>Shivering Stone Minor Quest</shiveringstoneminor>
+	<housestatuemosswartgiven>Player has given received this house statue and can't get another one for a week.</housestatuemosswartgiven>
+	<gromnietoothpicksable>You have been granted experience into your fletching skill.</gromnietoothpicksable>
+	<jambiyaabmimpickup>Ma'yad ibn Ibsar Quest</jambiyaabmimpickup>
+	<deservesnewyearsgift0105>You deserve a New Year's gift!</deservesnewyearsgift0105>
+	<shellgameshellanswer1>You have seen the shell game.</shellgameshellanswer1>
+	<harbingerraisemagictink>I want to raise this skill.</harbingerraisemagictink>
+	<regaliamaskextreme>Player has collected the mask from a Virinidi Consul.</regaliamaskextreme>
+	<pickedupnecklaceadjanite>You picked up a Labyrinthine Necklace.</pickedupnecklaceadjanite>
+	<eyekiviklirtrialarena>You've completed the Kivik Lir Combat Trial.</eyekiviklirtrialarena>
+	<towerdungeonaccess>got access to tower portal</towerdungeonaccess>
+	<portalregicidewitshirepermissiongiven>Player has permission to enter the portal to the bottom of the Witshire Dungeon</portalregicidewitshirepermissiongiven>
+	<championkillquest2>Kill Hea Temenua</championkillquest2>
+	<ongolemcoralviceroyslayerquest>You are on the Mud Golem Sludge Lord Slayer Quest</ongolemcoralviceroyslayerquest>
+	<collectorfletchingalumid>You have turned in a Mid fletching arts&amp;crafts item.</collectorfletchingalumid>
+	<hizkrieye3>You have selected the correct eye in the Gauntlet.</hizkrieye3>
+	<noteburunhistory1>You have learned a little about Burun History.</noteburunhistory1>
+	<polenoir1pickup>You've picked up the broken fishing pole.</polenoir1pickup>
+	<memorygamepickedupspear>You've dropped the memory game spear.</memorygamepickedupspear>
+	<harbingerraiserun>I want to raise this skill.</harbingerraiserun>
+	<magicitemtraining1>You have been blessed by Bleeargh to learn item enchantment.</magicitemtraining1>
+	<harbingerwarriorwait>Player has received the harbinger arm token.</harbingerwarriorwait>
+	<morgluukkiller>You were one of the first people to kill Morgluuk.</morgluukkiller>
+	<rehirkilled>You killed Rehir.</rehirkilled>
+	<pickedupbookmoarsmiduntranslated>You picked up an Untranslated Tome.</pickedupbookmoarsmiduntranslated>
+	<yaraqapplecoveperfect1204>Sea Temple Catacombs Quest</yaraqapplecoveperfect1204>
+	<talkedtobuilder>You have talked to the Stronghold Collectors.</talkedtobuilder>
+	<memorygamedroppedaxe>You've dropped the memory game axe.</memorygamedroppedaxe>
+	<feb01clquest2>Unkindled Thaumaturgic Leggings</feb01clquest2>
+	<broodmatroncrestpickedup>You have obtained a Brood Matron Crest.</broodmatroncrestpickedup>
+	<shendolaincrystal>Shendolain Crystal</shendolaincrystal>
+	<bestowerstaff2>Master of Staves</bestowerstaff2>
+	<menhirrubblebpickup>Player has picked up MenhirRubbleB_xp and cannot pick it up again for one day</menhirrubblebpickup>
+	<magicitemtraining3>You have been blessed by Bleeargh to learn item enchantment.</magicitemtraining3>
+	<colorpuzzleblueriddle>You got a riddle from the clue card.</colorpuzzleblueriddle>
+	<holtburgredoubthandbell1204>Retreive Hardunna's Handbell</holtburgredoubthandbell1204>
+	<templeenlightenmentmyrrh>Skill sellback quest.</templeenlightenmentmyrrh>
+	<gromnietoothbrushebon>You have been granted experience into your cooking skill.</gromnietoothbrushebon>
+	<deservesrealaidainraiment>Player is able to receive the Realaidain Raiment.</deservesrealaidainraiment>
+	<regaliamaskupper>Greater Regalia Quest</regaliamaskupper>
+	<siraluunclawhairbrushuntamed1204>You have turned in this item already.</siraluunclawhairbrushuntamed1204>
+	<essencebraceletreceived>Player has received the Bracelet of Dark Essence</essencebraceletreceived>
+	<sanctumxiruhevk>You have been given Hevk Loz's blessing to enter Xi Ru's Temple.</sanctumxiruhevk>
+	<gaveolthoiscoutnote1>Turned in a note</gaveolthoiscoutnote1>
+	<gavewoodtonarg>Picked up note</gavewoodtonarg>
+	<ringshieldingnorthacquired1204>You have picked up RingShieldingNorth</ringshieldingnorthacquired1204>
+	<gotpainbringerhead>You've looted the head of The Painbringer.</gotpainbringerhead>
+	<mosswartexodusnecklacekey>You found the key to open the necklace chest.</mosswartexodusnecklacekey>
+	<pickedupjournalvitriaka>Picked up Vitriaka's Journal.</pickedupjournalvitriaka>
+	<emptysoulfirebird>You've been allowed to enter the Dungeon for the Firebird part of Empty Soul.</emptysoulfirebird>
+	<prismfragmenticegiven>Player has turned in the Ice Fragment</prismfragmenticegiven>
+	<chestquestlockedextremepoia>Opened a ChestQuestLockedExtreme.</chestquestlockedextremepoia>
+	<emptysoul>You've begun the Empty Soul quest.</emptysoul>
+	<chestquestlockednewbiepoia>Opened a ChestQuestLockedNewbie.</chestquestlockednewbiepoia>
+	<gromnietoothpastebrass>You have been granted experience into your alchemy skill.</gromnietoothpastebrass>
+	<gaerlanwar3>Player has received the War 3 reward.</gaerlanwar3>
+	<hopeslayerskull>Skull of Avoren Palacost</hopeslayerskull>
+	<provinggrounds>Player may enter the proving grounds</provinggrounds>
+	<chestquestunlockedhighpoia>Opened a ChestQuestUnlockedHigh.</chestquestunlockedhighpoia>
+	<crimsonruby4>Crimson Ruby 4</crimsonruby4>
+	<roadsfailedhevkloz>You failed to answer Hevk loz's question correctly.</roadsfailedhevkloz>
+	<shadowstone>Shadow Stone Quest</shadowstone>
+	<impiousstaffbrokengiven>Impious Broken Staff Given</impiousstaffbrokengiven>
+	<gotelariwoodidol>You've looted an elariwood idol recently.</gotelariwoodidol>
+	<gotspeartokenhalf1>got the spear token half</gotspeartokenhalf1>
+	<eyekiviklirtrial2>You've used the Eye.</eyekiviklirtrial2>
+	<gredalinedarkflame>Gredaline Dark Flame Scroll</gredalinedarkflame>
+	<chestquestunlockednewbiepoid>Opened a ChestQuestUnlockedNewbie.</chestquestunlockednewbiepoid>
+	<templeenlightenmentdamiana>Skill sellback quest.</templeenlightenmentdamiana>
+	<yaojiloukaquest>Yaoji Lou Ka Quest</yaojiloukaquest>
+	<mosswartexodusspearkey>You found the Mosswart Chest Key.</mosswartexodusspearkey>
+	<renegaderinga>You have collected half of Kamenua's ring.</renegaderinga>
+	<lugianclotharm>Lugian Cloth of the Arm</lugianclotharm>
+	<fellowshipcrystallordslayerquest>Your fellowhsip has killed a Crystal Lord.</fellowshipcrystallordslayerquest>
+	<helpedjonas>You've helped out Jonas.</helpedjonas>
+	<gromnietoothpickcopper>You have been granted experience into your fletching skill.</gromnietoothpickcopper>
+	<illgottenrewards1>Player has handed a reward gem to Kai and has two more trips.</illgottenrewards1>
+	<shirtjalehtaken>You got the heart of Jaleh</shirtjalehtaken>
+	<templeforgetfulnesshawthorn>Skill sellback quest.</templeforgetfulnesshawthorn>
+	<templeforgetfulnesscomfrey>Skill sellback quest.</templeforgetfulnesscomfrey>
+	<pickedupdarktreecrystal>picked up 1st crystal.</pickedupdarktreecrystal>
+	<chestquestlockedlowpoif>Opened a ChestQuestLockedLow.</chestquestlockedlowpoif>
+	<shoushistonedetachment>Stone of Detachment Quest</shoushistonedetachment>
+	<gotdecpresent>Received present.</gotdecpresent>
+	<brokenkeyringmartine>Player has picked up the Broken Singularity Keyring</brokenkeyringmartine>
+	<colorpuzzlevioletriddle>You got a riddle from the clue card.</colorpuzzlevioletriddle>
+	<gotbowrenegaderaids>Picked up Renegade Bow</gotbowrenegaderaids>
+	<virindikillerwatergolemhearts>This quest flag is obsolete.</virindikillerwatergolemhearts>
+	<golemglacialmargraveslayerquest>You are on the Mud Golem Sludge Lord Slayer Quest</golemglacialmargraveslayerquest>
+	<ongolemmudsludgelordslayerquest>You are on the Mud Golem Sludge Lord Slayer Quest</ongolemmudsludgelordslayerquest>
+	<collectoralchemyalumid>You have turned in a Mid alchemy arts&amp;crafts item.</collectoralchemyalumid>
+	<clonekillerlow>Player has killed a low replica statue and can enter the low statue dungeon.</clonekillerlow>
+	<bestoweraxe1>Axe Warrior</bestoweraxe1>
+	<portalspacepermissiongiven>Player has received permission to enter the Portal Space dungeon. Created for the March 2004 revision.</portalspacepermissiongiven>
+	<templeenlightenmentsaffron>Skill sellback quest.</templeenlightenmentsaffron>
+	<takewaterlethe>Player has picked up Water of Lethe.</takewaterlethe>
+	<keyoverlord>Tumerok Overlord's Key</keyoverlord>
+	<housestatuesclavusgiven>Player has given received this house statue and can't get another one for a week.</housestatuesclavusgiven>
+	<noteburunhistory8>You have learned a little about Burun History.</noteburunhistory8>
+	<gaerlancrossbow>Player has received the corresponding reward.</gaerlancrossbow>
+	<sacrificednuhmudira>Player gave their life for Nuhmudira.</sacrificednuhmudira>
+	<soulfearingvestryskull>The skull of the High Acolyte</soulfearingvestryskull>
+	<maraefinalreward>Give Aun Hareltah HeadOlthoiQueen</maraefinalreward>
+	<templeforgetfulnessginseng>Skill sellback quest.</templeforgetfulnessginseng>
+	<keyknorrdefenderpickedup>Picked up Defender Key</keyknorrdefenderpickedup>
+	<cameraguardspoken1>Camera Guard has spoken once</cameraguardspoken1>
+	<harbingerraisearcane>I want to raise this skill.</harbingerraisearcane>
+	<mumufirstspeak>TBD</mumufirstspeak>
+	<feb01clquest7>Left Mario Boot</feb01clquest7>
+	<chestquestlockedlowlichhut>Opened a ChestQuestLockedLowLichHut.</chestquestlockedlowlichhut>
+	<regicideuniform>Player has turned Regicide Uniform</regicideuniform>
+	<housedeedultra>House Deed Ultra</housedeedultra>
+	<lessershadowarmoraluvian1>Lesser Aluvian Shadow Armor 1</lessershadowarmoraluvian1>
+	<pickedupolthoiscoutnote2>Picked up note</pickedupolthoiscoutnote2>
+	<shoushistonehumility1204>Stone of Humility Quest</shoushistonehumility1204>
+	<gwillimalchemynote>Gwillim's Alchemy Notes</gwillimalchemynote>
+	<virindikillerbagsiraluun1>This quest flag is obsolete.</virindikillerbagsiraluun1>
+	<receivedarcanepedestal>Player has been given Arcane Pedestal and cannot pick up more for 2 weeks.</receivedarcanepedestal>
+	<storehousebypass>This quest flag is obsolete.</storehousebypass>
+	<charmdolloct01>Pyreal Doll Charm</charmdolloct01>
+	<roadstask3>You complete the third task set forth by Nuhmudira.</roadstask3>
+	<olthoihunting3>Olthoi Hunting 3</olthoihunting3>
+	<attributeloweringgempickedup>Picked up an attribute lowering gem.</attributeloweringgempickedup>
+	<ishaqslostkeypickedupkey1204>You've picked up Ishaq's Lost Key.</ishaqslostkeypickedupkey1204>
+	<gaerlansword>Player has received the corresponding reward.</gaerlansword>
+	<gearmosswart>Player has picked up a Mosswart Gear and cannot pick up another for 1 day.</gearmosswart>
+	<artscraftscookingmid>Player has turned in mid Cooking item.</artscraftscookingmid>
+	<infiltrationbalorfuracquired0205>You acquired a swatch of Balor's fur.</infiltrationbalorfuracquired0205>
+	<kireekilled>You killed Kiree.</kireekilled>
+	<virindimanacles>Virindi Manacles</virindimanacles>
+	<scepterlugianoct01>Lugian Warlord Sceptre</scepterlugianoct01>
+	<boygrubtooknaq>Has the player picked up a Naq?</boygrubtooknaq>
+	<helmsimulacra>Helm of the Simulacra</helmsimulacra>
+	<totalgolemcoralviceroydead>You have killed some Coral Golem Viceroys</totalgolemcoralviceroydead>
+	<virindichimera>Virindi Chimera</virindichimera>
+	<hopeslayerobsidiankey>Obsidian Key</hopeslayerobsidiankey>
+	<shadowarmoraluvian3>Aluvian Shadow Armor 3</shadowarmoraluvian3>
+	<gormlingstoutquest>Gormling Stout Quest</gormlingstoutquest>
+	<arantahboon1>Give Hea Arantah CurseObject1</arantahboon1>
+	<templearbiterspoken>Fellowship has spoken to the Arbiter.</templearbiterspoken>
+	<chestquestlockedmidbanderlingbandittower>Opened a ChestQuestLockedMidBanderlingBanditTower.</chestquestlockedmidbanderlingbandittower>
+	<skillpoint01>Give Aun Hareltah any SkillToken</skillpoint01>
+	<championkillquest1>Kill Aun Ralirea</championkillquest1>
+	<championquest01>Pick up KeyKarenua - opens the Hea Raiders' chest</championquest01>
+	<bowstatuepickup>Player has picked up this weapons and cannot pick up another one for 1 day</bowstatuepickup>
+	<bestowerfletching1>Fletcher</bestowerfletching1>
+	<shoushibraidtrident1204>Retreive Lou Ka's Trident</shoushibraidtrident1204>
+	<bestowercooking1>Chef</bestowercooking1>
+	<bestowerthrownweapons2>Projectilist</bestowerthrownweapons2>
+	<chestquestunlockednewbiepoib>Opened a ChestQuestUnlockedNewbie.</chestquestunlockednewbiepoib>
+	<testhookerquest>Hookin ain't easy.</testhookerquest>
+	<siraluunclawscissorsuntamed1204>You have turned in this item already.</siraluunclawscissorsuntamed1204>
+	<novquest1>Novemeber Quest 1</novquest1>
+	<siraluunclawhairbrushtidal1204>You have turned in this item already.</siraluunclawhairbrushtidal1204>
+	<masknoir1>You're wearing the bandit mask.</masknoir1>
+	<bestoweralchemy1>Apothecary</bestoweralchemy1>
+	<gaerlanstave>Player has received the corresponding reward.</gaerlanstave>
+	<braceletincalescentpickup>Player has picked up Incalescent Bracelet</braceletincalescentpickup>
+	<witheredatollatlatl0105>You have acquired the Anemic Atlatl! Now go out and kill something!</witheredatollatlatl0105>
+	<fellowmeleedefense5>You found a fellowship melee defense spell.</fellowmeleedefense5>
+	<yaraqnotecovecrypt1204>Ma'yad ibn Ibsar Quest</yaraqnotecovecrypt1204>
+	<chestquestunlockednewbiepoif>Opened a ChestQuestUnlockedNewbie.</chestquestunlockednewbiepoif>
+	<bestowerbow1>Sharpshooter</bestowerbow1>
+	<virindikillerdrudgecharm>This quest flag is obsolete.</virindikillerdrudgecharm>
+	<chestquestunlockedhighpoid>Opened a ChestQuestUnlockedHigh.</chestquestunlockedhighpoid>
+	<crimsonruby1>Crimson Ruby 1</crimsonruby1>
+	<simistatuepickup>Player has picked up this weapons and cannot pick up another one for 1 day</simistatuepickup>
+	<chestquestlockedhighpoig>Opened a ChestQuestLockedHigh.</chestquestlockedhighpoig>
+	<statuekiviklirguardianantechamber>You have spoken to the Guardian of the Antechamber.</statuekiviklirguardianantechamber>
+	<templeenlightenmentmandrake>Skill sellback quest.</templeenlightenmentmandrake>
+	<damenoir1>You've spoken to the dame responsible for the noir quest.</damenoir1>
+	<writingjhongmibquest>Writing Jhong MiB Quest</writingjhongmibquest>
+	<totalgolemmagmaexarchdead>You have killed some Magma Golem Exarchs</totalgolemmagmaexarchdead>
+	<pickedupbroodmatrontarsus>Picked up Brood Matron tarsus</pickedupbroodmatrontarsus>
+	<siraluunclawhairbrushmarsh1204>You have turned in this item already.</siraluunclawhairbrushmarsh1204>
+	<shoushistonecompassion>Stone of Compassion Quest</shoushistonecompassion>
+	<virindikillercarenzipeltsentry>This quest flag is obsolete.</virindikillercarenzipeltsentry>
+	<gotcrossbowrenegaderaids>Picked up Renegade Crossbow</gotcrossbowrenegaderaids>
+	<chestquestdrudgefight>Opened a ChestQuest</chestquestdrudgefight>
+	<chestquestlockedmiddaiklos>Opened a ChestQuestLockedMidDaiklos.</chestquestlockedmiddaiklos>
+	<shoushistonediscipline1204>Stone of Discipline Quest</shoushistonediscipline1204>
+	<gaerlanshield>Player has received the corresponding reward.</gaerlanshield>
+	<eventbentenkiller>Player has killed this event boss</eventbentenkiller>
+	<krankcollectiongolem>You have been given a quest to collect Golem hearts by Captain K'rank.</krankcollectiongolem>
+	<crimsonruby5>Crimson Ruby 5</crimsonruby5>
+	<nullifiedsarcophagus>Player defeated the Sarcophagus</nullifiedsarcophagus>
+	<housestatueskeletongiven>Player has given received this house statue and can't get another one for a week.</housestatueskeletongiven>
+	<golemcoralviceroyslayerquest>You are on the Mud Golem Sludge Lord Slayer Quest</golemcoralviceroyslayerquest>
+	<feb01clquest9>Titan Mana Charge</feb01clquest9>
+	<chorizitea>Chorizite Refined A</chorizitea>
+	<heardblindsnowmansadstory>Player has heard the Blind Snowmans sad story.</heardblindsnowmansadstory>
+	<tumerokwarstaffquest>Tumerok War Staff Quest</tumerokwarstaffquest>
+	<memorygamepickedupsword>You've dropped the memory game sword.</memorygamepickedupsword>
+	<virindimasteramulet>Virindi Master's Amulet</virindimasteramulet>
+	<hopeslayersingularity>Fragment of the Singularity</hopeslayersingularity>
+	<book100paths7quest>Book 100 Paths Quest</book100paths7quest>
+	<masknoir1pickup>You've picked up the bandit mask.</masknoir1pickup>
+	<gromnietoothpastecopper>You have been granted experience into your alchemy skill.</gromnietoothpastecopper>
+	<gavecresttonarg>Picked up note</gavecresttonarg>
+	<noteburunhistory7>You have learned a little about Burun History.</noteburunhistory7>
+	<housestatuegrievvergiven>Player has given received this house statue and can't get another one for a week.</housestatuegrievvergiven>
+	<turnedinimagingcrystal>Player has given Slithe the imaging crystal with the required image</turnedinimagingcrystal>
+	<keyknorrelderpickedup>Picked up Elder Key</keyknorrelderpickedup>
+	<harkerkilled>Picked up the deflated Harker Head.</harkerkilled>
+	<lugianbladeheart>Lugian Blade of the Heart</lugianbladeheart>
+	<artscraftsalchemyhigh>Player has turned in high alchemy item.</artscraftsalchemyhigh>
+	<noteburunhistory2>You have learned a little about Burun History.</noteburunhistory2>
+	<eventmidsclavuskiller>Player has killed this event boss</eventmidsclavuskiller>
+	<infiltrationshieldacquired0205>You acquired the Shadow Lugian shield.</infiltrationshieldacquired0205>
+	<aunkiller>Timaru Collector will stamp players who bring him Aun Pendants and refuse to trade with them again.</aunkiller>
+	<deserveshomecomingflag>You deserve a Homecoming Flag!</deserveshomecomingflag>
+	<turnedinshirtpuffyhauntedmansion>Player turned in shirt</turnedinshirtpuffyhauntedmansion>
+	<chestquestunlockedlowratnest>Opened a ChestQuestUnlockedLowRatNest.</chestquestunlockedlowratnest>
+	<browerkbeaten>You've beaten Browerk.</browerkbeaten>
+	<pickeduptokentitlegraverobber>You picked up the Grave Robber Title Token.</pickeduptokentitlegraverobber>
+	<tuskgoldenbackpickup>Tusk picked up from a Goldenback Tusker.</tuskgoldenbackpickup>
+	<chestquestlockedmid>Opened a ChestQuestLockedMid.</chestquestlockedmid>
+	<bestowerxbow2>Sureshot</bestowerxbow2>
+	<collectorfletchingghanewbie>You have turned in a newbie fletching arts&amp;crafts item.</collectorfletchingghanewbie>
+	<chestquestlockedhighpoif>Opened a ChestQuestLockedHigh.</chestquestlockedhighpoif>
+	<hizkrientrance2>So far so good you have one part of the entrance exam right!</hizkrientrance2>
+	<eventkiller>Player has killed one of the Event Statues.</eventkiller>
+	<newbiequeststamplytelthorpe>Lytelthorpe Stamp Quest</newbiequeststamplytelthorpe>
+	<chestquestunlockedmid>Opened a ChestQuestUnlockedMid.</chestquestunlockedmid>
+	<whitefireinfusion>White Fire SOLL Infusion</whitefireinfusion>
+	<undeadmechanismpickup2>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup2>
+	<templeforgetfulnessbistort>Skill sellback quest.</templeforgetfulnessbistort>
+	<chestquestlockedextremepoif>Opened a ChestQuestLockedExtreme.</chestquestlockedextremepoif>
+	<colorpuzzleredriddle>You got a riddle from the clue card.</colorpuzzleredriddle>
+	<gromnietoothpickash>You have been granted experience into your fletching skill.</gromnietoothpickash>
+	<talkedtozaikhaljeweler>Talked to ROT2 Jeweler</talkedtozaikhaljeweler>
+	<pickedupbroodmatrontail>Picked up Brood Matron tail</pickedupbroodmatrontail>
+	<isparianarmscomplete>Player has completed the steps to collect the IsparianArms</isparianarmscomplete>
+	<undeadmechanismpickup5>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup5>
+	<highnestkiller>Player assisted in killing a newbie nest.</highnestkiller>
+	<pickedupchrysoberyl>Picked up Chryoberyl</pickedupchrysoberyl>
+	<reeshancomplete>You've completed the Reeshan quest.</reeshancomplete>
+	<holtburgnotebrogord1204>Retreive a note from Brogord</holtburgnotebrogord1204>
+	<talkedtoassistantrot2>talked to Nuhmudira's Assistant</talkedtoassistantrot2>
+	<waspwingdone1>Second verson of above so Collector will work</waspwingdone1>
+	<chestquestunlockedhighpoie>Opened a ChestQuestUnlockedHigh.</chestquestunlockedhighpoie>
+	<direlandsnestkiller>Player assisted in killing a newbie nest.</direlandsnestkiller>
+	<chestquestlockednewbiepoid>Opened a ChestQuestLockedNewbie.</chestquestlockednewbiepoid>
+	<riddlenothing>Player has received the corresponding Riddle.</riddlenothing>
+	<harbingerraisespear>I want to raise this skill.</harbingerraisespear>
+	<vendortimarubarkeep>Timaru NPCs will recognize players who return to them within the next 60 minutes</vendortimarubarkeep>
+	<numberpuzzlecompleted>You've compleated the Clutch of Kings number puzzle.</numberpuzzlecompleted>
+	<harbingerraisedagger>I want to raise this skill.</harbingerraisedagger>
+	<gaerlanspear>Player has received the corresponding reward.</gaerlanspear>
+	<strongholdbuilder>Your status for donations to all of the Stronghold Collectors.</strongholdbuilder>
+	<bethelcompleted>Bethel of Butterflies once players have brought the amulet to Aun Papileona he will stamp them so he will not send them on the quest again for one week.</bethelcompleted>
+	<hizkrisarcophagus>You've claimed the reward from the Sarcophagus of Hizk Ri.</hizkrisarcophagus>
+	<eventgrievverkiller>Player has killed this event boss</eventgrievverkiller>
+	<lubziklancoveapplequest>DEPRECATED</lubziklancoveapplequest>
+	<chestquestlockedextremepoib>Opened a ChestQuestLockedExtreme.</chestquestlockedextremepoib>
+	<mageacademykey>Mage Academy Coffin Key</mageacademykey>
+	<staminapickup>Player has picked up an Academy stamina potion</staminapickup>
+	<riddleflame>Player has received the corresponding Riddle.</riddleflame>
+	<chestquestlockednewbiepoib>Opened a ChestQuestLockedNewbie.</chestquestlockednewbiepoib>
+	<gotdarktreerward>turned in 1st crystal</gotdarktreerward>
+	<sacrificednuhmudirahunter>This quest flag is obsolete.</sacrificednuhmudirahunter>
+	<housestatuethorstengiven>Player has given received this house statue and can't get another one for a week.</housestatuethorstengiven>
+	<chestquestlockedextremepoic>Opened a ChestQuestLockedExtreme.</chestquestlockedextremepoic>
+	<templeforgetfulnessmyrrh>Skill sellback quest.</templeforgetfulnessmyrrh>
+	<chestquestunlockedhighpoib>Opened a ChestQuestUnlockedHigh.</chestquestunlockedhighpoib>
+	<boygrubinfested>Has the player used the Infested cistern?</boygrubinfested>
+	<chestquestlockedlowpoid>Opened a ChestQuestLockedLow.</chestquestlockedlowpoid>
+	<colierminetreasurekey>The Treasure Key for Colier Mine</colierminetreasurekey>
+	<kingoolutangaenter>Entrance to the Warrior's Lair.</kingoolutangaenter>
+	<aunkillergolemheartwater>This quest flag is obsolete.</aunkillergolemheartwater>
+	<aunkillerdrudgecharm>This quest flag is obsolete.</aunkillerdrudgecharm>
+	<fishlargecounter>Number of Minnows turned in.</fishlargecounter>
+	<chestquestunlockedhigh>Opened a ChestQuestUnlockedHigh.</chestquestunlockedhigh>
+	<bookercelquest>Retreive Ercel's Book</bookercelquest>
+	<prismfragmentlightninggiven>Player has turned in the Lightning Fragment</prismfragmentlightninggiven>
+	<bestoweralchemy2>Alchemist</bestoweralchemy2>
+	<yaraqbakingpancoveapple1204>Sea Temple Catacombs Quest</yaraqbakingpancoveapple1204>
+	<gotfrozenfuryaward>Player got sword</gotfrozenfuryaward>
+	<guppycounter>Number of Minnows turned in.</guppycounter>
+	<chestblackmarrowcaulcano0205>You have opened this chest already.</chestblackmarrowcaulcano0205>
+	<turnedindailantiumcrystal>Turned in a Daichroic Crystal to Student.</turnedindailantiumcrystal>
+	<canaccessqueenlairrot2>wearing ring lets you go in lair</canaccessqueenlairrot2>
+	<roadsjifloz>You have spoken to Jif Loz.</roadsjifloz>
+	<talkedtoowner>Player has already spoken with owner</talkedtoowner>
+	<boygrubcompletedquest>Has the player completed the quest?</boygrubcompletedquest>
+	<usednuhmudiralifestone>Used new Nuhmudira Lifestone</usednuhmudiralifestone>
+	<gaerlanwar2>Player has received the War 2 reward.</gaerlanwar2>
+	<harbingerwarrior>Player has fought against Harbinger and made a difference.</harbingerwarrior>
+	<yaraqapplepiehot1204>Sea Temple Catacombs Quest</yaraqapplepiehot1204>
+	<riddlefail2>Player has given the incorrect answer twice.</riddlefail2>
+	<templecunningcomplete>Fellowship has completed the Cunning Test.</templecunningcomplete>
+	<invasionquest01>Kill north full invasion Brood Noble</invasionquest01>
+	<housestatuetumerokgiven>Player has given received this house statue and can't get another one for a week.</housestatuetumerokgiven>
+	<palliumobtained>Aerfalle's Pallium</palliumobtained>
+	<pickedupheadhomunculus>You have picked up the Head of the Homunculus.</pickedupheadhomunculus>
+	<noteburunhistory6>You have learned a little about Burun History.</noteburunhistory6>
+	<deepplaces1>You've picked up the first note in Olthoi Tunnels.</deepplaces1>
+	<gotdiamondidol>You've looted a diamond idol recently.</gotdiamondidol>
+	<renegadechorizite>You have opened the chest containing Chorizite.</renegadechorizite>
+	<eventthorstenkiller>Player has killed this event boss</eventthorstenkiller>
+	<aunkillercarenzipeltburrower>This quest flag is obsolete.</aunkillercarenzipeltburrower>
+	<eventdrudgekiller>Player has killed this event boss</eventdrudgekiller>
+	<collectoralchemyalunewbie>You have turned in a newbie alchemy arts&amp;crafts item.</collectoralchemyalunewbie>
+	<illgottenrewards2>Player has handed a reward gem to Kai and has two more trips.</illgottenrewards2>
+	<boygrubfoundapple>Has the player found an apple as far as Tekapuapuh knows?</boygrubfoundapple>
+	<talkedtotaiwothorstenarmor>Player has spoken with Tai Wo</talkedtotaiwothorstenarmor>
+	<yaraqgreetinggiven>Tsaya has said hello to player</yaraqgreetinggiven>
+	<antiqueplatterquest>Retreive Worcer's Antique Platter</antiqueplatterquest>
+	<chestblackmarrowcauloasis0205>You have opened this chest already.</chestblackmarrowcauloasis0205>
+	<talkedtoliatzethorstenarmor>Player has spoken with Lia Tze</talkedtoliatzethorstenarmor>
+	<bestowmentnuhmudiragiven>This quest flag is obsolete.</bestowmentnuhmudiragiven>
+	<cameraguardspoken2>Camera Guard has spoken twice</cameraguardspoken2>
+	<chestquestunlockedlowdrudgehideout>Opened a ChestQuestUnlockedLowDrudgeHideout.</chestquestunlockedlowdrudgehideout>
+	<templeforgetfulnesssaffron>Skill sellback quest.</templeforgetfulnesssaffron>
+	<hizkrientrance4>So far so good you have one part of the entrance exam right!</hizkrientrance4>
+	<hizkrientrancefail>You've failed the entrance exam to Hizk Ri's temple.</hizkrientrancefail>
+	<havefishinglicense>Player has a fishing license.</havefishinglicense>
+	<undeadmechanismpickup16>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup16>
+	<hizkrientrance>You've been given the entrance exam for Hizk Ri's temple; go pass it!</hizkrientrance>
+	<aunkillergolemheartvapor>This quest flag is obsolete.</aunkillergolemheartvapor>
+	<gotminnowtoken>Player has recieved the first Minnow Title Token.</gotminnowtoken>
+	<springtumerokgiven>Player has given this spring and cannot give another for one day.</springtumerokgiven>
+	<pickedupbraceletrepugnant>You've picked up the Repugnant Bracelet.</pickedupbraceletrepugnant>
+	<lubziklanwarmapplepiequest>DEPRECATED</lubziklanwarmapplepiequest>
+	<newbiequeststampyanshi>Yanshi Stamp Quest</newbiequeststampyanshi>
+	<coilsclavusgiven>Player has given this coil and cannot give another for one day.</coilsclavusgiven>
+	<shieldroundstatuepickup>Player has picked up this shield and cannot pick up another one for 1 day</shieldroundstatuepickup>
+	<virindikillercarenzipeltstalker>This quest flag is obsolete.</virindikillercarenzipeltstalker>
+	<harbingerraiseitemtink>I want to raise this skill.</harbingerraiseitemtink>
+	<asteliarygem>Asteliary Gem</asteliarygem>
+	<virindikillercarenzipeltrabid>This quest flag is obsolete.</virindikillercarenzipeltrabid>
+	<pickedupulgrimsstout>Picked up Ulgrim's Stout</pickedupulgrimsstout>
+	<forgeessencesouthacquired1204>You have picked up the Southern Forge Essence</forgeessencesouthacquired1204>
+	<keyaerfalleuber>Aerfalle's Ornate Chest Key</keyaerfalleuber>
+	<bunnymasterquest1>This quest flag is obsolete.</bunnymasterquest1>
+	<heartofinnocence>Access to the Heart of the Innocent</heartofinnocence>
+	<prismfragmentlightningpickup>Player has picked up the Lightning Fragment</prismfragmentlightningpickup>
+	<bethelcompleted02>Bethel of Butterflies players may pick the key off the boss monster only once a week</bethelcompleted02>
+	<ringquest01>Give MenhirBell to any of the five Tumerok drummers on the Marae Plateau</ringquest01>
+	<aunkillercarenzipeltsentry>This quest flag is obsolete.</aunkillercarenzipeltsentry>
+	<lessershadowarmorgharundim1>Lesser Gharundim Shadow Armor 1</lessershadowarmorgharundim1>
+	<gromnietoothpickbrass>You have been granted experience into your fletching skill.</gromnietoothpickbrass>
+	<swordlostlight>You have picked up the Sword of Lost Light.</swordlostlight>
+	<hearthstone>Unused Questflag</hearthstone>
+	<yaraqnasunletter>Yaraq Nasun Letter Quest</yaraqnasunletter>
+	<jittekraulilesser>Lesser Jitte of Mi Krau-Li</jittekraulilesser>
+	<krankcollectionsclavus>You have been given a quest to collect Sclavus parts by Captain K'rank.</krankcollectionsclavus>
+	<pickedupolthoiscoutnote1>Picked up note</pickedupolthoiscoutnote1>
+	<lessershadowarmoraluvian2>Lesser Aluvian Shadow Armor 2</lessershadowarmoraluvian2>
+	<virindikillergolemheartmud>This quest flag is obsolete.</virindikillergolemheartmud>
+	<smolderingstoneminor>Smoldering Stone Minor Quest</smolderingstoneminor>
+	<chestquestcoinattachment>Opened a ChestQuest</chestquestcoinattachment>
+	<roadsnuhmudira3>You have been sent to collect a corpse for Nuhmudira.</roadsnuhmudira3>
+	<feb01clquest4>Sunstone Geode</feb01clquest4>
+	<pickedupsoulshattercrystal>picked up 3rd crystal</pickedupsoulshattercrystal>
+	<maskdirectoroct01>Obsidian Director Mask</maskdirectoroct01>
+	<shellgameshellanswer3>You have seen the shell game.</shellgameshellanswer3>
+	<vendortimarushopkeep>Timaru NPCs will recognize players who return to them within the next 60 minutes</vendortimarushopkeep>
+	<impiousquestslag>Impious Staff Slag Quest</impiousquestslag>
+	<templeappeasementcomplete>Fellowship has completed the Appeasement test.</templeappeasementcomplete>
+	<hopeslayerobsidiandagger>Obsidian Dagger</hopeslayerobsidiandagger>
+	<holtburgredoubtlamp1204>Retreive Hardunna's Lamp</holtburgredoubtlamp1204>
+	<fellowmissiledefense4>You found a fellowship melee defense spell.</fellowmissiledefense4>
+	<ringjalehtaken>You got the ring of Jaleh</ringjalehtaken>
+	<memorygamereceivedinstructions>You've received the memory game instructions.</memorygamereceivedinstructions>
+	<spokentoeyekiviklirtriallogic>You have spoken to the Logical Eye of the Watcher.</spokentoeyekiviklirtriallogic>
+	<bagpuzzlefailed>You picked the wrong contents for one of the bags.</bagpuzzlefailed>
+	<enterburuncatacombs>You can now enter the Burun catacombs and fight Morgluuk.</enterburuncatacombs>
+	<orbasteliary>Asteliary Orb</orbasteliary>
+	<siraluunclawhairpinkithless1204>You have turned in this item already.</siraluunclawhairpinkithless1204>
+	<menhirrubbledpickup>Player has picked up MenhirRubbleD_xp and cannot pick it up again for one day</menhirrubbledpickup>
+	<colorpuzzleindigoriddle>You got a riddle from the clue card.</colorpuzzleindigoriddle>
+	<hizkrieye1>You have selected the correct eye in the Gauntlet.</hizkrieye1>
+	<noteburunhistory3>You have learned a little about Burun History.</noteburunhistory3>
+	<virindikillergolemheartsand>This quest flag is obsolete.</virindikillergolemheartsand>
+	<fellowmissiledefense5>You found a fellowship melee defense spell.</fellowmissiledefense5>
+	<pickedupjadedais>You picked up a Jade Dais.</pickedupjadedais>
+	<templeliazkb>Liazk feeder B has taken a sacrifice.</templeliazkb>
+	<pickedupbookmoarshighuntranslated>You picked up an Untranslated Tome.</pickedupbookmoarshighuntranslated>
+	<vendortimaruhealer>Timaru NPCs will recognize players who return to them within the next 60 minutes</vendortimaruhealer>
+	<broodmatronpincerpickedup>You have obtained a Brood Matron Pincer.</broodmatronpincerpickedup>
+	<invasionquest06>Kill Dires 1 full invasion NobleC</invasionquest06>
+	<virindiaxe>Quintessence Axe</virindiaxe>
+	<aunkillersiraluunclawtidal>This quest flag is obsolete.</aunkillersiraluunclawtidal>
+	<bagpuzzleperforming>You are performing the three bag puzzle.</bagpuzzleperforming>
+	<chestquestdarktowers>Opened a ChestQuest</chestquestdarktowers>
+	<pickeduptasselmagic>You've picked up a Woven Tassel of Sound Mind.</pickeduptasselmagic>
+	<collectoralchemyshonewbie>You have turned in a newbie alchemy arts&amp;crafts item.</collectoralchemyshonewbie>
+	<virindiessence>Virindi Essence</virindiessence>
+	<mollycounter>Number of Minnows turned in.</mollycounter>
+	<chestquestunlockedlowdaiklos>Opened a ChestQuestUnlockedLowDaiklos.</chestquestunlockedlowdaiklos>
+	<olthoijellyroyalpickedup>Player picked up OlthoiJellyRoyal.</olthoijellyroyalpickedup>
+	<enterelementalcaverns>HemmikTheSlyNPC grants access to the Elemental Caverns.</enterelementalcaverns>
+	<undeadmechanismpickup3>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup3>
+	<gaerlannecklace>Player has received the corresponding reward.</gaerlannecklace>
+	<tumerokwarspearquest>Tumerok War Spear Quest</tumerokwarspearquest>
+	<harbingerraiseunarmed>I want to raise this skill.</harbingerraiseunarmed>
+	<renegadebreastplategeneral>You have taken the Tumerok Generals Breastplate.</renegadebreastplategeneral>
+	<turnedinjewelemeraldhauntedmansion>Player turned in jewel</turnedinjewelemeraldhauntedmansion>
+	<harbingerraisecrossbow>I want to raise this skill.</harbingerraisecrossbow>
+	<spokenbobo>TBD</spokenbobo>
+	<changedsurveyorsettings>You played with the surveyor's equipment! Bad person!</changedsurveyorsettings>
+	<gemithaenccatacombs>Ithaenc Catacombs Gem</gemithaenccatacombs>
+	<keyjalehtaken>You got the key to open Jaleh's Chest</keyjalehtaken>
+	<dryreachprisonbreakquest>Dryreach Prison Break</dryreachprisonbreakquest>
+	<gotiolite>Player was given Iolite</gotiolite>
+	<housedeedlow>House Deed Low</housedeedlow>
+	<chestquestlockednewbiepoic>Opened a ChestQuestLockedNewbie.</chestquestlockednewbiepoic>
+	<chestquestunlockednewbiepoic>Opened a ChestQuestUnlockedNewbie.</chestquestunlockednewbiepoic>
+	<writingjhongmicquest>Writing Jhong MiC Quest</writingjhongmicquest>
+	<chestquestunlockedmidpoie>Opened a ChestQuestUnlockedMid.</chestquestunlockedmidpoie>
+	<riddleeyes>Player has received the corresponding Riddle.</riddleeyes>
+	<banderlingmacehead>Banderling Mace Head</banderlingmacehead>
+	<greatershadowarmorsho3>Greater Sho Shadow Armor 3</greatershadowarmorsho3>
+	<templesacredstone>Picked up the sacred stone.</templesacredstone>
+	<siraluunclawhairbrushbadlands1204>You have turned in this item already.</siraluunclawhairbrushbadlands1204>
+	<yanshiwritingmid>Writing Jhong MiD Quest</yanshiwritingmid>
+	<gaerlancestus>Player has received the corresponding reward.</gaerlancestus>
+	<pickedupolthoiscoutnote3>Picked up note</pickedupolthoiscoutnote3>
+	<chestquestdeepcaverns>Opened a ChestQuest</chestquestdeepcaverns>
+	<krankdeliverystonehold>You have been given a quest to deliver something to Stonehold by Captain K'rank.</krankdeliverystonehold>
+	<turnedinnutbolt>Player has given Slithe nut and bolt</turnedinnutbolt>
+	<splinterulgrimlytelthorpe>Found Splinter2 of Ulgrim's Wand.</splinterulgrimlytelthorpe>
+	<cameraguardspoken3>CameraGuard has spoken thrice</cameraguardspoken3>
+	<housestatuegolemgiven>Player has given received this house statue and can't get another one for a week.</housestatuegolemgiven>
+	<riddlecoffin>Player has received the corresponding Riddle.</riddlecoffin>
+	<dainalive>Lady Dain thinks Gareth Dain is dead.</dainalive>
+	<tumerokvanguardcrossbow>Tumerok Vanguard Crossbow</tumerokvanguardcrossbow>
+	<banderlingmaceshaft>Banderling Mace Shaft</banderlingmaceshaft>
+	<shimshimright>Correct answer on Shim Shim</shimshimright>
+	<sarqahdrudgecharmquest>Retreive a Drudge Charm for Sarqah bint Ak</sarqahdrudgecharmquest>
+	<clonekillermid>Player has killed a midreplica statue and can enter the low statue dungeon.</clonekillermid>
+	<championquest03>Pick up VirindiScalpelHilt</championquest03>
+	<housedeedhigh>House Deed High</housedeedhigh>
+	<gromnietoothpasteash>You have been granted experience into your alchemy skill.</gromnietoothpasteash>
+	<newbiequeststampalarqas>Al-Arqas Stamp Quest</newbiequeststampalarqas>
+	<bestowerspear2>Impaler</bestowerspear2>
+	<collectoralchemyalulow>You have turned in a Low alchemy arts&amp;crafts item.</collectoralchemyalulow>
+	<noteburunhistory4>You have learned a little about Burun History.</noteburunhistory4>
+	<gotrealaidainraiment>Player has already received the Realaidain Raiment.</gotrealaidainraiment>
+	<lessershadowarmoraluvian3>Lesser Aluvian Shadow Armor 3</lessershadowarmoraluvian3>
+	<tuskdevastatorpickup>Tusk picked up from a Tusker Devastator.</tuskdevastatorpickup>
+	<newbiequeststampsamsur>Samsur Stamp Quest</newbiequeststampsamsur>
+	<forgeessencegiven1204>You've given any forge essence to any crafting forge</forgeessencegiven1204>
+	<collectorfletchingghamid>You have turned in a Mid fletching arts&amp;crafts item.</collectorfletchingghamid>
+	<keyaerfalle>Aerfalle's Chest Key</keyaerfalle>
+	<ringshieldingsouthacquired1204>You have picked up RingShieldingSouth</ringshieldingsouthacquired1204>
+	<artscraftsalchemyproportional>Player has turned in extreme alchemy item.</artscraftsalchemyproportional>
+	<pickedupolthoistabclaw>Picked up note</pickedupolthoistabclaw>
+	<springgolem>Player has picked up a Golem spring and cannot pick up another for 1 day.</springgolem>
+	<virindikillerbagsiraluun4>This quest flag is obsolete.</virindikillerbagsiraluun4>
+	<pickedupbroodmatrontibia>Picked up Brood Matron tibia</pickedupbroodmatrontibia>
+	<oswaldstep3>Finished CSI 3</oswaldstep3>
+	<aunkillerbagsiraluun5>This quest flag is obsolete.</aunkillerbagsiraluun5>
+	<colorpuzzleyellowriddle>You got a riddle from the clue card.</colorpuzzleyellowriddle>
+	<spokewithslithe>Player has spoken with Slithe Tradittor and may go thru portal</spokewithslithe>
+	<renegadehelmgeneral>You have taken the Lugian Helm.</renegadehelmgeneral>
+	<bestowersword1>Swordfighter</bestowersword1>
+	<chestquestunlockedlowpoie>Opened a ChestQuestUnlockedLow.</chestquestunlockedlowpoie>
+	<gromnietoothbrushash>You have been granted experience into your cooking skill.</gromnietoothbrushash>
+	<forgeessencenorthacquired1204>You have picked up the Northern Forge Essence</forgeessencenorthacquired1204>
+	<siraluunclawhairpinuntamed1204>You have turned in this item already.</siraluunclawhairpinuntamed1204>
+	<turnedinantiqueplatterhauntedmansion>Player turned in platter</turnedinantiqueplatterhauntedmansion>
+	<philterhizkritaken>You've picked up the ancient philter. Now go collect the blood from the well of bloody tears.</philterhizkritaken>
+	<siraluunclawhairgeltimber1204>You have turned in this item already.</siraluunclawhairgeltimber1204>
+	<reeshanbeaten>You've beaten Reeshan.</reeshanbeaten>
+	<caulnalaincrystal>Caulnalain Crystal</caulnalaincrystal>
+	<banderlinghauntringacquired0105>Player has picked up Ring of Vines</banderlinghauntringacquired0105>
+	<callingstonegiven>Turned over the Calling Stone</callingstonegiven>
+	<startknorr>Start the Knorr Quest</startknorr>
+	<menhirrubbleapickup>Player has picked up MenhirRubbleA_xp and cannot pick it up again for one day</menhirrubbleapickup>
+	<templeenlightenmenteyebright>Skill sellback quest.</templeenlightenmenteyebright>
+	<siraluunclawhairbrushkithless1204>You have turned in this item already.</siraluunclawhairbrushkithless1204>
+	<talkedtotacklemaster>Player has spoken to the Tacklemaster.</talkedtotacklemaster>
+	<tumerokvanguardmorningstar>Tumerok Vanguard Morningstar</tumerokvanguardmorningstar>
+	<riddlee>Player has received the corresponding Riddle.</riddlee>
+	<aunkillergolemheartsand>This quest flag is obsolete.</aunkillergolemheartsand>
+	<siraluunclawhairbrushstrand1204>You have turned in this item already.</siraluunclawhairbrushstrand1204>
+	<pickedupolthoiscoutnote5>Picked up note</pickedupolthoiscoutnote5>
+	<siraluunclawhairbrushlittoral1204>You have turned in this item already.</siraluunclawhairbrushlittoral1204>
+	<hardunnabandquest>Retreive Hardunna's Wedding Band</hardunnabandquest>
+	<arantahkill1>PERMANENT - Give Hea Arantah FigurineRalirea</arantahkill1>
+	<witheredatollbow0105>You have acquired the Barren Bow! Now go out and kill something!</witheredatollbow0105>
+	<gaerlanstaff>Player has received the corresponding reward.</gaerlanstaff>
+	<feb01clquest3>Unkindled Thaumaturgic Coat</feb01clquest3>
+	<skillalterationgempickedup>Picked up a skill alteration gem.</skillalterationgempickedup>
+	<crystallordhuntercomplete>You've received a key from Tahuirea.</crystallordhuntercomplete>
+	<siraluunclawscissorstidal1204>You have turned in this item already.</siraluunclawscissorstidal1204>
+	<harbingerraiseassesscreature>I want to raise this skill.</harbingerraiseassesscreature>
+	<keyhammerempyreanacidpickup>Player has picked up the Acid hammer.</keyhammerempyreanacidpickup>
+	<banderlinghauntemblemacquired0105>Player has picked up Stone Emblem</banderlinghauntemblemacquired0105>
+	<broodukilled>You killed Broodu.</broodukilled>
+	<gotatlatlrenegaderaids>Picked up Renegade Hunting Brace</gotatlatlrenegaderaids>
+	<bagpuzzlesolved>You've compleated the Clutch of Kings three bags puzzle.</bagpuzzlesolved>
+	<pickedupclawgibbering>You have picked up the Gibbering Claw.</pickedupclawgibbering>
+	<skinmorgluuk>You've collected the skin from Morgluuk's hide.</skinmorgluuk>
+	<nutboltshadowgiven>Player has given this spring and cannot give another for one day.</nutboltshadowgiven>
+	<emptysoulcrystal>You've received the Crystals for Empty Soul.</emptysoulcrystal>
+	<impiousstaffquest>Impious Staff Quest</impiousstaffquest>
+	<krankquest>Captain k'rank has given you a quest.</krankquest>
+	<riddlesilence>Player has received the corresponding Riddle.</riddlesilence>
+	<invasionquest02>Kill northeast full invasion Brood Noble</invasionquest02>
+	<collectorcookingalumid>You have turned in a Mid cooking arts&amp;crafts item.</collectorcookingalumid>
+	<emptysoulcomplete>You've complete the Empty Soul quest.</emptysoulcomplete>
+	<collectoralchemyghanewbie>You have turned in a newbie alchemy arts&amp;crafts item.</collectoralchemyghanewbie>
+	<gromnietoothpickrust>You have been granted experience into your fletching skill.</gromnietoothpickrust>
+	<templeenlightenmentginseng>Skill sellback quest.</templeenlightenmentginseng>
+	<gromnietoothpasterust>You have been granted experience into your alchemy skill.</gromnietoothpasterust>
+	<eyekiviklirtrial4>You've used the Eye.</eyekiviklirtrial4>
+	<fellowmeleedefense4>You found a fellowship melee defense spell.</fellowmeleedefense4>
+	<templeenlightenmentmugwort>Skill sellback quest.</templeenlightenmentmugwort>
+	<fellowmagicdefense4>You found a fellowship magic defense spell.</fellowmagicdefense4>
+	<magicitemtraining4>You have been blessed by Bleeargh to learn item enchantment.</magicitemtraining4>
+	<impiousquestironore>Impious Staff Iron Ore Quest</impiousquestironore>
+	<mosswartexoduswarpaint>You found the war paint used by the swamp lords.</mosswartexoduswarpaint>
+	<waterbanewellquest>Water Bane Well Quest</waterbanewellquest>
+	<bunnygardenletter>This quest flag is obsolete.</bunnygardenletter>
+	<questreconnaissancecompleted0105>Player has given the Flying Machine Plans to Aludi and completed the quest.</questreconnaissancecompleted0105>
+	<regaliamask>Regalia Quest</regaliamask>
+	<hizkrifinished>You've collected the reward for the Hizk Ri quest.</hizkrifinished>
+	<aunkillersiraluunclawstrand>This quest flag is obsolete.</aunkillersiraluunclawstrand>
+	<darkidolscompleted>You've completed the Dark Idols quest.</darkidolscompleted>
+	<gaveolthoiscoutnote4>Turned in a note</gaveolthoiscoutnote4>
+	<templeenlightenmentcomfrey>Skill sellback quest.</templeenlightenmentcomfrey>
+	<suzuharapackageacquired1204>You have acquired Suzuhara's Package!</suzuharapackageacquired1204>
+	<pickedupbookmoarsextremeuntranslated>You picked up an Untranslated Tome.</pickedupbookmoarsextremeuntranslated>
+	<bestowercreature1>Creature Enchantment Adept</bestowercreature1>
+	<kiviklirfinished>You've used the Eye.</kiviklirfinished>
+	<pickedupbroodqueencarapace>Picked up Brood Queen carapace</pickedupbroodqueencarapace>
+	<collectorcookingshomid>You have turned in a Mid cooking arts&amp;crafts item.</collectorcookingshomid>
+	<bestowerlife2>Theurgist</bestowerlife2>
+	<collectoralchemyghamid>You have turned in a Mid alchemy arts&amp;crafts item.</collectoralchemyghamid>
+	<turnedinheadhollowminion>Turned in Hollow Minion Visage to the Mask Collector.</turnedinheadhollowminion>
+	<portaldarklightpermissiongiven>Player has picked up the husk</portaldarklightpermissiongiven>
+	<artscraftscookingproportional>Player has turned in extreme Cooking item.</artscraftscookingproportional>
+	<strongholdhumanbuilder>Your status for donations to the Human Stronghold Collector.</strongholdhumanbuilder>
+	<templeforgetfulnessdamiana>Skill sellback quest.</templeforgetfulnessdamiana>
+	<gaveolthoiscoutnote7>Turned in a note</gaveolthoiscoutnote7>
+	<totalgolemmudsludgelorddead>You have killed some Mud Golem SLudge Lords</totalgolemmudsludgelorddead>
+	<letterregicidemenacetpickup>Player has picked up the Menacet Regicide Note</letterregicidemenacetpickup>
+	<newbiequeststampyaraq>Yaraq Stamp Quest</newbiequeststampyaraq>
+	<gotgemportalmageacademy>You have recently picked up the Black Gem</gotgemportalmageacademy>
+	<golemmudsludgelordslayerquest>You are on the Mud Golem Sludge Lord Slayer Quest</golemmudsludgelordslayerquest>
+	<olthoihunting7>Olthoi Hunting 7</olthoihunting7>
+	<templereceivedshirt>Player has obtained the Falatacot shirt</templereceivedshirt>
+	<harbingerraisebow>I want to raise this skill.</harbingerraisebow>
+	<keerikcomplete>You've completed the Keerik quest.</keerikcomplete>
+	<clonekillerhigh>Player has killed a high replica statue and can enter the low statue dungeon.</clonekillerhigh>
+	<pickedupnotebethelcultist>You've picked up Jaeget's Journal.</pickedupnotebethelcultist>
+	<aunkillerbagsiraluun3>This quest flag is obsolete.</aunkillerbagsiraluun3>
+	<aunkillergolemheartforest>This quest flag is obsolete.</aunkillergolemheartforest>
+	<tanuacompleted02>Players may pick the key to the figurine altar off the Tumerok Shaman only once per week</tanuacompleted02>
+	<pickedupgolemheartmagmadfd>You've picked up Scold's magma golem heart.</pickedupgolemheartmagmadfd>
+	<undeadmechanismpickup4>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup4>
+	<buruncontact>You have learned that the Renegades mean to make contact with the Burun.</buruncontact>
+	<gaveletterthorstenarmor1>Player has given this letter in exchange for xp</gaveletterthorstenarmor1>
+	<springskeleton>Player has picked up a Skeleton spring and cannot pick up another for 1 day.</springskeleton>
+	<harbingerraisesword>I want to raise this skill.</harbingerraisesword>
+	<endowmentnuhmudiragiven>This quest flag is obsolete.</endowmentnuhmudiragiven>
+	<chestquestlockedextremepoid>Opened a ChestQuestLockedExtreme.</chestquestlockedextremepoid>
+	<bestowerbasepiece>The base piece for the Bestowers' Guild skill puzzle.</bestowerbasepiece>
+	<eventvirindikiller>Player has killed this event boss</eventvirindikiller>
+	<givenblindsnowmanpeppermint>Player has given the Blind Snowman Peppermint.</givenblindsnowmanpeppermint>
+	<templeenlightenmentwormwood>Skill sellback quest.</templeenlightenmentwormwood>
+	<harbingerraiselife>I want to raise this skill.</harbingerraiselife>
+	<shoushibraidnecklace1204>Retreive Bai Den's Necklace</shoushibraidnecklace1204>
+	<acidaxeturnedin>Turned Acid Axe into Ivory Crafter.</acidaxeturnedin>
+	<collectoralchemysholow>You have turned in a Low alchemy arts&amp;crafts item.</collectoralchemysholow>
+	<chestquestlockedlowgolemmound>Opened a ChestQuestLockedLowGolemMound.</chestquestlockedlowgolemmound>
+	<provinggroundsextreme>Unused Questflag</provinggroundsextreme>
+	<mowenwait>TBD</mowenwait>
+	<writingjhongmiaquest>Writing Jhong MiA Quest</writingjhongmiaquest>
+	<chestquestwizardsblade>Opened a ChestQuest</chestquestwizardsblade>
+	<pickedupolthoifemur>Picked up note</pickedupolthoifemur>
+	<icetachiturnedin>Turned Ice Tachi into Ivory Crafter..</icetachiturnedin>
+	<artscraftsfletchingmid>Player has turned in mid Fletching item.</artscraftsfletchingmid>
+	<mosswartexodusnecklace>You found the Necklace of Leerargh.</mosswartexodusnecklace>
+	<undeadmechanismpickup15>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup15>
+	<totalgolemironkingpindead>You have killed some Iron Golem Kingpins</totalgolemironkingpindead>
+	<greatershadowarmoraluvian2>Greater Aluvian Shadow Armor 2</greatershadowarmoraluvian2>
+	<roadssuccesskirloz>You successfully answered Kir Loz's question.</roadssuccesskirloz>
+	<gromnietoothbrushjade>You have been granted experience into your cooking skill.</gromnietoothbrushjade>
+	<provinggroundsmid>Unused Questflag</provinggroundsmid>
+	<gaerlanatlatl>Player has received the corresponding reward.</gaerlanatlatl>
+	<decanterscollected>Player has collected an essence decanter.</decanterscollected>
+	<shieldtowerstatuepickup>Player has picked up this shield and cannot pick up another one for 1 day</shieldtowerstatuepickup>
+	<killedmenacet>Writ Nov Quest 1</killedmenacet>
+	<housedeedmid>House Deed Mid</housedeedmid>
+	<templeenlightenmentvervain>Skill sellback quest.</templeenlightenmentvervain>
+	<siraluunclawhairbrushtimber1204>You have turned in this item already.</siraluunclawhairbrushtimber1204>
+	<aunkillercarenzipeltrabid>This quest flag is obsolete.</aunkillercarenzipeltrabid>
+	<palenqualtaiahagiven>This stamp will alert Aun Imeitanua upon give that they have already spoken with him and should return the item.</palenqualtaiahagiven>
+	<volkamagiven>Aun Shimauri will give players permission to enter the Palenqual dungeon only once per month.</volkamagiven>
+	<bandittranscription>Bandit Frore Transcription</bandittranscription>
+	<greatershadowarmoraluvian1>Greater Aluvian Shadow Armor 1</greatershadowarmoraluvian1>
+	<vendortimaruarmorer>Timaru NPCs will recognize players who return to them within the next 60 minutes</vendortimaruarmorer>
+	<championquest07>Pick up ExquisiteElariBowHaft</championquest07>
+	<chestquestlittlestniffis1204>You have opened the Littlest Niffis chest!</chestquestlittlestniffis1204>
+	<staffstatuepickup>Player has picked up this weapons and cannot pick up another one for 1 day</staffstatuepickup>
+	<housestatuebentengiven>Player has given received this house statue and can't get another one for a week.</housestatuebentengiven>
+	<oilgiven>Blacksmith gave the Oil</oilgiven>
+	<virindikillergolemheartforest>This quest flag is obsolete.</virindikillergolemheartforest>
+	<palenqualcompleted>This stamp will alert Aun Imeitanua upon use that they have already spoken with him and exchanged their talisman for a weapon.</palenqualcompleted>
+	<harbingerraisestaff>I want to raise this skill.</harbingerraisestaff>
+	<bookkouquest>Book Kou Quest</bookkouquest>
+	<nutboltgrievvergiven>Player has given this spring and cannot give another for one day.</nutboltgrievvergiven>
+	<nantowaterbottlequest>Nanto Water Bottle Quest</nantowaterbottlequest>
+	<distillerydewquest>Distillery Dew Quest</distillerydewquest>
+	<nutboltvirindi>Player has picked up a Virindi nuts and bolts and cannot pick up another for 1 day.</nutboltvirindi>
+	<holtburgafrincorn1204>Retreive Alfrin's Bag of Corn Seed</holtburgafrincorn1204>
+	<harbingerraisewar>I want to raise this skill.</harbingerraisewar>
+	<collectorfletchingsholow>You have turned in a Low fletching arts&amp;crafts item.</collectorfletchingsholow>
+	<broodmatronclawpickedup>You have obtained a Brood Matron Claw.</broodmatronclawpickedup>
+	<emptysoulzen>You are allowed to use the buffing aspect of the Empy Soul reward.</emptysoulzen>
+	<yaraqcomplete>Player has completed the Yaraq Regicide Quest</yaraqcomplete>
+	<axebrogordquest>Axe Brogord Quest</axebrogordquest>
+	<banderlinghauntgemacquired0105>Player has picked up Murky Gem</banderlinghauntgemacquired0105>
+	<lettergarsh>Player has recieved LetterGarsh.</lettergarsh>
+	<pickeduphiyppickaxe>Picked up pickaxe</pickeduphiyppickaxe>
+	<splinterulgrimshoushi>Found Splinter6 of Ulgrim's Wand.</splinterulgrimshoushi>
+	<holtburgcomplete>Player has completed the Yaraq Regicide Quest</holtburgcomplete>
+	<banderlinghauntoilystoneacquired0105>Player has picked up the Oily Stone.</banderlinghauntoilystoneacquired0105>
+	<mosswartexoduscloth>You found the loincloth of the first Mire Witch.</mosswartexoduscloth>
+	<pickedupolthoiscoutnote4>Picked up note</pickedupolthoiscoutnote4>
+	<holtburgredoubtgoblet1204>Retreive Worcer's Antique Goblet</holtburgredoubtgoblet1204>
+	<roadssuccessjifloz>You successfully answered Jif Loz's question.</roadssuccessjifloz>
+	<receivedthorstenaxe>Player has completed obtaining replica of Thorsten's Axe</receivedthorstenaxe>
+	<templeappeasementchosen>Player has been chosen to solve the Appeasement puzzle.</templeappeasementchosen>
+	<regicidehusk>Player has turned in HuskRegicide</regicidehusk>
+	<emotetestswordquest>Test Emote Sword Quest</emotetestswordquest>
+	<chestquestunlockednewbiepoig>Opened a ChestQuestUnlockedNewbie.</chestquestunlockednewbiepoig>
+	<questbanderlinghauntcompleted0105>Player has given the Murky Gem to Cyphis and completed quest</questbanderlinghauntcompleted0105>
+	<chestquestunlockedlowpoig>Opened a ChestQuestUnlockedLow.</chestquestunlockedlowpoig>
+	<portalpalenqualpermissiongiven>This flag will alert the portal that players are allowed entry to the dungeon.</portalpalenqualpermissiongiven>
+	<templekilledkixktixri>Fellowship has killed Kixkti Xri.</templekilledkixktixri>
+	<receivednewyearsgift0105>You have received a New Year's gift!</receivednewyearsgift0105>
+	<boygrubtookpah>Has the player picked up a Pan?</boygrubtookpah>
+	<pickedupbroodqueenmetathorax>Picked up Brood Queen Metathoraxr</pickedupbroodqueenmetathorax>
+	<shardturshtotemassaultlowacquired0105>You have acquired a shard of the Tursh totem!</shardturshtotemassaultlowacquired0105>
+	<braceletebuillantpickup>Player has picked up Ebuillant Bracelet</braceletebuillantpickup>
+	<memorygamedroppedmace>You've dropped the memory game mace.</memorygamedroppedmace>
+	<chestquestlockedextremepoie>Opened a ChestQuestLockedExtreme.</chestquestlockedextremepoie>
+	<krankdeliverywaijhou>You have been given a quest to deliver something to WaiJhou by Captain K'rank.</krankdeliverywaijhou>
+	<spokewithdelton>Spoke With Delton</spokewithdelton>
+	<quiddityfragsouth>1 piece of the purple fragment of pulsing energy.</quiddityfragsouth>
+	<gromnietoothbrushsable>You have been granted experience into your cooking skill.</gromnietoothbrushsable>
+	<clutchkingscomplete>You've killed all six Burun Kings.</clutchkingscomplete>
+	<magicitemtraining5>You have been blessed by Bleeargh to learn item enchantment.</magicitemtraining5>
+	<mosswartexoduseye>You found the eye of Drageerg.</mosswartexoduseye>
+	<rehircomplete>You've completed the Rehir quest.</rehircomplete>
+	<pickedupamethystcradle>You picked up an Amethyst Cradle.</pickedupamethystcradle>
+	<oswaldstep1>Finished CSI 1</oswaldstep1>
+	<artscraftsfletchinghigh>Player has turned in high Fletching item.</artscraftsfletchinghigh>
+	<fellowmissiledefense6>You found a fellowship melee defense spell.</fellowmissiledefense6>
+	<pickedupgemportalsunkenmerenewbie>You picked up an Adjanite Gem.</pickedupgemportalsunkenmerenewbie>
+	<swordlongstatuepickup>Player has picked up this weapons and cannot pick up another one for 1 day</swordlongstatuepickup>
+	<collectorcookingshonewbie>You have turned in a newbie cooking arts&amp;crafts item.</collectorcookingshonewbie>
+	<deepplaces5>You've picked up the fifth note in Olthoi Tunnels.</deepplaces5>
+	<waspwinggiven>Player has handed over a Carpenter Wasp wing in the Academy</waspwinggiven>
+	<templeenlightenmentyarrow>Skill sellback quest.</templeenlightenmentyarrow>
+	<gaveolthoiscoutnote5>Turned in a note</gaveolthoiscoutnote5>
+	<virindikillersiraluunclawmarsh>This quest flag is obsolete.</virindikillersiraluunclawmarsh>
+	<chestquestlockedextreme>Opened a ChestQuestLockedExtreme.</chestquestlockedextreme>
+	<arcanumalchemistspoken2>Player has spoken to the Arcanum Alchemist the second time.</arcanumalchemistspoken2>
+	<rithwicmindorlaletter>Rithwic Mindorla Quest</rithwicmindorlaletter>
+	<palenqualtewhategiven>This stamp will alert Aun Imeitanua upon give that they have already spoken with him and should return the item.</palenqualtewhategiven>
+	<chestquestlockednewbiepoie>Opened a ChestQuestLockedNewbie.</chestquestlockednewbiepoie>
+	<templeforgetfulnessmandrake>Skill sellback quest.</templeforgetfulnessmandrake>
+	<touchedpvphateeffigy400205>You received an XP award from the Effigy of Anger</touchedpvphateeffigy400205>
+	<nuhmudiratokenquestcomplete>Nuhmudiras Token</nuhmudiratokenquestcomplete>
+	<fenmalaincrystal>Fenmalain Crystal</fenmalaincrystal>
+	<undeadmechanismpickup7>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup7>
+	<zigguratentrance>Player may enter any of the ziggurats</zigguratentrance>
+	<invokingauntanuacomplete>Players have completed the Invoker Quest and can do it again in 4 weeks for experience.</invokingauntanuacomplete>
+	<sclavusslayer>Players has collected and worn the flesh of several sclavus.</sclavusslayer>
+	<coilskeleton>Player has picked up a Skeleton coil and cannot pick up another for 1 day.</coilskeleton>
+	<housestatuesclavushighgiven>Player has given received this house statue and can't get another one for a week.</housestatuesclavushighgiven>
+	<spokewithastara>Spoke With Astara.</spokewithastara>
+	<newbiequeststampshoushi>Shoushi Stamp Quest</newbiequeststampshoushi>
+	<riddleman>Player has received the corresponding Riddle.</riddleman>
+	<quiddityfragnorth>1 piece of the purple fragment of pulsing energy.</quiddityfragnorth>
+	<chestquestlockedextremepoig>Opened a ChestQuestLockedExtreme.</chestquestlockedextremepoig>
+	<sanctumxirujif>You have been given Jif Loz's blessing to enter Xi Ru's Temple.</sanctumxirujif>
+	<recalltuskerisland>Received the spell to return to Tusker Island.</recalltuskerisland>
+	<stingingstoneminor>Stinging Stone Minor Quest</stingingstoneminor>
+	<qinxikitcomplete>You've received the reward for the Qin Xikit Temple.</qinxikitcomplete>
+	<fellowmagicdefense6>You found a fellowship magic defense spell.</fellowmagicdefense6>
+	<gaveletterthorstenarmor3>Player has given this letter in exchange for xp</gaveletterthorstenarmor3>
+	<undeadmechanismpickup6>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup6>
+	<templewitspoken>Fellowship has spoken to the Wit Statue.</templewitspoken>
+	<chestquestlockednewbiepoif>Opened a ChestQuestLockedNewbie.</chestquestlockednewbiepoif>
+	<shadowarmorgharundim1>Gharundim Shadow Armor 1</shadowarmorgharundim1>
+	<roadsundercoverantius>You have undertaken a special mission for Antius.</roadsundercoverantius>
+	<championquest06>Pick up ExquisiteElariBowString</championquest06>
+	<coilthorstengiven>Player has given this coil and cannot give another for one day.</coilthorstengiven>
+	<ongolemmagmaexarchslayerquest>You are on the Mud Golem Sludge Lord Slayer Quest</ongolemmagmaexarchslayerquest>
+	<kireebeaten>You've beaten Kiree.</kireebeaten>
+	<shoushicomplete>Player has completed the Shoushi Regicide Quest</shoushicomplete>
+	<fellowmissiledefense7>You found a fellowship melee defense spell.</fellowmissiledefense7>
+	<fellowmagicdefense7>You found a fellowship magic defense spell.</fellowmagicdefense7>
+	<renegademeat>You have opened the chest containing Meat.</renegademeat>
+	<marriagecompleted>Player has been married</marriagecompleted>
+	<gaveletterthorstenarmor2>Player has given this letter in exchange for xp</gaveletterthorstenarmor2>
+	<memorygamedroppedsword>You've dropped the memory game sword.</memorygamedroppedsword>
+	<greatershadowarmoraluvian3>Greater Aluvian Shadow Armor 3</greatershadowarmoraluvian3>
+	<pickedupbroodqueenclaw>Picked up Brood Queen claw</pickedupbroodqueenclaw>
+	<bookcasenoir1>You've moved the bookcase.</bookcasenoir1>
+	<virindikillersiraluunclawlittoral>This quest flag is obsolete.</virindikillersiraluunclawlittoral>
+	<oswaldlogicwrong>Failed the Logic Riddle</oswaldlogicwrong>
+	<pickedupulgrimsring>Picked up Ulgrim's Stout</pickedupulgrimsring>
+	<tokenacademygiven>Second version of above so the NPC's use string will work</tokenacademygiven>
+	<holtburgafrinrye1204>Retreive Alfrin's Bag of Rye Seed</holtburgafrinrye1204>
+	<riddlering>Player has received the corresponding Riddle.</riddlering>
+	<newbiequeststampholtburg>Holtburg Stamp Quest</newbiequeststampholtburg>
+	<glyphkiviklirshardwood>You've used the Eye.</glyphkiviklirshardwood>
+	<chestquestlockednewbiepoig>Opened a ChestQuestLockedNewbie.</chestquestlockednewbiepoig>
+	<artscraftsalchemylow>Player has turned in low alchemy item.</artscraftsalchemylow>
+	<journalixirpickedup>Picked up Ixir's journal.</journalixirpickedup>
+	<coilbanderling>Player has picked up a banderling coil and cannot pick up another for 1 day.</coilbanderling>
+	<chestquestlockedmidpoie>Opened a ChestQuestLockedMid.</chestquestlockedmidpoie>
+	<chestquestdarkmonolith>Opened a ChestQuest</chestquestdarkmonolith>
+	<undeadmechanismpickup8>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup8>
+	<coilbanderlinggiven>Player has given this coil and cannot give another for one day.</coilbanderlinggiven>
+	<feb01clquest8>Globe of Auberean</feb01clquest8>
+	<gromnietoothbrushrust>You have been granted experience into your cooking skill.</gromnietoothbrushrust>
+	<spoketolugianspy>You have spoken to Toberik the Lugian Spy.</spoketolugianspy>
+	<ulgrimsbathrobegiven>Found Splinter1 of Ulgrim's Wand.</ulgrimsbathrobegiven>
+	<sanctumxirukir>You have been given Kir Loz's blessing to enter Xi Ru's Temple.</sanctumxirukir>
+	<bosstokenacquired0205>You acquired a token denoting you the Sezzherei Slayer!</bosstokenacquired0205>
+	<gromnietoothpickivory>You have been granted experience into your fletching skill.</gromnietoothpickivory>
+	<attributeraisinggempickedup>Picked up an attribute raising gem.</attributeraisinggempickedup>
+	<noteburunhistory9>You have learned a little about Burun History.</noteburunhistory9>
+	<gotrustedbrasskey>You've picked up a Rusted Brass key.</gotrustedbrasskey>
+	<defeatedibrexijikti>Player has assisted in killing Ibrexi Jikti.</defeatedibrexijikti>
+	<invasionquest04>Kill southwest full invasion Brood Noble</invasionquest04>
+	<bookfalatacotway>Player has received a copy of the Falatacot Way.</bookfalatacotway>
+	<siraluunclawhairgelmarsh1204>You have turned in this item already.</siraluunclawhairgelmarsh1204>
+	<harbingercompletedwaitvincadi>Vincadi wants you to wait.</harbingercompletedwaitvincadi>
+	<memorygamepickedupaxe>You've dropped the memory game axe.</memorygamepickedupaxe>
+	<enterharbingervincadi>Vincadi said you can enter the dungeon.</enterharbingervincadi>
+	<bestowermace2>Skullcrusher</bestowermace2>
+	<pickedupbroodqueenhead>Picked up Brood Queen Head</pickedupbroodqueenhead>
+	<collectorfletchingshonewbie>You have turned in a newbie fletching arts&amp;crafts item.</collectorfletchingshonewbie>
+	<soulfearingvestrykey>The key from the High Acolyte</soulfearingvestrykey>
+	<coilskeletongiven>Player has given this coil and cannot give another for one day.</coilskeletongiven>
+	<shiveringstonemajor>Shivering Stone Major Quest</shiveringstonemajor>
+	<touchedpvphatepillar400205>You touched the Pillar of Anger</touchedpvphatepillar400205>
+	<midnestkiller>Player assisted in killing a newbie nest.</midnestkiller>
+	<usedmonolithdark>You have used the Dark Monolith.</usedmonolithdark>
+	<fishingdelay>Player must wait for fishing delay to expire before fishing again.</fishingdelay>
+	<gredalinearcanerestoration>Gredaline Arcane Restoration Scroll</gredalinearcanerestoration>
+	<menhirrubbleepickup>Player has picked up MenhirRubbleE_xp and cannot pick it up again for one day</menhirrubbleepickup>
+	<storehousehientry>This quest flag is obsolete.</storehousehientry>
+	<pickedupsarcophagushookable>You've picked up the Shadow Stone Necklace.</pickedupsarcophagushookable>
+	<distilleryambrosiaquest>Distillery Ambrosia Quest</distilleryambrosiaquest>
+	<roadssuccesshevkloz>You successfully answered Heck loz's question.</roadssuccesshevkloz>
+	<tuskplatedpickup>Tusk picked up from a Plated Tusker.</tuskplatedpickup>
+	<virindikillerbagsiraluun>This quest flag is obsolete.</virindikillerbagsiraluun>
+	<portaloubliettebypass>Player can now enter the Oubliette.</portaloubliettebypass>
+	<chestquestlockedlowpoib>Opened a ChestQuestLockedLow.</chestquestlockedlowpoib>
+	<roadsfailedkirloz>You failed to answer Kir loz's question correctly.</roadsfailedkirloz>
+	<siraluunclawhairpintimber1204>You have turned in this item already.</siraluunclawhairpintimber1204>
+	<krankmorgluuk>You have spoken to Krank about that Burun named Morgluuk.</krankmorgluuk>
+	<menhirrubblecpickup>Player has picked up MenhirRubbleC_xp and cannot pick it up again for one day</menhirrubblecpickup>
+	<harbingerraiseweapontink>I want to raise this skill.</harbingerraiseweapontink>
+	<harbingerraisearmortink>I want to raise this skill.</harbingerraisearmortink>
+	<martinemask>Player has picked up the Mask.</martinemask>
+	<chestquestunlockedmidpoia>Opened a ChestQuestUnlockedMid.</chestquestunlockedmidpoia>
+	<harbingerraisemace>I want to raise this skill.</harbingerraisemace>
+	<centralhiveportalok>Kill special Eviscerator in Mt Elyrii Wastland Hive or N Dam to go through the portal to Royal Hive</centralhiveportalok>
+	<krankdeliverymacniall>You have been given a quest to deliver something to MacNiall by Captain K'rank.</krankdeliverymacniall>
+	<bunnymasterquest2>This quest flag is obsolete.</bunnymasterquest2>
+	<fortunecounter>How many Lucky Numbers did you get?</fortunecounter>
+	<pickedupvalaracrystal>picked up 2nd crystal</pickedupvalaracrystal>
+	<feb01clquest11>Sasalia's Key</feb01clquest11>
+	<aunkillersiraluunclawlittoral>This quest flag is obsolete.</aunkillersiraluunclawlittoral>
+	<splinterulgrimeastham>Found Splinter1 of Ulgrim's Wand.</splinterulgrimeastham>
+	<eventhighsclavuskiller>Player has killed this event boss</eventhighsclavuskiller>
+	<vendortimarubowyer>Timaru NPCs will recognize players who return to them within the next 60 minutes</vendortimarubowyer>
+	<gearreedshark>Player has picked up a Reedshark Gear and cannot pick up another for 1 day.</gearreedshark>
+	<broodubeaten>You've beaten Broodu.</broodubeaten>
+	<templeappeasementspoken>Fellowship has spoken to the Appeasement Statue.</templeappeasementspoken>
+	<chestquestrelic>Opened a ChestQuest</chestquestrelic>
+	<emptysoulunicorn>You've been allowed to enter the Dungeon for the Unicorn part of Empty Soul.</emptysoulunicorn>
+	<bestowersword2>Duelist</bestowersword2>
+	<chestquestunlockedlowpoif>Opened a ChestQuestUnlockedLow.</chestquestunlockedlowpoif>
+	<pickedupjournalgarethdain>Picked up Gareth Dain's Journal.</pickedupjournalgarethdain>
+	<bookturnedin>Turned in book to Olcris.</bookturnedin>
+	<chestquestlockedmidpoib>Opened a ChestQuestLockedMid.</chestquestlockedmidpoib>
+	<chestquestlockedmidhilltopdrudgetower>Opened a ChestQuestLockedMidHilltopDrudgeTower.</chestquestlockedmidhilltopdrudgetower>
+	<lessershadowarmorgharundim3>Lesser Gharundim Shadow Armor 3</lessershadowarmorgharundim3>
+	<gotdec2002decoration>Recieved Decoration.</gotdec2002decoration>
+	<eventtumerokkiller>Player has killed this event boss</eventtumerokkiller>
+	<silkoswaldtaken>Took the torn shirt</silkoswaldtaken>
+	<spokenbrighteyes>TBD</spokenbrighteyes>
+	<gaerlanfight>Unused questflag</gaerlanfight>
+	<chestquestrestingplace>Opened a ChestQuest</chestquestrestingplace>
+	<coffinquestlockedlowholtburgdungeon>Opened a CoffinQuestLockedLowHoltburgDungeon.</coffinquestlockedlowholtburgdungeon>
+	<dericosttomesgiven>Player has been given the dericost books</dericosttomesgiven>
+	<housestatuezharalimgiven>Player has given received this house statue and can't get another one for a week.</housestatuezharalimgiven>
+	<housestatuedrudgegiven>Player has given received this house statue and can't get another one for a week.</housestatuedrudgegiven>
+	<springgolemgiven>Player has given this spring and cannot give another for one day.</springgolemgiven>
+	<deliveredchrysoberyl>Delivered Chryoberyl</deliveredchrysoberyl>
+	<springsclavusgiven>Player has given this spring and cannot give another for one day.</springsclavusgiven>
+	<areacacademycomplete>Player has finished the last area of the Training Academy.</areacacademycomplete>
+	<gearmosswartgiven>Player has given this gear and cannot give another for one day.</gearmosswartgiven>
+	<chestblackmarrowfloatingtower0205>You have opened this chest already.</chestblackmarrowfloatingtower0205>
+	<emberbrightgiven>Player has received the Bright Ember from Aun Tanua</emberbrightgiven>
+	<buadreninvokinggiven>Player has received the magic Buadren from Tikakhe.</buadreninvokinggiven>
+	<lettertsaya2given>Player has delivered the full letter to Tsaya.</lettertsaya2given>
+	<polenoir1>You're wielding the broken fishing pole.</polenoir1>
+	<academytokengiven>Turned over the Academy Token</academytokengiven>
+	<tanaegiven>Aun Shimauri will give players permission to enter the Palenqual dungeon only once per month.</tanaegiven>
+	<asheronemissaryspoken2>Player has visited and conversed with the Emissary after talking to the Arcanum Alchemist a swcond time.</asheronemissaryspoken2>
+	<krankcollectionarmoredillo>You have been given a quest to collect Armoredillo hides by Captain K'rank.</krankcollectionarmoredillo>
+	<arcanumfurniturepermission>Writ Nov Quest 3</arcanumfurniturepermission>
+	<aunkillerfeatherssiraluun>This quest flag is obsolete.</aunkillerfeatherssiraluun>
+	<virindikillerpendantaun>This quest flag is obsolete.</virindikillerpendantaun>
+	<knorrgem1>Received Knorr Gem</knorrgem1>
+	<palenqualokanegiven>This stamp will alert Aun Imeitanua upon give that they have already spoken with him and should return the item.</palenqualokanegiven>
+	<bestoweritem2>Artifex</bestoweritem2>
+	<mosswarttornshroud>Torn Mosswart Shroud</mosswarttornshroud>
+	<harbingerraisemelee>I want to raise this skill.</harbingerraisemelee>
+	<stoneholdtranscription>Stonehold Frore Transcription</stoneholdtranscription>
+	<neydisatranscription>Neydisa Frore Transcription</neydisatranscription>
+	<arantahboon2>Give Hea Arantah CurseObject2</arantahboon2>
+	<bluefireinfusion>Blue Fire SOLL Infusion</bluefireinfusion>
+	<izjiqobeaten>You've beaten the Temple of Izji Qo!</izjiqobeaten>
+	<aercyno>Aerlinthe Cynosure</aercyno>
+	<totemgiven>Aun Shimauri has given players permission to enter the Palenqual Caverns</totemgiven>
+	<knifedahquest>Retreive Nurbaha bint Dah's Knife</knifedahquest>
+	<cluecardpickedup>You have picked up the clue card.</cluecardpickedup>
+	<pickedupkeyyaruldi>You have picked up the Key to Yaruldi's Hoarde.</pickedupkeyyaruldi>
+	<noteburunhistory10>You have learned a little about Burun History.</noteburunhistory10>
+	<renegadehauberkpickedup>You have picked up the Renegade's hauberk.</renegadehauberkpickedup>
+	<daindead>Lady Dain knows Gareth Dain is alive.</daindead>
+	<clonekillerextreme>Player has killed a extreme replica statue and can enter the low statue dungeon.</clonekillerextreme>
+	<infiltrationnoteacquired0205>You acquired the note from Kerrak.</infiltrationnoteacquired0205>
+	<journalibrexipickedup>Picked up Ibrexi's journal.</journalibrexipickedup>
+	<lessershadowarmorsho2>Lesser Sho Shadow Armor 2</lessershadowarmorsho2>
+	<sparkingstoneminor>Sparking Stone Minor Quest</sparkingstoneminor>
+	<undeadmechanismpickup10>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup10>
+	<harbingerraiseleadership>I want to raise this skill.</harbingerraiseleadership>
+	<bagpuzzlepickbagvariant1>You have varient 1 of the bag puzzle.</bagpuzzlepickbagvariant1>
+	<tuskmalepickup>Tusk picked up from a Male Tusker.</tuskmalepickup>
+	<spearstatuepickup>Player has picked up this weapons and cannot pick up another one for 1 day</spearstatuepickup>
+	<daggerstatuepickup>Player has picked up this weapons and cannot pick up another one for 1 day</daggerstatuepickup>
+	<cestusstatuepickup>Player has picked up this weapons and cannot pick up another one for 1 day</cestusstatuepickup>
+	<collectorfletchingalulow>You have turned in a Low fletching arts&amp;crafts item.</collectorfletchingalulow>
+	<marriagesymbolfriendship>Player has picked up the Symbol of Friendship</marriagesymbolfriendship>
+	<bestowerunarmed1>Unarmed Brawler</bestowerunarmed1>
+	<harbingercompletednuhmudira>Nuhmudira said that you are all cool.</harbingercompletednuhmudira>
+	<undeadmechanismpickup17>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup17>
+	<leggingsacademypickup>Player has picked up the Academy Leggings</leggingsacademypickup>
+	<prismfragmenticepickup>Player has picked up the Ice Fragment</prismfragmenticepickup>
+	<keyhammerempyreanlightningpickup>Player has picked up the Lightning hammer.</keyhammerempyreanlightningpickup>
+	<ishaqslostkeypickedupnotes1204>You've picked up Ishaq's notes. For shame!</ishaqslostkeypickedupnotes1204>
+	<keyhammerempyreanicepickup>Player has picked up the Ice hammer.</keyhammerempyreanicepickup>
+	<hollownoteacademypickup>Player has picked up the HOllow Minion Note</hollownoteacademypickup>
+	<notedrudgescrawledpickup>Yaraq Akyafi Quest</notedrudgescrawledpickup>
+	<turnedingear>Player has given Slithe the gear</turnedingear>
+	<olthoihunting1>Olthoi Hunting 1</olthoihunting1>
+	<roadstask1>You complete the first task set forth by Nuhmudira.</roadstask1>
+	<pickedupspearyaja>You have picked up Yaja's Reach.</pickedupspearyaja>
+	<shadowarmorsho2>Sho Shadow Armor 2</shadowarmorsho2>
+	<finishednoir1>You've completed the first noir quest.</finishednoir1>
+	<scallywagnoir1>You've spoken to Jake.</scallywagnoir1>
+	<chitinrot1>Player picked up OlthoiChitin.</chitinrot1>
+	<gavefemurtodanta>Picked up note</gavefemurtodanta>
+	<chestquestlockedhighpoid>Opened a ChestQuestLockedHigh.</chestquestlockedhighpoid>
+	<undeadmechanismpickup12>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup12>
+	<bagpuzzlewhitebagcorrect>You picked the correct contents for the white bag.</bagpuzzlewhitebagcorrect>
+	<asheronemissaryspoken1>Player has visited and conversed with the Emissary after talking to the Arcanum Alchemist.</asheronemissaryspoken1>
+	<chestquestlockedmidpoia>Opened a ChestQuestLockedMid.</chestquestlockedmidpoia>
+	<chestquestunlockedlowpoia>Opened a ChestQuestUnlockedLow.</chestquestunlockedlowpoia>
+	<gavenotethorstenarmor1>Player has been given the note for Brontynn</gavenotethorstenarmor1>
+	<aunkillerbagsiraluun1>This quest flag is obsolete.</aunkillerbagsiraluun1>
+	<tanuacompleted01>Players may pick the key to the spear altar off the Tumerok Gladiator only once per week</tanuacompleted01>
+	<boygrubgaveahna>Has the player given Tekapuapuh an Ahna?</boygrubgaveahna>
+	<undeadmechanismpickup19>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup19>
+	<bestowerwar1>War Magic Adept</bestowerwar1>
+	<bestowerlife1>Life Magic Adept</bestowerlife1>
+	<bestoweritem1>Item Enchantment Adept</bestoweritem1>
+	<bestowerstaff1>Staff Warrior</bestowerstaff1>
+	<bestowerdagger1>Dagger Fighter</bestowerdagger1>
+	<housestatuereedsharkgiven>Player has given received this house statue and can't get another one for a week.</housestatuereedsharkgiven>
+	<chestquestlockedhighpoie>Opened a ChestQuestLockedHigh.</chestquestlockedhighpoie>
+	<memorygamedroppedspear>You've dropped the memory game spear.</memorygamedroppedspear>
+	<npcbackpackkiviklir>You've gotten the journal from the backpack.</npcbackpackkiviklir>
+	<martinerobe>Player has picked up the Robe.</martinerobe>
+	<gottuskerfur>You've looted infected tusker fur recently.</gottuskerfur>
+	<receivedliazkarmor>Player has received the armor for Liazk Itzi's temple.</receivedliazkarmor>
+	<bestowerdagger2>Slicer</bestowerdagger2>
+	<emptysoulorb>You've received the Orb for Empty Soul.</emptysoulorb>
+	<talkedtodaliuskendmar>Talked to Dalius Kendmar.</talkedtodaliuskendmar>
+	<eyekiviklirtrial3>You've used the Eye.</eyekiviklirtrial3>
+	<newbienestkiller>Player assisted in killing a newbie nest.</newbienestkiller>
+	<harbingerraisehealing>I want to raise this skill</harbingerraisehealing>
+	<pickedupbroodqueenfemur>Picked up Brood Queen femur</pickedupbroodqueenfemur>
+	<chestquestunlockedlowpoib>Opened a ChestQuestUnlockedLow.</chestquestunlockedlowpoib>
+	<shieldsuperior>You have picked up the Superior Shield.</shieldsuperior>
+	<gaveolthoiscoutnote2>Turned in a note</gaveolthoiscoutnote2>
+	<strongholdlugianbuilder>Your status for donations to the Lugian Stronghold Collector.</strongholdlugianbuilder>
+	<oswaldlair>Gained access to Oswald's Lair</oswaldlair>
+	<oswaldstep2>Finished CSI 2</oswaldstep2>
+	<aunkillerbagsiraluun4>This quest flag is obsolete.</aunkillerbagsiraluun4>
+	<josefkeygiven>Player has received Gaerlan's Key from Josef</josefkeygiven>
+	<chestquestlockedhighpoib>Opened a ChestQuestLockedHigh.</chestquestlockedhighpoib>
+	<shadowarmorgharundim2>Gharundim Shadow Armor 2</shadowarmorgharundim2>
+	<chestquestunlockedmidpoib>Opened a ChestQuestUnlockedMid.</chestquestunlockedmidpoib>
+	<splinterulgrimuziz>Found Splinter8 of Ulgrim's Wand.</splinterulgrimuziz>
+	<ringquest03>Give MenhirRubbleD to MenhirDrummerNE</ringquest03>
+	<templeenlightenmentdragonsblood>Skill sellback quest.</templeenlightenmentdragonsblood>
+	<pickedupzharalimmasterjournal>You've picked up the Zharalim Master's Journal.</pickedupzharalimmasterjournal>
+	<eventmosswartkiller>Player has killed this event boss</eventmosswartkiller>
+	<coveoswaldtaken>Took the poisoned cider</coveoswaldtaken>
+	<marriagesymbolhonor>Player has picked up the Symbol of Honor</marriagesymbolhonor>
+	<gwillimalchemybag>Gwillim's Alchemy Bag</gwillimalchemybag>
+	<hizkricomplete>You've completed the Hizk Ri quest with a fellowship.</hizkricomplete>
+	<aunkillerbagsiraluun2>This quest flag is obsolete.</aunkillerbagsiraluun2>
+	<turnedinvalaracrystal>turned in 2nd crystal</turnedinvalaracrystal>
+	<harbingerraisefletching>I want to raise this skill.</harbingerraisefletching>
+	<aunkillersiraluunclawtimber>This quest flag is obsolete.</aunkillersiraluunclawtimber>
+	<housestatueskeletonhighgiven>Player has given received this house statue and can't get another one for a week.</housestatueskeletonhighgiven>
+	<aunkillercarenzipeltstalker>This quest flag is obsolete.</aunkillercarenzipeltstalker>
+	<virindikillergolemheartvapor>This quest flag is obsolete.</virindikillergolemheartvapor>
+	<virindikillergolemheartwater>This quest flag is obsolete.</virindikillergolemheartwater>
+	<virindikillercarenzipeltburrower>This quest flag is obsolete.</virindikillercarenzipeltburrower>
+	<virindikiller>Ahurenga Collector will stamp players who bring him Virindi jewels and refuse to trade with them again</virindikiller>
+	<nutboltvirindigiven>Player has given this spring and cannot give another for one day.</nutboltvirindigiven>
+	<deliverediolitegem>Delivered the Iolite gem.</deliverediolitegem>
+	<bestowerwar2>Warlock</bestowerwar2>
+	<bestowerunarmed2>Pugilist</bestowerunarmed2>
+	<gromnietoothpickazure>You have been granted experience into your fletching skill.</gromnietoothpickazure>
+	<holtburgafrinwheat1204>Retreive Alfrin's Bag of Wheat Seed</holtburgafrinwheat1204>
+	<glandcollected>Player assisted in killing a newbie nest.</glandcollected>
+	<galaeraldagger>Galaeral Dagger</galaeraldagger>
+	<choriziteb>Chorizite Refined B</choriziteb>
+	<recallsingularitycaul>Picked up Recall Singularity Bore Recall.</recallsingularitycaul>
+	<gaerlanswordturnin>Player can only turn in the sword 1 time every 1 days</gaerlanswordturnin>
+	<crossedroad>The Chicken has crossed the road.</crossedroad>
+	<touchedpvphateeffigy600205>You received an XP award from the Effigy of Cruelty</touchedpvphateeffigy600205>
+	<shadowarmoraluvian2>Aluvian Shadow Armor 2</shadowarmoraluvian2>
+	<sparkingstonemajor>Sparking Stone Major Quest</sparkingstonemajor>
+	<buruningressdirelands>You can now enter the Burun temple in the Direlands.</buruningressdirelands>
+	<chestquestlairhomunculus>Opened a ChestQuest</chestquestlairhomunculus>
+	<templeliazkc>Liazk feeder C has taken a sacrifice.</templeliazkc>
+	<pickedupcrownbaronnuvillus>You picked up the crown of Baron Nuvillus.</pickedupcrownbaronnuvillus>
+	<deepplaces3>You've picked up the third note in Olthoi Tunnels.</deepplaces3>
+	<undeadmechanismpickup13>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup13>
+	<harbingerraisemagic>I want to raise this skill.</harbingerraisemagic>
+	<chestquestlockedhighpoic>Opened a ChestQuestLockedHigh.</chestquestlockedhighpoic>
+	<chestquestlockedlowpoic>Opened a ChestQuestLockedLow.</chestquestlockedlowpoic>
+	<barkoswaldtaken>Took the bark</barkoswaldtaken>
+	<chestquestunlockedmidpoic>Opened a ChestQuestUnlockedMid.</chestquestunlockedmidpoic>
+	<arcanumresearchbypass>Player may enter the research facility.</arcanumresearchbypass>
+	<arcanumalchemistspoken3>Player has completed the Isparian Arms quest and is starting again.</arcanumalchemistspoken3>
+	<coilsclavus>Player has picked up a Sclavus coil and cannot pick up another for 1 day.</coilsclavus>
+	<harbingerraisealchemy>I want to raise this skill.</harbingerraisealchemy>
+	<coilbenten>Player has picked up a Ben Ten coil and cannot pick up another for 1 day.</coilbenten>
+	<bunnymasterquest3>This quest flag is obsolete.</bunnymasterquest3>
+	<lessershadowarmorsho3>Lesser Sho Shadow Armor 3</lessershadowarmorsho3>
+	<shadowarmorgharundim3>Gharundim Shadow Armor 3</shadowarmorgharundim3>
+	<nightclubentrance1204>Player has received permission to enter the Night Club duneon! Created for the December 2004 revision.</nightclubentrance1204>
+	<gotolthoiaxe>Picked up note</gotolthoiaxe>
+	<forgeessencewestacquired1204>You have picked up the Western Forge Essence</forgeessencewestacquired1204>
+	<siraluunclawhairpinbadlands1204>You have turned in this item already.</siraluunclawhairpinbadlands1204>
+	<siraluunclawhairpinlittoral1204>You have turned in this item already.</siraluunclawhairpinlittoral1204>
+	<siraluunclawhairpinmarsh1204>You have turned in this item already.</siraluunclawhairpinmarsh1204>
+	<siraluunclawhairgeluntamed1204>You have turned in this item already.</siraluunclawhairgeluntamed1204>
+	<siraluunclawhairgelkithless1204>You have turned in this item already.</siraluunclawhairgelkithless1204>
+	<siraluunclawhairgelstrand1204>You have turned in this item already.</siraluunclawhairgelstrand1204>
+	<siraluunclawscissorsbadlands1204>You have turned in this item already.</siraluunclawscissorsbadlands1204>
+	<siraluunclawscissorstimber1204>You have turned in this item already.</siraluunclawscissorstimber1204>
+	<siraluunclawscissorsmarsh1204>You have turned in this item already.</siraluunclawscissorsmarsh1204>
+	<keerikkilled>You killed Keerik.</keerikkilled>
+	<shellgamecompleted>You've compleated the Clutch of Kings shell game puzzle.</shellgamecompleted>
+	<bagpuzzlemixedbagcorrect>You picked the correct contents for the mixed bag.</bagpuzzlemixedbagcorrect>
+	<bloodpuzzlecompleted>You've compleated the Clutch of Kings blood puzzle.</bloodpuzzlecompleted>
+	<glyphkiviklirshardblood>You've used the Eye.</glyphkiviklirshardblood>
+	<deservesrollbackrecompense0704>You deserve a free level of XP because you lost two days of gameplay on July 25</deservesrollbackrecompense0704>
+	<blueprintsburunfort>You have picked up the Burun Ingress Fort Blueprints.</blueprintsburunfort>
+	<hizkrieye4>You have selected the correct eye in the Gauntlet.</hizkrieye4>
+	<talkedtolighthousehermit>You've spoken to the Lighthouse Hermit recently.</talkedtolighthousehermit>
+	<pickedupbookmoarslowuntranslated>You picked up an Untranslated Tome.</pickedupbookmoarslowuntranslated>
+	<harbingerraiseitem>I want to raise this skill.</harbingerraiseitem>
+	<renegaderanforward>I have charged forward already.</renegaderanforward>
+	<golemplatinumkingslayerquest>You are on the Mud Golem Sludge Lord Slayer Quest</golemplatinumkingslayerquest>
+	<golemironkingpinslayerquest>You are on the Mud Golem Sludge Lord Slayer Quest</golemironkingpinslayerquest>
+	<pickedupgirthdrudgefight>You've picked up the Drudge Fight Belt.</pickedupgirthdrudgefight>
+	<geardrudge>Player has picked up a Drudge Gear and cannot pick up another for 1 day.</geardrudge>
+	<deepplaces4>You've picked up the fourth note in Olthoi Tunnels.</deepplaces4>
+	<undeadmechanismpickup14>Reign of Terror Part III - Undead Mechanism</undeadmechanismpickup14>
+	<completedtempleixirzi>Player has defeated the Temple of Ixir Zi.</completedtempleixirzi>
+	<pickedupbroodqueencrest>Picked up Brood Queen crest</pickedupbroodqueencrest>
+	<portalasugertemplepermissiongiven>Player can go into Asuger Temple</portalasugertemplepermissiongiven>
+	<izjiqocomplete>You've received a reward for the Temple of Izji Qo.</izjiqocomplete>
+	<maygetsword>Player may pick up sword</maygetsword>
+	<pickedupvirindisignet>Picked up the signet</pickedupvirindisignet>
+	<chestquestunlockedmidpoid>Opened a ChestQuestUnlockedMid.</chestquestunlockedmidpoid>
+	<chestquestunlockedlowpoid>Opened a ChestQuestUnlockedLow.</chestquestunlockedlowpoid>
+	<gottamiannote4award>Got Tamian Note4 award</gottamiannote4award>
+	<gottamianjournalaward>Got Tamian Journal Award</gottamianjournalaward>
+	<gotspeargivenheart>got the spear</gotspeargivenheart>
+	<pickedupmosswartstonedeath>You have taken a Mosswart Mourning Stone from a Mosswart Corpse.</pickedupmosswartstonedeath>
+	<memorygamepickedupmace>You've dropped the memory game mace.</memorygamepickedupmace>
+	<templeforgetfulnesswormwood>Skill sellback quest.</templeforgetfulnesswormwood>
+	<templeforgetfulnessmugwort>Skill sellback quest.</templeforgetfulnessmugwort>
+	<templeforgetfulnesseyebright>Skill sellback quest.</templeforgetfulnesseyebright>
+	<speakcorrect>TBD</speakcorrect>
+	<speakincorrect>TBD</speakincorrect>
+	<gotolthoiatlatl>Picked up note</gotolthoiatlatl>
+	<gaerlancirclet>Player has received the corresponding reward.</gaerlancirclet>
+	<receiveddecorationderethmapunframed>Player has been given unframed Dereth Map and cannot pick up more for 2 weeks.</receiveddecorationderethmapunframed>
+	<gorgetnuhmudirafound>This quest flag is obsolete.</gorgetnuhmudirafound>
+	<housedeednogo>House Deed Acquired</housedeednogo>
+	<sacrificednuhmudiraagent>This quest flag is obsolete.</sacrificednuhmudiraagent>
+	<emberbrightgivennew>Player has received the Bright Ember from Aun Tanua. Created for the March 2004 revision.</emberbrightgivennew>
+	<templeenlightenmenthawthorn>Skill sellback quest.</templeenlightenmenthawthorn>
+	<ringquest04>Give MenhirRubbleC to MenhirDrummerSE</ringquest04>
+	<boygrubstartedquest>Has the player started the quest?</boygrubstartedquest>
+	<harvesterinitialquest>Harvester in the Mist</harvesterinitialquest>
+	<roadskirloz>You have spoken to Kir Loz.</roadskirloz>
+	<bunnymasterquest4>This quest flag is obsolete.</bunnymasterquest4>
+	<olthoihunting4>Olthoi Hunting 4</olthoihunting4>
+	<bunnymastercompletedquest>This quest flag is obsolete.</bunnymastercompletedquest>
+	<benefactionnuhmudiragiven>This quest flag is obsolete.</benefactionnuhmudiragiven>
+	<tumerokvanguardamulet>Tumerok Vanguard Amulet</tumerokvanguardamulet>
+	<focusingstoneimbued>Imbued Focusing Stone from Mines of Despair</focusingstoneimbued>
+	<yaraqheadmarionettemadstar1204>Yaraq Akyafi Quest</yaraqheadmarionettemadstar1204>
+	<yaraqwinecoveapple1204>Sea Temple Catacombs Quest</yaraqwinecoveapple1204>
+	<perfectlyagedcoveciderquest>Sea Temple Catacombs Quest</perfectlyagedcoveciderquest>
+	<shoushinenaicider1204>Retreive Cider for Nen Ai</shoushinenaicider1204>
+	<chestquestgibbering>Opened a ChestQuest</chestquestgibbering>
+	<gembaidenquest>Retreive Bai Den's Flawed Gem</gembaidenquest>
+	<novquest4>Novemeber Quest 4</novquest4>
+	<shoushibraidkatar1204>Retreive Lou Ka's Katar</shoushibraidkatar1204>
+	<provinggroundshigh>Unused Questflag</provinggroundshigh>
+	<shoushibraidshuriken1204>Retreive Lou Ka's Shouken</shoushibraidshuriken1204>
+	<holtburgafrindrudge1204>Retreive the head of the Drudge Robber Baron for Alfrin.</holtburgafrindrudge1204>
+	<holtburgredoubtmug1204>Retreive Worcer's Antique Mug</holtburgredoubtmug1204>
+	<holtburgredoubtcandlestick1204>Retreive Hardunna's Candlestick</holtburgredoubtcandlestick1204>
+	<uberaerfallestaffobtained>War Staff of Aerfalle</uberaerfallestaffobtained>
+	<oldmanmountainquest>Old Man of the Mountain Quest</oldmanmountainquest>
+	<carloloreviamontianmagesbindingacquired0205>You picked up Carlo di Cenza's book binding.</carloloreviamontianmagesbindingacquired0205>
+	<bosshelmacquired0205>You looted the Salvaging Helm.</bosshelmacquired0205>
+	<infiltrationshadowlugianportaldestroyed0205>You have been marked by the Darkness.</infiltrationshadowlugianportaldestroyed0205>
+	<infiltrationrobeacquired0205>You acquired the Shadow Lugian robe.</infiltrationrobeacquired0205>
+	<touchedpvphateeffigy800205>You received an XP award from the Effigy of Slaughter</touchedpvphateeffigy800205>
+	<touchedpvphatepillar800205>You touched the Pillar of Slaughter</touchedpvphatepillar800205>
+	<harbingerraiseperson>I want to raise this skill.</harbingerraiseperson>
+	<artscraftsfletchinglow>Player has turned in low Fletching item.</artscraftsfletchinglow>
+	<touchedpvphatepillar600205>You touched the Pillar of Cruelty</touchedpvphatepillar600205>
+	<touchedpvphatepillar200205>You touched the Pillar of Bitterness</touchedpvphatepillar200205>
+	<forgeessencexprewardreceived0105>You handed a Western Forge Essence to an Agent of the Arcanum.</forgeessencexprewardreceived0105>
+	<fireworksused0105>You've set off some New Years fireworks.</fireworksused0105>
+	<browerkcomplete>You've completed the Browerk quest.</browerkcomplete>
+	<kireecomplete>You've completed the Kiree quest.</kireecomplete>
+	<olthoihunting8>Olthoi Hunting 8</olthoihunting8>
+	<bagpuzzlecangethintmarble>You can get a hint marble.</bagpuzzlecangethintmarble>
+	<glyphkiviklirshardserpentine>You've used the Eye.</glyphkiviklirshardserpentine>
+	<usedfloatingbottle>You've used the floating bottle recently.</usedfloatingbottle>
+	<collectorfletchingalunewbie>You have turned in a newbie fletching arts&amp;crafts item.</collectorfletchingalunewbie>
+	<collectorcookingghanewbie>You have turned in a newbie cooking arts&amp;crafts item.</collectorcookingghanewbie>
+	<pickeduptasselmissile>You've picked up a Woven Tassel of Far Sight.</pickeduptasselmissile>
+	<pendantrenegade>Player is wearing the PendantRenegade</pendantrenegade>
+	<harbingerraisecreature>I want to raise this skill.</harbingerraisecreature>
+	<invasionquest05>Kill northwest full invasion Brood Noble</invasionquest05>
+	<chestquestlockedlowpoie>Opened a ChestQuestLockedLow.</chestquestlockedlowpoie>
+	<riddletime>Player has received the corresponding Riddle.</riddletime>
+	<gaerlanlife>Player has received the corresponding reward.</gaerlanlife>
+	<gothomecomingflag>You already got your Homecoming Flag!</gothomecomingflag>
+	<martinaidcomplete>Players have made their choice about helping Martine.</martinaidcomplete>
+	<gaveletterthorstenarmor5>Player has given this letter in exchange for xp</gaveletterthorstenarmor5>
+	<brokenkeyteethmartine>Player has been picked up the Broken Singularity Key Teeth</brokenkeyteethmartine>
+	<invokercomplete>Player has received the Invoker and cannot make it again.</invokercomplete>
+	<waspwingdone>No more wasp wings for the Academy Collector</waspwingdone>
+	<chestquestunlockedmidpoif>Opened a ChestQuestUnlockedMid.</chestquestunlockedmidpoif>
+	<rehirbeaten>You've beaten Rehir.</rehirbeaten>
+	<olthoihunting5>Olthoi Hunting 5</olthoihunting5>
+	<shoushigreetinggiven>Tenshin has said hello to player</shoushigreetinggiven>
+	<gredalineunnaturalpersistence>Gredaline Unnatural Persistence Scroll</gredalineunnaturalpersistence>
+	<aerlinthesluice>Aerlinthe Magma Sluice Found</aerlinthesluice>
+	<cruciblegivenhiro>This quest flag is obsolete.</cruciblegivenhiro>
+	<novquest5>Novemeber Quest 5</novquest5>
+	<housestatuegromniegiven>Player has given received this house statue and can't get another one for a week.</housestatuegromniegiven>
+	<hizkribeaten>You beat the temple of Hizk Ri.</hizkribeaten>
+	<gemimpulse>Xarabydun Impulse Gem</gemimpulse>
+	<rithwiccelcyndring>Rithwic Ring Quest</rithwiccelcyndring>
+	<chestquestlockedmidpoif>Opened a ChestQuestLockedMid.</chestquestlockedmidpoif>
+	<olthoihunting6>Olthoi Hunting 6</olthoihunting6>
+	<novquest6>Novemeber Quest 6</novquest6>
+	<renegadehealing>You have opened the chest containing Healing.</renegadehealing>
+	<collectorfletchingghalow>You have turned in a Low fletching arts&amp;crafts item.</collectorfletchingghalow>
+	<collectorcookingghalow>You have turned in a Low cooking arts&amp;crafts item.</collectorcookingghalow>
+	<collectorcookingalulow>You have turned in a Low cooking arts&amp;crafts item.</collectorcookingalulow>
+	<harbingerraisecooking>I want to raise this skill.</harbingerraisecooking>
+	<pickedupolthoilongclaw>Picked up note</pickedupolthoilongclaw>
+	<pickedupolthoiscoutnote7>Picked up note</pickedupolthoiscoutnote7>
+	<invasionquest07>Kill Dires 2 full invasion NobleC</invasionquest07>
+	<chestquestunlockedmidpoig>Opened a ChestQuestUnlockedMid.</chestquestunlockedmidpoig>
+	<artscraftscookinglow>Player has turned in low Cooking item.</artscraftscookinglow>
+	<riddletomorrow>Player has received the corresponding Riddle.</riddletomorrow>
+	<yaraqregicidebanditgreeting>Yaraq Bandit has said hello to player</yaraqregicidebanditgreeting>
+	<heartinnocenttaken>You got the heart of Jaleh</heartinnocenttaken>
+	<aunkillerolthoiclaw>This quest flag is obsolete.</aunkillerolthoiclaw>
+	<aunkillercarenzipeltpouchling>This quest flag is obsolete.</aunkillercarenzipeltpouchling>
+	<krankdeliverydryreach>You have been given a quest to deliver something to Dryreach by Captain K'rank.</krankdeliverydryreach>
+	<templecunningspoken>Fellowship has spoken to the Cunning Statue.</templecunningspoken>
+	<harbingercompletedaerbax>Aerbax said that you are all cool.</harbingercompletedaerbax>
+	<pickedupolthoiscoutnote8>Picked up note</pickedupolthoiscoutnote8>
+	<gaveevilcouch>Player was given the Evil Couch</gaveevilcouch>
+	<riddledeath>Player has received the corresponding Riddle.</riddledeath>
+	<provinggroundsrollingdeath>Player has finished the rolling death room</provinggroundsrollingdeath>
+	<aunkillersiraluunclawmarsh>This quest flag is obsolete.</aunkillersiraluunclawmarsh>
+	<invasionquest08>Kill the Olthoi Queen!</invasionquest08>
+	<gromnietoothpasteivory>You have been granted experience into your alchemy skill.</gromnietoothpasteivory>
+	<templekilledibrexijikti>Fellowship has killed Ibrexi Jikti.</templekilledibrexijikti>
+	<defeatedkixktixri>Player has assisted in killing Kixkti Xri.</defeatedkixktixri>
+	<defeatedjexkiki>Player has assisted in killing Jexki Ki.</defeatedjexkiki>
+	<storehousemidentry>This quest flag is obsolete.</storehousemidentry>
+	<storehouselowentry>This quest flag is obsolete.</storehouselowentry>
+	<headmorgluuk>You've collected the head from Morgluuk's remains.</headmorgluuk>
+	<completedtempleliazk>Player has received a reward for Liazk Itzi's temple.</completedtempleliazk>
+	<enterharbingerissk>Issk said you can enter the dungeon.</enterharbingerissk>
+	<popofirstspeak>TBD</popofirstspeak>
+	<caocaofirstspeak>TBD</caocaofirstspeak>
+	<tuskermask>TBD</tuskermask>
+	<renegademanaoil>You have opened the chest containing Mana Oil.</renegademanaoil>
+	<pickeduprot2crystal>Picked up ROT2 crystal</pickeduprot2crystal>
+	<gottamianjournal>Got Tamian Journal</gottamianjournal>
+	<riddlefail>Player has given the incorrect answer once.</riddlefail>
+	<virindikillersiraluunclawtidal>This quest flag is obsolete.</virindikillersiraluunclawtidal>
+	<shardsoulcrystal>Shard of the Soul Crystal</shardsoulcrystal>
+	<barbedfletchingtool>Barbed Fletching Tool</barbedfletchingtool>
+	<emotetestportal>Test Emote Portal Quest</emotetestportal>
+	<pickedupzharalimemblem>You've picked up a Crest of the Shagar Zharala.</pickedupzharalimemblem>
+	<chestquestunlockedlowhedgedplatform>Opened a ChestQuestUnlockedLowHedgedPlatform.</chestquestunlockedlowhedgedplatform>
+	<riddlemushroom>Player has received the corresponding Riddle.</riddlemushroom>
+	<coilzharalim>Player has picked up a Zharalim coil and cannot pick up another for 1 day.</coilzharalim>
+	<harbingerraisethrown>I want to raise this skill.</harbingerraisethrown>
+	<gromnietoothpickebon>You have been granted experience into your fletching skill.</gromnietoothpickebon>
+	<gromnietoothpasteebon>You have been granted experience into your alchemy skill.</gromnietoothpasteebon>
+	<emptysouldragon>You've been allowed to enter the Dungeon for the Dragon part of Empty Soul.</emptysouldragon>
+	<insidiousmonougahandin>Handed in an insidious monouga idol.</insidiousmonougahandin>
+	<harbingerraisedeception>I want to raise this skill.</harbingerraisedeception>
+	<slippersjalehtaken>You got the heart of Jaleh</slippersjalehtaken>
+	<arikasspoken>Spoken to Arikas</arikasspoken>
+	<ashbaneturnedin>Gave Ashbane to Leikotha.</ashbaneturnedin>
+	<lilithasbowgiven>Gave Lilitha's Bow to Eldrista.</lilithasbowgiven>
+	<chestquestunlockedlowdungeonfern>Opened a ChestQuestUnlockedLowDungeonFern.</chestquestunlockedlowdungeonfern>
+	<housestatuevirindigiven>Player has given received this house statue and can't get another one for a week.</housestatuevirindigiven>
+	<coilbentengiven>Player has given this coil and cannot give another for one day.</coilbentengiven>
+	<geargromniegiven>Player has given this gear and cannot give another for one day.</geargromniegiven>
+	<gearreedsharkgiven>Player has given this gear and cannot give another for one day.</gearreedsharkgiven>
+	<coilthorsten>Player has picked up a Thorsten coil and cannot pick up another for 1 day.</coilthorsten>
+	<prismfragmentfiregiven>Player has turned in the Fire Fragment</prismfragmentfiregiven>
+	<palenqualwaaikagiven>This stamp will alert Aun Imeitanua upon give that they have already spoken with him and should return the item.</palenqualwaaikagiven>
+	<losthopeinfusion>Lost Hope Infusion</losthopeinfusion>
+</root>
