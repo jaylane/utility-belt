@@ -282,11 +282,13 @@ namespace UtilityBelt.Tools {
             Regex searchRegex = new Regex(filterText, RegexOptions.IgnoreCase);
 
             foreach (DataRow row in sortedQuestDataTable.Rows) {
-                if (!string.IsNullOrEmpty(filterText) && !searchRegex.IsMatch(row["questDescriptionTest"].ToString())) {
+
+                string QuestName = Util.GetFriendlyQuestName(row["questKeyTest"].ToString());
+                if (!string.IsNullOrEmpty(filterText) && !searchRegex.IsMatch(QuestName)) {
                     continue;
                 }
 
-                string QuestName = Util.GetFriendlyQuestName(row["questKeyTest"].ToString());
+                
 
                 if (row["questType"].ToString() == "killTask") {
                     HudList.HudListRowAccessor newKTRow = UIMyKillTaskList.AddRow();
@@ -316,23 +318,24 @@ namespace UtilityBelt.Tools {
             Regex searchRegex = new Regex(filterText, RegexOptions.IgnoreCase);
 
             foreach (DataRow row in sortedQuestDataTable.Rows) {
-                if (!string.IsNullOrEmpty(filterText) && !searchRegex.IsMatch(row["questDescriptionTest"].ToString())) {
+                string QuestName = Util.GetFriendlyQuestName(row["questKeyTest"].ToString());
+                if (!string.IsNullOrEmpty(filterText) && !searchRegex.IsMatch(QuestName)) {
                     continue;
                 }
 
 
                 if (row["questType"].ToString() == "killTask") {
                     HudList.HudListRowAccessor newKTRow = UIMyKillTaskList.AddRow();
-                    ((HudStaticText)newKTRow[0]).Text = row["questDescriptionTest"].ToString();
+                    ((HudStaticText)newKTRow[0]).Text = QuestName;
                     ((HudStaticText)newKTRow[1]).Text = row["solveCountTest"].ToString();
                     ((HudStaticText)newKTRow[2]).Text = row["maxCompletionsTest"].ToString();
 
                 } else if (row["questType"].ToString() == "oneTimeQuest") {
                     HudList.HudListRowAccessor newOTRow = UIMyOneTimeList.AddRow();
-                    ((HudStaticText)newOTRow[0]).Text = row["questDescriptionTest"].ToString();
+                    ((HudStaticText)newOTRow[0]).Text = QuestName;
                 } else {
                     HudList.HudListRowAccessor newQLRow = UIMyQuestList.AddRow();
-                    ((HudStaticText)newQLRow[0]).Text = row["questDescriptionTest"].ToString();
+                    ((HudStaticText)newQLRow[0]).Text = QuestName;
                     ((HudStaticText)newQLRow[1]).Text = row["repeatTimeTest"].ToString();
                     ((HudStaticText)newQLRow[2]).Text = row["solveCountTest"].ToString();
                 }
@@ -349,23 +352,24 @@ namespace UtilityBelt.Tools {
             Regex searchRegex = new Regex(filterText, RegexOptions.IgnoreCase);
 
             foreach (DataRow row in sortedQuestDataTable.Rows) {
-                if (!string.IsNullOrEmpty(filterText) && !searchRegex.IsMatch(row["questDescriptionTest"].ToString())) {
+                string QuestName = Util.GetFriendlyQuestName(row["questKeyTest"].ToString());
+                if (!string.IsNullOrEmpty(filterText) && !searchRegex.IsMatch(QuestName)) {
                     continue;
                 }
 
 
                 if (row["questType"].ToString() == "killTask") {
                     HudList.HudListRowAccessor newKTRow = UIMyKillTaskList.AddRow();
-                    ((HudStaticText)newKTRow[0]).Text = row["questDescriptionTest"].ToString();
+                    ((HudStaticText)newKTRow[0]).Text = QuestName;
                     ((HudStaticText)newKTRow[1]).Text = row["solveCountTest"].ToString();
                     ((HudStaticText)newKTRow[2]).Text = row["maxCompletionsTest"].ToString();
 
                 } else if (row["questType"].ToString() == "oneTimeQuest") {
                     HudList.HudListRowAccessor newOTRow = UIMyOneTimeList.AddRow();
-                    ((HudStaticText)newOTRow[0]).Text = row["questDescriptionTest"].ToString();
+                    ((HudStaticText)newOTRow[0]).Text = QuestName;
                 } else {
                     HudList.HudListRowAccessor newQLRow = UIMyQuestList.AddRow();
-                    ((HudStaticText)newQLRow[0]).Text = row["questDescriptionTest"].ToString();
+                    ((HudStaticText)newQLRow[0]).Text = QuestName;
                     ((HudStaticText)newQLRow[1]).Text = row["repeatTimeTest"].ToString();
                     ((HudStaticText)newQLRow[2]).Text = row["solveCountTest"].ToString();
                 }
