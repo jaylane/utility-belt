@@ -1,10 +1,11 @@
 ﻿using System;
 using Decal.Adapter;
-using MyClasses.MetaViewWrappers;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using VirindiViewService.Controls;
 using System.Data;
+using System.Linq;
+using System.Threading;
 
 namespace UtilityBelt.Tools {
     class QuestTracker : IDisposable {
@@ -24,16 +25,18 @@ namespace UtilityBelt.Tools {
         HudButton PopulateKillTaskList { get; set; }
         HudList UIMyOneTimeList { get; set; }
         HudButton PopulateOneTimeList { get; set; }
+        public HudTextBox UIQuestsListFilter { get; set; }
+        public HudTextBox UIQuestsKTListFilter { get; set; }
+        public HudTextBox UIQuestsOTListFilter { get; set; }
+        public static Dictionary<string, string> questKeyLookup = new Dictionary<string, string>();
 
         public QuestTracker() {
-            //CoreManager.Current.ChatBoxMessage += new EventHandler<ChatTextInterceptEventArgs>(Current_ChatBoxMessage);
             Globals.Core.ChatBoxMessage += new EventHandler<ChatTextInterceptEventArgs>(Current_ChatBoxMessage);
 
             UIMyQuestList = Globals.MainView.view != null ? (HudList)Globals.MainView.view["myQuestList"] : new HudList();
             UIMyKillTaskList = Globals.MainView.view != null ? (HudList)Globals.MainView.view["myKillTaskList"] : new HudList();
             UIMyOneTimeList = Globals.MainView.view != null ? (HudList)Globals.MainView.view["myOneTimeList"] : new HudList();
-
-            //UIMyQuestList.Click += new HudList.delClickedControl(UIMyQuestList_Click);
+            
 
             UIPopulateQuestList = Globals.MainView.view != null ? (HudButton)Globals.MainView.view["PopulateQuestList"] : new HudButton();
             UIPopulateQuestList.Hit += PopulateQuestList_Click;
@@ -43,7 +46,19 @@ namespace UtilityBelt.Tools {
 
             PopulateOneTimeList = Globals.MainView.view != null ? (HudButton)Globals.MainView.view["PopulateOneTimeList"] : new HudButton();
             PopulateOneTimeList.Hit += PopulateOneTimeList_Click;
+
+            UIQuestsListFilter = (HudTextBox)Globals.MainView.view["QuestsListFilter"];
+            UIQuestsListFilter.Change += UIQuestsListFilter_Change;
+
+            UIQuestsKTListFilter = (HudTextBox)Globals.MainView.view["QuestsKTListFilter"];
+            UIQuestsKTListFilter.Change += UIQuestsKTListFilter_Change;
+
+            UIQuestsOTListFilter = (HudTextBox)Globals.MainView.view["QuestsOTListFilter"];
+            UIQuestsOTListFilter.Change += UIQuestsOTListFilter_Change;
+            
+            Util.LoadQuestLookupXML();
         }
+
         public string GetFriendlyTimeDifference(TimeSpan difference) {
             string output = "";
 
@@ -59,7 +74,12 @@ namespace UtilityBelt.Tools {
             return GetFriendlyTimeDifference(TimeSpan.FromSeconds(difference));
         }
 
-
+        public static string GetFriendlyQuestName(string questKey) {
+            if (questKeyLookup.Keys.Contains(questKey)) {
+                return questKeyLookup[questKey];
+            }
+            return questKey;
+        }
 
 
         public void CreateDataTable() {
@@ -209,8 +229,6 @@ namespace UtilityBelt.Tools {
                 ((HudStaticText)newHeaderQLRow[2]).Text = "solveCount";
 
 
-
-
                 System.Threading.Timer timer = null;
                 timer = new System.Threading.Timer((obj) => {
                     try {
@@ -218,13 +236,15 @@ namespace UtilityBelt.Tools {
 
                         if (questDataTable.Rows.Count >= 1) {
                             DataView dv = questDataTable.DefaultView;
-                            dv.Sort = "repeatTimeTest ASC";
+                            dv.Sort = "repeatTimeTest ASC, questDescriptionTest ASC";
                             DataTable sortedQuestDataTable = dv.ToTable();
 
 
                             foreach (DataRow row in sortedQuestDataTable.Rows) {
-
-                                string QuestName = row["questDescriptionTest"].ToString();
+                                string QuestName = Util.GetFriendlyQuestName(row["questKeyTest"].ToString());
+                                //Util.WriteToChat(row["questKeyTest"].ToString());
+                                //Util.WriteToChat(Util.GetFriendlyQuestName(row["questKeyTest"].ToString()));
+                                //string QuestName = row["questDescriptionTest"].ToString();
 
                                 if (row["questType"].ToString() == "killTask") {
                                     HudList.HudListRowAccessor newKTRow = UIMyKillTaskList.AddRow();
@@ -251,6 +271,129 @@ namespace UtilityBelt.Tools {
                             null, 500, System.Threading.Timeout.Infinite);
             } catch (Exception ex) { Logger.LogException(ex); }
         }
+
+        public void RedrawQuests() { 
+            UIMyQuestList.ClearRows();
+            DataView dv = questDataTable.DefaultView;
+            dv.Sort = "repeatTimeTest ASC, questDescriptionTest ASC";
+            DataTable sortedQuestDataTable = dv.ToTable();
+
+            var filterText = UIQuestsListFilter.Text;
+            Regex searchRegex = new Regex(filterText, RegexOptions.IgnoreCase);
+
+            foreach (DataRow row in sortedQuestDataTable.Rows) {
+
+                string QuestName = Util.GetFriendlyQuestName(row["questKeyTest"].ToString());
+                if (!string.IsNullOrEmpty(filterText) && !searchRegex.IsMatch(QuestName)) {
+                    continue;
+                }
+
+                
+
+                if (row["questType"].ToString() == "killTask") {
+                    HudList.HudListRowAccessor newKTRow = UIMyKillTaskList.AddRow();
+                    ((HudStaticText)newKTRow[0]).Text = QuestName;
+                    ((HudStaticText)newKTRow[1]).Text = row["solveCountTest"].ToString();
+                    ((HudStaticText)newKTRow[2]).Text = row["maxCompletionsTest"].ToString();
+
+                } else if (row["questType"].ToString() == "oneTimeQuest") {
+                    HudList.HudListRowAccessor newOTRow = UIMyOneTimeList.AddRow();
+                    ((HudStaticText)newOTRow[0]).Text = QuestName;
+                } else {
+                    HudList.HudListRowAccessor newQLRow = UIMyQuestList.AddRow();
+                    ((HudStaticText)newQLRow[0]).Text = QuestName;
+                    ((HudStaticText)newQLRow[1]).Text = row["repeatTimeTest"].ToString();
+                    ((HudStaticText)newQLRow[2]).Text = row["solveCountTest"].ToString();
+                }
+            }
+        }
+
+        public void RedrawOTQuests() {
+            UIMyOneTimeList.ClearRows();
+            DataView dv = questDataTable.DefaultView;
+            dv.Sort = "repeatTimeTest ASC";
+            DataTable sortedQuestDataTable = dv.ToTable();
+
+            var filterText = UIQuestsOTListFilter.Text;
+            Regex searchRegex = new Regex(filterText, RegexOptions.IgnoreCase);
+
+            foreach (DataRow row in sortedQuestDataTable.Rows) {
+                string QuestName = Util.GetFriendlyQuestName(row["questKeyTest"].ToString());
+                if (!string.IsNullOrEmpty(filterText) && !searchRegex.IsMatch(QuestName)) {
+                    continue;
+                }
+
+
+                if (row["questType"].ToString() == "killTask") {
+                    HudList.HudListRowAccessor newKTRow = UIMyKillTaskList.AddRow();
+                    ((HudStaticText)newKTRow[0]).Text = QuestName;
+                    ((HudStaticText)newKTRow[1]).Text = row["solveCountTest"].ToString();
+                    ((HudStaticText)newKTRow[2]).Text = row["maxCompletionsTest"].ToString();
+
+                } else if (row["questType"].ToString() == "oneTimeQuest") {
+                    HudList.HudListRowAccessor newOTRow = UIMyOneTimeList.AddRow();
+                    ((HudStaticText)newOTRow[0]).Text = QuestName;
+                } else {
+                    HudList.HudListRowAccessor newQLRow = UIMyQuestList.AddRow();
+                    ((HudStaticText)newQLRow[0]).Text = QuestName;
+                    ((HudStaticText)newQLRow[1]).Text = row["repeatTimeTest"].ToString();
+                    ((HudStaticText)newQLRow[2]).Text = row["solveCountTest"].ToString();
+                }
+            }
+        }
+
+        public void RedrawKTQuests() {
+            UIMyKillTaskList.ClearRows();
+            DataView dv = questDataTable.DefaultView;
+            dv.Sort = "repeatTimeTest ASC";
+            DataTable sortedQuestDataTable = dv.ToTable();
+
+            var filterText = UIQuestsKTListFilter.Text;
+            Regex searchRegex = new Regex(filterText, RegexOptions.IgnoreCase);
+
+            foreach (DataRow row in sortedQuestDataTable.Rows) {
+                string QuestName = Util.GetFriendlyQuestName(row["questKeyTest"].ToString());
+                if (!string.IsNullOrEmpty(filterText) && !searchRegex.IsMatch(QuestName)) {
+                    continue;
+                }
+
+
+                if (row["questType"].ToString() == "killTask") {
+                    HudList.HudListRowAccessor newKTRow = UIMyKillTaskList.AddRow();
+                    ((HudStaticText)newKTRow[0]).Text = QuestName;
+                    ((HudStaticText)newKTRow[1]).Text = row["solveCountTest"].ToString();
+                    ((HudStaticText)newKTRow[2]).Text = row["maxCompletionsTest"].ToString();
+
+                } else if (row["questType"].ToString() == "oneTimeQuest") {
+                    HudList.HudListRowAccessor newOTRow = UIMyOneTimeList.AddRow();
+                    ((HudStaticText)newOTRow[0]).Text = QuestName;
+                } else {
+                    HudList.HudListRowAccessor newQLRow = UIMyQuestList.AddRow();
+                    ((HudStaticText)newQLRow[0]).Text = QuestName;
+                    ((HudStaticText)newQLRow[1]).Text = row["repeatTimeTest"].ToString();
+                    ((HudStaticText)newQLRow[2]).Text = row["solveCountTest"].ToString();
+                }
+            }
+        }
+
+        private void UIQuestsListFilter_Change(object sender, EventArgs e) {
+            try {
+                RedrawQuests();
+            } catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void UIQuestsKTListFilter_Change(object sender, EventArgs e) {
+            try {
+                RedrawKTQuests();
+            } catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void UIQuestsOTListFilter_Change(object sender, EventArgs e) {
+            try {
+                RedrawOTQuests();
+            } catch (Exception ex) { Logger.LogException(ex); }
+        }
+
 
         private void PopulateQuestList_Click(object sender, EventArgs e) {
             if (buttonClicked == false) {
