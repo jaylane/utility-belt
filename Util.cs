@@ -264,7 +264,7 @@ namespace UtilityBelt
 
         public static void LoadQuestLookupXML() {
             try {
-                string filePath = Util.GetQTXMLPath() + @"\quests.xml";
+                string filePath = Path.Combine(Util.GetQTXMLPath(), "quests.xml");
 
                 if (!File.Exists(filePath)) {
                     Util.WriteToChat("Unable to find lookup file: " + filePath);
