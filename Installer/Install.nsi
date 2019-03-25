@@ -53,6 +53,9 @@ Section "" CoreSection
 	SetOutPath "$INSTDIR\Resources\tiles"
 	File "${BUILDPATH}\Resources\tiles\*.bmp"
 
+	SetOutPath "$INSTDIR\Resources\"
+	File "${BUILDPATH}\Resources\quests.xml"
+
 SectionEnd
 
 Section -FinishSection
@@ -95,6 +98,7 @@ Section Uninstall
 	;Clean up
 	Delete "$INSTDIR\${ASSEMBLY}"
 	Delete "${BUILDPATH}\Resources\tiles\*.bmp"
+	Delete "${BUILDPATH}\Resources\quests.xml"
 	;Delete "$INSTDIR\ADDITIONALFILES"
 	RMDir "$INSTDIR\"
 
