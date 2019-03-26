@@ -77,13 +77,17 @@ namespace UtilityBelt.Tools {
         }
 
         public void Start(bool force = false) {
-            isRunning = true;
-            openedSalvageWindow = false;
-            shouldSalvage = force;
+            if (Globals.AutoVendor.HasVendorOpen() == false) {
+                isRunning = true;
+                openedSalvageWindow = false;
+                shouldSalvage = force;
 
-            Reset();
-
-            LoadInventory();
+                Reset();
+                LoadInventory();
+            }
+            else {
+                Util.WriteToChat("AutoSalvage bailing, vendor is open.");
+            }
         }
 
         private void Stop() {
@@ -202,6 +206,12 @@ namespace UtilityBelt.Tools {
 
                 if (isRunning) {
                     bool hasAllItemData = true;
+
+                    if (Globals.AutoVendor.HasVendorOpen() == false) {
+                        Util.WriteToChat("AutoSalvage bailing, vendor is open.");
+                        Stop();
+                        return;
+                    }
 
                     foreach (var id in inventoryItems) {
                         if (NeedsID(id)) {
