@@ -3,6 +3,7 @@ using Decal.Adapter.Wrappers;
 using Mag.Shared.Settings;
 using System;
 using System.Collections.Generic;
+using UtilityBelt.Constants;
 using VirindiViewService.Controls;
 
 namespace UtilityBelt.Tools {
@@ -113,6 +114,10 @@ namespace UtilityBelt.Tools {
             int requestedIdsCount = 0;
 
             foreach (var item in inventory) {
+                if (item != null && item.Values(LongValueKey.Material, 0) <= 0) {
+                    continue;
+                }
+
                 inventoryItems.Add(item.Id);
 
                 if (NeedsID(item.Id)) {
@@ -195,19 +200,23 @@ namespace UtilityBelt.Tools {
             // TODO: do multiple passes taking workmanship and loot rules into account
             foreach (var id in salvageIds) {
                 Globals.Core.Actions.SalvagePanelAdd(id);
+
+                if (shouldSalvage) {
+                    break;
+                }
             }
 
             readyToSalvage = true;
         }
 
         public void Think() {
-            if (DateTime.UtcNow - lastThought > TimeSpan.FromMilliseconds(1000)) {
+            if (DateTime.UtcNow - lastThought > TimeSpan.FromMilliseconds(100)) {
                 lastThought = DateTime.UtcNow;
 
                 if (isRunning) {
                     bool hasAllItemData = true;
 
-                    if (Globals.AutoVendor.HasVendorOpen() == false) {
+                    if (Globals.AutoVendor.HasVendorOpen()) {
                         Util.WriteToChat("AutoSalvage bailing, vendor is open.");
                         Stop();
                         return;
@@ -222,10 +231,16 @@ namespace UtilityBelt.Tools {
 
                     if (readyToSalvage) {
                         readyToSalvage = false;
-                        isRunning = false;
 
                         if (shouldSalvage) {
                             Globals.Core.Actions.SalvagePanelSalvage();
+                        }
+                        else {
+                            if ((Globals.Core.CharacterFilter.CharacterOptionFlags & (int)CharOptions2.SalvageMultiple) == 0) {
+                                Util.WriteToChat("AutoSalvage: SalvageMultiple config option is turned off, so I can only add one item to the salvage window.");
+                            }
+
+                            Stop();
                         }
 
                         return;
@@ -233,9 +248,6 @@ namespace UtilityBelt.Tools {
 
                     if (isRunning && hasAllItemData) {
                         if (GetSalvageIds().Count == 0) {
-                            if (Globals.Config.AutoSalvage.Debug.Value) {
-                                Util.WriteToChat("AutoSalvage: No salvageable items found.");
-                            }
                             Stop();
                             return;
                         }
