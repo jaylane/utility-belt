@@ -6,6 +6,9 @@ using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Xml;
+using System.Linq;
+using System.Net;
 
 namespace UtilityBelt
 {
@@ -249,6 +252,55 @@ namespace UtilityBelt
                     (sinTheta * (pointToRotate.X - centerPoint.X) +
                     cosTheta * (pointToRotate.Y - centerPoint.Y) + centerPoint.Y)
             };
+        }
+
+        internal static string GetQTXMLPath() {
+            string assemblyFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            return Path.Combine(assemblyFolder, "Resources");
+        }
+
+        public static Dictionary<string, string> questKeyLookup = new Dictionary<string, string>();
+
+        public static void LoadQuestLookupXML() {
+            try {
+                string filePath = Path.Combine(Util.GetQTXMLPath(), "quests.xml");
+
+                if (!File.Exists(filePath)) {
+                    Util.WriteToChat("Unable to find lookup file: " + filePath);
+                    return;
+                }
+
+                using (XmlReader reader = XmlReader.Create(filePath)) {
+                    while (reader.Read()) {
+                        if (reader.IsStartElement() && reader.Name != "root") {
+                            questKeyLookup.Add(reader.Name.ToLower(), reader.ReadElementContentAsString());
+                        }
+                    }
+                }
+            } catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        public static string GetFriendlyQuestName(string questKey) {
+            if (questKeyLookup.Keys.Contains(questKey)) {
+                return questKeyLookup[questKey];
+            }
+
+            return questKey;
+        }
+
+        public static bool CompareFiles(string path1, string path2) {
+            byte[] file1 = File.ReadAllBytes(path1);
+            byte[] file2 = File.ReadAllBytes(path2);
+            if (file1.Length == file2.Length) {
+                for (int i = 0; i < file1.Length; i++) {
+                    if (file1[i] != file2[i]) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
         }
     }
 }
