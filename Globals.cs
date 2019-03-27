@@ -26,5 +26,6 @@ namespace UtilityBelt
         public static Config Config { get; internal set; }
         public static InventoryManager InventoryManager { get; internal set; }
         public static MapView MapView { get; internal set; }
+        public static AutoVendor AutoVendor { get; set; }
     }
 }

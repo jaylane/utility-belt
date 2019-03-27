@@ -81,7 +81,7 @@ namespace UtilityBelt.Tools {
     }
 
 
-    class AutoVendor : IDisposable {
+    public class AutoVendor : IDisposable {
         private const int MAX_VENDOR_BUY_COUNT = 5000;
         private const double PYREAL_STACK_SIZE = 25000.0;
         private DateTime firstThought = DateTime.MinValue;
@@ -807,7 +807,7 @@ namespace UtilityBelt.Tools {
             }
         }
 
-        private bool HasVendorOpen() {
+        public bool HasVendorOpen() {
             bool hasVendorOpen = false;
 
             try {
