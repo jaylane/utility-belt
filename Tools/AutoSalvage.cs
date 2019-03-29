@@ -210,7 +210,7 @@ namespace UtilityBelt.Tools {
         }
 
         public void Think() {
-            if (DateTime.UtcNow - lastThought > TimeSpan.FromMilliseconds(100)) {
+            if (DateTime.UtcNow - lastThought > TimeSpan.FromMilliseconds(300)) {
                 lastThought = DateTime.UtcNow;
 
                 if (isRunning) {
