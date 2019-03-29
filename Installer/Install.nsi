@@ -7,7 +7,7 @@
 !define ASSEMBLY "UtilityBelt.dll"
 !define CLASSNAME "UtilityBelt.PluginCore"
 
-!define BUILDPATH "F:\projects\UtilityBelt\bin\x86\Release"
+!define BUILDPATH ".\..\bin\x86\Release"
 
 ; Main Install settings
 ; compressor goes first
@@ -54,7 +54,7 @@ Section "" CoreSection
 	File "${BUILDPATH}\Resources\tiles\*.bmp"
 	
 	SetOutPath "$INSTDIR\Resources\"
-    File "${BUILDPATH}\Resources\quests.xml"
+	File "${BUILDPATH}\Resources\quests.xml"
 
 SectionEnd
 
