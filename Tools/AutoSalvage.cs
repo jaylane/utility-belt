@@ -114,9 +114,9 @@ namespace UtilityBelt.Tools {
             int requestedIdsCount = 0;
 
             foreach (var item in inventory) {
-                if (item != null && item.Values(LongValueKey.Material, 0) <= 0) {
-                    continue;
-                }
+                //if (item != null && item.Values(LongValueKey.Material, 0) <= 0) {
+                //    continue;
+                //}
 
                 inventoryItems.Add(item.Id);
 
