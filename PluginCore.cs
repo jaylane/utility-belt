@@ -14,7 +14,6 @@ namespace UtilityBelt
     
 	[FriendlyName("UtilityBelt")]
 	public class PluginCore : PluginBase {
-        private AutoVendor autoVendor;
         private AutoSalvage autoSalvage;
         private DungeonMaps dungeonMaps;
         private EmuConfig emuConfig;
@@ -56,8 +55,8 @@ namespace UtilityBelt
                 Globals.MainView = new MainView();
                 Globals.MapView = new MapView();
                 Globals.InventoryManager = new InventoryManager();
+                Globals.AutoVendor = new AutoVendor();
 
-                autoVendor = new AutoVendor();
                 autoSalvage = new AutoSalvage();
                 dungeonMaps = new DungeonMaps();
                 emuConfig = new EmuConfig();
@@ -71,7 +70,7 @@ namespace UtilityBelt
         private void Core_RenderFrame(object sender, EventArgs e) {
             try {
                 if (autoSalvage != null) autoSalvage.Think();
-                if (autoVendor != null) autoVendor.Think();
+                if (Globals.AutoVendor != null) Globals.AutoVendor.Think();
                 if (dungeonMaps != null) dungeonMaps.Think();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Think();
             }
@@ -84,11 +83,11 @@ namespace UtilityBelt
 			try {
                 Globals.Core.RenderFrame -= Core_RenderFrame;
 
-                if (autoVendor != null) autoVendor.Dispose();
                 if (autoSalvage != null) autoSalvage.Dispose();
                 if (dungeonMaps != null) dungeonMaps.Dispose();
                 if (emuConfig != null) emuConfig.Dispose();
                 if (questTracker != null) questTracker.Dispose();
+                if (Globals.AutoVendor != null) Globals.AutoVendor.Dispose();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();
                 if (Globals.MapView != null) Globals.MapView.Dispose();
                 if (Globals.MainView != null) Globals.MainView.Dispose();
