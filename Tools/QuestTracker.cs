@@ -135,7 +135,7 @@ namespace UtilityBelt.Tools {
                     long nowEpoch = todayEpoch();
 
                     if (nowEpoch > availableOnEpoch) {
-                        sortTime = 99999;
+                        sortTime = 0;
                     } else {
                         sortTime = availableOnEpoch - nowEpoch;
                     }
@@ -149,7 +149,7 @@ namespace UtilityBelt.Tools {
                             row["questDescription"] = questDescription;
                             row["maxCompletions"] = maxCompletions;
                             row["questType"] = questType;
-                            row["sortTime"] = questType;
+                            row["sortTime"] = sortTime;
                             if (questType != "killTask" && questType != "oneTimeQuest") {
                                 newDTRow["repeatTime"] = availableOnEpoch;
                             } else {
@@ -199,7 +199,7 @@ namespace UtilityBelt.Tools {
 
                         if (questDataTable.Rows.Count >= 1) {
                             DataView dv = questDataTable.DefaultView;
-                            dv.Sort = "sortTime ASC, friendlyName ASC";
+                            dv.Sort = "sortTime DESC, friendlyName ASC";
                             DataTable sortedQuestDataTable = dv.ToTable();
 
                             foreach (DataRow row in sortedQuestDataTable.Rows) {
@@ -250,7 +250,7 @@ namespace UtilityBelt.Tools {
         public void RedrawQuests() { 
             UIMyQuestList.ClearRows();
             DataView dv = questDataTable.DefaultView;
-            dv.Sort = "sortTime ASC, friendlyName ASC";
+            dv.Sort = "sortTime DESC, friendlyName ASC";
             DataTable sortedQuestDataTable = dv.ToTable();
 
             var filterText = UIQuestsListFilter.Text;
