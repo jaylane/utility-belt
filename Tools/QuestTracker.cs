@@ -23,8 +23,6 @@ namespace UtilityBelt.Tools {
         public HudTextBox UIQuestsListFilter { get; set; }
         public HudTextBox UIQuestsKTListFilter { get; set; }
         public HudTextBox UIQuestsOTListFilter { get; set; }
-        public static Dictionary<string, string> questKeyLookup = new Dictionary<string, string>();
-        DateTime lastThought = DateTime.UtcNow;
         private System.Windows.Forms.Timer questTimer = new System.Windows.Forms.Timer();
         //private int counter = 1;
 
@@ -59,8 +57,6 @@ namespace UtilityBelt.Tools {
             UIQuestsOTListFilter.Change += UIQuestsOTListFilter_Change;
             
             Util.LoadQuestLookupXML();
-
-            DateTime lastThought = DateTime.UtcNow;
         }
 
         public string GetFriendlyTimeDifference(TimeSpan difference) {
@@ -78,26 +74,16 @@ namespace UtilityBelt.Tools {
             return GetFriendlyTimeDifference(TimeSpan.FromSeconds(difference));
         }
 
-        public static string GetFriendlyQuestName(string questKey) {
-            if (questKeyLookup.Keys.Contains(questKey)) {
-                return questKeyLookup[questKey];
-            }
-            return questKey;
-        }
-
         public long todayEpoch() {
             long todayEpoch = (long)((DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds);
             return todayEpoch;
         }
 
-        public void CreateDataTable() {
-            questDataTable.Columns.Add("questKey");
-            questDataTable.Columns.Add("solveCount");
-            questDataTable.Columns.Add("questDescription");
-            questDataTable.Columns.Add("maxCompletions");
-            questDataTable.Columns.Add("repeatTime");
-            questDataTable.Columns.Add("questType");
+        public long convertToLong (string input) {
+            long output = Convert.ToInt64(input.ToString());
+            return output;
         }
+
 
         //DataTable questDataTable = new DataTable();
         private Dictionary<string, string> questList = new Dictionary<string, string>();
@@ -109,22 +95,26 @@ namespace UtilityBelt.Tools {
         public void Current_ChatBoxMessage(object sender, ChatTextInterceptEventArgs e) {
             try {
                 Match match = myQuestRegex.Match(e.Text);
-
                 if (match.Success) {
-
                     if (questDataTable.Rows.Count == 0) {
-                        CreateDataTable();
-                    } else {
-                        //Util.WriteToChat("exists");
+                        questDataTable.Columns.Add("questKey");
+                        questDataTable.Columns.Add("friendlyName");
+                        questDataTable.Columns.Add("solveCount");
+                        questDataTable.Columns.Add("questDescription");
+                        questDataTable.Columns.Add("maxCompletions");
+                        questDataTable.Columns.Add("sortTime");
+                        questDataTable.Columns.Add("repeatTime");
+                        questDataTable.Columns.Add("questType");
                     }
 
                     string questKey = match.Groups["questKey"].Value;
+                    string friendlyName = Util.GetFriendlyQuestName(questKey);
                     string solveCount = match.Groups["solveCount"].Value;
                     string questDescription = match.Groups["questDescription"].Value;
                     string maxCompletions = match.Groups["maxCompletions"].Value;
                     long availableOnEpoch = 0;
-                    //string questTimerstr = "";
                     string questType = "";
+                    long sortTime;
                     
                     bool dupe = false;
                     if (Int32.TryParse(match.Groups["completedOn"].Value, out int completedOn)) {
@@ -133,14 +123,8 @@ namespace UtilityBelt.Tools {
                     if (Int32.TryParse(match.Groups["repeatTime"].Value, out int repeatTime)) {
                         availableOnEpoch += repeatTime;
                     }
-                    
-//                    if (todayEpoch > availableOnEpoch) {
-//                        questTimerstr = "Ready";
-//                    } else {
-//                        questTimerstr = GetFriendlyTimeDifference(availableOnEpoch - todayEpoch);
-//                    }
-                    Match matchKillTask = killTaskRegex.Match(questKey);
 
+                    Match matchKillTask = killTaskRegex.Match(questKey);
                     if (matchKillTask.Success) {
                         questType = "killTask";
                     }
@@ -148,59 +132,48 @@ namespace UtilityBelt.Tools {
                         questType = "oneTimeQuest";
                     }
 
+                    long nowEpoch = todayEpoch();
 
+                    if (nowEpoch > availableOnEpoch) {
+                        sortTime = 99999;
+                    } else {
+                        sortTime = availableOnEpoch - nowEpoch;
+                    }
 
                     DataRow newDTRow = questDataTable.NewRow();
                     foreach (DataRow row in questDataTable.Rows) {
                         if (row["questKey"].ToString() == questKey) {
                             dupe = true;
+                            row["friendlyName"] = friendlyName;
                             row["solveCount"] = solveCount;
-                            if (questDescription == "") {
-                                row["questDescription"] = questKey;
-                            } else {
-                                row["questDescription"] = questDescription;
-                            }
+                            row["questDescription"] = questDescription;
                             row["maxCompletions"] = maxCompletions;
-                            row["repeatTime"] = (long)availableOnEpoch;
                             row["questType"] = questType;
+                            row["sortTime"] = questType;
+                            if (questType != "killTask" && questType != "oneTimeQuest") {
+                                newDTRow["repeatTime"] = availableOnEpoch;
+                            } else {
+                                newDTRow["repeatTime"] = null;
+                            }
                         }
                     }
 
                     if (dupe != true) {
                         newDTRow["questKey"] = questKey;
+                        newDTRow["friendlyName"] = friendlyName;
                         newDTRow["solveCount"] = solveCount;
-                        if (questDescription == "") {
-                            newDTRow["questDescription"] = questKey;
-                        } else {
-                            newDTRow["questDescription"] = questDescription;
-                        }
+                        newDTRow["questDescription"] = questDescription;
                         newDTRow["maxCompletions"] = maxCompletions;
-                        newDTRow["repeatTime"] = availableOnEpoch;
                         newDTRow["questType"] = questType;
+                        newDTRow["sortTime"] = sortTime;
+                        if (questType != "killTask" && questType != "oneTimeQuest") {
+                            newDTRow["repeatTime"] = availableOnEpoch;
+                        } else {
+                            newDTRow["repeatTime"] = null;
+                        }
                         questDataTable.Rows.Add(newDTRow);
                     }
 
-//                    if (dupe == true) {
-//                        //Util.WriteToChat(questKey + ": duplicate");
-//                        //newDTRow["solveCountTest"] = solveCount;
-//                        ////newDTRow["completedOnTest"] = completedOn;
-//                        //newDTRow["questDescriptionTest"] = questDescription;
-//                        //newDTRow["maxCompletionsTest"] = maxCompletions;
-//                        //newDTRow["repeatTimeTest"] = questTimerstr;
-//                        //newDTRow["questType"] = questType;
-//                    } else {
-//                        newDTRow["questKey"] = questKey;
-//                        newDTRow["solveCount"] = solveCount;
-//                        if (questDescription == "") {
-//                            newDTRow["questDescription"] = questKey;
-//                        } else {
-//                            newDTRow["questDescription"] = questDescription;
-//                        }
-//                        newDTRow["maxCompletions"] = maxCompletions;
-//                        newDTRow["repeatTime"] = (long)availableOnEpoch;
-//                        newDTRow["questType"] = questType;
-//                        questDataTable.Rows.Add(newDTRow);
-//                     }
                     if (shouldEatQuests) {
                         e.Eat = true;
                     }
@@ -219,22 +192,6 @@ namespace UtilityBelt.Tools {
 
                 Globals.Core.Actions.InvokeChatParser("/myquests");
 
-
-//                HudList.HudListRowAccessor newHeaderKTRow = UIMyKillTaskList.AddRow();
-//                ((HudStaticText)newHeaderKTRow[0]).Text = "QuestName";
-//                ((HudStaticText)newHeaderKTRow[1]).Text = "solveCount";
-//                ((HudStaticText)newHeaderKTRow[2]).Text = "maxCompletions";
-//
-//
-//                HudList.HudListRowAccessor newHeaderOTRow = UIMyOneTimeList.AddRow();
-//                ((HudStaticText)newHeaderOTRow[0]).Text = "QuestName";
-//
-//                HudList.HudListRowAccessor newHeaderQLRow = UIMyQuestList.AddRow();
-//                ((HudStaticText)newHeaderQLRow[0]).Text = "QuestName";
-//                ((HudStaticText)newHeaderQLRow[1]).Text = "repeatTime";
-//                ((HudStaticText)newHeaderQLRow[2]).Text = "solveCount";
-
-
                 System.Threading.Timer timer = null;
                 timer = new System.Threading.Timer((obj) => {
                     try {
@@ -242,35 +199,39 @@ namespace UtilityBelt.Tools {
 
                         if (questDataTable.Rows.Count >= 1) {
                             DataView dv = questDataTable.DefaultView;
-                            dv.Sort = "repeatTime ASC, questDescription ASC";
+                            dv.Sort = "sortTime ASC, friendlyName ASC";
                             DataTable sortedQuestDataTable = dv.ToTable();
 
-
                             foreach (DataRow row in sortedQuestDataTable.Rows) {
-                                string QuestName = Util.GetFriendlyQuestName(row["questKey"].ToString());
-                                string testRepeatTime = row["repeatTime"].ToString();
-                                long res = long.Parse(testRepeatTime);
-                                long nowEpoch = todayEpoch();
-
+                                //string QuestName = Util.GetFriendlyQuestName(row["questKey"].ToString());
                                 string questTimerstr;
-                                if (nowEpoch > res) {
-                                        questTimerstr = "Ready";
+                                string repeatTimeStr = row["repeatTime"].ToString();
+                                if (!string.IsNullOrEmpty(repeatTimeStr)) {
+                                    long repeatTime = long.Parse(repeatTimeStr);
+                                    long nowEpoch = todayEpoch();
+
+                                    if (nowEpoch > repeatTime) {
+                                            questTimerstr = "Ready";
                                     } else {
-                                        questTimerstr = GetFriendlyTimeDifference(res - nowEpoch);
+                                        questTimerstr = GetFriendlyTimeDifference(repeatTime - nowEpoch);
                                     }
+                                } else {
+                                    questTimerstr = "";
+                                }
+                                
 
                                     if (row["questType"].ToString() == "killTask") {
                                     HudList.HudListRowAccessor newKTRow = UIMyKillTaskList.AddRow();
-                                    ((HudStaticText)newKTRow[0]).Text = QuestName;
+                                    ((HudStaticText)newKTRow[0]).Text = row["friendlyName"].ToString();
                                     ((HudStaticText)newKTRow[1]).Text = row["solveCount"].ToString();
                                     ((HudStaticText)newKTRow[2]).Text = row["maxCompletions"].ToString();
 
                                 } else if (row["questType"].ToString() == "oneTimeQuest") {
                                     HudList.HudListRowAccessor newOTRow = UIMyOneTimeList.AddRow();
-                                    ((HudStaticText)newOTRow[0]).Text = QuestName;
+                                    ((HudStaticText)newOTRow[0]).Text = row["friendlyName"].ToString();
                                 } else {
                                     HudList.HudListRowAccessor newQLRow = UIMyQuestList.AddRow();
-                                    ((HudStaticText)newQLRow[0]).Text = QuestName;
+                                    ((HudStaticText)newQLRow[0]).Text = row["friendlyName"].ToString();
                                     ((HudStaticText)newQLRow[1]).Text = questTimerstr;
                                     ((HudStaticText)newQLRow[2]).Text = row["solveCount"].ToString();
                                     ((HudStaticText)newQLRow[3]).Text = row["questKey"].ToString();
@@ -289,41 +250,35 @@ namespace UtilityBelt.Tools {
         public void RedrawQuests() { 
             UIMyQuestList.ClearRows();
             DataView dv = questDataTable.DefaultView;
-            dv.Sort = "repeatTime ASC, questDescription ASC";
+            dv.Sort = "sortTime ASC, friendlyName ASC";
             DataTable sortedQuestDataTable = dv.ToTable();
 
             var filterText = UIQuestsListFilter.Text;
             Regex searchRegex = new Regex(filterText, RegexOptions.IgnoreCase);
-
             foreach (DataRow row in sortedQuestDataTable.Rows) {
-
+                string QuestKey = row["questKey"].ToString();
                 string QuestName = Util.GetFriendlyQuestName(row["questKey"].ToString());
-                if (!string.IsNullOrEmpty(filterText) && !searchRegex.IsMatch(QuestName)) {
+                string QuestType = Util.GetFriendlyQuestName(row["questType"].ToString());
+                
+                if (!string.IsNullOrEmpty(filterText) && ((!searchRegex.IsMatch(QuestName)) && !searchRegex.IsMatch(QuestKey))) {
                     continue;
                 }
-                long nowEpoch = todayEpoch();
-                long availableOnEpoch = Convert.ToInt64(Util.GetFriendlyQuestName(row["repeatTime"].ToString()));
                 string questTimerstr;
-
-                if (nowEpoch > availableOnEpoch) {
-                    questTimerstr = "Ready";
+                string repeatTimeStr = row["repeatTime"].ToString();
+                if (!string.IsNullOrEmpty(repeatTimeStr)) {
+                    long repeatTime = long.Parse(repeatTimeStr);
+                    long nowEpoch = todayEpoch();
+                    if (nowEpoch > repeatTime) {
+                        questTimerstr = "Ready";
+                    } else {
+                        questTimerstr = GetFriendlyTimeDifference(repeatTime - nowEpoch);
+                    }
                 } else {
-                    questTimerstr = GetFriendlyTimeDifference(availableOnEpoch - nowEpoch);
+                    questTimerstr = "";
                 }
-
-
-                if (row["questType"].ToString() == "killTask") {
-                    HudList.HudListRowAccessor newKTRow = UIMyKillTaskList.AddRow();
-                    ((HudStaticText)newKTRow[0]).Text = QuestName;
-                    ((HudStaticText)newKTRow[1]).Text = row["solveCount"].ToString();
-                    ((HudStaticText)newKTRow[2]).Text = row["maxCompletions"].ToString();
-
-                } else if (row["questType"].ToString() == "oneTimeQuest") {
-                    HudList.HudListRowAccessor newOTRow = UIMyOneTimeList.AddRow();
-                    ((HudStaticText)newOTRow[0]).Text = QuestName;
-                } else {
+                if (QuestType != "killTask" && QuestType != "oneTimeQuest") { 
                     HudList.HudListRowAccessor newQLRow = UIMyQuestList.AddRow();
-                    ((HudStaticText)newQLRow[0]).Text = QuestName;
+                    ((HudStaticText)newQLRow[0]).Text = row["friendlyName"].ToString();
                     ((HudStaticText)newQLRow[1]).Text = questTimerstr;
                     ((HudStaticText)newQLRow[2]).Text = row["solveCount"].ToString();
                     ((HudStaticText)newQLRow[3]).Text = row["questKey"].ToString();
@@ -334,85 +289,47 @@ namespace UtilityBelt.Tools {
         public void RedrawOTQuests() {
             UIMyOneTimeList.ClearRows();
             DataView dv = questDataTable.DefaultView;
-            dv.Sort = "repeatTime ASC";
+            dv.Sort = "friendlyName ASC";
             DataTable sortedQuestDataTable = dv.ToTable();
 
             var filterText = UIQuestsOTListFilter.Text;
             Regex searchRegex = new Regex(filterText, RegexOptions.IgnoreCase);
 
             foreach (DataRow row in sortedQuestDataTable.Rows) {
+                string QuestKey = row["questKey"].ToString();
                 string QuestName = Util.GetFriendlyQuestName(row["questKey"].ToString());
-                if (!string.IsNullOrEmpty(filterText) && !searchRegex.IsMatch(QuestName)) {
+                if (!string.IsNullOrEmpty(filterText) && ((!searchRegex.IsMatch(QuestName)) && !searchRegex.IsMatch(QuestKey))) {
                     continue;
                 }
-                long nowEpoch = todayEpoch();
-                long availableOnEpoch = Convert.ToInt64(Util.GetFriendlyQuestName(row["repeatTime"].ToString()));
-                string questTimerstr;
 
-                if (nowEpoch > availableOnEpoch) {
-                    questTimerstr = "Ready";
-                } else {
-                    questTimerstr = GetFriendlyTimeDifference(availableOnEpoch - nowEpoch);
-                }
-
-                if (row["questType"].ToString() == "killTask") {
-                    HudList.HudListRowAccessor newKTRow = UIMyKillTaskList.AddRow();
-                    ((HudStaticText)newKTRow[0]).Text = QuestName;
-                    ((HudStaticText)newKTRow[1]).Text = row["solveCount"].ToString();
-                    ((HudStaticText)newKTRow[2]).Text = row["maxCompletions"].ToString();
-
-                } else if (row["questType"].ToString() == "oneTimeQuest") {
+                 if (row["questType"].ToString() == "oneTimeQuest") {
                     HudList.HudListRowAccessor newOTRow = UIMyOneTimeList.AddRow();
-                    ((HudStaticText)newOTRow[0]).Text = QuestName;
-                } else {
-                    HudList.HudListRowAccessor newQLRow = UIMyQuestList.AddRow();
-                    ((HudStaticText)newQLRow[0]).Text = QuestName;
-                    ((HudStaticText)newQLRow[1]).Text = questTimerstr;
-                    ((HudStaticText)newQLRow[2]).Text = row["solveCount"].ToString();
-                    ((HudStaticText)newQLRow[3]).Text = row["questKey"].ToString();
-                }
+                    ((HudStaticText)newOTRow[0]).Text = row["friendlyName"].ToString();
+                } 
             }
         }
 
         public void RedrawKTQuests() {
             UIMyKillTaskList.ClearRows();
             DataView dv = questDataTable.DefaultView;
-            dv.Sort = "repeatTime ASC";
+            dv.Sort = "friendlyName ASC";
             DataTable sortedQuestDataTable = dv.ToTable();
 
             var filterText = UIQuestsKTListFilter.Text;
             Regex searchRegex = new Regex(filterText, RegexOptions.IgnoreCase);
 
             foreach (DataRow row in sortedQuestDataTable.Rows) {
+                string QuestKey = row["questKey"].ToString();
                 string QuestName = Util.GetFriendlyQuestName(row["questKey"].ToString());
-                if (!string.IsNullOrEmpty(filterText) && !searchRegex.IsMatch(QuestName)) {
+                if (!string.IsNullOrEmpty(filterText) && ((!searchRegex.IsMatch(QuestName)) && !searchRegex.IsMatch(QuestKey))) {
                     continue;
-                }
-                long nowEpoch = todayEpoch();
-                long availableOnEpoch = Convert.ToInt64(Util.GetFriendlyQuestName(row["repeatTime"].ToString()));
-                string questTimerstr;
-
-                if (nowEpoch > availableOnEpoch) {
-                    questTimerstr = "Ready";
-                } else {
-                    questTimerstr = GetFriendlyTimeDifference(availableOnEpoch - nowEpoch);
                 }
 
                 if (row["questType"].ToString() == "killTask") {
                     HudList.HudListRowAccessor newKTRow = UIMyKillTaskList.AddRow();
-                    ((HudStaticText)newKTRow[0]).Text = QuestName;
+                    ((HudStaticText)newKTRow[0]).Text = row["friendlyName"].ToString();
                     ((HudStaticText)newKTRow[1]).Text = row["solveCount"].ToString();
                     ((HudStaticText)newKTRow[2]).Text = row["maxCompletions"].ToString();
-
-                } else if (row["questType"].ToString() == "oneTimeQuest") {
-                    HudList.HudListRowAccessor newOTRow = UIMyOneTimeList.AddRow();
-                    ((HudStaticText)newOTRow[0]).Text = QuestName;
-                } else {
-                    HudList.HudListRowAccessor newQLRow = UIMyQuestList.AddRow();
-                    ((HudStaticText)newQLRow[0]).Text = QuestName;
-                    ((HudStaticText)newQLRow[1]).Text = questTimerstr;
-                    ((HudStaticText)newQLRow[2]).Text = row["solveCount"].ToString();
-                    ((HudStaticText)newQLRow[3]).Text = row["questKey"].ToString();
                 }
             }
         }
@@ -431,14 +348,15 @@ namespace UtilityBelt.Tools {
                         long availableOnEpoch = Convert.ToInt64(questData["repeatTime"].ToString());
 
                         ((HudStaticText)UIMyQuestList[i][1]).Text = GetFriendlyTimeDifference(availableOnEpoch - nowEpoch).ToString();
-                    } //else { Util.WriteToChat("Quest " + questKey + " is Ready"); }
+                    }
                 }
-            } //else { Util.WriteToChat("nothing at all"); }
+            }
         }
 
         private void UIQuestsListFilter_Change(object sender, EventArgs e) {
             try {
                 RedrawQuests();
+
             } catch (Exception ex) { Logger.LogException(ex); }
         }
 
