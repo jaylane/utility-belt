@@ -180,10 +180,6 @@ namespace UtilityBelt.Tools {
 
                     if (result.SimpleAction == uTank2.eLootAction.Salvage) {
                         salvageIds.Add(id);
-
-                        if (Globals.Config.AutoSalvage.Debug.Value == true) {
-                            Util.WriteToChat(String.Format("AutoSalvage: Add: {0}", item.Name));
-                        }
                     }
                 }
                 catch (Exception ex) { Logger.LogException(ex); }
@@ -201,6 +197,10 @@ namespace UtilityBelt.Tools {
             foreach (var id in salvageIds) {
                 Globals.Core.Actions.SalvagePanelAdd(id);
 
+                if (Globals.Config.AutoSalvage.Debug.Value == true) {
+                    Util.WriteToChat(String.Format("AutoSalvage: Add: {0}", Util.GetObjectName(id)));
+                }
+
                 if (shouldSalvage) {
                     break;
                 }
@@ -210,7 +210,7 @@ namespace UtilityBelt.Tools {
         }
 
         public void Think() {
-            if (DateTime.UtcNow - lastThought > TimeSpan.FromMilliseconds(300)) {
+            if (DateTime.UtcNow - lastThought > TimeSpan.FromMilliseconds(600)) {
                 lastThought = DateTime.UtcNow;
 
                 if (isRunning) {
