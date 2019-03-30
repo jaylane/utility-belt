@@ -8,6 +8,7 @@
 - Better isDungeon detection on landcells
 - Fixed a few exceptions.
 - QuestTracker now shows quest timers in realtime (active countdown on ui)
+- QuestTracker can now filter quests by regex from the ui
 - AutoSalvage w/ force now salvages one item at a time (so vtank can combine properly)
 - QuestTracker now has the ability to look up quest keys in xml, for friendlier names
 - Updated dungeon map tiles
