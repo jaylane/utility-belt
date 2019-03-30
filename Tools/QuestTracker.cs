@@ -67,7 +67,7 @@ namespace UtilityBelt.Tools {
             if (difference.TotalMinutes > 0) output += difference.Minutes.ToString() + "m ";
             if (difference.TotalSeconds > 0) output += difference.Seconds.ToString() + "s ";
 
-            return output;
+            return output.Trim();
         }
 
         public string GetFriendlyTimeDifference(long difference) {
@@ -223,7 +223,9 @@ namespace UtilityBelt.Tools {
                                     if (row["questType"].ToString() == "killTask") {
                                     HudList.HudListRowAccessor newKTRow = UIMyKillTaskList.AddRow();
                                     ((HudStaticText)newKTRow[0]).Text = row["friendlyName"].ToString();
+                                    ((HudStaticText)newKTRow[1]).TextAlignment = VirindiViewService.WriteTextFormats.Right;
                                     ((HudStaticText)newKTRow[1]).Text = row["solveCount"].ToString();
+                                    ((HudStaticText)newKTRow[2]).TextAlignment = VirindiViewService.WriteTextFormats.Right;
                                     ((HudStaticText)newKTRow[2]).Text = row["maxCompletions"].ToString();
 
                                 } else if (row["questType"].ToString() == "oneTimeQuest") {
@@ -232,7 +234,9 @@ namespace UtilityBelt.Tools {
                                 } else {
                                     HudList.HudListRowAccessor newQLRow = UIMyQuestList.AddRow();
                                     ((HudStaticText)newQLRow[0]).Text = row["friendlyName"].ToString();
+                                    ((HudStaticText)newQLRow[1]).TextAlignment = VirindiViewService.WriteTextFormats.Right;
                                     ((HudStaticText)newQLRow[1]).Text = questTimerstr;
+                                    ((HudStaticText)newQLRow[2]).TextAlignment = VirindiViewService.WriteTextFormats.Right;
                                     ((HudStaticText)newQLRow[2]).Text = row["solveCount"].ToString();
                                     ((HudStaticText)newQLRow[3]).Text = row["questKey"].ToString();
                                 }
@@ -279,7 +283,9 @@ namespace UtilityBelt.Tools {
                 if (QuestType != "killTask" && QuestType != "oneTimeQuest") { 
                     HudList.HudListRowAccessor newQLRow = UIMyQuestList.AddRow();
                     ((HudStaticText)newQLRow[0]).Text = row["friendlyName"].ToString();
+                    ((HudStaticText)newQLRow[1]).TextAlignment = VirindiViewService.WriteTextFormats.Right;
                     ((HudStaticText)newQLRow[1]).Text = questTimerstr;
+                    ((HudStaticText)newQLRow[2]).TextAlignment = VirindiViewService.WriteTextFormats.Right;
                     ((HudStaticText)newQLRow[2]).Text = row["solveCount"].ToString();
                     ((HudStaticText)newQLRow[3]).Text = row["questKey"].ToString();
                 }
@@ -328,7 +334,9 @@ namespace UtilityBelt.Tools {
                 if (row["questType"].ToString() == "killTask") {
                     HudList.HudListRowAccessor newKTRow = UIMyKillTaskList.AddRow();
                     ((HudStaticText)newKTRow[0]).Text = row["friendlyName"].ToString();
+                    ((HudStaticText)newKTRow[1]).TextAlignment = VirindiViewService.WriteTextFormats.Right;
                     ((HudStaticText)newKTRow[1]).Text = row["solveCount"].ToString();
+                    ((HudStaticText)newKTRow[2]).TextAlignment = VirindiViewService.WriteTextFormats.Right;
                     ((HudStaticText)newKTRow[2]).Text = row["maxCompletions"].ToString();
                 }
             }
@@ -347,6 +355,7 @@ namespace UtilityBelt.Tools {
                         long nowEpoch = todayEpoch();
                         long availableOnEpoch = Convert.ToInt64(questData["repeatTime"].ToString());
 
+                        ((HudStaticText)UIMyQuestList[i][1]).TextAlignment = VirindiViewService.WriteTextFormats.Right;
                         ((HudStaticText)UIMyQuestList[i][1]).Text = GetFriendlyTimeDifference(availableOnEpoch - nowEpoch).ToString();
                     }
                 }

@@ -1,105 +1,112 @@
 <?xml version="1.0"?>
 <view icon="100" title="UtilityBelt" width="400" height="270">
-  <control progid="DecalControls.Notebook" name="Notebook">
-    <page label="Tools">
-      <control progid="DecalControls.Notebook" name="nbMain">
-        <page label="AutoSalvage">
-          <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.Checkbox" name="AutoSalvageThink" left="8" top="8" width="184" height="16" text="Think to yourself when finished"/>
-            <control progid="DecalControls.Checkbox" name="AutoSalvageDebug" left="8" top="32" width="184" height="16" text="Show Debug Messages"/>
-            <control progid="DecalControls.PushButton" name="AutoSalvageStart" left="5" top="195" width="110" height="20" text="Start"/>
-          </control>
-        </page>
-        <page label="AutoVendor">
-          <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.Checkbox" name="AutoVendorEnabled" left="8" top="8" width="184" height="16" text="Enable AutoVendor"/>
-            <control progid="DecalControls.Checkbox" name="AutoVendorTestMode" left="8" top="32" width="208" height="16" text="Test Mode"/>
-            <control progid="DecalControls.Checkbox" name="AutoVendorShowMerchantInfo" left="8" top="56" width="208" height="16" text="Show merchant info on approach"/>
-            <control progid="DecalControls.Slider" name="AutoVendorSpeed" left="232" top="24" width="208" height="16" minimum="0" maximum="22" textcolor="0" vertical="0"/>
-            <control progid="DecalControls.StaticText" name="AutoVendorSpeedLabel" left="328" top="0" width="72" height="24" text="Delay (ms)"/>
-            <control progid="DecalControls.Checkbox" name="AutoVendorThink" left="8" top="80" width="208" height="16" text="Think to yourself when finished"/>
-            <control progid="DecalControls.Checkbox" name="AutoVendorDebug" left="8" top="104" width="208" height="16" text="Show Debug Messages"/>
-            <control progid="DecalControls.StaticText" name="AutoVendorSpeedText" left="456" top="24" width="40" height="16" text="0"/>
-          </control>
-        </page>
-        <page label="InventoryManager">
-          <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.Checkbox" name="InventoryManagerAutoCram" left="8" top="8" width="400" height="16" text="Automatically cram items into side packs"/>
-            <control progid="DecalControls.Checkbox" name="InventoryManagerAutoStack" left="8" top="32" width="400" height="16" text="Automatically combine stacked items"/>
-            <control progid="DecalControls.Checkbox" name="InventoryManagerDebug" left="8" top="56" width="184" height="16" text="Show Debug Messages"/>
-            <control progid="DecalControls.PushButton" name="InventoryManagerTest" left="5" top="195" width="110" height="20" text="AutoStack"/>
-          </control>
-        </page>
-      </control>
-    </page>
-    
-    <page label="DungeonMaps">
-      <control progid="DecalControls.FixedLayout" clipped="">
-        <control progid="DecalControls.Checkbox" name="DungeonMapsEnabled" left="8" top="8" width="184" height="16" text="Enable Dungeon Maps"/>
-        <control progid="DecalControls.Checkbox" name="DungeonMapsDrawWhenClosed" left="8" top="32" width="208" height="16" text="Draw maps when window is closed"/>
-        <control progid="DecalControls.Slider" name="DungeonMapsOpacity" left="280" top="24" width="208" height="16" minimum="0" maximum="20" textcolor="0" vertical="0"/>
-        <control progid="DecalControls.StaticText" name="DungeonMapsOpacityLabel" left="280" top="8" width="200" height="16" justify="Center" text="Map Opacity"/>
-        <control progid="DecalControls.Checkbox" name="DungeonMapsDebug" left="8" top="56" width="208" height="16" text="Show Debug Messages"/>
-        <control progid="DecalControls.Checkbox" name="DungeonMapsShowVisitedTiles" left="8" top="80" width="208" height="16" text="Show visited tiles"/>
-        <control progid="DecalControls.PushButton" name="DungeonMapsClearTileCache" left="5" top="195" width="110" height="20" text="Clear Tile Cache"/>
-      </control>
-    </page>
+		<control progid="DecalControls.Notebook" name="Notebook">
+		<page label="Tools">
+			<control progid="DecalControls.Notebook" name="nbMain">
+			<page label="AutoSalvage">
+				<control progid="DecalControls.FixedLayout" clipped="">
+					<control progid="DecalControls.Checkbox" name="AutoSalvageThink" left="8" top="8" width="184" height="16" text="Think to yourself when finished"/>
+					<control progid="DecalControls.Checkbox" name="AutoSalvageDebug" left="8" top="32" width="184" height="16" text="Show Debug Messages"/>
+					<control progid="DecalControls.PushButton" name="AutoSalvageStart" left="8" top="184" width="110" height="20" text="Start"/>
+				</control>
 
-    <page label="EmuConfig">
-      <control progid="DecalControls.FixedLayout" clipped="">
-        <control progid="DecalControls.List" name="EmuConfigList" left="0" top="0" width="490" height="250">
-          <column progid="DecalControls.TextColumn" name="ConfigValue" fixedwidth="350" />
-          <column progid="DecalControls.CheckColumn" name="Enabled"/>
-        </control>
-      </control>
-    </page>
+			</page>
+			<page label="AutoVendor">
+				<control progid="DecalControls.FixedLayout" clipped="">
+					<control progid="DecalControls.Checkbox" name="AutoVendorEnabled" left="8" top="8" width="184" height="16" text="Enable AutoVendor"/>
+					<control progid="DecalControls.Checkbox" name="AutoVendorTestMode" left="8" top="32" width="208" height="16" text="Test Mode"/>
+					<control progid="DecalControls.Checkbox" name="AutoVendorShowMerchantInfo" left="8" top="56" width="208" height="16" text="Show merchant info on approach"/>
+					<control progid="DecalControls.Slider" name="AutoVendorSpeed" left="8" top="152" width="208" height="16" minimum="0" maximum="22" textcolor="0" vertical="0"/>
+					<control progid="DecalControls.StaticText" name="AutoVendorSpeedLabel" left="8" top="136" width="208" height="16" justify="Center" text="Delay (ms)"/>
+					<control progid="DecalControls.Checkbox" name="AutoVendorThink" left="8" top="80" width="208" height="16" text="Think to yourself when finished"/>
+					<control progid="DecalControls.Checkbox" name="AutoVendorDebug" left="8" top="104" width="208" height="16" text="Show Debug Messages"/>
+					<control progid="DecalControls.StaticText" name="AutoVendorSpeedText" left="456" top="24" width="40" height="16" text="0"/>
+				</control>
 
-    <page label="QuestTracker">
-      <control progid="DecalControls.Notebook" name="nbMain">
-        <page label="QuestTimers">
-          <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.StaticText" name="QuestsListFilterLabel" left="5" top="0" width="45" height="24" text="Search:"/>
-            <control progid="DecalControls.Edit" name="QuestsListFilter" left="48" top="0" width="176" height="16" text=""/>
-            <control progid="DecalControls.StaticText" name="QuestsListName" left="1" top="15" width="200" height="24" text="QuestName"/>
-            <control progid="DecalControls.StaticText" name="QuestsListRepeatTime" left="205" top="15" width="100" height="24" text="RepeatTime"/>
-            <control progid="DecalControls.StaticText" name="QuestsListSolveCount" left="291" top="15" width="80" height="24" text="SolveCount"/>
-            <control progid="DecalControls.List" name="myQuestList" left="0" top="30" width="370" height="160">
-              <column progid="DecalControls.TextColumn" name="Quest" fixedwidth="200" />
-              <column progid="DecalControls.TextColumn" name="repeatTime" fixedwidth="100" />
-              <column progid="DecalControls.TextColumn" name="solveCount" fixedwidth="80" />
-              <column progid="DecalControls.TextColumn" name="hiddenQuestKey" fixedwidth="0" />
-            </control>
-            <control progid="DecalControls.PushButton" name="PopulateQuestList" left="5" top="195" width="110" height="20" text="Refresh List" />
-          </control>
-        </page>
-        <page label="KillTasks">
-          <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.StaticText" name="QuestsListFilterLabel" left="5" top="0" width="45" height="24" text="Search:"/>
-            <control progid="DecalControls.Edit" name="QuestsKTListFilter" left="48" top="0" width="176" height="16" text=""/>
-            <control progid="DecalControls.StaticText" name="QuestsListName" left="1" top="15" width="200" height="24" text="QuestName"/>
-            <control progid="DecalControls.StaticText" name="QuestsListRepeatTime" left="205" top="15" width="100" height="24" text="Progress"/>
-            <control progid="DecalControls.StaticText" name="QuestsListSolveCount" left="280" top="15" width="80" height="24" text="Required"/>
-            <control progid="DecalControls.List" name="myKillTaskList" left="0" top="30" width="370" height="160">
-              <column progid="DecalControls.TextColumn" name="QuestName" fixedwidth="200"/>
-              <column progid="DecalControls.TextColumn" name="solveCountTest" fixedwidth="80"/>
-              <column progid="DecalControls.TextColumn" name="maxCompletionsTest" fixedwidth="80"/>
-            </control>
-            <control progid="DecalControls.PushButton" name="PopulateKillTaskList" left="5" top="195" width="110" height="20" text="Refresh List"/>
-          </control>
+			</page>
+			<page label="InventoryManager">
+				<control progid="DecalControls.FixedLayout" clipped="">
+					<control progid="DecalControls.Checkbox" name="InventoryManagerAutoCram" left="8" top="8" width="400" height="16" text="Automatically cram items into side packs (while vendoring)"/>
+					<control progid="DecalControls.Checkbox" name="InventoryManagerAutoStack" left="8" top="32" width="400" height="16" text="Automatically combine stacked items (while vendoring)"/>
+					<control progid="DecalControls.Checkbox" name="InventoryManagerDebug" left="8" top="56" width="184" height="16" text="Show Debug Messages"/>
+					<control progid="DecalControls.PushButton" name="InventoryManagerTest" left="8" top="184" width="110" height="20" text="AutoStack"/>
+				</control>
 
-        </page>
-        <page label="OneTimeQuests">
-          <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.StaticText" name="QuestsListFilterLabel" left="5" top="0" width="45" height="24" text="Search:"/>
-            <control progid="DecalControls.Edit" name="QuestsOTListFilter" left="48" top="0" width="176" height="16" text=""/>
-            <control progid="DecalControls.StaticText" name="QuestsListName" left="1" top="15" width="200" height="24" text="QuestName"/>
-            <control progid="DecalControls.List" name="myOneTimeList" left="0" top="30" width="370" height="160">
-              <column progid="DecalControls.TextColumn" name="Quest" fixedwidth="400"/>
-            </control>
-            <control progid="DecalControls.PushButton" name="PopulateOneTimeList" left="5" top="195" width="110" height="20" text="Refresh List"/>
-          </control>
-        </page>
-      </control>
-    </page>
-  </control>
+			</page>
+			</control>
+
+		</page>
+		<page label="DungeonMaps">
+			<control progid="DecalControls.FixedLayout" clipped="">
+				<control progid="DecalControls.Checkbox" name="DungeonMapsEnabled" left="8" top="8" width="184" height="16" text="Enable Dungeon Maps"/>
+				<control progid="DecalControls.Checkbox" name="DungeonMapsDrawWhenClosed" left="8" top="32" width="208" height="16" text="Draw maps when window is closed"/>
+				<control progid="DecalControls.Slider" name="DungeonMapsOpacity" left="8" top="152" width="208" height="16" minimum="0" maximum="20" textcolor="0" vertical="0"/>
+				<control progid="DecalControls.StaticText" name="DungeonMapsOpacityLabel" left="8" top="136" width="200" height="16" justify="Center" text="Map Opacity"/>
+				<control progid="DecalControls.Checkbox" name="DungeonMapsDebug" left="8" top="56" width="208" height="16" text="Show Debug Messages"/>
+				<control progid="DecalControls.Checkbox" name="DungeonMapsShowVisitedTiles" left="8" top="80" width="208" height="16" text="Show visited tiles"/>
+				<control progid="DecalControls.PushButton" name="DungeonMapsClearTileCache" left="8" top="200" width="110" height="20" text="Clear Tile Cache"/>
+			</control>
+
+		</page>
+		<page label="EmuConfig">
+			<control progid="DecalControls.FixedLayout" clipped="">
+				<control progid="DecalControls.List" name="EmuConfigList" left="0" top="0" width="490" height="250">
+					<column progid="DecalControls.TextColumn" name="ConfigValue" fixedwidth="350"/>
+					<column progid="DecalControls.CheckColumn" name="Enabled"/>
+				</control>
+			</control>
+
+		</page>
+		<page label="QuestTracker">
+			<control progid="DecalControls.Notebook" name="nbMain">
+			<page label="QuestTimers">
+				<control progid="DecalControls.FixedLayout" clipped="">
+					<control progid="DecalControls.StaticText" name="QuestsListFilterLabel" left="1" top="4" width="45" height="16" text="Search:"/>
+					<control progid="DecalControls.Edit" name="QuestsListFilter" left="48" top="4" width="176" height="16" imageportalsrc="4726" text=""/>
+					<control progid="DecalControls.StaticText" name="QuestsListName" left="1" top="24" width="200" height="17" text="QuestName"/>
+					<control progid="DecalControls.StaticText" name="QuestsListRepeatTime" left="280" top="24" width="67" height="17" justify="Right" text="RepeatTime"/>
+					<control progid="DecalControls.StaticText" name="QuestsListSolveCount" left="352" top="24" width="45" height="17" justify="Right" text="Solves"/>
+					<control progid="DecalControls.List" name="myQuestList" left="0" top="40" width="400" height="145">
+						<column progid="DecalControls.TextColumn" name="Quest" fixedwidth="240"/>
+						<column progid="DecalControls.TextColumn" name="repeatTime" fixedwidth="100"/>
+						<column progid="DecalControls.TextColumn" name="solveCount" fixedwidth="60"/>
+						<column progid="DecalControls.TextColumn" name="hiddenQuestKey"/>
+					</control>
+					<control progid="DecalControls.PushButton" name="PopulateQuestList" left="8" top="190" width="110" height="20" text="Refresh List"/>
+				</control>
+
+			</page>
+			<page label="KillTasks">
+				<control progid="DecalControls.FixedLayout" clipped="">
+					<control progid="DecalControls.StaticText" name="QuestsListFilterLabel" left="1" top="4" width="45" height="16" text="Search:"/>
+					<control progid="DecalControls.Edit" name="QuestsKTListFilter" left="48" top="4" width="176" height="16" imageportalsrc="4726" text=""/>
+					<control progid="DecalControls.StaticText" name="QuestsListName" left="1" top="24" width="200" height="24" text="QuestName"/>
+					<control progid="DecalControls.StaticText" name="QuestsListRepeatTime" left="272" top="24" width="60" height="16" justify="Right" text="Progress"/>
+					<control progid="DecalControls.StaticText" name="QuestsListSolveCount" left="336" top="24" width="60" height="16" justify="Right" text="Required"/>
+					<control progid="DecalControls.List" name="myKillTaskList" left="0" top="40" width="400" height="145">
+						<column progid="DecalControls.TextColumn" name="QuestName" fixedwidth="240"/>
+						<column progid="DecalControls.TextColumn" name="solveCountTest" fixedwidth="80"/>
+						<column progid="DecalControls.TextColumn" name="maxCompletionsTest" fixedwidth="80"/>
+					</control>
+					<control progid="DecalControls.PushButton" name="PopulateKillTaskList" left="8" top="190" width="110" height="20" text="Refresh List"/>
+				</control>
+
+			</page>
+			<page label="OneTimeQuests">
+				<control progid="DecalControls.FixedLayout" clipped="">
+					<control progid="DecalControls.StaticText" name="QuestsListFilterLabel" left="1" top="4" width="45" height="16" text="Search:"/>
+					<control progid="DecalControls.Edit" name="QuestsOTListFilter" left="48" top="4" width="176" height="16" imageportalsrc="4726" text=""/>
+					<control progid="DecalControls.StaticText" name="QuestsListName" left="1" top="24" width="200" height="24" text="QuestName"/>
+					<control progid="DecalControls.List" name="myOneTimeList" left="0" top="40" width="400" height="145">
+						<column progid="DecalControls.TextColumn" name="Quest" fixedwidth="400"/>
+					</control>
+					<control progid="DecalControls.PushButton" name="PopulateOneTimeList" left="8" top="190" width="110" height="20" text="Refresh List"/>
+				</control>
+
+			</page>
+			</control>
+
+		</page>
+		</control>
+
 </view>
