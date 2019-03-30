@@ -1,7 +1,7 @@
 ; Define your application name
 !define APPNAME "UtilityBelt"
 !define SOFTWARECOMPANY "SunnujDecalPlugins"
-!define VERSION	"0.0.1"
+!define VERSION	"0.0.2"
 !define APPGUID "{c51788b5-3c43-471a-8034-79d5865fd7bd}"
 
 !define ASSEMBLY "UtilityBelt.dll"
