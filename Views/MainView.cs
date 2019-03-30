@@ -21,6 +21,7 @@ namespace UtilityBelt.Views {
                 new Decal3XMLParser().ParseFromResource("UtilityBelt.Views.MainView.xml", out properties, out controls);
 
                 properties.Icon = GetIcon();
+                properties.Title = string.Format("{0} - v{1}", Globals.PluginName, Util.GetVersion());
 
                 view = new VirindiViewService.HudView(properties, controls);
             }

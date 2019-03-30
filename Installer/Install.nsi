@@ -1,13 +1,13 @@
 ; Define your application name
 !define APPNAME "UtilityBelt"
 !define SOFTWARECOMPANY "SunnujDecalPlugins"
-!define VERSION	"0.0.1"
+!define VERSION	"0.0.2"
 !define APPGUID "{c51788b5-3c43-471a-8034-79d5865fd7bd}"
 
 !define ASSEMBLY "UtilityBelt.dll"
 !define CLASSNAME "UtilityBelt.PluginCore"
 
-!define BUILDPATH "F:\projects\UtilityBelt\bin\x86\Release"
+!define BUILDPATH ".\..\bin\x86\Release"
 
 ; Main Install settings
 ; compressor goes first
@@ -52,6 +52,9 @@ Section "" CoreSection
 
 	SetOutPath "$INSTDIR\Resources\tiles"
 	File "${BUILDPATH}\Resources\tiles\*.bmp"
+	
+	SetOutPath "$INSTDIR\Resources\"
+	File "${BUILDPATH}\Resources\quests.xml"
 
 	SetOutPath "$INSTDIR\Resources\"
 	File "${BUILDPATH}\Resources\quests.xml"

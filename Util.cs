@@ -12,8 +12,24 @@ using System.Net;
 
 namespace UtilityBelt
 {
-	public static class Util
-	{
+	public static class Util {
+        public static string GetVersion() {
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+
+            if (assembly != null) {
+                var parts = assembly.GetName().Version.ToString().Split('.');
+                var version = "0.0.0";
+
+                if (parts.Length > 3) {
+                    version = string.Join(".", parts.Take(3).ToArray());
+                }
+
+                return version;
+            }
+
+            return "0.0.0";
+        }
+
         public static string GetPluginDirectory() {
             return Path.Combine(GetDecalPluginsDirectory(), Globals.PluginName);
         }
@@ -264,8 +280,7 @@ namespace UtilityBelt
 
         public static void LoadQuestLookupXML() {
             try {
-                //string filePath = Util.GetQTXMLPath() + @"\quests.xml";
-                string filePath = Path.Combine(Util.GetQTXMLPath(), "quests.xml");
+                string filePath = Path.Combine(GetQTXMLPath(), "quests.xml");
 
                 if (!File.Exists(filePath)) {
                     Util.WriteToChat("Unable to find lookup file: " + filePath);
