@@ -7,6 +7,12 @@
 - Fixed DungeonMaps debug setting ui display (was showing the value of DungeonMaps.Enabled on first load)
 - Better isDungeon detection on landcells
 - Fixed a few exceptions.
+- QuestTracker now shows quest timers in realtime (active countdown on ui)
+- AutoSalvage w/ force now salvages one item at a time (so vtank can combine properly)
+- QuestTracker now has the ability to look up quest keys in xml, for friendlier names
+- Updated dungeon map tiles
+- AutoSalvage no longer runs while a vendor is open
+- 
 
 ## 0.0.1 (2019-02-26)
 - Initial Release
