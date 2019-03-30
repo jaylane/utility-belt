@@ -7,7 +7,7 @@ UtilityBelt is a multipurpose decal plugin. Currently it has the following "modu
 - [QuestTracker](https://gitlab.com/trevis/utilitybelt/wikis/QuestTracker) - Shows quest timers on GDLE servers.
 
 ## Installation
-Download and run the installer: [UtilityBeltyInstaller-0.0.1.exe](https://gitlab.com/trevis/utilitybelt/uploads/cab22eca3752a8c6d09eb9f95b6906b9/UtilityBeltInstaller-0.0.1.exe)
+Download and run the installer: [UtilityBeltInstaller-0.0.2.exe](/uploads/c37e201894413fa61bc2397a10cc3af5/UtilityBeltInstaller-0.0.2.exe)
 
 ## Usage
 Check the [wiki](https://gitlab.com/trevis/utilitybelt/wikis/home) 
