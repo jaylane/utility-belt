@@ -107,37 +107,37 @@ namespace UtilityBelt.MagTools.Shared {
                     Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementForward"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
                     break;
                 case "upstrafeleft":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeLeft"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeLeft"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeLeft")) * 0x10000));
                     break;
                 case "upbackwardup":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementBackup"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementBackup"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementBackup")) * 0x10000));
                     break;
                 case "upstraferight":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeRight"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeRight"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeRight")) * 0x10000));
                     break;
-                case "downspace":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementJump"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
+                case "upspace":
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementJump"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementJump")) * 0x10000));
                     break;
-                case "downshift":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementWalkMode"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
+                case "upshift":
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)VK_SHIFT, (UIntPtr)0xC02A0001);
                     break;
                 case "downforward":
                     Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementForward"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
                     break;
                 case "downstrafeleft":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeLeft"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeLeft"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeLeft")) * 0x10000));
                     break;
                 case "downbackward":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementBackup"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementBackup"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementBackup")) * 0x10000));
                     break;
                 case "downstraferight":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeRight"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeRight"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeRight")) * 0x10000));
                     break;
-                case "upspace":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementJump"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
+                case "downspace":
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementJump"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementJump")) * 0x10000));
                     break;
-                case "upshift":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementWalkMode"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
+                case "downshift":
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)VK_SHIFT, (UIntPtr)0xC02A0001);
                     break;
                 default:
                     Util.WriteToChat("Can't find it");
@@ -152,19 +152,17 @@ namespace UtilityBelt.MagTools.Shared {
         public static void SendSpace(int msToHoldDown = 0, bool addShift = false, bool addW = false, bool addZ = false, bool addX = false, bool addC = false) {
             User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)VK_SPACE, (UIntPtr)0x00390001);
             if (msToHoldDown == 0) {
-                if (addShift) SendKeyBinding("downshift");  //User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)VK_SHIFT, (UIntPtr)0x002A0001);
-                if (addW) SendKeyBinding("downforward"); //User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementForward"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
-                //User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)CharCode('w'), (UIntPtr)0x00110001);
-                if (addZ) SendKeyBinding("downstrafeleft"); //User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)CharCode('z'), (UIntPtr)0x002C0001);
-                if (addX) SendKeyBinding("downbackward"); //ser32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)CharCode('x'), (UIntPtr)0x002D0001);
-                if (addC) SendKeyBinding("downstraferight");  //User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)CharCode('c'), (UIntPtr)0x002E0001);
+                if (addShift) SendKeyBinding("downshift");  
+                if (addW) SendKeyBinding("downforward"); 
+                if (addZ) SendKeyBinding("downstrafeleft"); 
+                if (addX) SendKeyBinding("downbackward"); 
+                if (addC) SendKeyBinding("downstraferight");
                 User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)VK_SPACE, (UIntPtr)0xC0390001);
-                if (addW) SendKeyBinding("upforward");  //User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementForward"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
-                //User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)CharCode('w'), (UIntPtr)0xC0110001);
-                if (addZ) SendKeyBinding("upstrafeleft");  //User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)CharCode('z'), (UIntPtr)0xC02C0001);
-                if (addX) SendKeyBinding("upbackward");  //User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)CharCode('x'), (UIntPtr)0xC02D0001);
-                if (addC) SendKeyBinding("upstraferight"); //User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)CharCode('c'), (UIntPtr)0xC02E0001);
-                if (addShift) SendKeyBinding("downshift");  //User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)VK_SHIFT, (UIntPtr)0xC02A0001);
+                if (addW) SendKeyBinding("upforward"); 
+                if (addZ) SendKeyBinding("upstrafeleft");
+                if (addX) SendKeyBinding("upbackward");
+                if (addC) SendKeyBinding("upstraferight");
+                if (addShift) SendKeyBinding("upshift");
             } else {
                 if (_spaceReleaseTimer == null) {
                     _spaceReleaseTimer = new Timer();
@@ -186,23 +184,17 @@ namespace UtilityBelt.MagTools.Shared {
         static void SpaceReleaseTimer_Tick(object sender, EventArgs e) {
             if (_spaceSendTime.AddMilliseconds(_spaceHoldTimeMilliseconds) <= DateTime.UtcNow) {
                 _spaceReleaseTimer.Stop();
-                if (_spaceAddShift) User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)VK_SHIFT, (UIntPtr)0x002A0001);
-                if (_spaceAddW) User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementForward"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
-                //User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)CharCode('w'), (UIntPtr)0x00110001);
-                if (_spaceAddZ) User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementForward"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
-                if (_spaceAddX) User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)CharCode('x'), (UIntPtr)0x002D0001);
-                if (_spaceAddC) User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)CharCode('c'), (UIntPtr)0x002E0001);
+                if (_spaceAddShift) SendKeyBinding("downshift");
+                if (_spaceAddW) SendKeyBinding("downforward"); 
+                if (_spaceAddZ) SendKeyBinding("downstrafeleft"); 
+                if (_spaceAddX) SendKeyBinding("downbackward"); 
+                if (_spaceAddC) SendKeyBinding("downstraferight");
                 User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)VK_SPACE, (UIntPtr)0xC0390001);
-                if (_spaceAddW) User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementForward"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
-                //User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)CharCode('w'), (UIntPtr)0xC0110001);
-                if (_spaceAddZ) User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)CharCode('z'), (UIntPtr)0xC02C0001);
-                if (_spaceAddX) User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)CharCode('x'), (UIntPtr)0xC02D0001);
-                if (_spaceAddC) User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)CharCode('c'), (UIntPtr)0xC02E0001);
-                if (_spaceAddShift) User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)VK_SHIFT, (UIntPtr)0xC02A0001);
-                //User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)CharCode((char)Globals.Host.GetKeyboardMapping("MovementForward")), (UIntPtr)(0xC0000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("1")) * 0x10000));
-                //if (_spaceAddShift) User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)VK_SHIFT, (UIntPtr)0xC02A0001);
-                //if (_spaceAddShift) SendMovement((char)Globals.Host.GetKeyboardMapping("1"));
-                //    User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)CharCode((char)Globals.Host.GetKeyboardMapping("1")), (UIntPtr)(0xC0000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("1")) * 0x10000));
+                if (_spaceAddW) SendKeyBinding("upforward");
+                if (_spaceAddZ) SendKeyBinding("upstrafeleft");
+                if (_spaceAddX) SendKeyBinding("upbackward");
+                if (_spaceAddC) SendKeyBinding("upstraferight");
+                if (_spaceAddShift) SendKeyBinding("upshift");
             }
         }
 
