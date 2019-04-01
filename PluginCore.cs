@@ -74,6 +74,8 @@ namespace UtilityBelt
                 if (autoSalvage != null) autoSalvage.Think();
                 if (Globals.AutoVendor != null) Globals.AutoVendor.Think();
                 if (dungeonMaps != null) dungeonMaps.Think();
+                if (jumper != null) jumper.Think();
+
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Think();
             }
             catch (Exception ex) { Logger.LogException(ex); }
