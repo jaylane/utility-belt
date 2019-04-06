@@ -14,6 +14,7 @@ Check the [wiki](https://gitlab.com/trevis/utilitybelt/wikis/home)
 
 ## Known Issues
 * VirindiHotkeySystem will throw an error when changing emuconfig options. (If you don't use VHS just disable it in decal)
+* Requires vtank to be installed (for autosalvage and autovendor, todo: make if fail gracefully)
 
 ## Contributors
 * Harli
