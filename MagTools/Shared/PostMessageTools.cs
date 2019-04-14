@@ -109,7 +109,7 @@ namespace UtilityBelt.MagTools.Shared {
                 case "upstrafeleft":
                     Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeLeft"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeLeft")) * 0x10000));
                     break;
-                case "upbackwardup":
+                case "upbackward":
                     Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementBackup"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementBackup")) * 0x10000));
                     break;
                 case "upstraferight":
