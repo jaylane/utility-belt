@@ -115,6 +115,7 @@ namespace UtilityBelt.Tools {
             try {
                 Directory.CreateDirectory(Path.Combine(Util.GetPluginDirectory(), "autovendor"));
                 Directory.CreateDirectory(Path.Combine(Util.GetCharacterDirectory(), @"autovendor"));
+                Directory.CreateDirectory(Path.Combine(Util.GetServerDirectory(), @"autovendor"));
 
                 UIAutoVendorSpeedText = Globals.MainView.view != null ? (HudStaticText)Globals.MainView.view["AutoVendorSpeedText"] : new HudStaticText();
                 UIAutoVendorSpeedText.Text = Globals.Config.AutoVendor.Speed.Value.ToString();
@@ -267,17 +268,21 @@ namespace UtilityBelt.Tools {
         private string GetProfilePath(string profileName) {
             var charPath = Path.Combine(Util.GetCharacterDirectory(), "autovendor");
             var mainPath = Path.Combine(Util.GetPluginDirectory(), "autovendor");
+            var serverPath = Path.Combine(Util.GetServerDirectory(), "autovendor");
+            Util.WriteToChat(serverPath);
 
             if (File.Exists(Path.Combine(charPath, profileName))) {
                 return Path.Combine(charPath, profileName);
-            }
-            else if (File.Exists(Path.Combine(mainPath, profileName))) {
+            } else if (File.Exists(Path.Combine(serverPath, profileName))) {
+                return Path.Combine(serverPath, profileName);
+            } else if (File.Exists(Path.Combine(mainPath, profileName))) {
                 return Path.Combine(mainPath, profileName);
             }
             else if (File.Exists(Path.Combine(charPath, "default.utl"))) {
                 return Path.Combine(charPath, "default.utl");
-            }
-            else if (File.Exists(Path.Combine(mainPath, "default.utl"))) {
+            } else if (File.Exists(Path.Combine(serverPath, "default.utl"))) {
+                return Path.Combine(serverPath, "default.utl");
+            } else if (File.Exists(Path.Combine(mainPath, "default.utl"))) {
                 return Path.Combine(mainPath, "default.utl");
             }
 

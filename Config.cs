@@ -78,7 +78,7 @@ namespace UtilityBelt {
                 }
             }
         }
-
+        
         public class AutoVendorConfig : IDisposable {
             public Setting<bool> Enabled;
             public Setting<bool> TestMode;

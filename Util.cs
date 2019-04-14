@@ -44,6 +44,10 @@ namespace UtilityBelt
             return path;
         }
 
+        public static string GetServerDirectory() {
+            return Path.Combine(GetPluginDirectory(), Globals.Core.CharacterFilter.Server);
+        }
+
         private static string GetLogDirectory() {
             return Path.Combine(GetCharacterDirectory(), "logs");
         }

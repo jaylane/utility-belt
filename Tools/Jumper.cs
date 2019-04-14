@@ -63,7 +63,6 @@ namespace UtilityBelt.Tools {
             }
         }
 
-
         private static readonly Regex directionFace = new Regex(@"/ub face ");
         private static readonly Regex jumpRegex = new Regex(@"/ub (?<faceDirection>\d+)? ?(?<shift>s)?jump(?<jumpDirection>[wzxc]?) (?<msToHoldDown>\d+)?");
         //Regex(@"\/ub ?(face )?(\d+)?( (s)jump(w|z|x|c))?( \d+)");
@@ -96,8 +95,6 @@ namespace UtilityBelt.Tools {
                         Util.WriteToChat(msToHoldDown.ToString() + " is out of range 0-1000");
                         return;
                     }
-
-
 
                     //set jump direction
                         jumpDirection = jumpMatch.Groups["jumpDirection"].Value.ToLower();
