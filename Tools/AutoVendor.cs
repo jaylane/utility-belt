@@ -65,8 +65,7 @@ namespace UtilityBelt.Tools {
         public static void AddVendor(Vendor vendor) {
             if (Vendors.ContainsKey(vendor.MerchantId)) {
                 Vendors[vendor.MerchantId] = new VendorInfo(vendor);
-            }
-            else {
+            } else {
                 Vendors.Add(vendor.MerchantId, new VendorInfo(vendor));
             }
         }
@@ -87,7 +86,7 @@ namespace UtilityBelt.Tools {
         private DateTime firstThought = DateTime.MinValue;
         private DateTime lastThought = DateTime.MinValue;
         private DateTime startedVendoring = DateTime.MinValue;
-        
+
         private bool disposed;
         private int AutoVendorTimeout = 60; // in seconds
 
@@ -115,6 +114,7 @@ namespace UtilityBelt.Tools {
             try {
                 Directory.CreateDirectory(Path.Combine(Util.GetPluginDirectory(), "autovendor"));
                 Directory.CreateDirectory(Path.Combine(Util.GetCharacterDirectory(), @"autovendor"));
+                Directory.CreateDirectory(Path.Combine(Util.GetServerDirectory(), @"autovendor"));
 
                 UIAutoVendorSpeedText = Globals.MainView.view != null ? (HudStaticText)Globals.MainView.view["AutoVendorSpeedText"] : new HudStaticText();
                 UIAutoVendorSpeedText.Text = Globals.Config.AutoVendor.Speed.Value.ToString();
@@ -152,8 +152,7 @@ namespace UtilityBelt.Tools {
                 Globals.Core.WorldFilter.ApproachVendor += WorldFilter_ApproachVendor;
                 Globals.Core.CommandLineText += Current_CommandLineText;
                 Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+            } catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UIAutoVendorEnable_Change(object sender, EventArgs e) {
@@ -224,13 +223,12 @@ namespace UtilityBelt.Tools {
                 if (needsVendoring && vendorId == e.Vendor.MerchantId) return;
 
                 if (Globals.Config.AutoVendor.ShowMerchantInfo.Value == true) {
-                    Util.WriteToChat(string.Format("{0}: BuyRate: {1}% SellRate: {2}% MaxValue: {3:n0}", 
+                    Util.WriteToChat(string.Format("{0}: BuyRate: {1}% SellRate: {2}% MaxValue: {3:n0}",
                         Globals.Core.WorldFilter[e.Vendor.MerchantId].Name, e.Vendor.BuyRate * 100, e.Vendor.SellRate * 100, e.Vendor.MaxValue));
                 }
 
                 Start(e.Vendor.MerchantId);
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+            } catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
@@ -243,8 +241,7 @@ namespace UtilityBelt.Tools {
 
                     return;
                 }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+            } catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
@@ -260,24 +257,25 @@ namespace UtilityBelt.Tools {
                 if (shouldStack && e.New.Values(LongValueKey.StackMax, 1) > 1) {
                     lastThought = DateTime.UtcNow;
                 }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+            } catch (Exception ex) { Logger.LogException(ex); }
         }
-        
+
         private string GetProfilePath(string profileName) {
             var charPath = Path.Combine(Util.GetCharacterDirectory(), "autovendor");
             var mainPath = Path.Combine(Util.GetPluginDirectory(), "autovendor");
+            var serverPath = Path.Combine(Util.GetServerDirectory(), "autovendor");
 
             if (File.Exists(Path.Combine(charPath, profileName))) {
                 return Path.Combine(charPath, profileName);
-            }
-            else if (File.Exists(Path.Combine(mainPath, profileName))) {
+            } else if (File.Exists(Path.Combine(serverPath, profileName))) {
+                return Path.Combine(serverPath, profileName);
+            } else if (File.Exists(Path.Combine(mainPath, profileName))) {
                 return Path.Combine(mainPath, profileName);
-            }
-            else if (File.Exists(Path.Combine(charPath, "default.utl"))) {
+            } else if (File.Exists(Path.Combine(charPath, "default.utl"))) {
                 return Path.Combine(charPath, "default.utl");
-            }
-            else if (File.Exists(Path.Combine(mainPath, "default.utl"))) {
+            } else if (File.Exists(Path.Combine(serverPath, "default.utl"))) {
+                return Path.Combine(serverPath, "default.utl");
+            } else if (File.Exists(Path.Combine(mainPath, "default.utl"))) {
                 return Path.Combine(mainPath, "default.utl");
             }
 
@@ -290,8 +288,7 @@ namespace UtilityBelt.Tools {
                 try {
                     lootProfile = new VTClassic.LootCore();
                     hasLootCore = true;
-                }
-                catch (Exception ex) { Logger.LogException(ex); }
+                } catch (Exception ex) { Logger.LogException(ex); }
 
                 if (!hasLootCore) {
                     Util.WriteToChat("Unable to load VTClassic, something went wrong.");
@@ -350,8 +347,7 @@ namespace UtilityBelt.Tools {
             if (!silent) {
                 if (Globals.Config.AutoVendor.Think.Value == true) {
                     Util.Think("AutoVendor finished: " + vendorName);
-                }
-                else {
+                } else {
                     Util.WriteToChat("AutoVendor finished: " + vendorName);
                 }
             }
@@ -375,7 +371,7 @@ namespace UtilityBelt.Tools {
 
                 if (DateTime.UtcNow - lastThought >= thinkInterval && DateTime.UtcNow - startedVendoring >= thinkInterval) {
                     lastThought = DateTime.UtcNow;
-                    
+
                     if (needsVendoring && waitingForIds) {
                         if (Assessor.NeedsInventoryData()) {
                             if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(10)) {
@@ -389,8 +385,7 @@ namespace UtilityBelt.Tools {
 
                             // waiting
                             return;
-                        }
-                        else {
+                        } else {
                             waitingForIds = false;
                         }
                     }
@@ -432,13 +427,11 @@ namespace UtilityBelt.Tools {
                             needsToBuy = false;
                             shouldStack = true;
                             Globals.Core.Actions.VendorBuyAll();
-                        }
-                        else if (needsToSell) {
+                        } else if (needsToSell) {
                             needsToSell = false;
                             shouldStack = false;
                             Globals.Core.Actions.VendorSellAll();
-                        }
-                        else {
+                        } else {
                             DoVendoring();
                         }
                     }
@@ -447,8 +440,7 @@ namespace UtilityBelt.Tools {
                         Stop();
                     }
                 }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+            } catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void DoVendoring() {
@@ -495,8 +487,7 @@ namespace UtilityBelt.Tools {
                         if (Globals.Config.AutoVendor.Debug.Value == true) {
                             Util.WriteToChat(string.Format("AutoVendor Buying {0} {1} - {2}/{3}", buyCount, buyItem.Item.Name, totalBuyPyreals, Util.PyrealCount()));
                         }
-                    }
-                    else if (totalBuyCount > 0) {
+                    } else if (totalBuyCount > 0) {
                         needsToBuy = true;
                         return;
                     }
@@ -573,7 +564,7 @@ namespace UtilityBelt.Tools {
                             // we include an extra PYREAL_STACK_SIZE because we know we are going to split this item
                             if (!PyrealsWillFitInMainPack((int)PYREAL_STACK_SIZE + totalSellValue + (value * (stackCount)))) {
                                 Globals.Core.Actions.SelectItem(item.Id);
-                                Globals.Core.Actions.SelectedStackCount = stackCount > 1 ? stackCount-1 : 1;
+                                Globals.Core.Actions.SelectedStackCount = stackCount > 1 ? stackCount - 1 : 1;
                                 Globals.Core.Actions.MoveItem(item.Id, Globals.Core.CharacterFilter.Id, 0, false);
 
                                 if (Globals.Config.AutoVendor.Debug.Value == true) {
@@ -587,8 +578,7 @@ namespace UtilityBelt.Tools {
 
                             ++stackCount;
                         }
-                    }
-                    else {
+                    } else {
                         stackCount = item.Values(LongValueKey.StackCount, 1);
                     }
 
@@ -613,8 +603,7 @@ namespace UtilityBelt.Tools {
                 }
 
                 Stop();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+            } catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private int GetVendorSellPrice(VendorItem item) {
@@ -629,8 +618,7 @@ namespace UtilityBelt.Tools {
                 if (item.ObjectClass == ObjectClass.TradeNote) sellRate = 1.15;
 
                 price = (int)Math.Ceiling((item.Value / item.StackCount) * sellRate);
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+            } catch (Exception ex) { Logger.LogException(ex); }
 
             return price;
         }
@@ -647,8 +635,7 @@ namespace UtilityBelt.Tools {
                 if (wo.ObjectClass == ObjectClass.TradeNote) buyRate = 1;
 
                 price = (int)Math.Floor((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * buyRate);
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+            } catch (Exception ex) { Logger.LogException(ex); }
 
             return price;
         }
@@ -704,7 +691,7 @@ namespace UtilityBelt.Tools {
                 uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
 
                 if (!result.IsKeep) continue;
-                
+
                 buyItems.Add(new BuyItem(item, MAX_VENDOR_BUY_COUNT));
             }
 
@@ -730,10 +717,10 @@ namespace UtilityBelt.Tools {
 
                 if (!result.IsSell)
                     continue;
-                
+
                 // too expensive for this vendor
-                if (vendor.MaxValue < (wo.Values(LongValueKey.Value, 0)/wo.Values(LongValueKey.StackCount,1)) && wo.ObjectClass != ObjectClass.TradeNote) continue;
-                
+                if (vendor.MaxValue < (wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) && wo.ObjectClass != ObjectClass.TradeNote) continue;
+
                 // will vendor buy this item?
                 if (wo.ObjectClass != ObjectClass.TradeNote && (vendor.Categories & wo.Category) == 0) {
                     continue;
@@ -788,7 +775,7 @@ namespace UtilityBelt.Tools {
                 uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
 
                 if (result.IsKeepUpTo || result.IsKeep) {
-                    Util.WriteToChat(string.Format("  {0} * {1} - {2}", bi.Item.Name, bi.Amount==5000 ? "∞" : bi.Amount.ToString(), result.RuleName));
+                    Util.WriteToChat(string.Format("  {0} * {1} - {2}", bi.Item.Name, bi.Amount == 5000 ? "∞" : bi.Amount.ToString(), result.RuleName));
                 }
             }
 
@@ -798,7 +785,7 @@ namespace UtilityBelt.Tools {
                 uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(wo.Id);
 
                 if (itemInfo == null) continue;
-                
+
                 uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
 
                 if (result.IsSell) {
@@ -814,8 +801,7 @@ namespace UtilityBelt.Tools {
                 if (Globals.Core.Actions.VendorId == 0) return false;
 
                 hasVendorOpen = true;
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+            } catch (Exception ex) { Logger.LogException(ex); }
 
             return hasVendorOpen;
         }

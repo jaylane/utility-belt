@@ -38,6 +38,10 @@ namespace UtilityBelt
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins");
         }
 
+        public static string GetServerDirectory() {
+            return Path.Combine(GetPluginDirectory(), Globals.Core.CharacterFilter.Server);
+        }
+
         public static string GetCharacterDirectory() {
             String path = Path.Combine(GetPluginDirectory(), Globals.Core.CharacterFilter.Server);
             path = Path.Combine(path, Globals.Core.CharacterFilter.Name);
