@@ -1,15 +1,6 @@
 ﻿using Decal.Adapter.Wrappers;
 using Decal.Adapter;
-using Decal.Filters;
 using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Xml;
-using System.Linq;
-using System.Net;
 
 namespace UtilityBelt.Tools {
     class Counter : IDisposable {
@@ -26,6 +17,7 @@ namespace UtilityBelt.Tools {
             try {
                 if (e.Text.StartsWith("/ub count")) {
                     string item = e.Text.Replace("/ub count ", "").Trim();
+                    e.Eat = true;
                     int stackCount = 0;
                     int totalStackCount = 0;
                     foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetInventory()) {

@@ -705,7 +705,7 @@ namespace UtilityBelt.Tools {
             if (vendor == null) return sellObjects;
 
             foreach (WorldObject wo in Globals.Core.WorldFilter.GetInventory()) {
-                if (!Util.ItemIsSafeToGetRidOf(wo) || !ItemIsSafeToGetRidOf(wo)) continue;
+                if (!Util.ItemIsSafeToGetRidOf(wo)) continue;
 
                 if (wo.Values(LongValueKey.Value, 0) <= 0) continue;
 

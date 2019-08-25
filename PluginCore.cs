@@ -19,6 +19,7 @@ namespace UtilityBelt
         private EmuConfig emuConfig;
         private QuestTracker questTracker;
         private Counter counter;
+        private ItemGiver itemGiver;
         private DateTime lastThought = DateTime.MinValue;
 
         /// <summary>
@@ -63,6 +64,7 @@ namespace UtilityBelt
                 emuConfig = new EmuConfig();
                 questTracker = new QuestTracker();
                 counter = new Counter();
+                itemGiver = new ItemGiver();
 
                 Globals.Core.RenderFrame += Core_RenderFrame;
             }
@@ -73,6 +75,7 @@ namespace UtilityBelt
             try {
                 if (autoSalvage != null) autoSalvage.Think();
                 if (Globals.AutoVendor != null) Globals.AutoVendor.Think();
+                if (itemGiver != null) itemGiver.Think();
                 if (dungeonMaps != null) dungeonMaps.Think();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Think();
             }
@@ -90,6 +93,7 @@ namespace UtilityBelt
                 if (emuConfig != null) emuConfig.Dispose();
                 if (questTracker != null) questTracker.Dispose();
                 if (counter != null) counter.Dispose();
+                if (itemGiver != null) itemGiver.Dispose();
                 if (Globals.AutoVendor != null) Globals.AutoVendor.Dispose();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();
                 if (Globals.MapView != null) Globals.MapView.Dispose();
