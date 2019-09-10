@@ -11,7 +11,7 @@ namespace UtilityBelt.Tools {
     class ItemGiver : IDisposable {
 
         private bool isRunning = false;
-        private WorldObject currentItem;
+        private WorldObject currentItem = null;
 
         List<WorldObject> inventoryItems = new List<WorldObject>();
         List<int> blacklistedItems = new List<int>();
@@ -311,11 +311,12 @@ namespace UtilityBelt.Tools {
 
         void Current_TargetObjectChange(object sender, ChangeObjectEventArgs e) {
             try {
+                WorldObject wo = e.Changed;
                 //Util.WriteToChat("TargetChange: " + e.Changed.Id);
                 //Util.WriteToChat("TargetItem: " + currentItem.Id);
-                newContainer = e.Changed.Values(LongValueKey.Container);
-                if (e.Changed.Id == currentItem.Id && isDroppingBuggedItems) {
-                    if (currentItem.Values(LongValueKey.Container) == 0) {
+                newContainer = wo.Values(LongValueKey.Container);
+                if (wo != null && currentItem != null && wo.Id == currentItem.Id) {
+                    if (currentItem.Values(LongValueKey.Container) == 0 && isDroppingBuggedItems) {
                         droppedItem = true;
                         buggedItems.Remove(currentItem);
                         droppedItems.Add(currentItem);
