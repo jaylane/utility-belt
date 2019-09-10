@@ -5,6 +5,7 @@ using Decal.Adapter;
 using Decal.Adapter.Wrappers;
 using System.Text.RegularExpressions;
 using System.Linq;
+using UtilityBelt.Constants;
 
 namespace UtilityBelt.Tools {
     class ItemGiver : IDisposable {
@@ -17,13 +18,17 @@ namespace UtilityBelt.Tools {
         List<WorldObject> giveObjects = new List<WorldObject>();
         List<WorldObject> givenItems = new List<WorldObject>();
         List<WorldObject> idItems = new List<WorldObject>();
+        List<WorldObject> buggedItems = new List<WorldObject>();
+        List<WorldObject> droppedItems = new List<WorldObject>();
         private DateTime lastThought = DateTime.MinValue;
         private DateTime lastScanUpdate = DateTime.MinValue;
         private DateTime lastAction = DateTime.MinValue;
+        private DateTime lastDrop = DateTime.MinValue;
         private bool disposed = false;
         bool doneScanning = false;
         private int destinationId;
         bool waitingForIds = false;
+        bool isDroppingBuggedItems = false;
 
         private bool needsGiving = false;
         private object lootProfile;
@@ -35,8 +40,12 @@ namespace UtilityBelt.Tools {
         private int giveSpeed = 300;
         int failedItems = 0;
         bool gaveItem = false;
+        bool droppedItem = false;
         private DateTime stopGive;
         private DateTime startGive;
+        int currentContainer;
+        int newContainer;
+
 
         public ItemGiver() {
             try {
@@ -46,77 +55,119 @@ namespace UtilityBelt.Tools {
                 CoreManager.Current.CommandLineText += new EventHandler<ChatParserInterceptEventArgs>(Current_CommandLineText);
                 Globals.Core.ChatBoxMessage += new EventHandler<ChatTextInterceptEventArgs>(Current_ChatBoxMessage);
                 Globals.Core.CharacterFilter.ChangePortalMode += new EventHandler<ChangePortalModeEventArgs>(WorldFilter_PortalChange);
-                lastThought = DateTime.UtcNow;
+                CoreManager.Current.WorldFilter.ChangeObject += new EventHandler<ChangeObjectEventArgs>(Current_TargetObjectChange);
+                lastThought = DateTime.Now;
             } catch (Exception ex) { Logger.LogException(ex); }
         }
 
 
         public void Think() {
-            if (DateTime.UtcNow - lastScanUpdate > TimeSpan.FromSeconds(10) && idItems.Count > 0 ) {
-                lastScanUpdate = DateTime.UtcNow;
-                Util.WriteToChat("Items remaining to ID: " + idItems.Count());
+            try {
+                if (DateTime.Now - lastScanUpdate > TimeSpan.FromSeconds(10) && idItems.Count > 0) {
+                    lastScanUpdate = DateTime.Now;
+                    Util.WriteToChat("Items remaining to ID: " + idItems.Count());
+                }
 
+                if (DateTime.Now - lastAction > TimeSpan.FromSeconds(30)) {
+                    lastAction = DateTime.Now;
+                    //Util.WriteToChat("Appears to be hung, restarting...");
+                    //if (isRunning) Stop();
+                }
 
-            }
-            
+                if (DateTime.Now - lastDrop > TimeSpan.FromMilliseconds(2000) && isDroppingBuggedItems) {
+                    currentContainer = 0;
+                    newContainer = 0;
+                    lastDrop = DateTime.Now;
+                    //Util.WriteToChat("made it to thinking about dropping");
 
-            if (DateTime.UtcNow - lastThought > TimeSpan.FromMilliseconds(giveSpeed) && needsGiving) {
-                lastThought = DateTime.UtcNow;
+                    if (isDroppingBuggedItems) {
+                        buggedItems = GetDropItems();
 
-                if (isRunning ) {
-                    giveObjects = GetGiveItems();
+                        foreach (WorldObject item in buggedItems) {
+                            currentItem = item;
+                            currentContainer = item.Values(LongValueKey.Container);
+                            Util.WriteToChat("Dropping items: " + Util.GetObjectName(item.Id) + " ------- Container: " + currentContainer.ToString() + " ------- ID: " + item.Id);
 
-                    foreach (WorldObject item in giveObjects) {
-                        currentItem = item;
-                        if (playerDistance > 5 || !needsGiving) {
-                            Stop();
-                            Util.WriteToChat("player is too far away");
+                            if (!string.IsNullOrEmpty(item.Name) && CoreManager.Current.Actions.BusyState == 0 && !droppedItem  && item.Values(LongValueKey.Container) != 0) {
+
+                                //CoreManager.Current.Actions.SelectItem(item.Id);
+                                CoreManager.Current.Actions.DropItem(item.Id);
+                            }
                             return;
                         }
+                        if (buggedItems.Count == 0 && idItems.Count == 0) {
+                            Stop();
+                        }
+                        if (buggedItems.Count > 0) {
+                            Util.WriteToChat("reached end of list... restarting at top");
+                            return;
+                        }
+                    }
+                }
+            
 
-                        //if (!item.HasIdData) return;
 
-                            if (!string.IsNullOrEmpty(item.Name) && !gaveItem) {
-                                retryCount++;
-                                CoreManager.Current.Actions.GiveItem(item.Id, destinationId);
-                                if (retryCount > 10) {
-                                    giveObjects.Remove(item);
-                                    Util.WriteToChat("unable to give " + item.Name + " skipping....");
-                                    failedItems++;
-                                    retryCount = 0;
-                                }
-                            if (failedItems > 3) Stop();
+
+                if (DateTime.Now - lastThought > TimeSpan.FromMilliseconds(giveSpeed) && needsGiving && !isDroppingBuggedItems) {
+                    lastThought = DateTime.Now;
+
+                    if (isRunning) {
+                        giveObjects = GetGiveItems();
+
+                        foreach (WorldObject item in giveObjects) {
+                            currentItem = item;
+                            if (playerDistance > 5 || !needsGiving) {
+                                Stop();
+                                Util.WriteToChat("player is too far away");
                                 return;
                             }
 
+                            //if (!item.HasIdData) return;
+
+                                if (!string.IsNullOrEmpty(item.Name) && !gaveItem) {
+                                    retryCount++;
+                                    CoreManager.Current.Actions.GiveItem(item.Id, destinationId);
+                                    if (retryCount > 10) {
+                                        giveObjects.Remove(item);
+                                        Util.WriteToChat("unable to give " + Util.GetObjectName(item.Id));
+                                        failedItems++;
+                                        retryCount = 0;
+                                    }
+                                if (failedItems > 3) Stop();
+                                    return;
+                                }
+                                return;
+                            }
+                        //Util.WriteToChat("giveObjects count left: " + giveObjects.Count);
+                        //Util.WriteToChat("idObjects count left: " + idItems.Count);
+
+                        if (giveObjects.Count == 0 && idItems.Count == 0) {
+                            Stop();
+                        }
+
+                        if (giveObjects.Count > 0) {
+                            Util.WriteToChat("reached end of list... restarting at top");
                             return;
                         }
-                    //Util.WriteToChat("giveObjects count left: " + giveObjects.Count);
-                    //Util.WriteToChat("idObjects count left: " + idItems.Count);
-
-                    if (giveObjects.Count == 0 && idItems.Count == 0) {
+                    }
+                    else {
                         Stop();
                     }
-
-                    if (giveObjects.Count > 0) {
-                        Util.WriteToChat("reached end of list... restarting at top");
-                        return;
-                    }
                 }
-                else {
-                    Stop();
-                }
-            }
+            } catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        public static WorldObject GetLandscapeObject(string objectName) {
-            WorldObject landscapeObject = null;
 
-            foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetLandscape()){
-                if (wo.Name == objectName) {
-                    landscapeObject = wo;
+        public static WorldObject GetLandscapeObject(string objectName) {
+                WorldObject landscapeObject = null;
+            try {
+
+                foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetLandscape()) {
+                    if (wo.Name == objectName) {
+                        landscapeObject = wo;
+                    }
                 }
-            }
+            } catch (Exception ex) { Logger.LogException(ex); }
             return landscapeObject;
         }
 
@@ -157,12 +208,25 @@ namespace UtilityBelt.Tools {
                     GetInventory();
                     e.Eat = true;
                 }
-                if (giveMatch.Success) {
+                if (e.Text.StartsWith("/ub drop ")) {
+                    CoreManager.Current.Actions.DropItem(CoreManager.Current.Actions.CurrentSelection);
+                    e.Eat = true;
+                }
+                if (e.Text.StartsWith("/ub getstate")) {
+                    Util.WriteToChat("Current State: " + CoreManager.Current.Actions.BusyState);
+                    e.Eat = true;
+                }
+                if (e.Text.StartsWith("/ub dropbuggeditems")) {
+                    e.Eat = true;
+                    isDroppingBuggedItems = true;
+                    Start();
+                }
+                if (giveMatch.Success && !isRunning) {
                     utlProfile = giveMatch.Groups["utlProfile"].Value.Trim();
                     targetPlayer = giveMatch.Groups["targetPlayer"].Value.Trim();
                     destinationId = FindPlayerID(targetPlayer);
                     playerDistance = CoreManager.Current.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, destinationId) * 240;
-                        e.Eat = true;
+                    e.Eat = true;
 
 
                     if (targetPlayer == CoreManager.Current.CharacterFilter.Name) {
@@ -170,9 +234,9 @@ namespace UtilityBelt.Tools {
                         return;
                     }
 
-                        string giveSpeedStr = giveMatch.Groups["giveSpeed"].Value.Trim();
-                    
-                    if(Int32.TryParse(giveSpeedStr,out int result) && !(string.IsNullOrEmpty(giveSpeedStr))) {
+                    string giveSpeedStr = giveMatch.Groups["giveSpeed"].Value.Trim();
+
+                    if (Int32.TryParse(giveSpeedStr, out int result) && !(string.IsNullOrEmpty(giveSpeedStr))) {
                         giveSpeed = int.Parse(giveSpeedStr);
                     }
 
@@ -183,17 +247,16 @@ namespace UtilityBelt.Tools {
                     }
 
                     Util.WriteToChat(utlProfile);
-                    
+
                     var pluginPath = Path.Combine(Util.GetPluginDirectory(), @"itemgiver");
                     var profilePath = Path.Combine(pluginPath, utlProfile);
                     Util.WriteToChat(profilePath.ToString());
 
-                    if (!File.Exists(profilePath))
-                        {
+                    if (!File.Exists(profilePath)) {
                         Util.WriteToChat("utl path: " + profilePath);
                         Util.WriteToChat("Profile does not exist: " + utlProfile.ToString());
                         return;
-                        }
+                    }
 
                     //C:\Users\Caleb\Documents\Decal Plugins\UtilityBelt\itemgiver\Electric Weapons.utl
 
@@ -211,21 +274,24 @@ namespace UtilityBelt.Tools {
                         }
                     }
 
-                    if (isRunning) Util.WriteToChat("ItemGiver is already running.  Please wait until it completes or use /ub ig stop to quit previous session");
+
 
                     ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
 
                     Start();
                 }
+                else if (giveMatch.Success && isRunning) {
+                    Util.WriteToChat("ItemGiver is already running.  Please wait until it completes or use /ub ig stop to quit previous session");
+                }
                     
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+            } catch (Exception ex) { Logger.LogException(ex); }
         }
 
 
         public void Current_ChatBoxMessage(object sender, ChatTextInterceptEventArgs e) {
             try {
                 if (e.Text.StartsWith("You give ") && needsGiving && !gaveItem) {
+                    lastAction = DateTime.Now;
                     gaveItem = true;
                     givenItems.Add(currentItem);
                     giveObjects.Remove(currentItem);
@@ -233,60 +299,104 @@ namespace UtilityBelt.Tools {
                     gaveItem = false;
                     retryCount = 0;
                 }
+            } catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        void WorldFilter_PortalChange(object sender, ChangePortalModeEventArgs e) {
+            try {
+                Util.WriteToChat("portal changed");
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        void WorldFilter_PortalChange(object sender, ChangePortalModeEventArgs e) {
-            Util.WriteToChat("portal changed");
+        void Current_TargetObjectChange(object sender, ChangeObjectEventArgs e) {
+            try {
+                //Util.WriteToChat("TargetChange: " + e.Changed.Id);
+                //Util.WriteToChat("TargetItem: " + currentItem.Id);
+                newContainer = e.Changed.Values(LongValueKey.Container);
+                if (e.Changed.Id == currentItem.Id && isDroppingBuggedItems) {
+                    if (currentItem.Values(LongValueKey.Container) == 0) {
+                        droppedItem = true;
+                        buggedItems.Remove(currentItem);
+                        droppedItems.Add(currentItem);
+                        if (idItems.Contains(currentItem)) {
+                            //Util.WriteToChat("GATHERED INFO FOR " + item.Name);
+                            idItems.Remove(currentItem);
+                        }
+                        Util.WriteToChat("dropped " + Util.GetObjectName(currentItem.Id) + " successfully" + " ------- Container: " + newContainer.ToString());
+                        lastAction = DateTime.Now;
+                        droppedItem = false;
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public void Start() {
-            startGive = DateTime.Now;
-            isRunning = true;
-            giveObjects = GetGiveItems();
-            needsGiving = true;
+            try {
+                    startGive = DateTime.Now;
+                if (!isDroppingBuggedItems) {
+                    isRunning = true;
+                    giveObjects = GetGiveItems();
+                    needsGiving = true;
+                }
+                else if (isDroppingBuggedItems) {
+                    lastDrop = DateTime.Now;
+                    buggedItems = GetDropItems();
+                }
+            } catch (Exception ex) { Logger.LogException(ex); }
             //WriteItemsToChat(giveObjects);
         }
 
         private void WriteItemsToChat(List<WorldObject> list) {
-            foreach (WorldObject item in list) {
-                Util.WriteToChat("Name: " + item.Name + "ID: " + item.Id + "Attuned: " + item.Values(LongValueKey.Attuned));
+            try {
+                foreach (WorldObject item in list) {
+                    Util.WriteToChat("Name: " + item.Name + "ID: " + item.Id + "Attuned: " + item.Values(LongValueKey.Attuned));
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Stop() {
+            try {
+                if (Globals.Config.AutoSalvage.Think.Value == true) {
+                    Util.Think("ItemGiver finished: " + utlProfile + " to " + targetPlayer);
+                }
+                else {
+                    Util.WriteToChat("ItemGiver complete.");
+                }
 
-            if (Globals.Config.AutoSalvage.Think.Value == true) {
-                Util.Think("ItemGiver finished: " + utlProfile + " to " + targetPlayer);
+                stopGive = DateTime.Now;
+                TimeSpan duration = stopGive - startGive;
+                Util.WriteToChat(stopGive.ToString());
+                Util.WriteToChat(startGive.ToString());
+                Util.WriteToChat("took " + duration.ToString() + " to complete");
+                Reset();
+                needsGiving = false;
+                isRunning = false;
+                isDroppingBuggedItems = false;
+                currentItem = null;
+                targetPlayer = "";
+                destinationId = 0;
+                retryCount = 0;
+                failedItems = 0;
             }
-            else {
-                Util.WriteToChat("ItemGiver complete.");
-            }
-
-            stopGive = DateTime.Now;
-            TimeSpan duration = stopGive - startGive;
-            Util.WriteToChat(stopGive.ToString());
-            Util.WriteToChat(startGive.ToString());
-            Util.WriteToChat("took " + duration.ToString() + " to complete");
-            Reset();
-            needsGiving = false;
-            isRunning = false;
-            targetPlayer = "";
-            destinationId = 0;
-            retryCount = 0;
-            failedItems = 0;
-
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public void Reset() {
-            inventoryItems.Clear();
-            giveObjects.Clear();
-            givenItems.Clear();
-            idItems.Clear();
+            try {
+                inventoryItems.Clear();
+                giveObjects.Clear();
+                givenItems.Clear();
+                idItems.Clear();
+                buggedItems.Clear();
+                droppedItems.Clear();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private bool NeedsID(int id) {
+    private bool NeedsID(int id) {
             return uTank2.PluginCore.PC.FLootPluginQueryNeedsID(id);
         }
 
@@ -305,7 +415,7 @@ namespace UtilityBelt.Tools {
                         if (item.Values(LongValueKey.Attuned) > 0)
                             continue;
 
-                        if (inventoryItems.Contains(item)) continue;
+                    if (inventoryItems.Contains(item)) continue;
 
                         // Convert the item into a VT GameItemInfo object
                         uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item.Id);
@@ -326,106 +436,127 @@ namespace UtilityBelt.Tools {
                     }
                     Util.WriteToChat("scanned items: " + inventoryItems.Count());
                 }
-
                 
             } catch (Exception ex) { Logger.LogException(ex); }
-
         }
 
-            private List<WorldObject> GetGiveItems() {
-            
-            foreach (WorldObject item in CoreManager.Current.WorldFilter.GetInventory()) {
+        private List<WorldObject> GetDropItems() {
+            try {
+                foreach (WorldObject item in CoreManager.Current.WorldFilter.GetInventory()) {
+                    
+                    // If the item is equipped or wielded, don't process it.
+                    if (item.Values(LongValueKey.EquippedSlots, 0) > 0 || item.Values(LongValueKey.Slot, -1) == -1)
+                        continue;
 
-                // If the item is equipped or wielded, don't process it.
-                if (item.Values(LongValueKey.EquippedSlots, 0) > 0 || item.Values(LongValueKey.Slot, -1) == -1)
-                    continue;
-
-                // If the item is equipped or wielded, don't process it.
-                //if (item.Values(LongValueKey.Attuned) > 0)
-                //    continue;
-
-                uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item.Id);
-
-                if (itemInfo == null) {
-                    // This happens all the time for aetheria that has been converted
-                    continue;
-                }
-
-                if (givenItems.Contains(item))
-                    continue;
-
-                if (giveObjects.Contains(item))
-                    continue;
-
-                if (!((VTClassic.LootCore)lootProfile).DoesPotentialItemNeedID(itemInfo) && idItems.Contains(item)) {
-                    //Util.WriteToChat("GATHERED INFO FOR " + item.Name);
-                    idItems.Remove(item);
-                }
-
-                if (((VTClassic.LootCore)lootProfile).DoesPotentialItemNeedID(itemInfo)) {
-                    CoreManager.Current.Actions.RequestId(item.Id);
-                    //Util.WriteToChat("VTANK - gathering info for " + item.Name);
-                    if (!idItems.Contains(item)) {
-                        //Util.WriteToChat(item.Name.ToString());
-                        idItems.Add(item);
+                    if (!NeedsID(item.Id) && idItems.Contains(item)) {
+                        //Util.WriteToChat("GATHERED INFO FOR " + item.Name);
+                        idItems.Remove(item);
                     }
-                    continue;
-                } 
 
-                //if (idItems.Count < 10) {
-                //    foreach (WorldObject wo in idItems) {
-                //        Util.WriteToChat(wo.Name.ToString());
-                //    }
-                //}
+                    if (NeedsID(item.Id)) {
+                        CoreManager.Current.Actions.RequestId(item.Id);
+                        //Util.WriteToChat("VTANK - gathering info for " + item.Name);
+                        if (!idItems.Contains(item)) {
+                            //Util.WriteToChat(item.Name.ToString());
+                            idItems.Add(item);
+                        }
+                        continue;
+                    }
 
+                    // If the item is attuned, don't process it.
+                    if (item.Values(LongValueKey.Attuned) > 0)
+                        continue;
 
-                //ub ig Electric Weapons.utl to Schneebly Tinker
-                //Util.WriteToChat("made it to loot decision");
-                uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
-                if (!result.IsKeep) {
-                    continue;
+                    //If this items is bugged up on ACE skip that shit.
+                    if (buggedItems.Contains(item))
+                        continue;
+
+                    if (droppedItems.Contains(item))
+                        continue;
+
+                    if (item.Values(LongValueKey.Container) == 0)
+                        continue;
+
+                    if ((item.Values(LongValueKey.Burden, 0) == 0 && item.Values(LongValueKey.Value, 0) <= 0) || (item.Name.StartsWith("Salvaged ") && 
+                        item.Values(LongValueKey.Burden, 0) == 100 && item.Values(LongValueKey.Value, 0) == 10))  {
+                        //currentContainer = item.Values(LongValueKey.Container);
+                        Util.WriteToChat("Bugged Item: " + Util.GetObjectName(item.Id));
+                        buggedItems.Add(item);
+                    }
                 }
+            } catch (Exception ex) { Logger.LogException(ex); }
+            return buggedItems;
+        } 
 
-                //var result2 = uTank2.PluginCore.PC.FLootPluginClassifyImmediate(item.Id);
-                //if (!result2.IsKeep) {
-                //    continue;
-                //}
+    private List<WorldObject> GetGiveItems() {
+            try {
+                foreach (WorldObject item in CoreManager.Current.WorldFilter.GetInventory()) {
 
-                //Util.WriteToChat("VTANK - have info for " + item.Name);
-                Util.WriteToChat("adding object: " + item.Name);
-                giveObjects.Add(item);
+                    // If the item is equipped or wielded, don't process it.
+                    if (item.Values(LongValueKey.EquippedSlots, 0) > 0 || item.Values(LongValueKey.Slot, -1) == -1)
+                        continue;
 
-                //inventoryItems.Add(item);
+                    // If the item is equipped or wielded, don't process it.
+                    //if (item.Values(LongValueKey.Attuned) > 0)
+                    //    continue;
 
-                //if (!((VTClassic.LootCore)lootProfile).DoesPotentialItemNeedID(itemInfo)) {
-                //    uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
-                //
-                //    if (!result.IsKeep) {
-                //        continue;
-                //    }
-                //
-                //    giveObjects.Add(item);
-                //}
-                //else {
-                //    CoreManager.Current.Actions.RequestId(item.Id);
-                //}
-            }
+                    uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item.Id);
+
+                    if (itemInfo == null) {
+                        // This happens all the time for aetheria that has been converted
+                        continue;
+                    }
+
+                    if (givenItems.Contains(item))
+                        continue;
+
+                    if (giveObjects.Contains(item))
+                        continue;
+
+                    if (!((VTClassic.LootCore)lootProfile).DoesPotentialItemNeedID(itemInfo) && idItems.Contains(item)) {
+                        idItems.Remove(item);
+                    }
+
+                    if (((VTClassic.LootCore)lootProfile).DoesPotentialItemNeedID(itemInfo)) {
+                        CoreManager.Current.Actions.RequestId(item.Id);
+                        if (!idItems.Contains(item)) {
+                            idItems.Add(item);
+                        }
+                        continue;
+                    }
+                    uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
+                    if (!result.IsKeep) {
+                        continue;
+                    }
+
+
+                    Util.WriteToChat("adding object: " + Util.GetObjectName(item.Id));
+                    giveObjects.Add(item);
+                }
+            } catch (Exception ex) { Logger.LogException(ex); }
             return giveObjects;
         }
 
 
         public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            try {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         protected virtual void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
-                    Globals.Core.CommandLineText -= Current_CommandLineText;
-                    CoreManager.Current.CommandLineText -= new EventHandler<ChatParserInterceptEventArgs>(Current_CommandLineText);
-                    Globals.Core.ChatBoxMessage -= new EventHandler<ChatTextInterceptEventArgs>(Current_ChatBoxMessage);
-                    Globals.Core.CharacterFilter.ChangePortalMode -= new EventHandler<ChangePortalModeEventArgs>(WorldFilter_PortalChange);
+                    try {
+                        Globals.Core.CommandLineText -= Current_CommandLineText;
+                        CoreManager.Current.CommandLineText -= new EventHandler<ChatParserInterceptEventArgs>(Current_CommandLineText);
+                        Globals.Core.ChatBoxMessage -= new EventHandler<ChatTextInterceptEventArgs>(Current_ChatBoxMessage);
+                        Globals.Core.CharacterFilter.ChangePortalMode -= new EventHandler<ChangePortalModeEventArgs>(WorldFilter_PortalChange);
+                        CoreManager.Current.WorldFilter.ChangeObject -= new EventHandler<ChangeObjectEventArgs>(Current_TargetObjectChange);
+                    }
+                    catch (Exception ex) { Logger.LogException(ex); }
                 }
                 disposed = true;
             }
