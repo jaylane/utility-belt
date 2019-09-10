@@ -98,6 +98,7 @@
     <Compile Include="Tools\Assessor.cs" />
     <Compile Include="Tools\AutoSalvage.cs" />
     <Compile Include="Tools\AutoVendor.cs" />
+    <Compile Include="Tools\Counter.cs" />
     <Compile Include="Tools\EmuConfig.cs" />
     <Compile Include="Tools\InventoryManager.cs" />
     <Compile Include="Tools\DungeonMaps.cs" />

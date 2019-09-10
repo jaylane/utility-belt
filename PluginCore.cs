@@ -19,6 +19,7 @@ namespace UtilityBelt
         private EmuConfig emuConfig;
         private QuestTracker questTracker;
         private Jumper jumper;
+        private Counter counter;
         private DateTime lastThought = DateTime.MinValue;
 
         /// <summary>
@@ -62,7 +63,11 @@ namespace UtilityBelt
                 dungeonMaps = new DungeonMaps();
                 emuConfig = new EmuConfig();
                 questTracker = new QuestTracker();
+<<<<<<< HEAD
                 jumper = new Jumper();
+=======
+                counter = new Counter();
+>>>>>>> master
 
                 Globals.Core.RenderFrame += Core_RenderFrame;
             }
@@ -91,7 +96,11 @@ namespace UtilityBelt
                 if (dungeonMaps != null) dungeonMaps.Dispose();
                 if (emuConfig != null) emuConfig.Dispose();
                 if (questTracker != null) questTracker.Dispose();
+<<<<<<< HEAD
                 if (jumper != null) jumper.Dispose();
+=======
+                if (counter != null) counter.Dispose();
+>>>>>>> master
                 if (Globals.AutoVendor != null) Globals.AutoVendor.Dispose();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();
                 if (Globals.MapView != null) Globals.MapView.Dispose();
