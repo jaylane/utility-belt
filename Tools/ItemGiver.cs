@@ -10,41 +10,44 @@ using UtilityBelt.Constants;
 namespace UtilityBelt.Tools {
     class ItemGiver : IDisposable {
 
-        private bool isRunning = false;
-        private WorldObject currentItem = null;
 
         List<WorldObject> inventoryItems = new List<WorldObject>();
-        List<int> blacklistedItems = new List<int>();
         List<WorldObject> giveObjects = new List<WorldObject>();
         List<WorldObject> givenItems = new List<WorldObject>();
         List<WorldObject> idItems = new List<WorldObject>();
         List<WorldObject> buggedItems = new List<WorldObject>();
         List<WorldObject> droppedItems = new List<WorldObject>();
+        List<int> blacklistedItems = new List<int>();
+
+        private WorldObject currentItem = null;
+
         private DateTime lastThought = DateTime.MinValue;
         private DateTime lastScanUpdate = DateTime.MinValue;
         private DateTime lastAction = DateTime.MinValue;
         private DateTime lastDrop = DateTime.MinValue;
-        private bool disposed = false;
-        bool doneScanning = false;
-        private int destinationId;
-        bool waitingForIds = false;
-        bool isDroppingBuggedItems = false;
-
-        private bool needsGiving = false;
-        private object lootProfile;
-        private DateTime lastIdSpam = DateTime.MinValue;
-        private int retryCount;
-        private double playerDistance;
-        private string targetPlayer = "";
-        private string utlProfile = "";
-        private int giveSpeed = 300;
-        int failedItems = 0;
-        bool gaveItem = false;
-        bool droppedItem = false;
         private DateTime stopGive;
         private DateTime startGive;
-        int currentContainer;
-        int newContainer;
+
+        private bool isRunning = false;
+        private bool disposed = false;
+        private bool needsGiving = false;
+        private bool gaveItem = false;
+        private bool droppedItem = false;
+        private bool isDroppingBuggedItems = false;
+
+        private int retryCount;
+        private int destinationId;
+        private int giveSpeed = 300;
+        private int failedItems = 0;
+        private int currentContainer;
+        private int newContainer;
+
+        private object lootProfile;
+
+        private double playerDistance;
+
+        private string targetPlayer = "";
+        private string utlProfile = "";
 
 
         public ItemGiver() {
@@ -60,12 +63,16 @@ namespace UtilityBelt.Tools {
             } catch (Exception ex) { Logger.LogException(ex); }
         }
 
+        private Dictionary<string, int> givenItemsCount = new Dictionary<string, int>();
 
         public void Think() {
             try {
                 if (DateTime.Now - lastScanUpdate > TimeSpan.FromSeconds(10) && idItems.Count > 0) {
                     lastScanUpdate = DateTime.Now;
                     Util.WriteToChat("Items remaining to ID: " + idItems.Count());
+                    if (idItems.Count == 0 && isRunning) {
+                        Util.WriteToChat("Finished IDing Items");
+                    }
                 }
 
                 if (DateTime.Now - lastAction > TimeSpan.FromSeconds(30)) {
@@ -151,7 +158,7 @@ namespace UtilityBelt.Tools {
                         }
                     }
                     else {
-                        Stop();
+                        Util.WriteToChat("Not running");
                     }
                 }
             } catch (Exception ex) { Logger.LogException(ex); }
@@ -281,6 +288,7 @@ namespace UtilityBelt.Tools {
                     Start();
                 }
                 else if (giveMatch.Success && isRunning) {
+                    e.Eat = true;
                     Util.WriteToChat("ItemGiver is already running.  Please wait until it completes or use /ub ig stop to quit previous session");
                 }
                     
@@ -304,7 +312,7 @@ namespace UtilityBelt.Tools {
 
         void WorldFilter_PortalChange(object sender, ChangePortalModeEventArgs e) {
             try {
-                Util.WriteToChat("portal changed");
+               // Util.WriteToChat("portal changed");
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -360,8 +368,11 @@ namespace UtilityBelt.Tools {
 
         private void Stop() {
             try {
-                if (Globals.Config.AutoSalvage.Think.Value == true) {
+                if (isRunning) {
                     Util.Think("ItemGiver finished: " + utlProfile + " to " + targetPlayer);
+                }
+                else if (isDroppingBuggedItems) {
+                    Util.Think("ItemGiver finished: Dropped bugged items");
                 }
                 else {
                     Util.WriteToChat("ItemGiver complete.");
@@ -369,30 +380,51 @@ namespace UtilityBelt.Tools {
 
                 stopGive = DateTime.Now;
                 TimeSpan duration = stopGive - startGive;
-                Util.WriteToChat(stopGive.ToString());
-                Util.WriteToChat(startGive.ToString());
-                Util.WriteToChat("took " + duration.ToString() + " to complete");
+                //Util.WriteToChat(stopGive.ToString());
+                //Util.WriteToChat(startGive.ToString());
+                Util.WriteToChat("ItemGiver took " + QuestTracker.GetFriendlyTimeDifference(duration) + " to complete");
                 Reset();
-                needsGiving = false;
-                isRunning = false;
-                isDroppingBuggedItems = false;
-                currentItem = null;
-                targetPlayer = "";
-                destinationId = 0;
-                retryCount = 0;
-                failedItems = 0;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
+
         public void Reset() {
             try {
+                lastThought = DateTime.MinValue;
+                lastScanUpdate = DateTime.MinValue;
+                lastAction = DateTime.MinValue;
+                lastDrop = DateTime.MinValue;
+                stopGive = DateTime.MinValue;
+                startGive = DateTime.MinValue;
+
+                needsGiving = false;
+                isRunning = false;
+                isDroppingBuggedItems = false;
+                gaveItem = false;
+                droppedItem = false;
+
+                currentItem = null;
+                lootProfile = null;
+
+                currentContainer = 0;
+                newContainer = 0;
+                targetPlayer = "";
+                playerDistance = 0;
+                utlProfile = "";
+                destinationId = 0;
+                retryCount = 0;
+                failedItems = 0;
+                giveSpeed = 300;
+
                 inventoryItems.Clear();
                 giveObjects.Clear();
                 givenItems.Clear();
                 idItems.Clear();
                 buggedItems.Clear();
                 droppedItems.Clear();
+                givenItemsCount.Clear();
+                blacklistedItems.Clear();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -526,12 +558,28 @@ namespace UtilityBelt.Tools {
                         continue;
                     }
                     uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
-                    if (!result.IsKeep) {
+                    if (!result.IsKeep && !result.IsKeepUpTo) {
                         continue;
                     }
 
-
-                    Util.WriteToChat("adding object: " + Util.GetObjectName(item.Id));
+                    //Util.WriteToChat("Keeping: " + result.Data1);
+                    if (result.IsKeepUpTo) {
+                        //Util.WriteToChat("matched keep up to...");
+                        if (!givenItemsCount.ContainsKey(result.RuleName)) {
+                            givenItemsCount[result.RuleName] = 1;
+                            Util.WriteToChat("Rule: " + result.RuleName + " ----------- Keep Count: " + result.Data1);
+                        }
+                        else if (givenItemsCount[result.RuleName] > 0 && givenItemsCount[result.RuleName] < result.Data1) {
+                            givenItemsCount[result.RuleName]++;
+                            //Util.WriteToChat("Rule: " + result.RuleName + " Count: " + givenItemsCount[result.RuleName]);
+                        }
+                        else {
+                            continue;
+                        }
+                    }
+                    //Util.WriteToChat("Match Count: " + givenItemsCount[result.RuleName]);
+                    //Util.WriteToChat("adding object: " + Util.GetObjectName(item.Id));
+                    
                     giveObjects.Add(item);
                 }
             } catch (Exception ex) { Logger.LogException(ex); }

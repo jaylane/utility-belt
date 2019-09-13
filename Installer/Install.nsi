@@ -56,6 +56,9 @@ Section "" CoreSection
 	SetOutPath "$INSTDIR\Resources\"
 	File "${BUILDPATH}\Resources\quests.xml"
 
+	SetOutPath "$INSTDIR\Resources\"
+	File "${BUILDPATH}\Resources\quests.xml"
+
 SectionEnd
 
 Section -FinishSection
