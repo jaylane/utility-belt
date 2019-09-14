@@ -64,7 +64,6 @@ namespace UtilityBelt.Tools {
                                 totalStackCount += stackCount;
                             }
                             else {
-                                //Util.WriteToChat("-1");
                             }
                         }
                         Util.Think("Item Count: " + item + " - " + totalStackCount.ToString());
@@ -84,8 +83,6 @@ namespace UtilityBelt.Tools {
                             Util.WriteToChat("Profile does not exist: " + utlProfile.ToString());
                             return;
                         }
-
-                        //C:\Users\Caleb\Documents\Decal Plugins\UtilityBelt\itemgiver\Electric Weapons.utl
 
                         var hasLootCore = false;
                         if (lootProfile == null) {
@@ -136,11 +133,6 @@ namespace UtilityBelt.Tools {
                     // If the item is equipped or wielded, don't process it.
                     if (item.Values(LongValueKey.EquippedSlots, 0) > 0 || item.Values(LongValueKey.Slot, -1) == -1)
                         continue;
-
-                    // If the item is equipped or wielded, don't process it.
-                    //if (item.Values(LongValueKey.Attuned) > 0)
-                    //    continue;
-
                     uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item.Id);
 
                     if (itemInfo == null) {
