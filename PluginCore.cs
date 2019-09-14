@@ -80,6 +80,7 @@ namespace UtilityBelt
                 if (itemGiver != null) itemGiver.Think();
                 if (dungeonMaps != null) dungeonMaps.Think();
                 if (jumper != null) jumper.Think();
+                if (counter != null) counter.Think();
 
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Think();
             }

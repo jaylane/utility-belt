@@ -372,7 +372,7 @@ namespace UtilityBelt.Tools {
                     Util.Think("ItemGiver finished: " + utlProfile + " to " + targetPlayer);
                 }
                 else if (isDroppingBuggedItems) {
-                    Util.Think("ItemGiver finished: Dropped bugged items");
+                    Util.Think("UtilityBelt: Dropped bugged items complete");
                 }
                 else {
                     Util.WriteToChat("ItemGiver complete.");
