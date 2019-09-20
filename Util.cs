@@ -187,6 +187,9 @@ namespace UtilityBelt
             // skip imbued
             if (wo.Values(LongValueKey.Imbued, 0) > 1) return false;
 
+            // skip inscribed
+            if (!string.IsNullOrEmpty(wo.Values(StringValueKey.Inscription))) return false;
+
             return true;
         }
 

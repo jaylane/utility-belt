@@ -165,16 +165,6 @@ namespace UtilityBelt.Tools {
 
                     if (!Util.ItemIsSafeToGetRidOf(item)) continue;
 
-                    // If the item is equipped or wielded, don't process it.
-                    if (item.Values(LongValueKey.EquippedSlots, 0) > 0 || item.Values(LongValueKey.Slot, -1) == -1)
-                        continue;
-
-                    // If the item is tinkered don't process it
-                    if (item.Values(LongValueKey.NumberTimesTinkered, 0) > 1) continue;
-
-                    // If the item is imbued don't process it
-                    if (item.Values(LongValueKey.Imbued, 0) > 1) continue;
-
                     // dont put in bags of salvage
                     if (item.Name.StartsWith("Salvage")) continue;
 
