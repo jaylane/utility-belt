@@ -174,7 +174,7 @@ namespace UtilityBelt.Tools {
             return -1;
         }
 
-        private static readonly Regex giveRegex = new Regex(@"\/ub ig (?<giveSpeed>\d+)?(?<utlProfile>.*) to (?<targetPlayer>.*)");
+        private static readonly Regex giveRegex = new Regex(@"^\/ub ig (?<giveSpeed>\d+)?(?<utlProfile>.*) to (?<targetPlayer>.*)");
         private void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
             try {
                 Match giveMatch = giveRegex.Match(e.Text);
