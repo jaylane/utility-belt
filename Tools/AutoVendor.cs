@@ -86,6 +86,7 @@ namespace UtilityBelt.Tools {
         private DateTime firstThought = DateTime.MinValue;
         private DateTime lastThought = DateTime.MinValue;
         private DateTime startedVendoring = DateTime.MinValue;
+        private DateTime lastVendorAction = DateTime.MinValue;
 
         private bool disposed;
         private int AutoVendorTimeout = 60; // in seconds
@@ -250,7 +251,7 @@ namespace UtilityBelt.Tools {
 
                 // if pyreals are coming in, delay a little until we get them all
                 if (e.New.Values(LongValueKey.Type, 0) == 273) {
-                    lastThought = DateTime.UtcNow + TimeSpan.FromMilliseconds(300);
+                    lastThought = DateTime.UtcNow + TimeSpan.FromMilliseconds(800);
                     return;
                 }
 
@@ -323,14 +324,12 @@ namespace UtilityBelt.Tools {
 
             // Load our loot profile
             ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
-
-            /*
+            
             if (Assessor.NeedsInventoryData()) {
                 Assessor.RequestAll();
                 waitingForIds = true;
                 lastIdSpam = DateTime.UtcNow;
             }
-            */
 
             Globals.InventoryManager.Pause();
 
@@ -344,6 +343,11 @@ namespace UtilityBelt.Tools {
         }
 
         public void Stop(bool silent = false) {
+            // we delay for 2 seconds in case of server lag, so that we can properly
+            // detect getting pyreals from the vendor transaction at the end of the process.
+            if (DateTime.UtcNow - lastVendorAction < TimeSpan.FromSeconds(2)) return;
+
+
             if (!silent) {
                 if (Globals.Config.AutoVendor.Think.Value == true) {
                     Util.Think("AutoVendor finished: " + vendorName);
@@ -374,7 +378,7 @@ namespace UtilityBelt.Tools {
 
                     if (needsVendoring && waitingForIds) {
                         if (Assessor.NeedsInventoryData()) {
-                            if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(10)) {
+                            if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15)) {
                                 lastIdSpam = DateTime.UtcNow;
                                 startedVendoring = DateTime.UtcNow;
 
@@ -407,30 +411,17 @@ namespace UtilityBelt.Tools {
                         if (Globals.InventoryManager.AutoCram(cramExcludeList, true) == true) return;
                     }
 
-                    //if (needsToUse) {
-                    //    if (Globals.Core.Actions.VendorId != 0) {
-                    //        Globals.Core.Actions.UseItem(Globals.Core.Actions.VendorId, 0);
-                    //    }
-
-                    //    needsToUse = false;
-                    //    return;
-                    //}
-
                     if (needsVendoring == true && HasVendorOpen()) {
-                        //if (DateTime.UtcNow - startedVendoring > TimeSpan.FromSeconds(AutoVendorTimeout)) {
-                        //    Util.WriteToChat(string.Format("AutoVendor timed out after {0} seconds.", AutoVendorTimeout));
-                        //    Stop();
-                        //    return;
-                        //}
-
                         if (needsToBuy) {
                             needsToBuy = false;
                             shouldStack = true;
                             Globals.Core.Actions.VendorBuyAll();
+                            lastVendorAction = DateTime.UtcNow;
                         } else if (needsToSell) {
                             needsToSell = false;
                             shouldStack = false;
                             Globals.Core.Actions.VendorSellAll();
+                            lastVendorAction = DateTime.UtcNow;
                         } else {
                             DoVendoring();
                         }
@@ -705,9 +696,7 @@ namespace UtilityBelt.Tools {
             if (vendor == null) return sellObjects;
 
             foreach (WorldObject wo in Globals.Core.WorldFilter.GetInventory()) {
-                if (!Util.ItemIsSafeToGetRidOf(wo) || !ItemIsSafeToGetRidOf(wo)) continue;
-
-                if (wo.Values(LongValueKey.Value, 0) <= 0) continue;
+                if (!ItemIsSafeToGetRidOf(wo)) continue;
 
                 uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(wo.Id);
 
@@ -750,18 +739,13 @@ namespace UtilityBelt.Tools {
 
         private bool ItemIsSafeToGetRidOf(WorldObject wo) {
             if (wo == null) return false;
-
-            // dont sell items with descriptions (quest items)
-            // peas have descriptions...
-            //if (wo.Values(StringValueKey.FullDescription, "").Length > 1) return false;
-
-            // can be sold?
-            //if (wo.Values(BoolValueKey.CanBeSold, false) == false) return false;
-
-            // no attuned
+            
             if (wo.Values(LongValueKey.Attuned, 0) > 1) return false;
 
-            return true;
+            // dont try to sell things with 0 value
+            if (wo.Values(LongValueKey.Value, 0) <= 0) return false;
+
+            return Util.ItemIsSafeToGetRidOf(wo);
         }
 
         private void DoTestMode() {
