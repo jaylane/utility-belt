@@ -60,7 +60,8 @@ namespace UtilityBelt.Tools {
                 Globals.Core.CharacterFilter.ChangePortalMode += new EventHandler<ChangePortalModeEventArgs>(WorldFilter_PortalChange);
                 CoreManager.Current.WorldFilter.ChangeObject += new EventHandler<ChangeObjectEventArgs>(Current_TargetObjectChange);
                 lastThought = DateTime.Now;
-            } catch (Exception ex) { Logger.LogException(ex); }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private Dictionary<string, int> givenItemsCount = new Dictionary<string, int>();
@@ -77,15 +78,12 @@ namespace UtilityBelt.Tools {
 
                 if (DateTime.Now - lastAction > TimeSpan.FromSeconds(30)) {
                     lastAction = DateTime.Now;
-                    //Util.WriteToChat("Appears to be hung, restarting...");
-                    //if (isRunning) Stop();
                 }
 
                 if (DateTime.Now - lastDrop > TimeSpan.FromMilliseconds(2000) && isDroppingBuggedItems) {
                     currentContainer = 0;
                     newContainer = 0;
                     lastDrop = DateTime.Now;
-                    //Util.WriteToChat("made it to thinking about dropping");
 
                     if (isDroppingBuggedItems) {
                         buggedItems = GetDropItems();
@@ -95,9 +93,7 @@ namespace UtilityBelt.Tools {
                             currentContainer = item.Values(LongValueKey.Container);
                             Util.WriteToChat("Dropping items: " + Util.GetObjectName(item.Id) + " ------- Container: " + currentContainer.ToString() + " ------- ID: " + item.Id);
 
-                            if (!string.IsNullOrEmpty(item.Name) && CoreManager.Current.Actions.BusyState == 0 && !droppedItem  && item.Values(LongValueKey.Container) != 0) {
-
-                                //CoreManager.Current.Actions.SelectItem(item.Id);
+                            if (!string.IsNullOrEmpty(item.Name) && CoreManager.Current.Actions.BusyState == 0 && !droppedItem && item.Values(LongValueKey.Container) != 0) {
                                 CoreManager.Current.Actions.DropItem(item.Id);
                             }
                             return;
@@ -106,20 +102,17 @@ namespace UtilityBelt.Tools {
                             Stop();
                         }
                         if (buggedItems.Count > 0) {
-                            Util.WriteToChat("reached end of list... restarting at top");
                             return;
                         }
                     }
                 }
-            
-
-
 
                 if (DateTime.Now - lastThought > TimeSpan.FromMilliseconds(giveSpeed) && needsGiving && !isDroppingBuggedItems) {
                     lastThought = DateTime.Now;
 
                     if (isRunning) {
                         giveObjects = GetGiveItems();
+                        playerDistance = CoreManager.Current.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, destinationId) * 240;
 
                         foreach (WorldObject item in giveObjects) {
                             currentItem = item;
@@ -129,44 +122,36 @@ namespace UtilityBelt.Tools {
                                 return;
                             }
 
-                            //if (!item.HasIdData) return;
-
-                                if (!string.IsNullOrEmpty(item.Name) && !gaveItem) {
-                                    retryCount++;
-                                    CoreManager.Current.Actions.GiveItem(item.Id, destinationId);
-                                    if (retryCount > 10) {
-                                        giveObjects.Remove(item);
-                                        Util.WriteToChat("unable to give " + Util.GetObjectName(item.Id));
-                                        failedItems++;
-                                        retryCount = 0;
-                                    }
-                                if (failedItems > 3) Stop();
-                                    return;
+                            if (!string.IsNullOrEmpty(item.Name) && !gaveItem) {
+                                retryCount++;
+                                CoreManager.Current.Actions.GiveItem(item.Id, destinationId);
+                                if (retryCount > 10) {
+                                    giveObjects.Remove(item);
+                                    Util.WriteToChat("unable to give " + Util.GetObjectName(item.Id));
+                                    failedItems++;
+                                    retryCount = 0;
                                 }
+
+                                if (failedItems > 3) Stop();
+
                                 return;
                             }
-                        //Util.WriteToChat("giveObjects count left: " + giveObjects.Count);
-                        //Util.WriteToChat("idObjects count left: " + idItems.Count);
+
+                            return;
+                        }
 
                         if (giveObjects.Count == 0 && idItems.Count == 0) {
                             Stop();
                         }
-
-                        if (giveObjects.Count > 0) {
-                            Util.WriteToChat("reached end of list... restarting at top");
-                            return;
-                        }
-                    }
-                    else {
-                        Util.WriteToChat("Not running");
                     }
                 }
-            } catch (Exception ex) { Logger.LogException(ex); }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
 
         public static WorldObject GetLandscapeObject(string objectName) {
-                WorldObject landscapeObject = null;
+            WorldObject landscapeObject = null;
             try {
 
                 foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetLandscape()) {
@@ -174,20 +159,21 @@ namespace UtilityBelt.Tools {
                         landscapeObject = wo;
                     }
                 }
-            } catch (Exception ex) { Logger.LogException(ex); }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
             return landscapeObject;
         }
 
         int FindPlayerID(string name) {
             // Exact match attempt first
-                WorldObject playerObject = GetLandscapeObject(name);
+            WorldObject playerObject = GetLandscapeObject(name);
 
-                if (playerObject != null)
-                    return playerObject.Id;
+            if (playerObject != null)
+                return playerObject.Id;
 
             return -1;
         }
-        
+
         private static readonly Regex giveRegex = new Regex(@"\/ub ig (?<giveSpeed>\d+)?(?<utlProfile>.*) to (?<targetPlayer>.*)");
         private void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
             try {
@@ -198,11 +184,11 @@ namespace UtilityBelt.Tools {
                     destinationId = FindPlayerID(targetPlayer);
                     playerDistance = CoreManager.Current.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, destinationId) * 240;
 
-                    e.Eat =  true;
+                    e.Eat = true;
 
                     if (destinationId == -1) {
                         Util.WriteToChat(targetPlayer + " " + destinationId.ToString());
-				    return ;
+                        return;
                     }
                     Util.WriteToChat(targetPlayer + " " + destinationId.ToString());
                     Util.WriteToChat(targetPlayer + " is " + playerDistance + " away");
@@ -291,8 +277,9 @@ namespace UtilityBelt.Tools {
                     e.Eat = true;
                     Util.WriteToChat("ItemGiver is already running.  Please wait until it completes or use /ub ig stop to quit previous session");
                 }
-                    
-            } catch (Exception ex) { Logger.LogException(ex); }
+
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
 
@@ -307,12 +294,13 @@ namespace UtilityBelt.Tools {
                     gaveItem = false;
                     retryCount = 0;
                 }
-            } catch (Exception ex) { Logger.LogException(ex); }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         void WorldFilter_PortalChange(object sender, ChangePortalModeEventArgs e) {
             try {
-               // Util.WriteToChat("portal changed");
+                // Util.WriteToChat("portal changed");
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -343,7 +331,7 @@ namespace UtilityBelt.Tools {
 
         public void Start() {
             try {
-                    startGive = DateTime.Now;
+                startGive = DateTime.Now;
                 if (!isDroppingBuggedItems) {
                     isRunning = true;
                     giveObjects = GetGiveItems();
@@ -353,7 +341,8 @@ namespace UtilityBelt.Tools {
                     lastDrop = DateTime.Now;
                     buggedItems = GetDropItems();
                 }
-            } catch (Exception ex) { Logger.LogException(ex); }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
             //WriteItemsToChat(giveObjects);
         }
 
@@ -429,7 +418,7 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-    private bool NeedsID(int id) {
+        private bool NeedsID(int id) {
             return uTank2.PluginCore.PC.FLootPluginQueryNeedsID(id);
         }
 
@@ -438,45 +427,44 @@ namespace UtilityBelt.Tools {
             try {
                 //inventoryItems.Clear();
                 //if (!idsRequested) {
-                    foreach (WorldObject item in CoreManager.Current.WorldFilter.GetInventory()) {
-                
-                        // If the item is equipped or wielded, don't process it.
-                        if (item.Values(LongValueKey.EquippedSlots, 0) > 0 || item.Values(LongValueKey.Slot, -1) == -1)
-                            continue;
+                foreach (WorldObject item in CoreManager.Current.WorldFilter.GetInventory()) {
 
-                        // If the item is equipped or wielded, don't process it.
-                        if (item.Values(LongValueKey.Attuned) > 0)
-                            continue;
+                    // If the item is equipped or wielded, don't process it.
+                    if (item.Values(LongValueKey.EquippedSlots, 0) > 0 || item.Values(LongValueKey.Slot, -1) == -1)
+                        continue;
+
+                    // If the item is equipped or wielded, don't process it.
+                    if (item.Values(LongValueKey.Attuned) > 0)
+                        continue;
 
                     if (inventoryItems.Contains(item)) continue;
 
-                        // Convert the item into a VT GameItemInfo object
-                        uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item.Id);
+                    // Convert the item into a VT GameItemInfo object
+                    uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item.Id);
 
-                        if (itemInfo == null) {
-                            // This happens all the time for aetheria that has been converted
-                            Util.WriteToChat(item.Name + " has no data");
-                            continue;
-                        }
+                    if (itemInfo == null) {
+                        // This happens all the time for aetheria that has been converted
+                        Util.WriteToChat(item.Name + " has no data");
+                        continue;
+                    }
 
-                        if (((VTClassic.LootCore)lootProfile).DoesPotentialItemNeedID(itemInfo)) {
-                            CoreManager.Current.Actions.RequestId(item.Id);
-                            Util.WriteToChat("VTANK - gathering info for " + item.Name);
-                        //}
-
-                        //idsRequested = true;
+                    if (((VTClassic.LootCore)lootProfile).DoesPotentialItemNeedID(itemInfo)) {
+                        CoreManager.Current.Actions.RequestId(item.Id);
+                        Util.WriteToChat("VTANK - gathering info for " + item.Name);
+                        
                         inventoryItems.Add(item);
                     }
+
                     Util.WriteToChat("scanned items: " + inventoryItems.Count());
                 }
-                
-            } catch (Exception ex) { Logger.LogException(ex); }
+
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private List<WorldObject> GetDropItems() {
             try {
                 foreach (WorldObject item in CoreManager.Current.WorldFilter.GetInventory()) {
-                    
                     // If the item is equipped or wielded, don't process it.
                     if (item.Values(LongValueKey.EquippedSlots, 0) > 0 || item.Values(LongValueKey.Slot, -1) == -1)
                         continue;
@@ -510,28 +498,24 @@ namespace UtilityBelt.Tools {
                     if (item.Values(LongValueKey.Container) == 0)
                         continue;
 
-                    if ((item.Values(LongValueKey.Burden, 0) == 0 && item.Values(LongValueKey.Value, 0) <= 0) || (item.Name.StartsWith("Salvaged ") && 
-                        item.Values(LongValueKey.Burden, 0) == 100 && item.Values(LongValueKey.Value, 0) == 10))  {
-                        //currentContainer = item.Values(LongValueKey.Container);
+                    if ((item.Values(LongValueKey.Burden, 0) == 0 && item.Values(LongValueKey.Value, 0) <= 0) || (item.Name.StartsWith("Salvaged ") &&
+                        item.Values(LongValueKey.Burden, 0) == 100 && item.Values(LongValueKey.Value, 0) == 10)) {
+
                         Util.WriteToChat("Bugged Item: " + Util.GetObjectName(item.Id));
                         buggedItems.Add(item);
                     }
                 }
-            } catch (Exception ex) { Logger.LogException(ex); }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
             return buggedItems;
-        } 
+        }
 
-    private List<WorldObject> GetGiveItems() {
+        private List<WorldObject> GetGiveItems() {
             try {
                 foreach (WorldObject item in CoreManager.Current.WorldFilter.GetInventory()) {
-
                     // If the item is equipped or wielded, don't process it.
                     if (item.Values(LongValueKey.EquippedSlots, 0) > 0 || item.Values(LongValueKey.Slot, -1) == -1)
                         continue;
-
-                    // If the item is equipped or wielded, don't process it.
-                    //if (item.Values(LongValueKey.Attuned) > 0)
-                    //    continue;
 
                     uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item.Id);
 
@@ -557,32 +541,29 @@ namespace UtilityBelt.Tools {
                         }
                         continue;
                     }
+
                     uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
                     if (!result.IsKeep && !result.IsKeepUpTo) {
                         continue;
                     }
 
-                    //Util.WriteToChat("Keeping: " + result.Data1);
                     if (result.IsKeepUpTo) {
-                        //Util.WriteToChat("matched keep up to...");
                         if (!givenItemsCount.ContainsKey(result.RuleName)) {
                             givenItemsCount[result.RuleName] = 1;
                             Util.WriteToChat("Rule: " + result.RuleName + " ----------- Keep Count: " + result.Data1);
                         }
                         else if (givenItemsCount[result.RuleName] > 0 && givenItemsCount[result.RuleName] < result.Data1) {
                             givenItemsCount[result.RuleName]++;
-                            //Util.WriteToChat("Rule: " + result.RuleName + " Count: " + givenItemsCount[result.RuleName]);
                         }
                         else {
                             continue;
                         }
                     }
-                    //Util.WriteToChat("Match Count: " + givenItemsCount[result.RuleName]);
-                    //Util.WriteToChat("adding object: " + Util.GetObjectName(item.Id));
-                    
+
                     giveObjects.Add(item);
                 }
-            } catch (Exception ex) { Logger.LogException(ex); }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
             return giveObjects;
         }
 
@@ -612,5 +593,3 @@ namespace UtilityBelt.Tools {
         }
     }
 }
-
-
