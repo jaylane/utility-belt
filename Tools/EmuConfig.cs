@@ -78,6 +78,7 @@ namespace UtilityBelt.Tools {
                         foreach (string configValue in configValuesArray) {
                             //Util.WriteToChat(configValue.Trim());
 
+                            
 
                             if (Enum.IsDefined(typeof(CharOptions), configValue.Trim())) {
                                 uint charOptionsValue = (uint)Enum.Parse(typeof(CharOptions), configValue.Trim());
