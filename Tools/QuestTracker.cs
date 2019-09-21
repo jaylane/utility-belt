@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using VirindiViewService.Controls;
 using System.Data;
 using System.Linq;
-using System.Threading;
+using System.Xml.Schema;
 
 namespace UtilityBelt.Tools {
     class QuestTracker : IDisposable {
@@ -59,7 +59,7 @@ namespace UtilityBelt.Tools {
             Util.LoadQuestLookupXML();
         }
 
-        public string GetFriendlyTimeDifference(TimeSpan difference) {
+        public static string GetFriendlyTimeDifference(TimeSpan difference) {
             string output = "";
 
             if (difference.TotalDays > 0) output += difference.Days.ToString() + "d ";
@@ -70,7 +70,7 @@ namespace UtilityBelt.Tools {
             return output.Trim();
         }
 
-        public string GetFriendlyTimeDifference(long difference) {
+        public static string GetFriendlyTimeDifference(long difference) {
             return GetFriendlyTimeDifference(TimeSpan.FromSeconds(difference));
         }
 

@@ -18,7 +18,9 @@ namespace UtilityBelt
         private DungeonMaps dungeonMaps;
         private EmuConfig emuConfig;
         private QuestTracker questTracker;
+        private Jumper jumper;
         private Counter counter;
+        private ItemGiver itemGiver;
         private DateTime lastThought = DateTime.MinValue;
 
         /// <summary>
@@ -62,7 +64,9 @@ namespace UtilityBelt
                 dungeonMaps = new DungeonMaps();
                 emuConfig = new EmuConfig();
                 questTracker = new QuestTracker();
+                jumper = new Jumper();
                 counter = new Counter();
+                itemGiver = new ItemGiver();
 
                 Globals.Core.RenderFrame += Core_RenderFrame;
             }
@@ -73,7 +77,11 @@ namespace UtilityBelt
             try {
                 if (autoSalvage != null) autoSalvage.Think();
                 if (Globals.AutoVendor != null) Globals.AutoVendor.Think();
+                if (itemGiver != null) itemGiver.Think();
                 if (dungeonMaps != null) dungeonMaps.Think();
+                if (jumper != null) jumper.Think();
+                if (counter != null) counter.Think();
+
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Think();
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -89,7 +97,9 @@ namespace UtilityBelt
                 if (dungeonMaps != null) dungeonMaps.Dispose();
                 if (emuConfig != null) emuConfig.Dispose();
                 if (questTracker != null) questTracker.Dispose();
+                if (jumper != null) jumper.Dispose();
                 if (counter != null) counter.Dispose();
+                if (itemGiver != null) itemGiver.Dispose();
                 if (Globals.AutoVendor != null) Globals.AutoVendor.Dispose();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();
                 if (Globals.MapView != null) Globals.MapView.Dispose();
