@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MetaViewWrappers;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -22,9 +23,6 @@ namespace UtilityBelt.Views {
                 properties.Icon = GetIcon();
 
                 view = new VirindiViewService.HudView(properties, controls);
-
-                view.Width = 400;
-                view.Height = 300;
 
                 view.UserResizeable = true;
             }

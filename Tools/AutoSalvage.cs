@@ -10,6 +10,7 @@ namespace UtilityBelt.Tools {
     class AutoSalvage : IDisposable {
         private List<int> inventoryItems = new List<int>();
         private List<int> salvageItemIds = new List<int>();
+        private List<int> blacklistedIds = new List<int>();
         private bool isRunning = false;
         private bool shouldSalvage = false;
 
@@ -110,25 +111,32 @@ namespace UtilityBelt.Tools {
         }
 
         public void LoadInventory() {
+            Globals.Assessor.RequestAll();
+
             var inventory = Globals.Core.WorldFilter.GetInventory();
-            int requestedIdsCount = 0;
+            var requestedIdsCount = Globals.Assessor.GetNeededIdCount();
 
             foreach (var item in inventory) {
-                //if (item != null && item.Values(LongValueKey.Material, 0) <= 0) {
-                //    continue;
-                //}
+                if (!AllowedToSalvageItem(item)) continue;
 
                 inventoryItems.Add(item.Id);
-
-                if (NeedsID(item.Id)) {
-                    requestedIdsCount++;
-                    Globals.Core.Actions.RequestId(item.Id);
-                }
             }
 
             if (requestedIdsCount > 0) {
                 Util.WriteToChat(String.Format("AutoSalvage: Requesting id data for {0}/{1} inventory items. This will take approximately {2} seconds.", requestedIdsCount, inventoryItems.Count, requestedIdsCount));
             }
+        }
+
+        private bool AllowedToSalvageItem(WorldObject item) {
+            if (!Util.IsItemSafeToGetRidOf(item)) return false;
+
+            // dont put in bags of salvage
+            if (item.ObjectClass == ObjectClass.Salvage) return false;
+
+            // only things with a material
+            if (item.Values(LongValueKey.Material, 0) <= 0) return false;
+
+            return true;
         }
 
         private bool NeedsID(int id) {
@@ -158,15 +166,9 @@ namespace UtilityBelt.Tools {
             foreach (var id in inventoryItems) {
                 try {
                     var result = uTank2.PluginCore.PC.FLootPluginClassifyImmediate(id);
-
                     var item = Globals.Core.WorldFilter[id];
 
-                    if (item == null) continue;
-
-                    if (!Util.ItemIsSafeToGetRidOf(item)) continue;
-
-                    // dont put in bags of salvage
-                    if (item.Name.StartsWith("Salvage")) continue;
+                    if (!AllowedToSalvageItem(item)) continue;
 
                     if (result.SimpleAction == uTank2.eLootAction.Salvage) {
                         salvageIds.Add(id);
@@ -204,19 +206,12 @@ namespace UtilityBelt.Tools {
                 lastThought = DateTime.UtcNow;
 
                 if (isRunning) {
-                    bool hasAllItemData = true;
+                    bool hasAllItemData = !Globals.Assessor.NeedsInventoryData();
 
                     if (Globals.AutoVendor.HasVendorOpen()) {
                         Util.WriteToChat("AutoSalvage bailing, vendor is open.");
                         Stop();
                         return;
-                    }
-
-                    foreach (var id in inventoryItems) {
-                        if (NeedsID(id)) {
-                            hasAllItemData = false;
-                            break;
-                        }
                     }
 
                     if (readyToSalvage) {
