@@ -1,4 +1,4 @@
-## 0.0.4 (2019-9-24)
+## 0.0.4 (2019-9-24) [UtilityBeltInstaller-0.0.4.exe](/uploads/931df39dc0449bc0c5f05dcee59af12e/UtilityBeltInstaller-0.0.4.exe)
 - Fixed hardcoded vtank profiles path :)
 - VTank nav parser now only reads recordCount records, so it ignores trailing blank lines in the file
 
