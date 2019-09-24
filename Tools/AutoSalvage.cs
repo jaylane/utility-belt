@@ -89,6 +89,11 @@ namespace UtilityBelt.Tools {
             }
             else {
                 Util.WriteToChat("AutoSalvage bailing, vendor is open.");
+
+                if (Globals.Config.AutoSalvage.Think.Value == true)
+                {
+                    Util.Think("AutoSalvage complete.");
+                }
             }
         }
 
