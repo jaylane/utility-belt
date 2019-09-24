@@ -17,6 +17,7 @@ Check the [wiki](https://gitlab.com/trevis/utilitybelt/wikis/home)
 * Requires vtank to be installed (for autosalvage and autovendor, todo: make if fail gracefully)
 
 ## Contributors
+* Cosmic Jester
 * Harli
 * Schneebly
 * trevis
