@@ -120,6 +120,7 @@
     <Compile Include="Tools\VisualVTankRoutes.cs" />
     <Compile Include="Lib\VTNav\VTNavRoute.cs" />
     <Compile Include="Util.cs" />
+    <Compile Include="Views\ColorPicker.cs" />
     <Compile Include="Views\MapView.cs" />
     <Compile Include="Views\MainView.cs" />
     <Compile Include="VirindiViews\ViewSystemSelector.cs" />
@@ -2038,6 +2039,7 @@
     <Content Include="Resources\tiles\998.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="Views\ColorPicker.xml" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

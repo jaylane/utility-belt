@@ -29,18 +29,17 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
         }
 
         public override void Draw() {
-            //base.Draw();
-
             FileService service = Globals.Core.Filter<FileService>();
             var spell = service.SpellTable.GetById(RecallSpellId);
 
             VTNPoint rp = GetPreviousPoint();
-            var color = Color.FromArgb(221, 221, 221, 221);
-            VTNPoint point = rp != null ? rp : this;
+            var color = Color.FromArgb(Globals.Config.VisualNav.RecallColor.Value);
+            VTNPoint point = rp == null ? this : rp;
 
-            DrawText(spell.Name, point, 0.25f, color);
-
-            DrawIcon(spell.IconId, 0.35f, point);
+            if (Globals.Config.VisualNav.ShowRecall.Value) {
+                DrawText(spell.Name, point, 0.25f, color);
+                DrawIcon(spell.IconId, 0.35f, point);
+            }
         }
     }
 }

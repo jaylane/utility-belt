@@ -88,11 +88,10 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
         public override void Draw() {
             //base.Draw();
             var rp = GetPreviousPoint();
-            var color = Color.FromArgb(150, 221, 255, 255);
-
+            var color = Color.FromArgb(Globals.Config.VisualNav.LineColor.Value);
 
             if (closestDistance < double.MaxValue) {
-                if (rp != null) {
+                if (rp != null && Globals.Config.VisualNav.ShowLine.Value) {
                     DrawLineTo(rp, color);
                 }
 
@@ -102,8 +101,11 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
                 }
 
                 height = height > 0 ? (height) : (1.55f);
-                color = Color.FromArgb(255, 255, 255, 255);
-                DrawText("Vendor: " + Name, this, height, color);
+                color = Color.FromArgb(Globals.Config.VisualNav.OpenVendorColor.Value);
+
+                if (Globals.Config.VisualNav.ShowOpenVendor.Value) {
+                    DrawText("Vendor: " + Name, this, height, color);
+                }
             }
         }
 
