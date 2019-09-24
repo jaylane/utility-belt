@@ -10,6 +10,7 @@ using System.Xml;
 using System.Linq;
 using System.Net;
 using Decal.Adapter;
+using Microsoft.Win32;
 
 namespace UtilityBelt
 {
@@ -169,7 +170,29 @@ namespace UtilityBelt
 
             return packSlots;
         }
-        
+
+        internal static string GetVTankProfilesDirectory() {
+            var defaultPath = @"C:\Games\VirindiPlugins\VirindiTank\";
+            try {
+                var key = @"HKEY_CURRENT_USER\Software\Classes\VirtualStore\MACHINE\SOFTWARE\WOW6432Node\Decal\Plugins\{642F1F48-16BE-48BF-B1D4-286652C4533E}";
+                string path = (string)Registry.GetValue(key, "ProfilePath", "");
+
+                if (string.IsNullOrEmpty(path)) {
+                    key = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Decal\Plugins\{642F1F48-16BE-48BF-B1D4-286652C4533E}";
+                    path = (string)Registry.GetValue(key, "ProfilePath", "");
+                }
+
+                if (string.IsNullOrEmpty(path)) {
+                    return defaultPath;
+                }
+
+                return path;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return defaultPath;
+        }
+
         internal static void StackItem(WorldObject stackThis) {
             // try to stack in side pack
             foreach (var container in Globals.Core.WorldFilter.GetInventory()) {

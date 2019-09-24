@@ -47,7 +47,7 @@ namespace UtilityBelt.Tools {
             var character = Globals.Core.CharacterFilter.Name;
 
             profilesWatcher = new FileSystemWatcher();
-            profilesWatcher.Path = "C:\\Games\\VirindiPlugins\\VirindiTank\\";
+            profilesWatcher.Path = Util.GetVTankProfilesDirectory();
             profilesWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
             profilesWatcher.Filter = $"{server}_{character}.cdf";
             profilesWatcher.Changed += Profiles_Changed;
@@ -201,7 +201,7 @@ namespace UtilityBelt.Tools {
             }
 
             navFileWatcher = new FileSystemWatcher();
-            navFileWatcher.Path = "C:\\Games\\VirindiPlugins\\VirindiTank\\";
+            navFileWatcher.Path = Util.GetVTankProfilesDirectory();
             navFileWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
             navFileWatcher.Filter = "*.nav";
             navFileWatcher.Changed += NavFile_Changed;

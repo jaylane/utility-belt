@@ -61,7 +61,7 @@ namespace UtilityBelt.Lib.VTNav {
 
                 int x = 0;
                 VTNPoint previous = null;
-                while (!sr.EndOfStream) {
+                while (!sr.EndOfStream && points.Count < RecordCount) {
                     int recordType = 0;
                     var recordTypeLine = sr.ReadLine();
 
@@ -150,13 +150,13 @@ namespace UtilityBelt.Lib.VTNav {
         public  static string GetLoadedNavigationProfile() {
             var server = Globals.Core.CharacterFilter.Server;
             var character = Globals.Core.CharacterFilter.Name;
-            var path = $"C:\\Games\\VirindiPlugins\\VirindiTank\\{server}_{character}.cdf";
+            var path = Path.Combine(Util.GetVTankProfilesDirectory(), $"{server}_{character}.cdf");
 
             var contents = File.ReadAllLines(path);
 
             if (contents.Length >= 4) {
                 var navFile = contents[3].Trim();
-                var navPath = $"C:\\Games\\VirindiPlugins\\VirindiTank\\{navFile}";
+                var navPath = Path.Combine(Util.GetVTankProfilesDirectory(), navFile);
 
                 if (navFile.Length <= 0) return null;
 

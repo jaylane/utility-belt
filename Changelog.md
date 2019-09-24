@@ -1,3 +1,7 @@
+## 0.0.4 (2019-9-24)
+- Fixed hardcoded vtank profiles path :)
+- VTank nav parser now only reads recordCount records, so it ignores trailing blank lines in the file
+
 ## 0.0.3 (2019-9-24) [UtilityBeltInstaller-0.0.3.exe](/uploads/d41ff70af22e6874cf8d7b28a497546f/UtilityBeltInstaller-0.0.3.exe)
 - Think when AutoSalvage bails due to open vendor (thanks Cosmic Jester)
 - Visual VTank Nav Lines (like vi2 blue nav lines, but fully customizable and local)
