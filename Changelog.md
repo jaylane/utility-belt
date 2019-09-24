@@ -1,3 +1,12 @@
+## 0.0.3 (TBD)
+- Think when AutoSalvage bails due to open vendor (thanks Cosmic Jester)
+- Visual VTank Nav Lines (like vi2 blue nav lines)
+- Dont try to sell / salvage retained
+- Added `/ub ig` ItemGiver command to give items matching a loot profile to another player (thanks Schneebly)
+- Added `/ub jump` commands (thanks Schneebly)
+- AutoVendor now requires id data for everything, to properly check for tinkered and retained. (TODO: inventory cache)
+- AutoVendor will no longer sell inscribed items (thanks Cosmic Jester)
+
 ## 0.0.2 (2019-3-30) [UtilityBeltInstaller-0.0.2.exe](/uploads/c37e201894413fa61bc2397a10cc3af5/UtilityBeltInstaller-0.0.2.exe)
 - Added option to change display of visited DungeonMaps tiles
 - InventoryManager options are no longer hardcoded, so you can turn off stack/cram during AutoVendor
