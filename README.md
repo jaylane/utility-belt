@@ -1,10 +1,10 @@
 # UtilityBelt
 UtilityBelt is a multipurpose decal plugin. Currently it has the following "modules".
-- [CommandLine](https://gitlab.com/trevis/utilitybelt/wikis/CommandLine) - All available commands.
 - [AutoVendor](https://gitlab.com/trevis/utilitybelt/wikis/AutoVendor) - Automatically buy/sell based on a vtank loot profile when using a vendor.
 - [AutoSalvage](https://gitlab.com/trevis/utilitybelt/wikis/AutoSalvage) - Automatically salvage items in your inventory that match salvage rules from the currently loaded vtank loot profile.
 - [DungeonMaps](https://gitlab.com/trevis/utilitybelt/wikis/DungeonMaps) - Shows a map of the current dungeon on your screen.
 - [EmuConfig](https://gitlab.com/trevis/utilitybelt/wikis/EmuConfig) - Helper UI for reading/setting client config options on GDLE servers.
+- [ItemGiver](https://gitlab.com/trevis/utilitybelt/wikis/ItemGiver) - Command to give items matching a utl loot profile to a player/npc.
 - [QuestTracker](https://gitlab.com/trevis/utilitybelt/wikis/QuestTracker) - Shows quest timers.
 - [VisualNav](https://gitlab.com/trevis/utilitybelt/wikis/VisualNav) - Shows VTank nav route visually (like vi2 blue lines).
 
