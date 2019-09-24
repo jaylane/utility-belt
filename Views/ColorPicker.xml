@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<view icon="0" title="Decal Plugin" width="330" height="169">
+		<control progid="DecalControls.FixedLayout" clipped="">
+			<control progid="DecalControls.StaticText" name="Label" left="8" top="8" width="32" height="16" text="Alpha"/>
+			<control progid="DecalControls.Slider" name="Alpha" left="48" top="8" width="152" height="16" minimum="0" maximum="255" textcolor="0" vertical="0"/>
+			<control progid="DecalControls.StaticText" name="Label" left="8" top="32" width="32" height="16" text="Red"/>
+			<control progid="DecalControls.Slider" name="Red" left="48" top="32" width="152" height="16" minimum="0" maximum="255" textcolor="0" vertical="0"/>
+			<control progid="DecalControls.StaticText" name="Label" left="8" top="56" width="40" height="16" text="Green"/>
+			<control progid="DecalControls.Slider" name="Green" left="48" top="56" width="152" height="16" minimum="0" maximum="255" textcolor="0" vertical="0"/>
+			<control progid="DecalControls.StaticText" name="Label" left="8" top="80" width="32" height="16" text="Blue"/>
+			<control progid="DecalControls.Slider" name="Blue" left="48" top="80" width="152" height="16" minimum="0" maximum="255" textcolor="0" vertical="0"/>
+			<control progid="DecalControls.FixedLayout" name="ColorPreviewLayout" left="216" top="8" width="100" height="80">
+			</control>
+
+			<control progid="DecalControls.PushButton" name="Cancel" left="8" top="104" width="88" height="24" text="Cancel"/>
+			<control progid="DecalControls.PushButton" name="Save" left="230" top="104" width="88" height="24" text="Save"/>
+		</control>
+
+</view>

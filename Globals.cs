@@ -27,5 +27,6 @@ namespace UtilityBelt
         public static InventoryManager InventoryManager { get; internal set; }
         public static MapView MapView { get; internal set; }
         public static AutoVendor AutoVendor { get; set; }
+        public static Assessor Assessor { get; internal set; }
     }
 }

@@ -5,8 +5,10 @@ using System.Text;
 using Decal.Adapter.Wrappers;
 
 namespace UtilityBelt.Tools {
-    public static class Assessor {
+    public class Assessor : IDisposable {
+        private bool disposed = false;
         private static DateTime lastThought = DateTime.MinValue;
+        private static DateTime lastIdentRecieved = DateTime.UtcNow;
         public static int itemsNeedingData = 0;
 
         private static List<ObjectClass> SkippableObjectClasses = new List<ObjectClass>() {
@@ -18,10 +20,28 @@ namespace UtilityBelt.Tools {
             ObjectClass.Container,
             ObjectClass.Foci,
             ObjectClass.Food,
-            ObjectClass.Plant
+            ObjectClass.Plant,
+            ObjectClass.Lockpick,
+            ObjectClass.ManaStone,
+            ObjectClass.HealingKit,
+            ObjectClass.Ust,
+            ObjectClass.Book
         };
 
-        public static bool NeedsInventoryData() {
+        public Assessor() : base() {
+            Globals.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
+        }
+
+        private void WorldFilter_ChangeObject(object sender, ChangeObjectEventArgs e) {
+            try {
+                if (e.Change == WorldChangeType.IdentReceived) {
+                    lastIdentRecieved = DateTime.UtcNow;
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        public bool NeedsInventoryData() {
             bool needsData = false;
             itemsNeedingData = 0;
 
@@ -35,13 +55,13 @@ namespace UtilityBelt.Tools {
             return needsData;
         }
 
-        private static bool ItemNeedsIdData(WorldObject wo) {
+        private bool ItemNeedsIdData(WorldObject wo) {
             if (SkippableObjectClasses.Contains(wo.ObjectClass)) return false;
 
             return true;
         }
 
-        public static int GetNeededIdCount() {
+        public int GetNeededIdCount() {
             itemsNeedingData = 0;
 
             foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
@@ -53,7 +73,7 @@ namespace UtilityBelt.Tools {
             return itemsNeedingData;
         }
 
-        public static void RequestAll() {
+        public void RequestAll() {
             itemsNeedingData = 0;
 
             foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
@@ -69,13 +89,17 @@ namespace UtilityBelt.Tools {
             }
         }
 
-        public static void Think() {
-            if (DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(300)) {
-                lastThought = DateTime.UtcNow;
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-                if (NeedsInventoryData()) {
-
+        protected virtual void Dispose(bool disposing) {
+            if (!disposed) {
+                if (disposing) {
+                    Globals.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
                 }
+                disposed = true;
             }
         }
     }

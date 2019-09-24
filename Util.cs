@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Xml;
 using System.Linq;
 using System.Net;
+using Decal.Adapter;
 
 namespace UtilityBelt
 {
@@ -71,6 +72,56 @@ namespace UtilityBelt
             }
 
             File.AppendAllText(Path.Combine(Util.GetLogDirectory(), logFileName), message + Environment.NewLine);
+        }
+
+        internal static double GetDistance(CoordsObject c1, CoordsObject c2) {
+            return Math.Abs(Math.Sqrt(Math.Pow(c1.NorthSouth - c2.NorthSouth, 2) + Math.Pow(c1.EastWest - c2.EastWest, 2))) * 240;
+        }
+
+        internal static double GetDistance(Vector3Object v1, Vector3Object v2) {
+            return Math.Abs(Math.Sqrt(Math.Pow(v1.X - v2.X, 2) + Math.Pow(v1.Y - v2.Y, 2) + Math.Pow(v1.Z - v2.Z, 2))) * 240;
+        }
+
+        public static Object GetPropValue(this Object obj, String name) {
+            foreach (String part in name.Split('.')) {
+                if (obj == null) { return null; }
+
+                Type type = obj.GetType();
+                PropertyInfo info = type.GetProperty(part);
+                if (info == null) { return null; }
+
+                obj = info.GetValue(obj, null);
+            }
+            return obj;
+        }
+
+        public static T GetFieldValue<T>(this Object obj, String name) {
+            Object retval = GetFieldValue(obj, name);
+            //if (retval == null) { return default(T); }
+
+            // throws InvalidCastException if types are incompatible
+            return (T)retval;
+        }
+
+        public static Object GetFieldValue(this Object obj, String name) {
+            foreach (String part in name.Split('.')) {
+                if (obj == null) { return null; }
+
+                Type type = obj.GetType();
+                FieldInfo info = type.GetField(part);
+                if (info == null) { return null; }
+
+                obj = info.GetValue(obj);
+            }
+            return obj;
+        }
+
+        public static T GetPropValue<T>(this Object obj, String name) {
+            Object retval = GetPropValue(obj, name);
+            //if (retval == null) { return default(T); }
+
+            // throws InvalidCastException if types are incompatible
+            return (T)retval;
         }
 
         public static void WriteToChat(string message)
@@ -165,8 +216,11 @@ namespace UtilityBelt
 
             return count;
         }
+        internal static bool IsItemSafeToGetRidOf(int id) {
+            return IsItemSafeToGetRidOf(CoreManager.Current.WorldFilter[id]);
+        }
 
-        internal static bool ItemIsSafeToGetRidOf(WorldObject wo) {
+        internal static bool IsItemSafeToGetRidOf(WorldObject wo) {
             if (wo == null) return false;
 
             // skip packs

@@ -325,8 +325,8 @@ namespace UtilityBelt.Tools {
             // Load our loot profile
             ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
             
-            if (Assessor.NeedsInventoryData()) {
-                Assessor.RequestAll();
+            if (Globals.Assessor.NeedsInventoryData()) {
+                Globals.Assessor.RequestAll();
                 waitingForIds = true;
                 lastIdSpam = DateTime.UtcNow;
             }
@@ -377,13 +377,13 @@ namespace UtilityBelt.Tools {
                     lastThought = DateTime.UtcNow;
 
                     if (needsVendoring && waitingForIds) {
-                        if (Assessor.NeedsInventoryData()) {
+                        if (Globals.Assessor.NeedsInventoryData()) {
                             if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15)) {
                                 lastIdSpam = DateTime.UtcNow;
                                 startedVendoring = DateTime.UtcNow;
 
                                 if (Globals.Config.AutoVendor.Debug.Value == true) {
-                                    Util.WriteToChat(string.Format("AutoVendor Waiting to id {0} items, this will take approximately {0} seconds.", Assessor.GetNeededIdCount()));
+                                    Util.WriteToChat(string.Format("AutoVendor Waiting to id {0} items, this will take approximately {0} seconds.", Globals.Assessor.GetNeededIdCount()));
                                 }
                             }
 
@@ -749,7 +749,7 @@ namespace UtilityBelt.Tools {
             // skip retained
             if (wo.Values(BoolValueKey.Retained, false) == true) return false;
 
-            return Util.ItemIsSafeToGetRidOf(wo);
+            return Util.IsItemSafeToGetRidOf(wo);
         }
 
         private void DoTestMode() {

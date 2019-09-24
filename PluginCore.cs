@@ -18,6 +18,7 @@ namespace UtilityBelt
         private DungeonMaps dungeonMaps;
         private EmuConfig emuConfig;
         private QuestTracker questTracker;
+        private VisualVTankRoutes visualVTankRoutes;
         private Jumper jumper;
         private Counter counter;
         private ItemGiver itemGiver;
@@ -59,6 +60,7 @@ namespace UtilityBelt
                 Globals.MapView = new MapView();
                 Globals.InventoryManager = new InventoryManager();
                 Globals.AutoVendor = new AutoVendor();
+                Globals.Assessor = new Assessor();
 
                 autoSalvage = new AutoSalvage();
                 dungeonMaps = new DungeonMaps();
@@ -67,6 +69,7 @@ namespace UtilityBelt
                 jumper = new Jumper();
                 counter = new Counter();
                 itemGiver = new ItemGiver();
+                visualVTankRoutes = new VisualVTankRoutes();
 
                 Globals.Core.RenderFrame += Core_RenderFrame;
             }
@@ -81,6 +84,7 @@ namespace UtilityBelt
                 if (dungeonMaps != null) dungeonMaps.Think();
                 if (jumper != null) jumper.Think();
                 if (counter != null) counter.Think();
+                visualVTankRoutes.Think();
 
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Think();
             }
@@ -100,7 +104,9 @@ namespace UtilityBelt
                 if (jumper != null) jumper.Dispose();
                 if (counter != null) counter.Dispose();
                 if (itemGiver != null) itemGiver.Dispose();
+                if (visualVTankRoutes != null) visualVTankRoutes.Dispose();
                 if (Globals.AutoVendor != null) Globals.AutoVendor.Dispose();
+                if (Globals.Assessor != null) Globals.Assessor.Dispose();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();
                 if (Globals.MapView != null) Globals.MapView.Dispose();
                 if (Globals.MainView != null) Globals.MainView.Dispose();

@@ -64,6 +64,9 @@
     <Reference Include="Decal.FileService">
       <HintPath>C:\Program Files (x86)\Decal 3.0\Decal.FileService.dll</HintPath>
     </Reference>
+    <Reference Include="Decal.Interop.D3DService, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
     <Reference Include="Decal.Interop.Filters, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
@@ -88,11 +91,20 @@
     <Compile Include="Constants\CharOptions2.cs" />
     <Compile Include="Constants\CharOptions.cs" />
     <Compile Include="Globals.cs" />
+    <Compile Include="Lib\VTNav\enums.cs" />
+    <Compile Include="Lib\VTNav\Waypoints\VTNChat.cs" />
+    <Compile Include="Lib\VTNav\Waypoints\VTNJump.cs" />
+    <Compile Include="Lib\VTNav\Waypoints\VTNOpenVendor.cs" />
+    <Compile Include="Lib\VTNav\Waypoints\VTNPause.cs" />
+    <Compile Include="Lib\VTNav\Waypoints\VTNPoint.cs" />
+    <Compile Include="Lib\VTNav\Waypoints\VTNPortal.cs" />
+    <Compile Include="Lib\VTNav\Waypoints\VTNRecall.cs" />
+    <Compile Include="Lib\VTNav\Waypoints\VTNUseNPC.cs" />
     <Compile Include="Logger.cs" />
-    <Compile Include="MagTools\Shared\PostMessageTools.cs" />
-    <Compile Include="MagTools\Shared\Settings\Setting.cs" />
-    <Compile Include="MagTools\Shared\Settings\SettingsFile.cs" />
-    <Compile Include="MagTools\Shared\User32.cs" />
+    <Compile Include="Lib\MagTools\Shared\PostMessageTools.cs" />
+    <Compile Include="Lib\MagTools\Shared\Settings\Setting.cs" />
+    <Compile Include="Lib\MagTools\Shared\Settings\SettingsFile.cs" />
+    <Compile Include="Lib\MagTools\Shared\User32.cs" />
     <Compile Include="PluginCore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tools\Assessor.cs" />
@@ -105,7 +117,10 @@
     <Compile Include="Tools\ItemGiver.cs" />
     <Compile Include="Tools\Jumper.cs" />
     <Compile Include="Tools\QuestTracker.cs" />
+    <Compile Include="Tools\VisualVTankRoutes.cs" />
+    <Compile Include="Lib\VTNav\VTNavRoute.cs" />
     <Compile Include="Util.cs" />
+    <Compile Include="Views\ColorPicker.cs" />
     <Compile Include="Views\MapView.cs" />
     <Compile Include="Views\MainView.cs" />
     <Compile Include="VirindiViews\ViewSystemSelector.cs" />
@@ -123,9 +138,18 @@
     <EmbeddedResource Include="icons\utilitybelt.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="MagTools\license.md" />
+    <None Include="Lib\MagTools\license.md" />
   </ItemGroup>
   <ItemGroup>
+    <COMReference Include="D3DService">
+      <Guid>{8F6EF6AD-E982-40A4-B6CC-79E80B77313B}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
     <COMReference Include="Decal">
       <Guid>{FF7F5F6D-34E0-4B6F-B3BB-8141DE2EF732}</Guid>
       <VersionMajor>2</VersionMajor>
@@ -2015,7 +2039,9 @@
     <Content Include="Resources\tiles\998.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="Views\ColorPicker.xml" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
