@@ -1,6 +1,7 @@
 ## 0.0.3 (TBD)
 - Think when AutoSalvage bails due to open vendor (thanks Cosmic Jester)
-- Visual VTank Nav Lines (like vi2 blue nav lines)
+- Visual VTank Nav Lines (like vi2 blue nav lines, but fully customizable and local)
+- Hopefully fix issue where AutoVendor would get stuck with pyreals (instead of buying notes)
 - Dont try to sell / salvage retained
 - Added `/ub ig` ItemGiver command to give items matching a loot profile to another player (thanks Schneebly)
 - Added `/ub jump` commands (thanks Schneebly)
