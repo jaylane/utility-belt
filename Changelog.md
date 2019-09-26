@@ -1,4 +1,4 @@
-## 0.0.5 (2019-9-25) 
+## 0.0.5 (2019-9-25) [UtilityBeltInstaller-0.0.5.exe](/uploads/58ce3ed901ef81ad776a7e973f7ba704/UtilityBeltInstaller-0.0.5.exe)
 - UB now passes all local character vitals to vTank, to support Healing/Restaming/Infusing all characters running on the same computer, regardless of being in a fellowship.
 
 ## 0.0.4 (2019-9-24) [UtilityBeltInstaller-0.0.4.exe](/uploads/931df39dc0449bc0c5f05dcee59af12e/UtilityBeltInstaller-0.0.4.exe)
