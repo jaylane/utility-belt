@@ -55,6 +55,21 @@ namespace UtilityBelt.Tools {
             return needsData;
         }
 
+        public bool NeedsInventoryData(List<int> items) {
+            bool needsData = false;
+            itemsNeedingData = 0;
+
+            foreach (var id in items) {
+                var wo = Globals.Core.WorldFilter[id];
+                if (wo != null && !wo.HasIdData && ItemNeedsIdData(wo)) {
+                    needsData = true;
+                    itemsNeedingData++;
+                }
+            }
+
+            return needsData;
+        }
+
         private bool ItemNeedsIdData(WorldObject wo) {
             if (SkippableObjectClasses.Contains(wo.ObjectClass)) return false;
 
@@ -65,7 +80,7 @@ namespace UtilityBelt.Tools {
             itemsNeedingData = 0;
 
             foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
-                if (!wo.HasIdData) {
+                if (!wo.HasIdData && ItemNeedsIdData(wo)) {
                     itemsNeedingData++;
                 }
             }
@@ -73,11 +88,25 @@ namespace UtilityBelt.Tools {
             return itemsNeedingData;
         }
 
-        public void RequestAll() {
+        public int GetNeededIdCount(List<int> items) {
+            itemsNeedingData = 0;
+            foreach (var id in items) {
+                var wo = Globals.Core.WorldFilter[id];
+                if (wo != null && !wo.HasIdData && ItemNeedsIdData(wo)) {
+                    itemsNeedingData++;
+                }
+            }
+
+            return itemsNeedingData;
+        }
+
+        internal void RequestAll(List<int> items) {
             itemsNeedingData = 0;
 
-            foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
-                if (!wo.HasIdData && ItemNeedsIdData(wo)) {
+            foreach (var id in items) {
+                var wo = Globals.Core.WorldFilter[id];
+
+                if (wo != null && !wo.HasIdData && ItemNeedsIdData(wo)) {
                     Globals.Core.Actions.RequestId(wo.Id);
 
                     itemsNeedingData++;
@@ -87,6 +116,16 @@ namespace UtilityBelt.Tools {
             if (itemsNeedingData > 0) {
                 Util.WriteToChat(String.Format("Requesting id data for {0} inventory items. This will take approximately {0} seconds.", itemsNeedingData));
             }
+        }
+
+        public void RequestAll() {
+            var ids = new List<int>();
+
+            foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
+                ids.Add(wo.Id);
+            }
+
+            RequestAll(ids);
         }
 
         public void Dispose() {

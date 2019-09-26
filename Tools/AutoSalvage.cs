@@ -8,6 +8,8 @@ using VirindiViewService.Controls;
 
 namespace UtilityBelt.Tools {
     class AutoSalvage : IDisposable {
+        public const int RETRY_COUNT = 3;
+
         private List<int> inventoryItems = new List<int>();
         private List<int> salvageItemIds = new List<int>();
         private List<int> blacklistedIds = new List<int>();
@@ -23,6 +25,9 @@ namespace UtilityBelt.Tools {
         private bool readyToSalvage = false;
         private bool openedSalvageWindow = false;
         private bool disposed = false;
+
+        private int lastSalvageId = 0;
+        private int salvageRetryCount = 0;
 
         public AutoSalvage() {
             Globals.Core.CommandLineText += Current_CommandLineText;
@@ -116,20 +121,15 @@ namespace UtilityBelt.Tools {
         }
 
         public void LoadInventory() {
-            Globals.Assessor.RequestAll();
-
             var inventory = Globals.Core.WorldFilter.GetInventory();
-            var requestedIdsCount = Globals.Assessor.GetNeededIdCount();
 
             foreach (var item in inventory) {
                 if (!AllowedToSalvageItem(item)) continue;
 
                 inventoryItems.Add(item.Id);
             }
-
-            if (requestedIdsCount > 0) {
-                Util.WriteToChat(String.Format("AutoSalvage: Requesting id data for {0}/{1} inventory items. This will take approximately {2} seconds.", requestedIdsCount, inventoryItems.Count, requestedIdsCount));
-            }
+            
+            Globals.Assessor.RequestAll(inventoryItems);
         }
 
         private bool AllowedToSalvageItem(WorldObject item) {
@@ -174,6 +174,7 @@ namespace UtilityBelt.Tools {
                     var item = Globals.Core.WorldFilter[id];
 
                     if (!AllowedToSalvageItem(item)) continue;
+                    if (blacklistedIds.Contains(id)) continue;
 
                     if (result.SimpleAction == uTank2.eLootAction.Salvage) {
                         salvageIds.Add(id);
@@ -192,6 +193,8 @@ namespace UtilityBelt.Tools {
                 
             // TODO: do multiple passes taking workmanship and loot rules into account
             foreach (var id in salvageIds) {
+                if (blacklistedIds.Contains(id)) continue;
+
                 Globals.Core.Actions.SalvagePanelAdd(id);
 
                 if (Globals.Config.AutoSalvage.Debug.Value == true) {
@@ -199,6 +202,18 @@ namespace UtilityBelt.Tools {
                 }
 
                 if (shouldSalvage) {
+                    if (lastSalvageId == id) {
+                        salvageRetryCount++;
+                    }
+                    else {
+                        lastSalvageId = id;
+                        salvageRetryCount = 1;
+                    }
+
+                    if (salvageRetryCount >= RETRY_COUNT) {
+                        blacklistedIds.Add(id);
+                    }
+
                     break;
                 }
             }
@@ -211,7 +226,7 @@ namespace UtilityBelt.Tools {
                 lastThought = DateTime.UtcNow;
 
                 if (isRunning) {
-                    bool hasAllItemData = !Globals.Assessor.NeedsInventoryData();
+                    bool hasAllItemData = !Globals.Assessor.NeedsInventoryData(inventoryItems);
 
                     if (Globals.AutoVendor.HasVendorOpen()) {
                         Util.WriteToChat("AutoSalvage bailing, vendor is open.");
