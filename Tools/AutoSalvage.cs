@@ -29,6 +29,8 @@ namespace UtilityBelt.Tools {
         private int lastSalvageId = 0;
         private int salvageRetryCount = 0;
 
+        private Dictionary<int, bool> lootClassificationCache = new Dictionary<int, bool>();
+
         public AutoSalvage() {
             Globals.Core.CommandLineText += Current_CommandLineText;
 
@@ -76,8 +78,6 @@ namespace UtilityBelt.Tools {
                     e.Eat = true;
 
                     Start(force);
-
-                    return;
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -86,19 +86,13 @@ namespace UtilityBelt.Tools {
         public void Start(bool force = false) {
             if (Globals.AutoVendor.HasVendorOpen() == false) {
                 isRunning = true;
-                openedSalvageWindow = false;
                 shouldSalvage = force;
 
                 Reset();
                 LoadInventory();
             }
             else {
-                Util.WriteToChat("AutoSalvage bailing, vendor is open.");
-
-                if (Globals.Config.AutoSalvage.Think.Value == true)
-                {
-                    Util.Think("AutoSalvage complete.");
-                }
+                Stop();
             }
         }
 
@@ -117,7 +111,9 @@ namespace UtilityBelt.Tools {
         public void Reset() {
             inventoryItems.Clear();
             salvageItemIds.Clear();
+            lootClassificationCache.Clear();
             readyToSalvage = false;
+            openedSalvageWindow = false;
         }
 
         public void LoadInventory() {
@@ -141,11 +137,10 @@ namespace UtilityBelt.Tools {
             // only things with a material
             if (item.Values(LongValueKey.Material, 0) <= 0) return false;
 
-            return true;
-        }
+            // blacklisted items
+            if (blacklistedIds.Contains(item.Id)) return false;
 
-        private bool NeedsID(int id) {
-            return uTank2.PluginCore.PC.FLootPluginQueryNeedsID(id);
+            return true;
         }
 
         private bool OpenSalvageWindow() {
@@ -161,113 +156,94 @@ namespace UtilityBelt.Tools {
 
             if (!foundUst) {
                 Util.WriteToChat("AutoSalvage: No ust in inventory, can't salvage.");
+                Stop();
             }
 
             return foundUst;
         }
 
-        private List<int> GetSalvageIds() {
-            var salvageIds = new List<int>();
-            foreach (var id in inventoryItems) {
+        private int GetNextSalvageId() {
+            var list = new List<int>(inventoryItems);
+
+            foreach (var id in list) {
                 try {
-                    var result = uTank2.PluginCore.PC.FLootPluginClassifyImmediate(id);
                     var item = Globals.Core.WorldFilter[id];
-
                     if (!AllowedToSalvageItem(item)) continue;
-                    if (blacklistedIds.Contains(id)) continue;
 
-                    if (result.SimpleAction == uTank2.eLootAction.Salvage) {
-                        salvageIds.Add(id);
+                    if (lootClassificationCache.ContainsKey(id)) {
+                        inventoryItems.Remove(id);
+                        if (lootClassificationCache[id] == true) {
+                            return id;
+                        }
+
+                        continue;
+                    }
+                    else {
+                        var result = uTank2.PluginCore.PC.FLootPluginClassifyImmediate(id);
+
+                        lootClassificationCache.Add(id, result.SimpleAction == uTank2.eLootAction.Salvage);
+
+                        if (result.SimpleAction == uTank2.eLootAction.Salvage) {
+                            return id;
+                        }
                     }
                 }
                 catch (Exception ex) { Logger.LogException(ex); }
             }
-
-            return salvageIds;
+            
+            return 0;
         }
 
         private void AddSalvageToWindow() {
-            var salvageIds = GetSalvageIds();
+            var id = GetNextSalvageId();
 
-            Util.WriteToChat(String.Format("AutoSalvage: Found {0} items to salvage.", salvageIds.Count));
-                
-            // TODO: do multiple passes taking workmanship and loot rules into account
-            foreach (var id in salvageIds) {
-                if (blacklistedIds.Contains(id)) continue;
+            if (id == 0) {
+                Stop();
+                return;
+            }
 
-                Globals.Core.Actions.SalvagePanelAdd(id);
+            Globals.Core.Actions.SalvagePanelAdd(id);
+            inventoryItems.Remove(id);
 
-                if (Globals.Config.AutoSalvage.Debug.Value == true) {
-                    Util.WriteToChat(String.Format("AutoSalvage: Add: {0}", Util.GetObjectName(id)));
-                }
-
-                if (shouldSalvage) {
-                    if (lastSalvageId == id) {
-                        salvageRetryCount++;
-                    }
-                    else {
-                        lastSalvageId = id;
-                        salvageRetryCount = 1;
-                    }
-
-                    if (salvageRetryCount >= RETRY_COUNT) {
-                        blacklistedIds.Add(id);
-                    }
-
-                    break;
-                }
+            if (Globals.Config.AutoSalvage.Debug.Value == true) {
+                Util.WriteToChat($"AutoSalvage: Add: {Util.GetObjectName(id)}");
             }
 
             readyToSalvage = true;
         }
 
         public void Think() {
-            if (DateTime.UtcNow - lastThought > TimeSpan.FromMilliseconds(600)) {
+            if (!isRunning) return;
+
+            if (DateTime.UtcNow - lastThought > TimeSpan.FromMilliseconds(100)) {
                 lastThought = DateTime.UtcNow;
+                
+                bool hasAllItemData = !Globals.Assessor.NeedsInventoryData(inventoryItems);
 
-                if (isRunning) {
-                    bool hasAllItemData = !Globals.Assessor.NeedsInventoryData(inventoryItems);
+                if (Globals.AutoVendor.HasVendorOpen()) {
+                    Util.WriteToChat("AutoSalvage bailing, vendor is open.");
+                    Stop();
+                    return;
+                }
 
-                    if (Globals.AutoVendor.HasVendorOpen()) {
-                        Util.WriteToChat("AutoSalvage bailing, vendor is open.");
-                        Stop();
+                if (readyToSalvage && shouldSalvage) {
+                    readyToSalvage = false;
+                    Globals.Core.Actions.SalvagePanelSalvage();
+                    return;
+                }
+
+                if (isRunning && hasAllItemData) {
+                    if (openedSalvageWindow) {
+                        AddSalvageToWindow();
                         return;
                     }
-
-                    if (readyToSalvage) {
-                        readyToSalvage = false;
-
-                        if (shouldSalvage) {
-                            Globals.Core.Actions.SalvagePanelSalvage();
-                        }
-                        else {
-                            if ((Globals.Core.CharacterFilter.CharacterOptionFlags & (int)CharOptions2.SalvageMultiple) == 0) {
-                                Util.WriteToChat("AutoSalvage: SalvageMultiple config option is turned off, so I can only add one item to the salvage window.");
-                            }
-
-                            Stop();
-                        }
-
-                        return;
-                    }
-
-                    if (isRunning && hasAllItemData) {
-                        if (GetSalvageIds().Count == 0) {
+                    else {
+                        if (!OpenSalvageWindow()) {
                             Stop();
                             return;
                         }
 
-                        if (openedSalvageWindow) {
-                            AddSalvageToWindow();
-                            return;
-                        }
-
-                        if (OpenSalvageWindow()) {
-                            openedSalvageWindow = true;
-                        }
-                        else {
-                            Stop();
-                        }
+                        openedSalvageWindow = true;
                     }
                 }
             }

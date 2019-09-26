@@ -25,7 +25,13 @@ namespace UtilityBelt.Tools {
             ObjectClass.ManaStone,
             ObjectClass.HealingKit,
             ObjectClass.Ust,
-            ObjectClass.Book
+            ObjectClass.Book,
+            ObjectClass.CraftedAlchemy,
+            ObjectClass.CraftedCooking,
+            ObjectClass.CraftedFletching,
+            ObjectClass.Misc,
+            ObjectClass.Gem,
+            ObjectClass.Key
         };
 
         public Assessor() : base() {
