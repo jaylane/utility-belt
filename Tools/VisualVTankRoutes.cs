@@ -1,11 +1,7 @@
 ﻿using Decal.Adapter;
 using System;
 using Decal.Adapter.Wrappers;
-using Decal.Filters;
-using UtilityBelt.MagTools.Shared;
-using System.Text.RegularExpressions;
 using System.IO;
-using UtilityBelt.Lib;
 using UtilityBelt.Lib.VTNav;
 using System.Drawing;
 using System.Collections.Generic;
@@ -19,7 +15,6 @@ namespace UtilityBelt.Tools {
         private bool disposed = false;
         private string currentRoutePath = "";
         private VTNavRoute currentRoute = null;
-        private bool doThatSell = false;
         private bool forceUpdate = false;
         public bool needsDraw = false;
 
@@ -171,8 +166,9 @@ namespace UtilityBelt.Tools {
             try {
                 if (e.Text.StartsWith("/ub testroutes")) {
                     needsDraw = true;
+                    e.Eat = true;
                 }
-            }
+}
             catch (Exception ex) { Logger.LogException(ex); }
         }
 

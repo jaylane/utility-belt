@@ -22,6 +22,7 @@ namespace UtilityBelt
         private Jumper jumper;
         private Counter counter;
         private ItemGiver itemGiver;
+        private VTankFellowHeals vTankFellowHeals;
         private DateTime lastThought = DateTime.MinValue;
 
         /// <summary>
@@ -70,6 +71,7 @@ namespace UtilityBelt
                 counter = new Counter();
                 itemGiver = new ItemGiver();
                 visualVTankRoutes = new VisualVTankRoutes();
+                vTankFellowHeals = new VTankFellowHeals();
 
                 Globals.Core.RenderFrame += Core_RenderFrame;
             }
@@ -78,13 +80,14 @@ namespace UtilityBelt
 
         private void Core_RenderFrame(object sender, EventArgs e) {
             try {
+                if (vTankFellowHeals != null) vTankFellowHeals.Think();
                 if (autoSalvage != null) autoSalvage.Think();
                 if (Globals.AutoVendor != null) Globals.AutoVendor.Think();
                 if (itemGiver != null) itemGiver.Think();
                 if (dungeonMaps != null) dungeonMaps.Think();
                 if (jumper != null) jumper.Think();
                 if (counter != null) counter.Think();
-                visualVTankRoutes.Think();
+                if (visualVTankRoutes != null) visualVTankRoutes.Think();
 
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Think();
             }
@@ -105,6 +108,7 @@ namespace UtilityBelt
                 if (counter != null) counter.Dispose();
                 if (itemGiver != null) itemGiver.Dispose();
                 if (visualVTankRoutes != null) visualVTankRoutes.Dispose();
+                if (vTankFellowHeals != null) vTankFellowHeals.Dispose();
                 if (Globals.AutoVendor != null) Globals.AutoVendor.Dispose();
                 if (Globals.Assessor != null) Globals.Assessor.Dispose();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();
