@@ -331,7 +331,16 @@ namespace UtilityBelt
 
             if (wo.Values(LongValueKey.Material, 0) > 0) {
                 FileService service = Globals.Core.Filter<FileService>();
-                return string.Format("{0} {1}", service.MaterialTable.GetById(wo.Values(LongValueKey.Material, 0)), wo.Name); 
+                var material = service.MaterialTable.GetById(wo.Values(LongValueKey.Material, 0));
+
+                // this accounts for gems, where the material is the same as the name.  That way we don't
+                // get names like Jet Jet or White Sapphire White Sapphire
+                if (material.Name == wo.Name) {
+                    return wo.Name;
+                }
+                else {
+                    return string.Format("{0} {1}", material.Name, wo.Name);
+                }
             }
             else {
                 return string.Format("{0}", wo.Name);
