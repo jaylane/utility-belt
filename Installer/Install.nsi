@@ -1,7 +1,7 @@
 ; Define your application name
 !define APPNAME "UtilityBelt"
 !define SOFTWARECOMPANY "SunnujDecalPlugins"
-!define VERSION	"0.0.4"
+!define VERSION	"0.0.5"
 !define APPGUID "{c51788b5-3c43-471a-8034-79d5865fd7bd}"
 
 !define ASSEMBLY "UtilityBelt.dll"
@@ -49,6 +49,7 @@ Section "" CoreSection
 	SetOutPath "$INSTDIR\"
 
 	File "${BUILDPATH}\${ASSEMBLY}"
+	File "${BUILDPATH}\SharedMemory.dll"
 
 	SetOutPath "$INSTDIR\Resources\tiles"
 	File "${BUILDPATH}\Resources\tiles\*.bmp"
@@ -97,6 +98,7 @@ Section Uninstall
 
 	;Clean up
 	Delete "$INSTDIR\${ASSEMBLY}"
+	Delete "$INSTDIR\SharedMemory.dll"
 	Delete "${BUILDPATH}\Resources\tiles\*.bmp"
 	Delete "${BUILDPATH}\Resources\quests.xml"
 	;Delete "$INSTDIR\ADDITIONALFILES"

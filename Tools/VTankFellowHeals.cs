@@ -90,7 +90,7 @@ namespace UtilityBelt.Tools {
 
         public const string BUFFER_NAME = "UtilityBeltyVTankFellowHealsBuffer";
         public const int UPDATE_TIMEOUT = 10; // seconds
-        public const int UPDATE_INTERVAL = 2; // seconds
+        public const int UPDATE_INTERVAL = 1; // seconds
         public int UPDATE_SIZE = Marshal.SizeOf(typeof(UBPlayerUpdate));
         public int BUFFER_SIZE = Marshal.SizeOf(typeof(UBPlayerUpdate)) * 200;
 

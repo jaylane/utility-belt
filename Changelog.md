@@ -1,3 +1,6 @@
+## 0.0.5 (2019-9-25) 
+- UB now passes all local character vitals to vTank, to support Healing/Restaming/Infusing all characters running on the same computer, regardless of being in a fellowship.
+
 ## 0.0.4 (2019-9-24) [UtilityBeltInstaller-0.0.4.exe](/uploads/931df39dc0449bc0c5f05dcee59af12e/UtilityBeltInstaller-0.0.4.exe)
 - Fixed hardcoded vtank profiles path :)
 - VTank nav parser now only reads recordCount records, so it ignores trailing blank lines in the file
