@@ -8,19 +8,24 @@ using static uTank2.PluginCore;
 
 namespace UtilityBelt.Tools {
     class VTankControl {
-        private static cExternalInterfaceTrustedRelay vTank;
+        private static Dictionary<eExternalsPermissionLevel, cExternalInterfaceTrustedRelay> vTankInstances = new Dictionary<eExternalsPermissionLevel, cExternalInterfaceTrustedRelay>();
 
         public VTankControl() {
         }
 
-        public static cExternalInterfaceTrustedRelay GetVTankInterface() {
-            if (vTank != null && vTank.PermissionLevel == eExternalsPermissionLevel.FullUnderlying) return vTank;
+        public static cExternalInterfaceTrustedRelay GetVTankInterface(eExternalsPermissionLevel permissionLevel) {
+            if (vTankInstances.ContainsKey(permissionLevel)) {
+                return vTankInstances[permissionLevel];
+            }
 
+            cExternalInterfaceTrustedRelay vTank;
             ConstructorInfo ctor = typeof(cExternalInterfaceTrustedRelay).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)[0];
             vTank = (cExternalInterfaceTrustedRelay)ctor.Invoke(new object[] { eExternalsPermissionLevel.None });
 
             FieldInfo fieldInfo = vTank.GetType().GetField("a", BindingFlags.NonPublic | BindingFlags.Instance);
-            fieldInfo.SetValue(vTank, eExternalsPermissionLevel.FullUnderlying);
+            fieldInfo.SetValue(vTank, permissionLevel);
+
+            vTankInstances.Add(permissionLevel, vTank);
 
             return vTank;
         }

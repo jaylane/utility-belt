@@ -9,7 +9,7 @@ using VirindiViewService.Controls;
 namespace UtilityBelt.Tools {
     class AutoSalvage : IDisposable {
         public const int RETRY_COUNT = 3;
-        private const int THINK_INTERVAL_MS = 200;
+        private const int THINK_INTERVAL_MS = 100;
         private List<int> inventoryItems = new List<int>();
         private List<int> salvageItemIds = new List<int>();
         private List<int> blacklistedIds = new List<int>();

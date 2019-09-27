@@ -95,7 +95,7 @@ namespace UtilityBelt.Tools {
         public int BUFFER_SIZE = Marshal.SizeOf(typeof(UBPlayerUpdate)) * 200;
 
         public VTankFellowHeals() {
-            vTank = VTankControl.GetVTankInterface();
+            vTank = VTankControl.GetVTankInterface(eExternalsPermissionLevel.FullUnderlying);
 
             try {
                 sharedBuffer = new SharedMemory.BufferReadWrite(BUFFER_NAME, BUFFER_SIZE);
