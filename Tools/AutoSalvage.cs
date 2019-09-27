@@ -9,7 +9,7 @@ using VirindiViewService.Controls;
 namespace UtilityBelt.Tools {
     class AutoSalvage : IDisposable {
         public const int RETRY_COUNT = 3;
-
+        private const int THINK_INTERVAL_MS = 200;
         private List<int> inventoryItems = new List<int>();
         private List<int> salvageItemIds = new List<int>();
         private List<int> blacklistedIds = new List<int>();
@@ -33,6 +33,7 @@ namespace UtilityBelt.Tools {
 
         public AutoSalvage() {
             Globals.Core.CommandLineText += Current_CommandLineText;
+            Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
 
             UIAutoSalvageStart = Globals.MainView.view != null ? (HudButton)Globals.MainView.view["AutoSalvageStart"] : new HudButton();
             UIAutoSalvageStart.Hit += UIAutoSalvageStart_Hit;
@@ -46,6 +47,15 @@ namespace UtilityBelt.Tools {
             UIAutoSalvageThink.Checked = Globals.Config.AutoSalvage.Think.Value;
             UIAutoSalvageThink.Change += UIAutoSalvageThink_Change;
             Globals.Config.AutoSalvage.Think.Changed += Config_AutoSalvage_Think_Changed;
+        }
+
+        private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
+            try {
+                if (e.New.ObjectClass == ObjectClass.Salvage) {
+                    lastThought = DateTime.UtcNow - TimeSpan.FromMilliseconds(THINK_INTERVAL_MS);
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UIAutoSalvageStart_Hit(object sender, EventArgs e) {
@@ -215,7 +225,7 @@ namespace UtilityBelt.Tools {
         public void Think() {
             if (!isRunning) return;
 
-            if (DateTime.UtcNow - lastThought > TimeSpan.FromMilliseconds(100)) {
+            if (DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(THINK_INTERVAL_MS)) {
                 lastThought = DateTime.UtcNow;
                 
                 bool hasAllItemData = !Globals.Assessor.NeedsInventoryData(inventoryItems);
@@ -229,6 +239,7 @@ namespace UtilityBelt.Tools {
                 if (readyToSalvage && shouldSalvage) {
                     readyToSalvage = false;
                     Globals.Core.Actions.SalvagePanelSalvage();
+                    lastThought = DateTime.UtcNow + TimeSpan.FromMilliseconds(800);
                     return;
                 }
 
@@ -258,6 +269,7 @@ namespace UtilityBelt.Tools {
             if (!disposed) {
                 if (disposing) {
                     Globals.Core.CommandLineText -= Current_CommandLineText;
+                    Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
                 }
                 disposed = true;
             }
