@@ -174,11 +174,11 @@ namespace UtilityBelt
         internal static string GetVTankProfilesDirectory() {
             var defaultPath = @"C:\Games\VirindiPlugins\VirindiTank\";
             try {
-                var key = @"HKEY_CURRENT_USER\Software\Classes\VirtualStore\MACHINE\SOFTWARE\WOW6432Node\Decal\Plugins\{642F1F48-16BE-48BF-B1D4-286652C4533E}";
-                string path = (string)Registry.GetValue(key, "ProfilePath", "");
+                var key = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Decal\Plugins\{642F1F48-16BE-48BF-B1D4-286652C4533E}";
+                var path = (string)Registry.GetValue(key, "ProfilePath", "");
 
                 if (string.IsNullOrEmpty(path)) {
-                    key = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Decal\Plugins\{642F1F48-16BE-48BF-B1D4-286652C4533E}";
+                    key = @"HKEY_CURRENT_USER\Software\Classes\VirtualStore\MACHINE\SOFTWARE\WOW6432Node\Decal\Plugins\{642F1F48-16BE-48BF-B1D4-286652C4533E}";
                     path = (string)Registry.GetValue(key, "ProfilePath", "");
                 }
 
@@ -245,6 +245,12 @@ namespace UtilityBelt
 
         internal static bool IsItemSafeToGetRidOf(WorldObject wo) {
             if (wo == null) return false;
+
+            // skip attuned
+            if (wo.Values(LongValueKey.Attuned, 0) > 1) return false;
+
+            // skip retained
+            if (wo.Values(BoolValueKey.Retained, false) == true) return false;
 
             // skip packs
             if (wo.ObjectClass == ObjectClass.Container) return false;

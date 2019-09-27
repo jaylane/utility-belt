@@ -739,15 +739,9 @@ namespace UtilityBelt.Tools {
 
         private bool ItemIsSafeToGetRidOf(WorldObject wo) {
             if (wo == null) return false;
-            
-            // skip attuned
-            if (wo.Values(LongValueKey.Attuned, 0) > 1) return false;
 
             // skip 0 value
             if (wo.Values(LongValueKey.Value, 0) <= 0) return false;
-
-            // skip retained
-            if (wo.Values(BoolValueKey.Retained, false) == true) return false;
 
             return Util.IsItemSafeToGetRidOf(wo);
         }
