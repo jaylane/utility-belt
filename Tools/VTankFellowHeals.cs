@@ -7,80 +7,9 @@ using static uTank2.PluginCore;
 using Decal.Adapter.Wrappers;
 using System.Runtime.InteropServices;
 using SharedMemory;
+using UtilityBelt.Lib;
 
 namespace UtilityBelt.Tools {
-    public struct UBPlayerUpdate {
-        public int PlayerID;
-        public bool HasHealthInfo;
-        public bool HasManaInfo;
-        public bool HasStamInfo;
-        public int curHealth;
-        public int curStam;
-        public int curMana;
-        public int maxHealth;
-        public int maxStam;
-        public int maxMana;
-        public DateTime lastUpdate;
-
-        public string Server;
-
-        public int Serialize(BufferReadWrite sharedBuffer, int offset) {
-            sharedBuffer.Write(ref PlayerID, offset); offset += sizeof(int);
-            sharedBuffer.Write(ref HasHealthInfo, offset); offset += sizeof(bool);
-            sharedBuffer.Write(ref HasManaInfo, offset); offset += sizeof(bool);
-            sharedBuffer.Write(ref HasStamInfo, offset); offset += sizeof(bool);
-            sharedBuffer.Write(ref curHealth, offset); offset += sizeof(int);
-            sharedBuffer.Write(ref curStam, offset); offset += sizeof(int);
-            sharedBuffer.Write(ref curMana, offset); offset += sizeof(int);
-            sharedBuffer.Write(ref maxHealth, offset); offset += sizeof(int);
-            sharedBuffer.Write(ref maxStam, offset); offset += sizeof(int);
-            sharedBuffer.Write(ref maxMana, offset); offset += sizeof(int);
-
-            double lastUpdateUnixTime = (Int32)(lastUpdate.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
-
-            sharedBuffer.Write(ref lastUpdateUnixTime, offset); offset += sizeof(double);
-
-            var serverName = Server.ToCharArray();
-            int serverNameLength = serverName.Length;
-            sharedBuffer.Write(ref serverNameLength, offset); offset += sizeof(int);
-
-            for (var i = 0; i < serverNameLength; i++) {
-                char c = serverName[i];
-                sharedBuffer.Write(ref c, offset); offset += sizeof(char);
-            }
-
-            return offset;
-        }
-
-        public int Deserialize(BufferReadWrite sharedBuffer, int offset) {
-            sharedBuffer.Read(out PlayerID, offset); offset += sizeof(int);
-            sharedBuffer.Read(out HasHealthInfo, offset); offset += sizeof(bool);
-            sharedBuffer.Read(out HasManaInfo, offset); offset += sizeof(bool);
-            sharedBuffer.Read(out HasStamInfo, offset); offset += sizeof(bool);
-            sharedBuffer.Read(out curHealth, offset); offset += sizeof(int);
-            sharedBuffer.Read(out curStam, offset); offset += sizeof(int);
-            sharedBuffer.Read(out curMana, offset); offset += sizeof(int);
-            sharedBuffer.Read(out maxHealth, offset); offset += sizeof(int);
-            sharedBuffer.Read(out maxStam, offset); offset += sizeof(int);
-            sharedBuffer.Read(out maxMana, offset); offset += sizeof(int);
-            sharedBuffer.Read(out double lastUpdateUnixTime, offset); offset += sizeof(double);
-
-            lastUpdate = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-            lastUpdate = lastUpdate.AddSeconds(lastUpdateUnixTime);
-
-            sharedBuffer.Read(out int serverNameLength, offset); offset += sizeof(int);
-
-            var serverNameBuffer = new char[serverNameLength];
-            for (var i = 0; i < serverNameLength; i++) {
-                sharedBuffer.Read(out char c, offset); offset += sizeof(char);
-                serverNameBuffer[i] = c;
-            }
-
-            Server = new string(serverNameBuffer);
-
-            return offset;
-        }
-    }
 
     public class VTankFellowHeals : IDisposable {
         cExternalInterfaceTrustedRelay vTank;
@@ -91,14 +20,17 @@ namespace UtilityBelt.Tools {
         public const string BUFFER_NAME = "UtilityBeltyVTankFellowHealsBuffer";
         public const int UPDATE_TIMEOUT = 10; // seconds
         public const int UPDATE_INTERVAL = 1; // seconds
-        public int UPDATE_SIZE = Marshal.SizeOf(typeof(UBPlayerUpdate));
-        public int BUFFER_SIZE = Marshal.SizeOf(typeof(UBPlayerUpdate)) * 200;
+        public int BUFFER_SIZE = 1024 * 1024;
 
         public VTankFellowHeals() {
             vTank = VTankControl.GetVTankInterface(eExternalsPermissionLevel.FullUnderlying);
 
             try {
                 sharedBuffer = new SharedMemory.BufferReadWrite(BUFFER_NAME, BUFFER_SIZE);
+
+                // write a blank record count if we are the first ones here
+                var d = 0;
+                sharedBuffer.Write<int>(ref d);
             }
             catch (Exception ex) {
                 sharedBuffer = new SharedMemory.BufferReadWrite(BUFFER_NAME);
@@ -129,8 +61,6 @@ namespace UtilityBelt.Tools {
                 var i = 0;
 
                 sharedBuffer.Read<int>(out recordCount);
-
-                //Util.WriteToChat($"UpdateMySharedVitals: recordCount:{recordCount}");
 
                 int offset = sizeof(int);
                 while (i < recordCount && offset <= sharedBuffer.BufferSize) {
