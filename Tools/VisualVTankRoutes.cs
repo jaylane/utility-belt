@@ -168,7 +168,7 @@ namespace UtilityBelt.Tools {
                     needsDraw = true;
                     e.Eat = true;
                 }
-}
+            }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
