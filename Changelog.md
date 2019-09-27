@@ -1,3 +1,9 @@
+## 0.0.6 (2019-9-27)
+- Fix VTank location from registry
+- Fix gem names so they don't prepend material names and end up like "Jet Jet"
+- AutoSalvage performance
+- Assessor performance
+
 ## 0.0.5 (2019-9-25) [UtilityBeltInstaller-0.0.5.exe](/uploads/58ce3ed901ef81ad776a7e973f7ba704/UtilityBeltInstaller-0.0.5.exe)
 - UB now passes all local character vitals to vTank, to support Healing/Restaming/Infusing all characters running on the same computer, regardless of being in a fellowship.
 
