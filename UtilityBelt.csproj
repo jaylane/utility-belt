@@ -94,10 +94,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Config.cs" />
+    <Compile Include="Lib\Config.cs" />
     <Compile Include="Constants\CharOptions2.cs" />
     <Compile Include="Constants\CharOptions.cs" />
-    <Compile Include="Globals.cs" />
+    <Compile Include="Lib\Globals.cs" />
     <Compile Include="Lib\DungeonMaps\DungeonCell.cs" />
     <Compile Include="Lib\DungeonMaps\LandBlock.cs" />
     <Compile Include="Lib\DungeonMaps\LandBlockCache.cs" />
@@ -118,7 +118,7 @@
     <Compile Include="Lib\VTNav\Waypoints\VTNPortal.cs" />
     <Compile Include="Lib\VTNav\Waypoints\VTNRecall.cs" />
     <Compile Include="Lib\VTNav\Waypoints\VTNUseNPC.cs" />
-    <Compile Include="Logger.cs" />
+    <Compile Include="Lib\Logger.cs" />
     <Compile Include="Lib\MagTools\Shared\PostMessageTools.cs" />
     <Compile Include="Lib\MagTools\Shared\Settings\Setting.cs" />
     <Compile Include="Lib\MagTools\Shared\Settings\SettingsFile.cs" />
@@ -140,7 +140,7 @@
     <Compile Include="Lib\VTNav\VTNavRoute.cs" />
     <Compile Include="Tools\VTankControl.cs" />
     <Compile Include="Tools\VTankFellowHeals.cs" />
-    <Compile Include="Util.cs" />
+    <Compile Include="Lib\Util.cs" />
     <Compile Include="Views\ColorPicker.cs" />
     <Compile Include="Views\MapView.cs" />
     <Compile Include="Views\MainView.cs" />
@@ -160,8 +160,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Changelog.md" />
+    <None Include="Installer\Install.nsi" />
     <None Include="Lib\MagTools\license.md" />
     <None Include="packages.config" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="D3DService">
