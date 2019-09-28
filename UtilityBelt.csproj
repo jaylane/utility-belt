@@ -95,6 +95,11 @@
     <Compile Include="Constants\CharOptions2.cs" />
     <Compile Include="Constants\CharOptions.cs" />
     <Compile Include="Globals.cs" />
+    <Compile Include="Lib\DungeonMaps\DungeonCell.cs" />
+    <Compile Include="Lib\DungeonMaps\LandBlock.cs" />
+    <Compile Include="Lib\DungeonMaps\LandBlockCache.cs" />
+    <Compile Include="Lib\DungeonMaps\Portal.cs" />
+    <Compile Include="Lib\DungeonMaps\TileCache.cs" />
     <Compile Include="Lib\UBPlayerUpdate.cs" />
     <Compile Include="Lib\VendorCache\BuyItem.cs" />
     <Compile Include="Lib\VendorCache\VendorCache.cs" />
