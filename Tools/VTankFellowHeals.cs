@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using SharedMemory;
 using UtilityBelt.Lib;
 using System.Threading;
+using System.Diagnostics;
 
 namespace UtilityBelt.Tools {
 
@@ -19,8 +20,8 @@ namespace UtilityBelt.Tools {
         DateTime lastUpdate = DateTime.MinValue;
 
         public const string BUFFER_NAME = "UtilityBeltyVTankFellowHealsBuffer";
-        public const int UPDATE_TIMEOUT = 5; // seconds
-        public const int UPDATE_INTERVAL = 2; // seconds
+        public const int UPDATE_TIMEOUT = 3000; // ms
+        public const int UPDATE_INTERVAL = 300; // ms
         public int BUFFER_SIZE = 1024 * 1024;
 
         public VTankFellowHeals() {
@@ -60,7 +61,6 @@ namespace UtilityBelt.Tools {
                 int recordCount = 0;
                 var updates = new List<UBPlayerUpdate>();
                 var i = 0;
-
                 using (var mutex = new Mutex(false, "UtilityBelt.VTankFellowHeals.SharedMemory")) {
                     if (!mutex.WaitOne(TimeSpan.FromMilliseconds(50), false)) {
                         return;
@@ -73,7 +73,7 @@ namespace UtilityBelt.Tools {
                         UBPlayerUpdate update = new UBPlayerUpdate();
                         offset = update.Deserialize(sharedBuffer, offset);
 
-                        if (update.PlayerID != Globals.Core.CharacterFilter.Id && DateTime.UtcNow - update.lastUpdate <= TimeSpan.FromSeconds(UPDATE_TIMEOUT)) {
+                        if (update.PlayerID != Globals.Core.CharacterFilter.Id && DateTime.UtcNow - update.lastUpdate <= TimeSpan.FromMilliseconds(UPDATE_TIMEOUT)) {
                             updates.Add(update);
                             UpdateVtankVitalInfo(update);
                         }
@@ -128,7 +128,7 @@ namespace UtilityBelt.Tools {
         }
 
         public void Think() {
-            if (DateTime.UtcNow - lastUpdate > TimeSpan.FromSeconds(UPDATE_INTERVAL)) {
+            if (DateTime.UtcNow - lastUpdate > TimeSpan.FromMilliseconds(UPDATE_INTERVAL)) {
                 UpdateMySharedVitals();
             }
         }
