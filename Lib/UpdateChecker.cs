@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading;
 
 namespace UtilityBelt.Lib {
     public class GitLabTagData {
@@ -21,17 +22,20 @@ namespace UtilityBelt.Lib {
         private static string json = "";
 
         public static void CheckForUpdate() {
-            new Newtonsoft.Json.Serialization.Action(FetchGitlabData).BeginInvoke(new AsyncCallback(OnGitlabFetchComplete), null);
+            new Thread(() => {
+                Thread.CurrentThread.IsBackground = true;
+                FetchGitlabData();
+                OnGitlabFetchComplete();
+            }).Start();
         }
 
         public static void FetchGitlabData() {
-
             // no tls 1.2 in dotnet 3.5???
             try {
                 var url = string.Format(@"http://http.haxit.org/ubupdatecheck.php");
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                request.Timeout = 10000;
+                request.Timeout = 30000;
                 request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 
                 using (HttpWebResponse response = (HttpWebResponse)request.GetResponse()) {
@@ -45,7 +49,7 @@ namespace UtilityBelt.Lib {
             catch (Exception ex) {}
         }
 
-        private static void OnGitlabFetchComplete(IAsyncResult result) {
+        private static void OnGitlabFetchComplete() {
             try {
                 if (!string.IsNullOrEmpty(json)) {
                     try {
@@ -66,7 +70,7 @@ namespace UtilityBelt.Lib {
 
                                     var description = string.Join("", lines.ToArray());
                                     Globals.Host.Actions.AddChatText($"[{Globals.PluginName}] Version {releaseVersion.ToString()} is now available! {description}", 3);
-                                    Globals.Host.Actions.AddChatText($"<Tell:IIDString:{Util.GetChatId()}:openurl|https://gitlab.com/trevis/utilitybelt>https://gitlab.com/trevis/utilitybelt</Tell>", 3);
+                                    Globals.Host.Actions.AddChatText($"Get it here: <Tell:IIDString:{Util.GetChatId()}:openurl|https://gitlab.com/trevis/utilitybelt>https://gitlab.com/trevis/utilitybelt</Tell>", 3);
                                     break;
                                 }
                             }

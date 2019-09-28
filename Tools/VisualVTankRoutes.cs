@@ -74,7 +74,7 @@ namespace UtilityBelt.Tools {
             Globals.Config.VisualNav.ShowRecall.Changed += ConfigChanged;
             Globals.Config.VisualNav.ShowUseNPC.Changed += ConfigChanged;
             Globals.Config.VisualNav.UseNPCColor.Changed += ConfigChanged;
-
+            
             DrawCurrentRoute();
 
             uTank2.PluginCore.PC.NavRouteChanged += PC_NavRouteChanged;
