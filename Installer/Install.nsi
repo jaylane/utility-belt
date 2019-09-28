@@ -52,6 +52,7 @@ Section "" CoreSection
 	File "${BUILDPATH}\${APPNAME}.pdb"
 
 	File "${BUILDPATH}\SharedMemory.dll"
+	File "${BUILDPATH}\Newtonsoft.Json.dll"
 	
 	SetOutPath "$INSTDIR\Resources\"
 	File "${BUILDPATH}\Resources\quests.xml"
@@ -102,6 +103,7 @@ Section Uninstall
 	Delete "$INSTDIR\${ASSEMBLY}"
 	Delete "${BUILDPATH}\{APPNAME}.pdb"
 	Delete "$INSTDIR\SharedMemory.dll"
+	Delete "$INSTDIR\Newtonsoft.Json.dll"
 	Delete "${BUILDPATH}\Resources\tiles\*.bmp"
 	Delete "${BUILDPATH}\Resources\quests.xml"
 	;Delete "$INSTDIR\ADDITIONALFILES"
