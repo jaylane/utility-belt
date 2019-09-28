@@ -82,6 +82,8 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
 
             var d = DistanceTo(rp);
 
+            if (d <= 0) return;
+
             var obj = Globals.Core.D3DService.NewD3DObj();
             obj.Visible = false;
             obj.Color = color.ToArgb();
