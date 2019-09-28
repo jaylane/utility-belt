@@ -1,7 +1,8 @@
-## 0.0.7 (2019-9-28)
+## 0.0.7 (2019-9-28) [UtilityBeltInstaller-0.0.8.exe](/uploads/f1b2c542a7630438732e2553dec3a725/UtilityBeltInstaller-0.0.8.exe)
 - Added experimental option to show embedded nav routes
 - Fix potential exception in AutoVendor
 - Check gitlab for updates on login
+- Remove debug spam
 
 ## 0.0.7 (2019-9-27) [UtilityBeltInstaller-0.0.7.exe](/uploads/caaf8eec17828a2fb60d7e20d8fba793/UtilityBeltInstaller-0.0.7.exe)
 - Added option to only sell salvage from main pack

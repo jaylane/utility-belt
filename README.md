@@ -9,7 +9,7 @@ UtilityBelt is a multipurpose decal plugin. Currently it has the following "modu
 - [VisualNav](https://gitlab.com/trevis/utilitybelt/wikis/VisualNav) - Shows VTank nav route visually (like vi2 blue lines).
 
 ## Installation
-Download and run the installer: [UtilityBeltInstaller-0.0.7.exe](/uploads/caaf8eec17828a2fb60d7e20d8fba793/UtilityBeltInstaller-0.0.7.exe)
+Download and run the installer: [UtilityBeltInstaller-0.0.8.exe](/uploads/f1b2c542a7630438732e2553dec3a725/UtilityBeltInstaller-0.0.8.exe)
 
 ## Usage
 Check the [wiki](https://gitlab.com/trevis/utilitybelt/wikis/home) 
