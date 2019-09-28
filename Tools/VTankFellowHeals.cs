@@ -20,7 +20,7 @@ namespace UtilityBelt.Tools {
         DateTime lastUpdate = DateTime.MinValue;
 
         public const string BUFFER_NAME = "UtilityBeltyVTankFellowHealsBuffer";
-        public const int UPDATE_TIMEOUT = 3000; // ms
+        public const int UPDATE_TIMEOUT = 6000; // ms
         public const int UPDATE_INTERVAL = 300; // ms
         public int BUFFER_SIZE = 1024 * 1024;
 
