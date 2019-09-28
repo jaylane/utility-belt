@@ -30,7 +30,6 @@ namespace UtilityBelt.Tools {
             ObjectClass.CraftedCooking,
             ObjectClass.CraftedFletching,
             ObjectClass.Misc,
-            ObjectClass.Gem,
             ObjectClass.Key
         };
 
