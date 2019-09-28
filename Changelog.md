@@ -1,4 +1,4 @@
-## 0.0.7 
+## 0.0.7 (2019-9-27) [UtilityBeltInstaller-0.0.7.exe](/uploads/caaf8eec17828a2fb60d7e20d8fba793/UtilityBeltInstaller-0.0.7.exe)
 - Added option to only sell salvage from main pack
 - Automatically disable and restore vtank auto cram/stack settings while vendoring
 - Fix aetheria and autovendoring with red rules
