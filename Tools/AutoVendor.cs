@@ -6,80 +6,11 @@ using System.Text;
 using Decal.Adapter;
 using Decal.Adapter.Wrappers;
 using Mag.Shared.Settings;
+using UtilityBelt.Lib.VendorCache;
 using UtilityBelt.Views;
 using VirindiViewService.Controls;
 
 namespace UtilityBelt.Tools {
-    public struct BuyItem {
-        public VendorItem Item;
-        public int Amount;
-
-        public BuyItem(VendorItem item, int amount) {
-            Item = item;
-            Amount = amount;
-        }
-    }
-
-    public class VendorItem {
-        public ObjectClass ObjectClass = ObjectClass.Unknown;
-        public int Id = 0;
-        public int Value = 0;
-        public string Name = "Unknown";
-        public int StackMax = 0;
-        public int StackCount = 0;
-
-        public VendorItem(WorldObject item) {
-            Id = item.Id;
-            Value = item.Values(LongValueKey.Value, 0);
-            Name = item.Name;
-            StackMax = item.Values(LongValueKey.StackMax, 1);
-            StackCount = item.Values(LongValueKey.StackCount, 1);
-            ObjectClass = item.ObjectClass;
-        }
-    }
-
-    public class VendorInfo {
-        public int Id = 0;
-        public double BuyRate = 0;
-        public double SellRate = 0;
-        public int MaxValue = 0;
-        public int Categories = 0;
-        public Dictionary<int, VendorItem> Items = new Dictionary<int, VendorItem>();
-
-        public VendorInfo(Vendor vendor) {
-            Id = vendor.MerchantId;
-            BuyRate = vendor.BuyRate;
-            SellRate = vendor.SellRate;
-            MaxValue = vendor.MaxValue;
-            Categories = vendor.Categories;
-
-            foreach (var wo in vendor) {
-                Items.Add(wo.Id, new VendorItem(wo));
-            }
-        }
-    }
-
-    public static class VendorCache {
-        public static Dictionary<int, VendorInfo> Vendors = new Dictionary<int, VendorInfo>();
-
-        public static void AddVendor(Vendor vendor) {
-            if (Vendors.ContainsKey(vendor.MerchantId)) {
-                Vendors[vendor.MerchantId] = new VendorInfo(vendor);
-            } else {
-                Vendors.Add(vendor.MerchantId, new VendorInfo(vendor));
-            }
-        }
-
-        public static VendorInfo GetVendor(int vendorId) {
-            if (Vendors.ContainsKey(vendorId)) {
-                return Vendors[vendorId];
-            }
-
-            return null;
-        }
-    }
-
-
     public class AutoVendor : IDisposable {
         private const int MAX_VENDOR_BUY_COUNT = 5000;
         private const double PYREAL_STACK_SIZE = 25000.0;

@@ -96,6 +96,10 @@
     <Compile Include="Constants\CharOptions.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="Lib\UBPlayerUpdate.cs" />
+    <Compile Include="Lib\VendorCache\BuyItem.cs" />
+    <Compile Include="Lib\VendorCache\VendorCache.cs" />
+    <Compile Include="Lib\VendorCache\VendorInfo.cs" />
+    <Compile Include="Lib\VendorCache\VendorItem.cs" />
     <Compile Include="Lib\VTNav\enums.cs" />
     <Compile Include="Lib\VTNav\Waypoints\VTNChat.cs" />
     <Compile Include="Lib\VTNav\Waypoints\VTNJump.cs" />
