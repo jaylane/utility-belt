@@ -1,4 +1,11 @@
-## 0.0.6 (2019-9-27)
+## 0.0.7 
+- Added option to only sell salvage from main pack
+- Automatically disable and restore vtank auto cram/stack settings while vendoring
+- Fix aetheria and autovendoring with red rules
+- VTankFellowHeals performance and bugfixes
+- Fix exception in certain routes causing VisualNav to stop drawing
+
+## 0.0.6 (2019-9-27) [UtilityBeltInstaller-0.0.6.exe](/uploads/764c570d2d65f563bcf7832bab7707ad/UtilityBeltInstaller-0.0.6.exe)
 - Fix VTank location from registry
 - Fix gem names so they don't prepend material names and end up like "Jet Jet"
 - AutoSalvage performance
