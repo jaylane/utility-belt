@@ -49,13 +49,15 @@ Section "" CoreSection
 	SetOutPath "$INSTDIR\"
 
 	File "${BUILDPATH}\${ASSEMBLY}"
-	File "${BUILDPATH}\SharedMemory.dll"
+	File "${BUILDPATH}\${APPNAME}.pdb"
 
-	SetOutPath "$INSTDIR\Resources\tiles"
-	File "${BUILDPATH}\Resources\tiles\*.bmp"
+	File "${BUILDPATH}\SharedMemory.dll"
 	
 	SetOutPath "$INSTDIR\Resources\"
 	File "${BUILDPATH}\Resources\quests.xml"
+
+	SetOutPath "$INSTDIR\Resources\tiles"
+	File "${BUILDPATH}\Resources\tiles\*.bmp"
 
 SectionEnd
 
@@ -98,6 +100,7 @@ Section Uninstall
 
 	;Clean up
 	Delete "$INSTDIR\${ASSEMBLY}"
+	Delete "${BUILDPATH}\{APPNAME}.pdb"
 	Delete "$INSTDIR\SharedMemory.dll"
 	Delete "${BUILDPATH}\Resources\tiles\*.bmp"
 	Delete "${BUILDPATH}\Resources\quests.xml"
