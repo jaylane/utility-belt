@@ -113,11 +113,13 @@
     </page>
     <page label="VisualNav">
       <control progid="DecalControls.FixedLayout" clipped="">
-        <control progid="DecalControls.List" name="VisualNavSettingsList" left="0" top="0" width="400" height="250">
+        <control progid="DecalControls.List" name="VisualNavSettingsList" left="0" top="0" width="400" height="200">
           <column progid="DecalControls.CheckColumn" name="VisualNavSettingsListEnabled"/>
           <column progid="DecalControls.IconColumn" name="VisualNavSettingsListColor" fixedwidth="30" />
           <column progid="DecalControls.TextColumn" name="VisualNavSettingsListSetting" />
         </control>
+        <control progid="DecalControls.Checkbox" name="VisualNavSaveNoneRoutes" left="8" top="210" width="400" height="16" text="(Experimental) show embedded nav routes" />
+
       </control>
 
     </page>

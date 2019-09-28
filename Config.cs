@@ -197,6 +197,8 @@ namespace UtilityBelt {
             public Setting<bool> ShowRecall;
             public Setting<bool> ShowUseNPC;
 
+            public Setting<bool> SaveNoneRoutes;
+
             private bool disposed = false;
 
             public List<string> Settings = new List<string>() {
@@ -234,6 +236,8 @@ namespace UtilityBelt {
                     ShowPortal = new Setting<bool>("Config/VisualNav/ShowPortal", "Show Portal waypoint text", true);
                     ShowRecall = new Setting<bool>("Config/VisualNav/ShowRecall", "Show Recall waypoint text", true);
                     ShowUseNPC = new Setting<bool>("Config/VisualNav/ShowUseNPC", "Show UseNPC waypoint text", true);
+
+                    SaveNoneRoutes = new Setting<bool>("Config/VisualNav/SaveNoneRoutes", "Automatically save [None] routes. Enabling this allows embedded routes to be drawn.", false);
                 }
                 catch (Exception e) { Logger.LogException(e); }
             }
@@ -249,24 +253,26 @@ namespace UtilityBelt {
                         if (LineOffset != null) LineOffset.Dispose();
 
                         if (LineColor != null) LineColor.Dispose();
-                        if (ChatTextColor != null) LineOffset.Dispose();
-                        if (JumpTextColor != null) LineOffset.Dispose();
-                        if (JumpArrowColor != null) LineOffset.Dispose();
-                        if (OpenVendorColor != null) LineOffset.Dispose();
-                        if (PauseColor != null) LineOffset.Dispose();
-                        if (PortalColor != null) LineOffset.Dispose();
-                        if (RecallColor != null) LineOffset.Dispose();
-                        if (UseNPCColor != null) LineOffset.Dispose();
+                        if (ChatTextColor != null) ChatTextColor.Dispose();
+                        if (JumpTextColor != null) JumpTextColor.Dispose();
+                        if (JumpArrowColor != null) JumpArrowColor.Dispose();
+                        if (OpenVendorColor != null) OpenVendorColor.Dispose();
+                        if (PauseColor != null) PauseColor.Dispose();
+                        if (PortalColor != null) PortalColor.Dispose();
+                        if (RecallColor != null) RecallColor.Dispose();
+                        if (UseNPCColor != null) UseNPCColor.Dispose();
 
-                        if (ShowLine != null) LineOffset.Dispose();
-                        if (ShowChatText != null) LineOffset.Dispose();
-                        if (ShowJumpText != null) LineOffset.Dispose();
-                        if (ShowJumpArrow != null) LineOffset.Dispose();
-                        if (ShowOpenVendor != null) LineOffset.Dispose();
-                        if (ShowPause != null) LineOffset.Dispose();
-                        if (ShowPortal != null) LineOffset.Dispose();
-                        if (ShowRecall != null) LineOffset.Dispose();
-                        if (ShowUseNPC != null) LineOffset.Dispose();
+                        if (ShowLine != null) ShowLine.Dispose();
+                        if (ShowChatText != null) ShowChatText.Dispose();
+                        if (ShowJumpText != null) ShowJumpText.Dispose();
+                        if (ShowJumpArrow != null) ShowJumpArrow.Dispose();
+                        if (ShowOpenVendor != null) ShowOpenVendor.Dispose();
+                        if (ShowPause != null) ShowPause.Dispose();
+                        if (ShowPortal != null) ShowPortal.Dispose();
+                        if (ShowRecall != null) ShowRecall.Dispose();
+                        if (ShowUseNPC != null) ShowUseNPC.Dispose();
+
+                        if (SaveNoneRoutes != null) SaveNoneRoutes.Dispose();
                     }
                     disposed = true;
                 }

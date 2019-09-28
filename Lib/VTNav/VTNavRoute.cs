@@ -12,6 +12,8 @@ namespace UtilityBelt.Lib.VTNav {
         public int RecordCount = 0;
         public eNavType NavType = eNavType.Circular;
 
+        public static string NoneNavName = " [None]";
+
         public List<VTNPoint> points = new List<VTNPoint>();
         public Dictionary<string, double> offsets = new Dictionary<string, double>();
 
@@ -147,7 +149,22 @@ namespace UtilityBelt.Lib.VTNav {
             }
         }
 
-        public  static string GetLoadedNavigationProfile() {
+        public static bool IsPretendNoneNav() {
+            var server = Globals.Core.CharacterFilter.Server;
+            var character = Globals.Core.CharacterFilter.Name;
+            var path = Path.Combine(Util.GetVTankProfilesDirectory(), $"{server}_{character}.cdf");
+
+            var contents = File.ReadAllLines(path);
+
+            if (contents.Length >= 4) {
+                var navFile = contents[3].Trim();
+                return navFile.StartsWith(NoneNavName);
+            }
+
+            return false;
+        }
+
+        public static string GetLoadedNavigationProfile() {
             var server = Globals.Core.CharacterFilter.Server;
             var character = Globals.Core.CharacterFilter.Name;
             var path = Path.Combine(Util.GetVTankProfilesDirectory(), $"{server}_{character}.cdf");

@@ -26,6 +26,7 @@ namespace UtilityBelt.Tools {
         private List<D3DObj> shapes = new List<D3DObj>();
 
         HudList VisualNavSettingsList { get; set; }
+        HudCheckBox VisualNavSaveNoneRoutes { get; set; }
 
         const int COL_ENABLED = 0;
         const int COL_ICON = 1;
@@ -36,6 +37,10 @@ namespace UtilityBelt.Tools {
             Globals.Core.CharacterFilter.ChangePortalMode += CharacterFilter_ChangePortalMode;
             VisualNavSettingsList = Globals.MainView.view != null ? (HudList)Globals.MainView.view["VisualNavSettingsList"] : new HudList();
             VisualNavSettingsList.Click += VisualNavSettingsList_Click;
+
+            VisualNavSaveNoneRoutes = (HudCheckBox)Globals.MainView.view["VisualNavSaveNoneRoutes"];
+            VisualNavSaveNoneRoutes.Checked = Globals.Config.VisualNav.SaveNoneRoutes.Value;
+            VisualNavSaveNoneRoutes.Change += VisualNavSaveNoneRoutes_Change;
 
             PopulateSettings();
 
@@ -71,10 +76,40 @@ namespace UtilityBelt.Tools {
             Globals.Config.VisualNav.UseNPCColor.Changed += ConfigChanged;
 
             DrawCurrentRoute();
+
+            uTank2.PluginCore.PC.NavRouteChanged += PC_NavRouteChanged;
+        }
+
+        private void PC_NavRouteChanged() {
+            try {
+                if (!Globals.Config.VisualNav.SaveNoneRoutes.Value) return;
+
+                var routePath = VTNavRoute.GetLoadedNavigationProfile();
+                var vTank = VTankControl.GetVTankInterface(uTank2.eExternalsPermissionLevel.FullUnderlying);
+
+                if (vTank == null || vTank.NavNumPoints <= 0) return;
+
+                // the route has changed, but we are currently in a [None] route, so we will save it
+                // to a new route called " [None].nav" so we can parse and draw it.
+                if (string.IsNullOrEmpty(vTank.GetNavProfile())) {
+                    Util.DispatchChatToBoxWithPluginIntercept($"/vt nav save {VTNavRoute.NoneNavName}");
+                    needsDraw = true;
+                }
+
+                // the route has changed, and we are on our custon [None].nav, so we force a redraw
+                if (vTank.GetNavProfile().StartsWith(VTNavRoute.NoneNavName)) {
+                    needsDraw = true;
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void ConfigChanged(object obj) {
             needsDraw = true;
+        }
+
+        private void VisualNavSaveNoneRoutes_Change(object sender, EventArgs e) {
+            Globals.Config.VisualNav.SaveNoneRoutes.Value = VisualNavSaveNoneRoutes.Checked;
         }
 
         private void PopulateSettings() {
@@ -174,29 +209,33 @@ namespace UtilityBelt.Tools {
         }
 
         private void DrawCurrentRoute() {
-            var routePath = VTNavRoute.GetLoadedNavigationProfile();
-
+            var vTank = VTankControl.GetVTankInterface(uTank2.eExternalsPermissionLevel.FullUnderlying);
+            var routePath = Path.Combine(Util.GetVTankProfilesDirectory(), vTank.GetNavProfile());
+            
             if (routePath == currentRoutePath && !forceUpdate) return;
 
             forceUpdate = false;
             ClearCurrentRoute();
             currentRoutePath = routePath;
 
-            if (string.IsNullOrEmpty(currentRoutePath)) return;
+            if (string.IsNullOrEmpty(currentRoutePath) || !File.Exists(currentRoutePath)) return;
 
             currentRoute = new VTNavRoute(routePath);
             currentRoute.Parse();
 
             currentRoute.Draw();
-            WatchRouteFiles();
-        }
 
-        private void WatchRouteFiles() {
             if (navFileWatcher != null) {
                 navFileWatcher.EnableRaisingEvents = false;
                 navFileWatcher.Dispose();
             }
 
+            if (!vTank.GetNavProfile().StartsWith(VTNavRoute.NoneNavName)) {
+                WatchRouteFiles();
+            }
+        }
+
+        private void WatchRouteFiles() {
             navFileWatcher = new FileSystemWatcher();
             navFileWatcher.Path = Util.GetVTankProfilesDirectory();
             navFileWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
@@ -246,6 +285,7 @@ namespace UtilityBelt.Tools {
                 if (disposing) {
                     Globals.Core.CommandLineText -= Core_CommandLineText;
                     Globals.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
+                    uTank2.PluginCore.PC.NavRouteChanged -= PC_NavRouteChanged;
 
                     if (profilesWatcher != null) profilesWatcher.Dispose();
                     if (navFileWatcher != null) navFileWatcher.Dispose();
