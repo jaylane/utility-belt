@@ -79,7 +79,7 @@ namespace UtilityBelt.Tools {
                         }
                         else if (update.PlayerID != Globals.Core.CharacterFilter.Id) {
                             if (HasVTank()) {
-                                Util.WriteToChat("Marking player as invalid: " + update.PlayerID.ToString() + " on server " + update.Server);
+                                //Util.WriteToChat("Marking player as invalid: " + update.PlayerID.ToString() + " on server " + update.Server);
                                 vTank.HelperPlayerSetInvalid(update.PlayerID);
                             }
                         }
