@@ -54,6 +54,7 @@ namespace UtilityBelt {
         public class AutoSalvageConfig : IDisposable {
             public Setting<bool> Think;
             public Setting<bool> Debug;
+            public Setting<bool> OnlyFromMainPack;
 
             private bool disposed = false;
 
@@ -61,6 +62,7 @@ namespace UtilityBelt {
                 try {
                     Think = new Setting<bool>("Config/AutoSalvage/Think", "Think to yourself when finished", true);
                     Debug = new Setting<bool>("Config/AutoSalvage/Debug", "Show debug messages", false);
+                    OnlyFromMainPack = new Setting<bool>("Config/AutoSalvage/OnlyFromMainPack", "Only salvage things in your main pack", false);
                 }
                 catch (Exception e) { Logger.LogException(e); }
             }
@@ -75,6 +77,7 @@ namespace UtilityBelt {
                     if (disposing) {
                         if (Think != null) Think.Dispose();
                         if (Debug != null) Debug.Dispose();
+                        if (OnlyFromMainPack != null) OnlyFromMainPack.Dispose();
                     }
                     disposed = true;
                 }
@@ -88,6 +91,7 @@ namespace UtilityBelt {
             public Setting<bool> Think;
             public Setting<bool> Debug;
             public Setting<int> Speed;
+            public Setting<bool> OnlyFromMainPack;
 
             private bool disposed = false;
 
@@ -99,6 +103,7 @@ namespace UtilityBelt {
                     Think = new Setting<bool>("Config/AutoVendor/Think", "Think to yourself when finished", true);
                     Debug = new Setting<bool>("Config/AutoVendor/Debug", "Show debug messages", false);
                     Speed = new Setting<int>("Config/AutoVendor/Speed", "Delay between autovendor actions", 500);
+                    OnlyFromMainPack = new Setting<bool>("Config/AutoVendor/OnlyFromMainPack", "Only sell things in your main pack", false);
                 }
                 catch (Exception e) { Logger.LogException(e); }
             }
@@ -117,6 +122,7 @@ namespace UtilityBelt {
                         if (Think != null) Think.Dispose();
                         if (Speed != null) Speed.Dispose();
                         if (Debug != null) Debug.Dispose();
+                        if (OnlyFromMainPack != null) OnlyFromMainPack.Dispose();
                     }
                     disposed = true;
                 }

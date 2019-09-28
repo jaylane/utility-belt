@@ -111,6 +111,7 @@ namespace UtilityBelt.Tools {
         HudCheckBox UIAutoVendorDebug { get; set; }
         HudCheckBox UIAutoVendorShowMerchantInfo { get; set; }
         HudCheckBox UIAutoVendorThink { get; set; }
+        HudCheckBox UIAutoVendorOnlyFromMainPack { get; set; }
         HudHSlider UIAutoVendorSpeed { get; set; }
         HudStaticText UIAutoVendorSpeedText { get; set; }
 
@@ -147,6 +148,11 @@ namespace UtilityBelt.Tools {
                 UIAutoVendorThink.Checked = Globals.Config.AutoVendor.Think.Value;
                 UIAutoVendorThink.Change += UIAutoVendorThink_Change;
                 Globals.Config.AutoVendor.Think.Changed += Config_AutoVendor_Think_Changed;
+
+                UIAutoVendorOnlyFromMainPack = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoVendorOnlyFromMainPack"] : new HudCheckBox();
+                UIAutoVendorOnlyFromMainPack.Checked = Globals.Config.AutoVendor.OnlyFromMainPack.Value;
+                UIAutoVendorOnlyFromMainPack.Change += UIAutoVendorOnlyFromMainPack_Change;
+                Globals.Config.AutoVendor.OnlyFromMainPack.Changed += OnlyFromMainPack_Changed;
 
                 UIAutoVendorSpeed = Globals.MainView.view != null ? (HudHSlider)Globals.MainView.view["AutoVendorSpeed"] : new HudHSlider();
                 UIAutoVendorSpeed.Position = (Globals.Config.AutoVendor.Speed.Value / 100) - 3;
@@ -197,6 +203,14 @@ namespace UtilityBelt.Tools {
 
         private void Config_AutoVendor_Think_Changed(Setting<bool> obj) {
             UIAutoVendorThink.Checked = Globals.Config.AutoVendor.Think.Value;
+        }
+
+        private void UIAutoVendorOnlyFromMainPack_Change(object sender, EventArgs e) {
+            Globals.Config.AutoVendor.OnlyFromMainPack.Value = UIAutoVendorOnlyFromMainPack.Checked;
+        }
+
+        private void OnlyFromMainPack_Changed(Setting<bool> obj) {
+            UIAutoVendorOnlyFromMainPack.Checked = Globals.Config.AutoVendor.OnlyFromMainPack.Value;
         }
 
         private void UIAutoVendorSpeed_Changed(int min, int max, int pos) {
@@ -763,6 +777,11 @@ namespace UtilityBelt.Tools {
 
             // skip 0 value
             if (wo.Values(LongValueKey.Value, 0) <= 0) return false;
+
+            // bail if we are only selling from main pack and this isnt in there
+            if (Globals.Config.AutoVendor.OnlyFromMainPack.Value == true && wo.Container != Globals.Core.CharacterFilter.Id) {
+                return false;
+            }
 
             return Util.IsItemSafeToGetRidOf(wo);
         }
