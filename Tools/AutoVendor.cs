@@ -659,7 +659,7 @@ namespace UtilityBelt.Tools {
             List<WorldObject> sellObjects = new List<WorldObject>();
             var vendor = VendorCache.GetVendor(Globals.Core.Actions.VendorId);
 
-            if (vendor == null) return sellObjects;
+            if (vendor == null || lootProfile == null) return sellObjects;
 
             foreach (WorldObject wo in Globals.Core.WorldFilter.GetInventory()) {
                 if (!ItemIsSafeToGetRidOf(wo)) continue;
