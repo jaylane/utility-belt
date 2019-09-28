@@ -71,6 +71,9 @@
     <Reference Include="Decal.Interop.Filters, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\GDLETool\Deps\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="SharedMemory, Version=2.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\SharedMemory.2.1.1\lib\net35\SharedMemory.dll</HintPath>
     </Reference>
@@ -101,6 +104,7 @@
     <Compile Include="Lib\DungeonMaps\Portal.cs" />
     <Compile Include="Lib\DungeonMaps\TileCache.cs" />
     <Compile Include="Lib\UBPlayerUpdate.cs" />
+    <Compile Include="Lib\UpdateChecker.cs" />
     <Compile Include="Lib\VendorCache\BuyItem.cs" />
     <Compile Include="Lib\VendorCache\VendorCache.cs" />
     <Compile Include="Lib\VendorCache\VendorInfo.cs" />
@@ -124,6 +128,7 @@
     <Compile Include="Tools\Assessor.cs" />
     <Compile Include="Tools\AutoSalvage.cs" />
     <Compile Include="Tools\AutoVendor.cs" />
+    <Compile Include="Tools\ChatNameClickHandler.cs" />
     <Compile Include="Tools\Counter.cs" />
     <Compile Include="Tools\EmuConfig.cs" />
     <Compile Include="Tools\InventoryManager.cs" />

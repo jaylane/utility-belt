@@ -3,6 +3,7 @@
 using Decal.Adapter;
 using Decal.Adapter.Wrappers;
 using MyClasses.MetaViewWrappers;
+using UtilityBelt.Lib;
 using UtilityBelt.Tools;
 using UtilityBelt.Views;
 
@@ -23,6 +24,7 @@ namespace UtilityBelt
         private Counter counter;
         private ItemGiver itemGiver;
         private VTankFellowHeals vTankFellowHeals;
+        private ChatNameClickHandler chatNameClickHandler;
         private DateTime lastThought = DateTime.MinValue;
 
         /// <summary>
@@ -72,8 +74,11 @@ namespace UtilityBelt
                 itemGiver = new ItemGiver();
                 visualVTankRoutes = new VisualVTankRoutes();
                 vTankFellowHeals = new VTankFellowHeals();
+                chatNameClickHandler = new ChatNameClickHandler();
 
                 Globals.Core.RenderFrame += Core_RenderFrame;
+
+                UpdateChecker.CheckForUpdate();
             }
 			catch (Exception ex) { Logger.LogException(ex); }
 		}
@@ -100,6 +105,7 @@ namespace UtilityBelt
 			try {
                 Globals.Core.RenderFrame -= Core_RenderFrame;
 
+
                 if (autoSalvage != null) autoSalvage.Dispose();
                 if (dungeonMaps != null) dungeonMaps.Dispose();
                 if (emuConfig != null) emuConfig.Dispose();
@@ -109,6 +115,7 @@ namespace UtilityBelt
                 if (itemGiver != null) itemGiver.Dispose();
                 if (visualVTankRoutes != null) visualVTankRoutes.Dispose();
                 if (vTankFellowHeals != null) vTankFellowHeals.Dispose();
+                if (chatNameClickHandler != null) chatNameClickHandler.Dispose();
                 if (Globals.AutoVendor != null) Globals.AutoVendor.Dispose();
                 if (Globals.Assessor != null) Globals.Assessor.Dispose();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();

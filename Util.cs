@@ -83,6 +83,10 @@ namespace UtilityBelt
             return Math.Abs(Math.Sqrt(Math.Pow(v1.X - v2.X, 2) + Math.Pow(v1.Y - v2.Y, 2) + Math.Pow(v1.Z - v2.Z, 2))) * 240;
         }
 
+        internal static int GetChatId() {
+            return Globals.PluginName.GetHashCode() & int.MaxValue;
+        }
+
         public static Object GetPropValue(this Object obj, String name) {
             foreach (String part in name.Split('.')) {
                 if (obj == null) { return null; }
