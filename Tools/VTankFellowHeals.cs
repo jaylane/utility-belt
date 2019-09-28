@@ -8,6 +8,7 @@ using Decal.Adapter.Wrappers;
 using System.Runtime.InteropServices;
 using SharedMemory;
 using UtilityBelt.Lib;
+using System.Threading;
 
 namespace UtilityBelt.Tools {
 
@@ -18,8 +19,8 @@ namespace UtilityBelt.Tools {
         DateTime lastUpdate = DateTime.MinValue;
 
         public const string BUFFER_NAME = "UtilityBeltyVTankFellowHealsBuffer";
-        public const int UPDATE_TIMEOUT = 10; // seconds
-        public const int UPDATE_INTERVAL = 1; // seconds
+        public const int UPDATE_TIMEOUT = 5; // seconds
+        public const int UPDATE_INTERVAL = 2; // seconds
         public int BUFFER_SIZE = 1024 * 1024;
 
         public VTankFellowHeals() {
@@ -60,39 +61,45 @@ namespace UtilityBelt.Tools {
                 var updates = new List<UBPlayerUpdate>();
                 var i = 0;
 
-                sharedBuffer.Read<int>(out recordCount);
-
-                int offset = sizeof(int);
-                while (i < recordCount && offset <= sharedBuffer.BufferSize) {
-                    UBPlayerUpdate update = new UBPlayerUpdate();
-                    offset = update.Deserialize(sharedBuffer, offset);
-
-                    if (update.PlayerID != Globals.Core.CharacterFilter.Id && DateTime.UtcNow - update.lastUpdate <= TimeSpan.FromSeconds(UPDATE_TIMEOUT)) {
-                        updates.Add(update);
-                        UpdateVtankVitalInfo(update);
+                using (var mutex = new Mutex(false, "UtilityBelt.VTankFellowHeals.SharedMemory")) {
+                    if (!mutex.WaitOne(TimeSpan.FromMilliseconds(50), false)) {
+                        return;
                     }
-                    else if (update.PlayerID != Globals.Core.CharacterFilter.Id) {
-                        if (HasVTank()) {
-                            //Util.WriteToChat("Marking player as invalid: " + update.PlayerID.ToString() + " on server " + update.Server);
-                            vTank.HelperPlayerSetInvalid(update.PlayerID);
+
+                    sharedBuffer.Read<int>(out recordCount);
+
+                    int offset = sizeof(int);
+                    while (i < recordCount && offset <= sharedBuffer.BufferSize) {
+                        UBPlayerUpdate update = new UBPlayerUpdate();
+                        offset = update.Deserialize(sharedBuffer, offset);
+
+                        if (update.PlayerID != Globals.Core.CharacterFilter.Id && DateTime.UtcNow - update.lastUpdate <= TimeSpan.FromSeconds(UPDATE_TIMEOUT)) {
+                            updates.Add(update);
+                            UpdateVtankVitalInfo(update);
                         }
+                        else if (update.PlayerID != Globals.Core.CharacterFilter.Id) {
+                            if (HasVTank()) {
+                                Util.WriteToChat("Marking player as invalid: " + update.PlayerID.ToString() + " on server " + update.Server);
+                                vTank.HelperPlayerSetInvalid(update.PlayerID);
+                            }
+                        }
+
+                        i++;
                     }
 
-                    i++;
+                    var newRecordCount = updates.Count + 1;
+
+                    sharedBuffer.Write(ref newRecordCount, 0);
+                    offset = playerUpdate.Serialize(sharedBuffer, sizeof(int));
+
+                    //Util.WriteToChat($"Wrote newRecordCount:{newRecordCount} w/ id:{playerUpdate.PlayerID} stam:{playerUpdate.curStam}/{playerUpdate.maxStam}");
+
+                    for (var x = 0; x < updates.Count; x++) {
+                        offset = updates[x].Serialize(sharedBuffer, offset);
+                    }
+
+                    lastUpdate = DateTime.UtcNow;
                 }
-
-                var newRecordCount = updates.Count + 1;
-
-                sharedBuffer.Write(ref newRecordCount, 0);
-                offset = playerUpdate.Serialize(sharedBuffer, sizeof(int));
-
-                //Util.WriteToChat($"Wrote newRecordCount:{newRecordCount} w/ id:{playerUpdate.PlayerID} stam:{playerUpdate.curStam}/{playerUpdate.maxStam}");
-
-                for (var x = 0; x < updates.Count; x++) {
-                    offset = updates[x].Serialize(sharedBuffer, offset);
-                }
-
-                lastUpdate = DateTime.UtcNow;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

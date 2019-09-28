@@ -68,13 +68,13 @@ namespace UtilityBelt.Lib {
             sharedBuffer.Read(out int serverNameLength, offset); offset += sizeof(int);
             
             if (serverNameLength > 0) {
-                var serverNameBuffer = new char[serverNameLength];
+                var serverNameBuffer = "";
                 for (var i = 0; i < serverNameLength; i++) {
                     sharedBuffer.Read(out char c, offset); offset += sizeof(char);
-                    serverNameBuffer[i] = c;
+                    serverNameBuffer += c;
                 }
 
-                Server = new string(serverNameBuffer);
+                Server = serverNameBuffer;
             }
 
             return offset;
