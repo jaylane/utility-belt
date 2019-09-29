@@ -186,6 +186,7 @@ namespace UtilityBelt {
             public Setting<int> PortalColor;
             public Setting<int> RecallColor;
             public Setting<int> UseNPCColor;
+            public Setting<int> FollowArrowColor;
 
             public Setting<bool> ShowLine;
             public Setting<bool> ShowChatText;
@@ -196,6 +197,7 @@ namespace UtilityBelt {
             public Setting<bool> ShowPortal;
             public Setting<bool> ShowRecall;
             public Setting<bool> ShowUseNPC;
+            public Setting<bool> ShowFollowArrow;
 
             public Setting<bool> SaveNoneRoutes;
 
@@ -210,7 +212,8 @@ namespace UtilityBelt {
                 "Pause",
                 "Portal",
                 "Recall",
-                "UseNPC"
+                "UseNPC",
+                "FollowArrow"
             };
 
             public VisualNavConfig() {
@@ -226,6 +229,7 @@ namespace UtilityBelt {
                     PortalColor = new Setting<int>("Config/VisualNav/PortalColor", "Portal waypoint text color", Color.White.ToArgb());
                     RecallColor = new Setting<int>("Config/VisualNav/RecallColor", "Recall waypoint text color", Color.White.ToArgb());
                     UseNPCColor = new Setting<int>("Config/VisualNav/UseNPCColor", "UseNPC waypoint text color", Color.White.ToArgb());
+                    FollowArrowColor = new Setting<int>("Config/VisualNav/FollowArrowColor", "FollowArrow color", Color.Orange.ToArgb());
 
                     ShowLine = new Setting<bool>("Config/VisualNav/ShowLine", "Show navigation lines", true);
                     ShowChatText = new Setting<bool>("Config/VisualNav/ShowChatText", "Show Chat waypoint text", true);
@@ -236,6 +240,7 @@ namespace UtilityBelt {
                     ShowPortal = new Setting<bool>("Config/VisualNav/ShowPortal", "Show Portal waypoint text", true);
                     ShowRecall = new Setting<bool>("Config/VisualNav/ShowRecall", "Show Recall waypoint text", true);
                     ShowUseNPC = new Setting<bool>("Config/VisualNav/ShowUseNPC", "Show UseNPC waypoint text", true);
+                    ShowFollowArrow = new Setting<bool>("Config/VisualNav/ShowFollowArrow", "Show FollowArrow", true);
 
                     SaveNoneRoutes = new Setting<bool>("Config/VisualNav/SaveNoneRoutes", "Automatically save [None] routes. Enabling this allows embedded routes to be drawn.", false);
                 }

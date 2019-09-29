@@ -257,12 +257,7 @@ namespace UtilityBelt.Tools {
         private void ClearCurrentRoute() {
             if (currentRoute == null) return;
 
-            foreach (var p in currentRoute.points) {
-                try {
-                    p.Dispose();
-                }
-                catch (Exception ex) { Logger.LogException(ex); }
-            }
+            currentRoute.Dispose();
 
             currentRoute = null;
         }

@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Decal.Adapter.Wrappers;
+using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using UtilityBelt.Lib.VTNav.Waypoints;
 
@@ -12,10 +14,14 @@ namespace UtilityBelt.Lib.VTNav {
         public int RecordCount = 0;
         public eNavType NavType = eNavType.Circular;
 
+        public int TargetId = 0;
+        public string TargetName = "";
+
         public static string NoneNavName = " [None]";
 
         public List<VTNPoint> points = new List<VTNPoint>();
         public Dictionary<string, double> offsets = new Dictionary<string, double>();
+        public List<D3DObj> shapes = new List<D3DObj>();
 
         public VTNavRoute(string navPath) {
             NavPath = navPath;
@@ -44,108 +50,185 @@ namespace UtilityBelt.Lib.VTNav {
         }
 
         public bool Parse() {
-            using (StreamReader sr = File.OpenText(NavPath)) {
-                Header = sr.ReadLine();
+            try {
+                using (StreamReader sr = File.OpenText(NavPath)) {
+                    Header = sr.ReadLine();
 
-                var navTypeLine = sr.ReadLine();
-                int navType = 0;
-                if (!int.TryParse(navTypeLine, out navType)) {
-                    Util.WriteToChat("Could not parse navType from nav file: " + navTypeLine);
-                    return false;
-                }
-                NavType = (eNavType)navType;
+                    var navTypeLine = sr.ReadLine();
+                    int navType = 0;
+                    if (!int.TryParse(navTypeLine, out navType)) {
+                        Util.WriteToChat("Could not parse navType from nav file: " + navTypeLine);
+                        return false;
+                    }
+                    NavType = (eNavType)navType;
 
-                var recordCount = sr.ReadLine();
-                if (!int.TryParse(recordCount, out RecordCount)) {
-                    Util.WriteToChat("Could not read record count from nav file: " + recordCount);
-                    return false;
-                }
+                    if (NavType == eNavType.Target) {
+                        if (sr.EndOfStream) {
+                            Util.WriteToChat("Follow nav is empty");
+                            return true;
+                        }
 
-                int x = 0;
-                VTNPoint previous = null;
-                while (!sr.EndOfStream && points.Count < RecordCount) {
-                    int recordType = 0;
-                    var recordTypeLine = sr.ReadLine();
+                        TargetName = sr.ReadLine();
+                        var targetId = sr.ReadLine();
+                        if (!int.TryParse(targetId, out TargetId)) {
+                            Util.WriteToChat("Could not parse target id: " + targetId);
+                            return false;
+                        }
 
-                    if (!int.TryParse(recordTypeLine, out recordType)) {
-                        Util.WriteToChat($"Unable to parse recordType: {recordTypeLine}");
+                        Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
+                        Globals.Core.WorldFilter.ReleaseObject += WorldFilter_ReleaseObject;
+
+                        return true;
+                    }
+
+                    var recordCount = sr.ReadLine();
+                    if (!int.TryParse(recordCount, out RecordCount)) {
+                        Util.WriteToChat("Could not read record count from nav file: " + recordCount);
                         return false;
                     }
 
-                    VTNPoint point = null;
+                    int x = 0;
+                    VTNPoint previous = null;
+                    while (!sr.EndOfStream && points.Count < RecordCount) {
+                        int recordType = 0;
+                        var recordTypeLine = sr.ReadLine();
 
-                    switch ((eWaypointType)recordType) {
-                        case eWaypointType.ChatCommand:
-                            point = new VTNChat(sr, this, x);
-                            ((VTNChat)point).Parse();
-                            break;
+                        if (!int.TryParse(recordTypeLine, out recordType)) {
+                            Util.WriteToChat($"Unable to parse recordType: {recordTypeLine}");
+                            return false;
+                        }
 
-                        case eWaypointType.Checkpoint:
-                            point = new VTNPoint(sr, this, x);
-                            ((VTNPoint)point).Parse();
-                            break;
+                        VTNPoint point = null;
 
-                        case eWaypointType.Jump:
-                            point = new VTNJump(sr, this, x);
-                            ((VTNJump)point).Parse();
-                            break;
+                        switch ((eWaypointType)recordType) {
+                            case eWaypointType.ChatCommand:
+                                point = new VTNChat(sr, this, x);
+                                ((VTNChat)point).Parse();
+                                break;
 
-                        case eWaypointType.OpenVendor:
-                            point = new VTNOpenVendor(sr, this, x);
-                            ((VTNOpenVendor)point).Parse();
-                            break;
+                            case eWaypointType.Checkpoint:
+                                point = new VTNPoint(sr, this, x);
+                                ((VTNPoint)point).Parse();
+                                break;
 
-                        case eWaypointType.Other: // no clue here...
-                            throw new System.Exception("eWaypointType.Other");
-                            break;
+                            case eWaypointType.Jump:
+                                point = new VTNJump(sr, this, x);
+                                ((VTNJump)point).Parse();
+                                break;
 
-                        case eWaypointType.Pause:
-                            point = new VTNPause(sr, this, x);
-                            ((VTNPause)point).Parse();
-                            break;
+                            case eWaypointType.OpenVendor:
+                                point = new VTNOpenVendor(sr, this, x);
+                                ((VTNOpenVendor)point).Parse();
+                                break;
 
-                        case eWaypointType.Point:
-                            point = new VTNPoint(sr, this, x);
-                            ((VTNPoint)point).Parse();
-                            break;
+                            case eWaypointType.Other: // no clue here...
+                                throw new System.Exception("eWaypointType.Other");
+                                break;
 
-                        case eWaypointType.Portal:
-                            point = new VTNPortal(sr, this, x);
-                            ((VTNPortal)point).Parse();
-                            break;
+                            case eWaypointType.Pause:
+                                point = new VTNPause(sr, this, x);
+                                ((VTNPause)point).Parse();
+                                break;
 
-                        case eWaypointType.Portal2:
-                            point = new VTNPortal(sr, this, x);
-                            ((VTNPortal)point).Parse();
-                            break;
+                            case eWaypointType.Point:
+                                point = new VTNPoint(sr, this, x);
+                                ((VTNPoint)point).Parse();
+                                break;
 
-                        case eWaypointType.Recall:
-                            point = new VTNRecall(sr, this, x);
-                            ((VTNRecall)point).Parse();
-                            break;
+                            case eWaypointType.Portal:
+                                point = new VTNPortal(sr, this, x);
+                                ((VTNPortal)point).Parse();
+                                break;
 
-                        case eWaypointType.UseNPC:
-                            point = new VTNUseNPC(sr, this, x);
-                            ((VTNUseNPC)point).Parse();
-                            break;
+                            case eWaypointType.Portal2:
+                                point = new VTNPortal(sr, this, x);
+                                ((VTNPortal)point).Parse();
+                                break;
+
+                            case eWaypointType.Recall:
+                                point = new VTNRecall(sr, this, x);
+                                ((VTNRecall)point).Parse();
+                                break;
+
+                            case eWaypointType.UseNPC:
+                                point = new VTNUseNPC(sr, this, x);
+                                ((VTNUseNPC)point).Parse();
+                                break;
+                        }
+
+                        if (point != null) {
+                            point.Previous = previous;
+                            points.Add(point);
+                            previous = point;
+                            x++;
+                        }
+
                     }
 
-                    if (point != null) {
-                        point.Previous = previous;
-                        points.Add(point);
-                        previous = point;
-                        x++;
-                    }
+                    return true;
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
 
+            return false;
+        }
+
+        private void WorldFilter_ReleaseObject(object sender, ReleaseObjectEventArgs e) {
+            try {
+                if (NavType != eNavType.Target) {
+                    Globals.Core.WorldFilter.ReleaseObject -= WorldFilter_ReleaseObject;
+                    return;
                 }
 
-                return true;
+                if (e.Released.Id == TargetId) {
+                    Globals.Core.WorldFilter.ReleaseObject -= WorldFilter_ReleaseObject;
+                    Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
+                    foreach (var shape in shapes) {
+                        try {
+                            shape.Visible = false;
+                        }
+                        finally {
+                            shape.Dispose();
+                        }
+                    }
+                    shapes.Clear();
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
+            try {
+                if (NavType != eNavType.Target) {
+                    Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                    return;
+                }
+
+                if (e.New.Id == TargetId) {
+                    Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                    Draw();
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public void Draw() {
-            foreach (var point in points) {
-                point.Draw();
+            if (NavType == eNavType.Target && Globals.Config.VisualNav.ShowFollowArrow.Value) {
+                if (TargetId != 0) {
+                    var wo = Globals.Core.WorldFilter[TargetId];
+
+                    if (wo != null) {
+                        var color = Globals.Config.VisualNav.FollowArrowColor.Value;
+                        var shape = Globals.Core.D3DService.PointToObject(TargetId, color);
+                        shape.Scale(0.6f);
+                        shapes.Add(shape);
+                    }
+                }
+            }
+            else {
+                foreach (var point in points) {
+                    point.Draw();
+                }
             }
         }
 
@@ -190,6 +273,23 @@ namespace UtilityBelt.Lib.VTNav {
 
         protected virtual void Dispose(bool disposing) {
             if (!disposed) {
+                Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                Globals.Core.WorldFilter.ReleaseObject -= WorldFilter_ReleaseObject;
+
+                foreach (var shape in shapes) {
+                    try {
+                        shape.Visible = false;
+                    }
+                    finally {
+                        try {
+                            shape.Dispose();
+                        }
+                        catch (Exception ex) { }
+                    }
+                }
+
+                shapes.Clear();
+
                 foreach (var point in points) {
                     point.Dispose();
                 }

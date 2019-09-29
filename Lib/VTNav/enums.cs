@@ -19,9 +19,9 @@ namespace UtilityBelt.Lib.VTNav {
     }
 
     public enum eNavType {
-        Linear,
-        Circular,
-        Target,
-        Once,
+        Linear = 2,
+        Circular = 1,
+        Target = 3,
+        Once = 4
     }
 }
