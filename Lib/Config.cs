@@ -28,7 +28,7 @@ namespace UtilityBelt {
             public InventoryManagerConfig() {
                 try {
                     AutoCram = new Setting<bool>("Config/InventoryManager/AutoCram", "Automatically cram items into side packs", false);
-                    AutoStack = new Setting<bool>("Config/InventoryManager/AutoStack", "Automatically combine stacked items", false);
+                    AutoStack = new Setting<bool>("Config/InventoryManager/AutoStack", "Automatically combine stacked items", true);
                     Debug = new Setting<bool>("Config/InventoryManager/Debug", "Show debug messages", false);
                 }
                 catch (Exception e) { Logger.LogException(e); }
