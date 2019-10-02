@@ -154,7 +154,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             if (!disposed) {
                 if (disposing) {
                     foreach (var shape in shapes) {
-                        try { shape.Visible = false; } catch (Exception ex) { }
+                        try { shape.Visible = false; } catch { }
                         shape.Dispose();
                     }
                 }

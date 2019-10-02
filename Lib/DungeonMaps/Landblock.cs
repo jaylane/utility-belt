@@ -45,7 +45,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
                 try {
                     cellCount = BitConverter.ToInt32(service.GetCellFile(65534 + LandBlockId), 4);
                 }
-                catch (Exception ex) {
+                catch {
                     return;
                 }
 

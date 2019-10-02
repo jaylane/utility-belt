@@ -27,9 +27,6 @@ namespace UtilityBelt.Tools {
         private bool openedSalvageWindow = false;
         private bool disposed = false;
 
-        private int lastSalvageId = 0;
-        private int salvageRetryCount = 0;
-
         private Dictionary<int, bool> lootClassificationCache = new Dictionary<int, bool>();
 
         public AutoSalvage() {

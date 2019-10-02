@@ -39,11 +39,11 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
 
                         foreach (var shape in shapes) {
                             try {
-                                try { shape.Visible = false; } catch (Exception ex) { }
+                                try { shape.Visible = false; } catch { }
 
                                 shape.Dispose();
                             }
-                            catch (Exception ex) { }
+                            catch { }
                         }
                         shapes.Clear();
 
@@ -141,7 +141,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             if (!base.disposed) {
                 if (disposing) {
                     foreach (var shape in shapes) {
-                        try { shape.Visible = false; } catch (Exception ex) { }
+                        try { shape.Visible = false; } catch { }
                         shape.Dispose();
                     }
                     Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;

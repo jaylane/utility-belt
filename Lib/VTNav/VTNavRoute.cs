@@ -123,7 +123,6 @@ namespace UtilityBelt.Lib.VTNav {
 
                             case eWaypointType.Other: // no clue here...
                                 throw new System.Exception("eWaypointType.Other");
-                                break;
 
                             case eWaypointType.Pause:
                                 point = new VTNPause(sr, this, x);
@@ -284,7 +283,7 @@ namespace UtilityBelt.Lib.VTNav {
                         try {
                             shape.Dispose();
                         }
-                        catch (Exception ex) { }
+                        catch { }
                     }
                 }
 

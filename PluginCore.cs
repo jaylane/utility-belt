@@ -105,7 +105,6 @@ namespace UtilityBelt
 			try {
                 Globals.Core.RenderFrame -= Core_RenderFrame;
 
-
                 if (autoSalvage != null) autoSalvage.Dispose();
                 if (dungeonMaps != null) dungeonMaps.Dispose();
                 if (emuConfig != null) emuConfig.Dispose();

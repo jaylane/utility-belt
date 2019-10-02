@@ -46,7 +46,7 @@ namespace UtilityBelt.Lib {
                     }
                 }
             }
-            catch (Exception ex) {}
+            catch {}
         }
 
         private static void OnGitlabFetchComplete() {

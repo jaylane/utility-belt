@@ -34,7 +34,7 @@ namespace UtilityBelt.Tools {
                 var d = 0;
                 sharedBuffer.Write<int>(ref d);
             }
-            catch (Exception ex) {
+            catch {
                 sharedBuffer = new SharedMemory.BufferReadWrite(BUFFER_NAME);
             }
 
