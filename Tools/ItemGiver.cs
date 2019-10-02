@@ -371,7 +371,7 @@ namespace UtilityBelt.Tools {
                 TimeSpan duration = stopGive - startGive;
                 //Util.WriteToChat(stopGive.ToString());
                 //Util.WriteToChat(startGive.ToString());
-                Util.WriteToChat("ItemGiver took " + QuestTracker.GetFriendlyTimeDifference(duration) + " to complete");
+                Util.WriteToChat("ItemGiver took " + Util.GetFriendlyTimeDifference(duration) + " to complete");
                 Reset();
             }
             catch (Exception ex) { Logger.LogException(ex); }

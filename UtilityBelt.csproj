@@ -103,6 +103,8 @@
     <Compile Include="Lib\DungeonMaps\LandBlockCache.cs" />
     <Compile Include="Lib\DungeonMaps\Portal.cs" />
     <Compile Include="Lib\DungeonMaps\TileCache.cs" />
+    <Compile Include="Lib\Quest\QuestFlag.cs" />
+    <Compile Include="Lib\Quest\QuestFlagType.cs" />
     <Compile Include="Lib\UBPlayerUpdate.cs" />
     <Compile Include="Lib\UpdateChecker.cs" />
     <Compile Include="Lib\VendorCache\BuyItem.cs" />
