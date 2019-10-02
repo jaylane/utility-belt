@@ -33,7 +33,7 @@ namespace UtilityBelt.Views {
             ACImage acImage = null;
 
             try {
-                using (Stream manifestResourceStream = typeof(MainView).Assembly.GetManifestResourceStream("UtilityBelt.icons.dungeonmaps.png")) {
+                using (Stream manifestResourceStream = typeof(MainView).Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.dungeonmaps.png")) {
                     if (manifestResourceStream != null) {
                         using (Bitmap bitmap = new Bitmap(manifestResourceStream))
                             acImage = new ACImage(bitmap);

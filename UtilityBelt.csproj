@@ -95,16 +95,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Lib\Config.cs" />
-    <Compile Include="Constants\CharOptions2.cs" />
-    <Compile Include="Constants\CharOptions.cs" />
+    <Compile Include="Lib\Constants\CharOptions2.cs" />
+    <Compile Include="Lib\Constants\CharOptions.cs" />
     <Compile Include="Lib\Globals.cs" />
     <Compile Include="Lib\DungeonMaps\DungeonCell.cs" />
     <Compile Include="Lib\DungeonMaps\LandBlock.cs" />
     <Compile Include="Lib\DungeonMaps\LandBlockCache.cs" />
     <Compile Include="Lib\DungeonMaps\Portal.cs" />
     <Compile Include="Lib\DungeonMaps\TileCache.cs" />
-    <Compile Include="Lib\Quest\QuestFlag.cs" />
-    <Compile Include="Lib\Quest\QuestFlagType.cs" />
+    <Compile Include="Lib\Quests\QuestFlag.cs" />
+    <Compile Include="Lib\Quests\QuestFlagType.cs" />
     <Compile Include="Lib\UBPlayerUpdate.cs" />
     <Compile Include="Lib\UpdateChecker.cs" />
     <Compile Include="Lib\VendorCache\BuyItem.cs" />
@@ -158,7 +158,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="icons\utilitybelt.png" />
+    <EmbeddedResource Include="Resources\icons\utilitybelt.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -216,7 +216,7 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="icons\dungeonmaps.png" />
+    <EmbeddedResource Include="Resources\icons\dungeonmaps.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\MapView.xml" />

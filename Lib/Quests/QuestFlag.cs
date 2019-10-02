@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 
-namespace UtilityBelt.Lib.Quest {
+namespace UtilityBelt.Lib.Quests {
     class QuestFlag : IComparable {
         public static readonly Regex MyQuestRegex = new Regex(@"(?<key>\S+) \- (?<solves>\d+) solves \((?<completedOn>\d{0,11})\)""?((?<description>.*)"" (?<maxSolves>.*) (?<repeatTime>\d{0,6}))?.*$");
         public static readonly Regex KillTaskRegex = new Regex(@"killtask|killcount|slayerquest|totalgolem.*dead");

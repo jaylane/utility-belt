@@ -9,7 +9,7 @@ using System.Xml.Schema;
 using System.Xml;
 using System.IO;
 using System.Windows.Forms;
-using UtilityBelt.Lib.Quest;
+using UtilityBelt.Lib.Quests;
 
 namespace UtilityBelt.Tools {
     class QuestTracker : IDisposable {
