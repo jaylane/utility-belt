@@ -9,7 +9,7 @@ using static uTank2.PluginCore;
 namespace UtilityBelt.Tools {
     class VTankControl {
         private static Dictionary<eExternalsPermissionLevel, cExternalInterfaceTrustedRelay> vTankInstances = new Dictionary<eExternalsPermissionLevel, cExternalInterfaceTrustedRelay>();
-        private static Dictionary<string, List<bool>> settingsStack = new Dictionary<string, List<bool>>();
+        private static Dictionary<string, List<object>> settingsStack = new Dictionary<string, List<object>>();
 
         public VTankControl() {
         }
@@ -27,22 +27,21 @@ namespace UtilityBelt.Tools {
             fieldInfo.SetValue(vTank, permissionLevel);
 
             vTankInstances.Add(permissionLevel, vTank);
-
+            
             return vTank;
         }
 
-        public static bool PushSetting(string setting, bool value) {
+        public static bool PushSetting(string setting, object value) {
             try {
                 if (!settingsStack.ContainsKey(setting)) {
-                    settingsStack.Add(setting, new List<bool>());
+                    settingsStack.Add(setting, new List<object>());
                 }
 
                 var vTankSettingsReader = GetVTankInterface(eExternalsPermissionLevel.ReadSettings);
                 var vTankSettingsWriter = GetVTankInterface(eExternalsPermissionLevel.WriteSettings);
-
-                settingsStack[setting].Add((bool)vTankSettingsReader.GetSetting(setting));
-
-                vTankSettingsWriter.SetSetting(setting, value);
+                settingsStack[setting].Add(GetSetting(setting));
+                
+                SetSetting(setting, value);
 
                 return true;
             }
@@ -51,23 +50,68 @@ namespace UtilityBelt.Tools {
             return false;
         }
 
-        public static bool PopSetting(string setting) {
+        public static object PopSetting(string setting) {
             try {
                 if (!settingsStack.ContainsKey(setting) || settingsStack[setting].Count == 0) {
                     return false;
                 }
 
+                var vTankSettingsReader = GetVTankInterface(eExternalsPermissionLevel.ReadSettings);
                 var vTankSettingsWriter = GetVTankInterface(eExternalsPermissionLevel.WriteSettings);
                 var value = settingsStack[setting].Last();
                 settingsStack[setting].RemoveAt(settingsStack[setting].Count - 1);
 
-                vTankSettingsWriter.SetSetting(setting, value);
+                SetSetting(setting, value);
 
                 return true;
             }
             catch (Exception ex) { Logger.LogException(ex); }
 
             return false;
+        }
+
+        private static bool SetSetting(string setting, object value) {
+            try {
+                var vTankSettingsReader = GetVTankInterface(eExternalsPermissionLevel.ReadSettings);
+                var vTankSettingsWriter = GetVTankInterface(eExternalsPermissionLevel.WriteSettings);
+                Type type = vTankSettingsReader.GetSettingType(setting);
+
+                if (type == typeof(bool)) {
+                    vTankSettingsWriter.SetSetting(setting, (bool)value);
+                }
+                else if (type == typeof(string)) {
+                    vTankSettingsWriter.SetSetting(setting, (string)value);
+                }
+                else if (type == typeof(double)) {
+                    vTankSettingsWriter.SetSetting(setting, (double)value);
+                }
+                else if (type == typeof(float)) {
+                    vTankSettingsWriter.SetSetting(setting, (float)value);
+                }
+                else if (type == typeof(int)) {
+                    vTankSettingsWriter.SetSetting(setting, (int)value);
+                }
+                else if (type == typeof(object)) {
+                    vTankSettingsWriter.SetSetting(setting, (object)value);
+                }
+                else {
+                    Util.WriteToChat("bad vtank setting type... " + type.ToString());
+                    return false;
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return true;
+        }
+
+        internal static object GetSetting(string setting) {
+            try {
+                var vTankSettingsReader = GetVTankInterface(eExternalsPermissionLevel.ReadSettings);
+                return vTankSettingsReader.GetSetting(setting);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return null;
         }
     }
 }
