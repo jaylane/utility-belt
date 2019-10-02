@@ -9,7 +9,7 @@
             <control progid="DecalControls.Checkbox" name="AutoSalvageOnlyFromMainPack" left="8" top="32" width="250" height="16" text="Only salvage items in your main pack"/>
             <control progid="DecalControls.Checkbox" name="AutoSalvageDebug" left="8" top="56" width="250" height="16" text="Show Debug Messages"/>
             <control progid="DecalControls.PushButton" name="AutoSalvageStart" left="8" top="184" width="110" height="20" text="Start"/>
-            
+
           </control>
 
         </page>
@@ -62,54 +62,54 @@
 
     </page>
     <page label="QuestTracker">
-      <control progid="DecalControls.Notebook" name="nbMain">
-        <page label="QuestTimers">
-          <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.StaticText" name="QuestsListFilterLabel" left="1" top="4" width="45" height="16" text="Search:"/>
-            <control progid="DecalControls.Edit" name="QuestsListFilter" left="48" top="4" width="176" height="16" imageportalsrc="4726" text=""/>
-            <control progid="DecalControls.StaticText" name="QuestsListName" left="1" top="24" width="200" height="17" text="QuestName"/>
-            <control progid="DecalControls.StaticText" name="QuestsListRepeatTime" left="280" top="24" width="67" height="17" justify="Right" text="RepeatTime"/>
-            <control progid="DecalControls.StaticText" name="QuestsListSolveCount" left="352" top="24" width="45" height="17" justify="Right" text="Solves"/>
-            <control progid="DecalControls.List" name="myQuestList" left="0" top="40" width="400" height="145">
-              <column progid="DecalControls.TextColumn" name="Quest" fixedwidth="240"/>
-              <column progid="DecalControls.TextColumn" name="repeatTime" fixedwidth="100"/>
-              <column progid="DecalControls.TextColumn" name="solveCount" fixedwidth="60"/>
-              <column progid="DecalControls.TextColumn" name="hiddenQuestKey"/>
-            </control>
-            <control progid="DecalControls.PushButton" name="PopulateQuestList" left="8" top="190" width="110" height="20" text="Refresh List"/>
-          </control>
+      <control progid="DecalControls.FixedLayout" clipped="" height="270">
+        <control progid="DecalControls.StaticText" name="QuestsListFilterLabel" left="1" top="4" width="45" height="16" text="Search:"/>
+        <control progid="DecalControls.Edit" name="QuestsListFilter" left="48" top="4" width="176" height="16" imageportalsrc="4726" text=""/>
 
-        </page>
-        <page label="KillTasks">
-          <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.StaticText" name="QuestsListFilterLabel" left="1" top="4" width="45" height="16" text="Search:"/>
-            <control progid="DecalControls.Edit" name="QuestsKTListFilter" left="48" top="4" width="176" height="16" imageportalsrc="4726" text=""/>
-            <control progid="DecalControls.StaticText" name="QuestsListName" left="1" top="24" width="200" height="24" text="QuestName"/>
-            <control progid="DecalControls.StaticText" name="QuestsListRepeatTime" left="272" top="24" width="60" height="16" justify="Right" text="Progress"/>
-            <control progid="DecalControls.StaticText" name="QuestsListSolveCount" left="336" top="24" width="60" height="16" justify="Right" text="Required"/>
-            <control progid="DecalControls.List" name="myKillTaskList" left="0" top="40" width="400" height="145">
-              <column progid="DecalControls.TextColumn" name="QuestName" fixedwidth="240"/>
-              <column progid="DecalControls.TextColumn" name="solveCountTest" fixedwidth="80"/>
-              <column progid="DecalControls.TextColumn" name="maxCompletionsTest" fixedwidth="80"/>
+        <control progid="DecalControls.Notebook" name="QuestListNotebook" left="0" top="20" width="400" height="180">
+          <page label="Timed">
+            <control progid="DecalControls.FixedLayout" clipped="">
+              <control progid="DecalControls.StaticText" name="QuestsListName" left="1" top="4" width="200" height="17" text="Quest Flag"/>
+              <control progid="DecalControls.StaticText" name="QuestsListRepeatTime" left="280" top="4" width="67" height="17" justify="Right" text="ReadyIn"/>
+              <control progid="DecalControls.StaticText" name="QuestsListSolveCount" left="352" top="4" width="45" height="17" justify="Right" text="Solves"/>
+              <control progid="DecalControls.List" name="TimedQuestList" left="0" top="20" width="400" height="145">
+                <column progid="DecalControls.TextColumn" name="QuestKey" width="0" text="" />
+                <column progid="DecalControls.TextColumn" name="QuestName" fixedwidth="240"/>
+                <column progid="DecalControls.TextColumn" name="RepeatTime" justify="Right" fixedwidth="100"/>
+                <column progid="DecalControls.TextColumn" name="SolveCount" justify="Right" fixedwidth="60"/>
+              </control>
             </control>
-            <control progid="DecalControls.PushButton" name="PopulateKillTaskList" left="8" top="190" width="110" height="20" text="Refresh List"/>
-          </control>
 
-        </page>
-        <page label="OneTimeQuests">
-          <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.StaticText" name="QuestsListFilterLabel" left="1" top="4" width="45" height="16" text="Search:"/>
-            <control progid="DecalControls.Edit" name="QuestsOTListFilter" left="48" top="4" width="176" height="16" imageportalsrc="4726" text=""/>
-            <control progid="DecalControls.StaticText" name="QuestsListName" left="1" top="24" width="200" height="24" text="QuestName"/>
-            <control progid="DecalControls.List" name="myOneTimeList" left="0" top="40" width="400" height="145">
-              <column progid="DecalControls.TextColumn" name="Quest" fixedwidth="400"/>
+          </page>
+          <page label="KillTask">
+            <control progid="DecalControls.FixedLayout" clipped="">
+              <control progid="DecalControls.StaticText" name="QuestsListName" left="1" top="4" width="200" height="24" text="Quest Flag"/>
+              <control progid="DecalControls.StaticText" name="QuestsListRepeatTime" left="272" top="4" width="60" height="16" justify="Right" text="Progress"/>
+              <control progid="DecalControls.StaticText" name="QuestsListSolveCount" left="336" top="4" width="60" height="16" justify="Right" text="Required"/>
+              <control progid="DecalControls.List" name="KillTaskQuestList" left="0" top="20" width="400" height="145">
+                <column progid="DecalControls.TextColumn" name="QuestKey" fixedwidth="0" text="" />
+                <column progid="DecalControls.TextColumn" name="QuestName" fixedwidth="240"/>
+                <column progid="DecalControls.TextColumn" name="SolveCount" justify="Right" fixedwidth="80"/>
+                <column progid="DecalControls.TextColumn" name="MaxCompletions" justify="Right" fixedwidth="80"/>
+              </control>
             </control>
-            <control progid="DecalControls.PushButton" name="PopulateOneTimeList" left="8" top="190" width="110" height="20" text="Refresh List"/>
-          </control>
 
-        </page>
+          </page>
+          <page label="Once">
+            <control progid="DecalControls.FixedLayout" clipped="">
+              <control progid="DecalControls.StaticText" name="QuestsListName" left="1" top="4" width="200" height="24" text="Quest Flag"/>
+              <control progid="DecalControls.List" name="OnceQuestList" left="0" top="20" width="400" height="145">
+                <column progid="DecalControls.TextColumn" name="QuestKey" fixedwidth="0" text="" />
+                <column progid="DecalControls.TextColumn" name="QuestName" fixedwidth="400"/>
+                <column progid="DecalControls.TextColumn" name="Unused" fixedwidth="0" text="" />
+                <column progid="DecalControls.TextColumn" name="Unused2" fixedwidth="0" text="" />
+              </control>
+            </control>
+
+          </page>
+        </control>
+        <control progid="DecalControls.PushButton" name="QuestListRefresh" left="8" top="205" width="110" height="20" text="Refresh"/>
       </control>
-
     </page>
     <page label="VisualNav">
       <control progid="DecalControls.FixedLayout" clipped="">

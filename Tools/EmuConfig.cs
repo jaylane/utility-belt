@@ -14,12 +14,12 @@ using VirindiViewService.Controls;
 using System.Data;
 using System.Data.Linq;
 using UtilityBelt.Constants;
+using uTank2.LootPlugins;
 
 namespace UtilityBelt.Tools {
     class EmuConfig : IDisposable {
 
         HudList UIEmuConfigList { get; set; }
-
         DataTable emuConfigDataTable = new DataTable();
         DateTime lastRequestedConfigList;
         
