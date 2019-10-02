@@ -11,7 +11,7 @@ namespace UtilityBelt.Lib.Quest {
         public static readonly Regex MyQuestRegex = new Regex(@"(?<key>\S+) \- (?<solves>\d+) solves \((?<completedOn>\d{0,11})\)""?((?<description>.*)"" (?<maxSolves>.*) (?<repeatTime>\d{0,6}))?.*$");
         public static readonly Regex KillTaskRegex = new Regex(@"killtask|killcount|slayerquest|totalgolem.*dead");
 
-        static Dictionary<string, string> FriendlyNamesLookup = new Dictionary<string, string>();
+        public static Dictionary<string, string> FriendlyNamesLookup = new Dictionary<string, string>();
 
         public string Key = "";
         public string Description = "";

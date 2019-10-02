@@ -39,13 +39,50 @@ namespace UtilityBelt.Tools {
 
             UIQuestListRefresh.Hit += (s, e) => { GetMyQuestsList(); };
 
+            UITimedQuestList.Click += (s, r, c) => { HandleRowClicked(UITimedQuestList, r, c); };
+            UIKillTaskQuestList.Click += (s, r, c) => { HandleRowClicked(UIKillTaskQuestList, r, c); };
+            UIOnceQuestList.Click += (s, r, c) => { HandleRowClicked(UIOnceQuestList, r, c); };
+
             Globals.MainView.view.VisibleChanged += MainView_VisibleChanged;
             questRedrawTimer.Tick += QuestRedrawTimer_Tick;
             questRedrawTimer.Interval = 1000;
 
             Globals.Core.ChatBoxMessage += Current_ChatBoxMessage;
+            Globals.Core.CommandLineText += Core_CommandLineText;
             
             GetMyQuestsList();
+        }
+
+        private void Core_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
+            try {
+                if (e.Text.StartsWith("/ub quests check ")) {
+                    e.Eat = true;
+                    var searchText = e.Text.Replace("/ub quests check ", "");
+                    var searchRe = new Regex(searchText, RegexOptions.IgnoreCase);
+                    var thoughts = 0;
+
+                    var keys = new List<string>(questFlags.Keys);
+                    keys.AddRange(new List<string>(QuestFlag.FriendlyNamesLookup.Keys));
+                    keys = new List<string>(keys.Distinct());
+
+                    foreach (var key in keys) {
+                        if (searchRe.IsMatch(key)) {
+                            ThinkQuestFlag(key);
+                            thoughts++;
+
+                            if (thoughts >= 5) {
+                                Util.WriteToChat("Quests output has been truncated to the first 5 matching quest flags.");
+                                return;
+                            }
+                        }
+                    }
+
+                    if (thoughts == 0) {
+                        Util.Think($"Quest: {searchText} has not been completed");
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void QuestRedrawTimer_Tick(object sender, EventArgs e) {
@@ -83,6 +120,48 @@ namespace UtilityBelt.Tools {
                     }
                 }
             } catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void HandleRowClicked(HudList uiList, int row, int col) {
+            try {
+                var key = ((HudStaticText)uiList[row][0]).Text;
+
+                Util.WriteToChat($"Quest Key: {key}");
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void ThinkQuestFlag(string key) {
+            if (!questFlags.ContainsKey(key)) {
+                Util.Think($"Quest: {key} has not been completed");
+                return;
+            }
+
+            var questFlag = questFlags[key];
+
+            switch (questFlag.FlagType) {
+                case QuestFlagType.Once:
+                    Util.Think($"Quest: {questFlag.Key} is completed");
+                    return;
+
+                case QuestFlagType.KillTask:
+                    if (questFlag.Solves >= questFlag.MaxSolves) {
+                        Util.Think($"Quest: {questFlag.Key} is completed");
+                    }
+                    else {
+                        Util.Think($"Quest: {questFlag.Key} is at {questFlag.Solves} of {questFlag.MaxSolves}");
+                    }
+                    return;
+
+                case QuestFlagType.Timed:
+                    if (questFlag.IsReady()) {
+                        Util.Think($"Quest: {questFlag.Key} is ready");
+                    }
+                    else {
+                        Util.Think($"Quest: {questFlag.Key} is not ready ({questFlag.NextAvailable()})");
+                    }
+                    return;
+            }
         }
 
         private void DrawQuestLists() {
@@ -199,6 +278,7 @@ namespace UtilityBelt.Tools {
             if (!disposed) {
                 if (disposing) {
                     Globals.Core.ChatBoxMessage -= Current_ChatBoxMessage;
+                    Globals.Core.CommandLineText -= Core_CommandLineText;
 
                     if (questRedrawTimer != null) {
                         questRedrawTimer.Stop();
