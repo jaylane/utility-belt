@@ -54,6 +54,12 @@ namespace UtilityBelt
             return Path.Combine(GetCharacterDirectory(), "logs");
         }
 
+        internal static string GetResourcesDirectory() {
+            string assemblyFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            return Path.Combine(assemblyFolder, "Resources");
+        }
+
         public static void CreateDataDirectories() {
             System.IO.Directory.CreateDirectory(GetPluginDirectory());
             System.IO.Directory.CreateDirectory(GetCharacterDirectory());
@@ -357,6 +363,27 @@ namespace UtilityBelt
             }
         }
 
+        public static DateTime UnixTimeStampToDateTime(double unixTimeStamp) {
+            DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            dtDateTime = dtDateTime.AddSeconds(unixTimeStamp);
+            return dtDateTime;
+        }
+
+        public static string GetFriendlyTimeDifference(TimeSpan difference) {
+            string output = "";
+
+            if (difference.Days > 0) output += difference.Days.ToString() + "d ";
+            if (difference.Hours > 0) output += difference.Hours.ToString() + "h ";
+            if (difference.Minutes > 0) output += difference.Minutes.ToString() + "m ";
+            if (difference.Seconds > 0) output += difference.Seconds.ToString() + "s ";
+
+            return output.Trim();
+        }
+
+        public static string GetFriendlyTimeDifference(long difference) {
+            return GetFriendlyTimeDifference(TimeSpan.FromSeconds(difference));
+        }
+
         public static Point RotatePoint(Point pointToRotate, Point centerPoint, double angleInDegrees) {
             double angleInRadians = angleInDegrees * (Math.PI / 180);
             double cosTheta = Math.Cos(angleInRadians);
@@ -371,41 +398,6 @@ namespace UtilityBelt
                     (sinTheta * (pointToRotate.X - centerPoint.X) +
                     cosTheta * (pointToRotate.Y - centerPoint.Y) + centerPoint.Y)
             };
-        }
-
-        internal static string GetQTXMLPath() {
-            string assemblyFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-            return Path.Combine(assemblyFolder, "Resources");
-        }
-
-        public static Dictionary<string, string> questKeyLookup = new Dictionary<string, string>();
-
-        public static void LoadQuestLookupXML() {
-            try {
-                string filePath = Path.Combine(GetQTXMLPath(), "quests.xml");
-
-                if (!File.Exists(filePath)) {
-                    Util.WriteToChat("Unable to find lookup file: " + filePath);
-                    return;
-                }
-
-                using (XmlReader reader = XmlReader.Create(filePath)) {
-                    while (reader.Read()) {
-                        if (reader.IsStartElement() && reader.Name != "root") {
-                            questKeyLookup.Add(reader.Name.ToLower(), reader.ReadElementContentAsString());
-                        }
-                    }
-                }
-            } catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        public static string GetFriendlyQuestName(string questKey) {
-            if (questKeyLookup.Keys.Contains(questKey)) {
-                return questKeyLookup[questKey];
-            }
-
-            return questKey;
         }
 
         public static bool CompareFiles(string path1, string path2) {
