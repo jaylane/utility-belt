@@ -75,7 +75,7 @@ namespace UtilityBelt.Tools {
 
                         if (update.PlayerID != Globals.Core.CharacterFilter.Id && DateTime.UtcNow - update.lastUpdate <= TimeSpan.FromMilliseconds(UPDATE_TIMEOUT)) {
                             updates.Add(update);
-                            UpdateVtankVitalInfo(update);
+                            UpdateVTankVitalInfo(update);
                         }
                         else if (update.PlayerID != Globals.Core.CharacterFilter.Id) {
                             if (HasVTank()) {
@@ -104,14 +104,14 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void UpdateVtankVitalInfo(UBPlayerUpdate update) {
+        private void UpdateVTankVitalInfo(UBPlayerUpdate update) {
             try {
-                if (!HasVTank()) return;
+                if (!HasVTank() || update == null) return;
                 if (update.Server != Globals.Core.CharacterFilter.Server) return;
 
                 //Util.WriteToChat($"Updating vital info for {update.PlayerID} stam:{update.curStam}/{update.maxStam}");
-                
-                vTank.HelperPlayerUpdate(new sPlayerInfoUpdate() {
+
+                var helperUpdate = new sPlayerInfoUpdate() {
                     PlayerID = update.PlayerID,
                     HasHealthInfo = update.HasHealthInfo,
                     HasManaInfo = update.HasManaInfo,
@@ -122,7 +122,11 @@ namespace UtilityBelt.Tools {
                     maxHealth = update.maxHealth,
                     maxMana = update.maxMana,
                     maxStam = update.maxStam
-                });
+                };
+
+                if (helperUpdate != null) {
+                    vTank.HelperPlayerUpdate(helperUpdate);
+                }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
