@@ -1,7 +1,7 @@
 ## 0.0.9
 - Add support to VisualNav for follow type navs
 - Default autovendor autostack while vendoring to true
-- Added `/ub count item <regexMatch>` command
+- Added `/ub count item <regexMatch>` command (thanks Schneebly)
 - Added ability to "think" about a quest flag status with `/ub quests check <flag>` (click on a quest in questtracker to see the flag)
 
 ## 0.0.8 (2019-9-28) [UtilityBeltInstaller-0.0.8.exe](/uploads/f1b2c542a7630438732e2553dec3a725/UtilityBeltInstaller-0.0.8.exe)

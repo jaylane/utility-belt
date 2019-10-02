@@ -287,16 +287,10 @@ namespace UtilityBelt.Tools {
             shouldStack = true;
             startedVendoring = DateTime.UtcNow;
 
-            var vTankSettings = VTankControl.GetVTankInterface(uTank2.eExternalsPermissionLevel.ReadSettings);
-            var vTankSettingsWriter = VTankControl.GetVTankInterface(uTank2.eExternalsPermissionLevel.WriteSettings);
-
-            if (vTankSettings != null && vTankSettingsWriter != null) {
-                hadVTankAutoCramEnabled = (bool)vTankSettings.GetSetting("AutoCram");
-                hadVTankAutoStackEnabled = (bool)vTankSettings.GetSetting("AutoStack");
-
-                vTankSettingsWriter.SetSetting("AutoCram", false);
-                vTankSettingsWriter.SetSetting("AutoStack", false);
-            }
+            // disable vtank autocram/stack because it interferes with vendoring.
+            // it will be restored to previous values at the end
+            VTankControl.PushSetting("AutoCram", false);
+            VTankControl.PushSetting("AutoStack", false);
 
             Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
         }
@@ -327,12 +321,9 @@ namespace UtilityBelt.Tools {
 
             if (lootProfile != null) ((VTClassic.LootCore)lootProfile).UnloadProfile();
 
-            var vTankSettingsReader = VTankControl.GetVTankInterface(uTank2.eExternalsPermissionLevel.WriteSettings);
-
-            if (vTankSettingsReader != null) {
-                vTankSettingsReader.SetSetting("AutoCram", hadVTankAutoCramEnabled);
-                vTankSettingsReader.SetSetting("AutoStack", hadVTankAutoStackEnabled);
-            }
+            // restore cram/stack settings
+            VTankControl.PopSetting("AutoCram");
+            VTankControl.PopSetting("AutoStack");
         }
 
         public void Think() {

@@ -9,6 +9,7 @@ using static uTank2.PluginCore;
 namespace UtilityBelt.Tools {
     class VTankControl {
         private static Dictionary<eExternalsPermissionLevel, cExternalInterfaceTrustedRelay> vTankInstances = new Dictionary<eExternalsPermissionLevel, cExternalInterfaceTrustedRelay>();
+        private static Dictionary<string, List<bool>> settingsStack = new Dictionary<string, List<bool>>();
 
         public VTankControl() {
         }
@@ -28,6 +29,45 @@ namespace UtilityBelt.Tools {
             vTankInstances.Add(permissionLevel, vTank);
 
             return vTank;
+        }
+
+        public static bool PushSetting(string setting, bool value) {
+            try {
+                if (!settingsStack.ContainsKey(setting)) {
+                    settingsStack.Add(setting, new List<bool>());
+                }
+
+                var vTankSettingsReader = GetVTankInterface(eExternalsPermissionLevel.ReadSettings);
+                var vTankSettingsWriter = GetVTankInterface(eExternalsPermissionLevel.WriteSettings);
+
+                settingsStack[setting].Add((bool)vTankSettingsReader.GetSetting(setting));
+
+                vTankSettingsWriter.SetSetting(setting, value);
+
+                return true;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return false;
+        }
+
+        public static bool PopSetting(string setting) {
+            try {
+                if (!settingsStack.ContainsKey(setting) || settingsStack[setting].Count == 0) {
+                    return false;
+                }
+
+                var vTankSettingsWriter = GetVTankInterface(eExternalsPermissionLevel.WriteSettings);
+                var value = settingsStack[setting].Last();
+                settingsStack[setting].RemoveAt(settingsStack[setting].Count - 1);
+
+                vTankSettingsWriter.SetSetting(setting, value);
+
+                return true;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return false;
         }
     }
 }
