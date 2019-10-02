@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Decal.Adapter;
 using Decal.Adapter.Wrappers;
+using System.Text.RegularExpressions;
 
 namespace UtilityBelt.Tools {
     class Counter : IDisposable {
@@ -18,6 +19,9 @@ namespace UtilityBelt.Tools {
         private bool isRunning = false;
         private bool scanComplete = false;
         private Dictionary<string, int> matchedRule = new Dictionary<string, int>();
+        private Dictionary<string, int> itemList = new Dictionary<string, int>();
+        bool doThink;
+        bool doDebug;
 
         public Counter() {
             CoreManager.Current.CommandLineText += new EventHandler<ChatParserInterceptEventArgs>(Current_CommandLineText);
@@ -50,23 +54,55 @@ namespace UtilityBelt.Tools {
         }
 
 
+
         private void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
             try {
-                if (e.Text.StartsWith("/ub count ")) {
+                Regex itemRegex = new Regex(@"/ub count item (?<name>.*?)(?<options>(debug|think|\s)*)$");
+                Match itemMatch = itemRegex.Match(e.Text);
+                Regex profileRegex = new Regex(@"/ub count profile (?<item>\S+) ?(?<think>.*)$");
+                Match profileMatch = profileRegex.Match(e.Text);
+
+                if (e.Text.StartsWith("/ub count")) {
                     e.Eat = true;
-                    if (e.Text.Contains("item ")) {
-                        string item = e.Text.Replace("/ub count item", "").Trim();
+                    if (itemMatch.Success) {
+                        string item = itemMatch.Groups["name"].Value;
+                        if (e.Text.Contains("think")) {
+                            doThink = true;
+                        }
+                        if (e.Text.Contains("debug")) {
+                            doDebug = true;
+                        }
+                        //string item = e.Text.Replace("/ub count item", "").Trim();
+                        Regex searchRegex = new Regex(item, RegexOptions.IgnoreCase);
+                        if (doDebug) Util.ThinkOrWrite("Regex String: " + searchRegex);
                         int stackCount = 0;
-                        int totalStackCount = 0;
                         foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetInventory()) {
-                            if (String.Compare(wo.Name, item, StringComparison.OrdinalIgnoreCase) == 0) {
+                            string itemName = Util.GetObjectName(wo.Id);
+                            if (searchRegex.IsMatch(itemName)) {
+                                if (doDebug) Util.ThinkOrWrite("Matched Item: " + itemName);
                                 stackCount = wo.Values(LongValueKey.StackCount, 1);
-                                totalStackCount += stackCount;
+                                if (!itemList.ContainsKey(itemName)) {
+                                    itemList[itemName] = stackCount;
+                                    if (doDebug) Util.ThinkOrWrite("Count In Progress: " + itemName + " - " + stackCount);
+                                }
+                                else if (itemList[itemName] > 0) {
+                                    itemList[itemName] += stackCount;
+                                    if (doDebug) Util.ThinkOrWrite("Count In Progress: " + itemName + " - " + stackCount);
+                                }
+                                else {
+                                    continue;
+                                }
                             }
                             else {
+                                //Util.WriteToChat("no match for " + item);
                             }
                         }
-                        Util.Think("Item Count: " + item + " - " + totalStackCount.ToString());
+                        foreach (KeyValuePair<string, int> entry in itemList) {
+                            Util.ThinkOrWrite("Item Count: " + entry.Key + " - " + entry.Value.ToString(), doThink);
+                        }
+                        itemList.Clear();
+                        doThink = false;
+                        doDebug = false;
                     }
                     else if (e.Text.Contains("profile")) {
                         utlProfile = e.Text.Replace("/ub count profile ", "").Trim();

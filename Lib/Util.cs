@@ -331,6 +331,18 @@ namespace UtilityBelt
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
+        internal static void ThinkOrWrite(string message, bool think=false) {
+            try {
+                if (think) {
+                    DispatchChatToBoxWithPluginIntercept(string.Format("/tell {0}, {1}", Globals.Core.CharacterFilter.Name, message));
+                }
+                else {
+                    Util.WriteToChat(string.Format("{0}", message));
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
         public static string GetObjectName(int id) {
             if (!Globals.Core.Actions.IsValidObject(id)) {
                 return string.Format("<{0}>", id);
