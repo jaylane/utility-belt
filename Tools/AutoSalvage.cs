@@ -143,6 +143,11 @@ namespace UtilityBelt.Tools {
         public void LoadInventory() {
             var inventory = Globals.Core.WorldFilter.GetInventory();
 
+            // prefilter inventory if we are only selling from the main pack
+            if (Globals.Config.AutoSalvage.OnlyFromMainPack.Value == true) {
+                inventory.SetFilter(new ByContainerFilter(Globals.Core.CharacterFilter.Id));
+            }
+
             foreach (var item in inventory) {
                 if (!AllowedToSalvageItem(item)) continue;
 
