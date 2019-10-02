@@ -24,5 +24,22 @@ namespace UtilityBelt.Lib.VendorCache {
                 Items.Add(wo.Id, new VendorItem(wo));
             }
         }
+
+        public bool WillBuyItem(WorldObject wo) {
+            // all vendors buy tradenotes, right?
+            if (wo.ObjectClass == ObjectClass.TradeNote) return true;
+
+            // will vendor buy this item?
+            if (wo.ObjectClass != ObjectClass.TradeNote && (Categories & wo.Category) == 0) {
+                return false;
+            }
+
+            // too expensive for this vendor
+            if (MaxValue < (wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1))) {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

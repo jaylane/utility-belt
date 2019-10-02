@@ -20,22 +20,17 @@ namespace UtilityBelt.Tools {
         private DateTime lastVendorAction = DateTime.MinValue;
 
         private bool disposed;
-        private int AutoVendorTimeout = 60; // in seconds
 
         private bool needsVendoring = false;
         private object lootProfile;
         private bool needsToBuy = false;
         private bool needsToSell = false;
-        private int stackItem = 0;
         private bool shouldStack = false;
         private int vendorId = 0;
         private string vendorName = "";
         private bool waitingForIds = false;
         private DateTime lastIdSpam = DateTime.MinValue;
-        private bool needsToUse = false;
-
-        private bool hadVTankAutoCramEnabled = false;
-        private bool hadVTankAutoStackEnabled = false;
+        private List<int> itemsToId = new List<int>();
 
         HudCheckBox UIAutoVendorEnable { get; set; }
         HudCheckBox UIAutoVendorTestMode { get; set; }
@@ -273,8 +268,25 @@ namespace UtilityBelt.Tools {
             // Load our loot profile
             ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
             
-            if (Globals.Assessor.NeedsInventoryData()) {
-                Globals.Assessor.RequestAll();
+            itemsToId.Clear();
+            var inventory = Globals.Core.WorldFilter.GetInventory();
+
+            // filter inventory beforehand if we are only selling from the main pack
+            if (Globals.Config.AutoVendor.OnlyFromMainPack.Value == true) {
+                inventory.SetFilter(new ByContainerFilter(Globals.Core.CharacterFilter.Id));
+            }
+
+            // build a list of items to id from our inventory, attempting to be smart about it
+            foreach (var item in inventory) {
+                // will the vendor buy this item?
+                VendorInfo vendor = VendorCache.GetVendor(vendorId);
+                if (vendor != null && (vendor.Categories & item.Category) == 0) continue;
+
+                itemsToId.Add(item.Id);
+            }
+
+            if (Globals.Assessor.NeedsInventoryData(itemsToId)) {
+                Globals.Assessor.RequestAll(itemsToId);
                 waitingForIds = true;
                 lastIdSpam = DateTime.UtcNow;
             }
@@ -334,13 +346,13 @@ namespace UtilityBelt.Tools {
                     lastThought = DateTime.UtcNow;
 
                     if (needsVendoring && waitingForIds) {
-                        if (Globals.Assessor.NeedsInventoryData()) {
+                        if (Globals.Assessor.NeedsInventoryData(itemsToId)) {
                             if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15)) {
                                 lastIdSpam = DateTime.UtcNow;
                                 startedVendoring = DateTime.UtcNow;
 
                                 if (Globals.Config.AutoVendor.Debug.Value == true) {
-                                    Util.WriteToChat(string.Format("AutoVendor Waiting to id {0} items, this will take approximately {0} seconds.", Globals.Assessor.GetNeededIdCount()));
+                                    Util.WriteToChat(string.Format("AutoVendor waiting to id {0} items, this will take approximately {0} seconds.", Globals.Assessor.GetNeededIdCount(itemsToId)));
                                 }
                             }
 
@@ -661,17 +673,9 @@ namespace UtilityBelt.Tools {
 
                 uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
 
-                if (!result.IsSell)
+                if (!result.IsSell || !vendor.WillBuyItem(wo))
                     continue;
-
-                // too expensive for this vendor
-                if (vendor.MaxValue < (wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) && wo.ObjectClass != ObjectClass.TradeNote) continue;
-
-                // will vendor buy this item?
-                if (wo.ObjectClass != ObjectClass.TradeNote && (vendor.Categories & wo.Category) == 0) {
-                    continue;
-                }
-
+                
                 sellObjects.Add(wo);
             }
 
