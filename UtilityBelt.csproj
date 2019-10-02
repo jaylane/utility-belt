@@ -146,11 +146,11 @@
     <Compile Include="Views\ColorPicker.cs" />
     <Compile Include="Views\MapView.cs" />
     <Compile Include="Views\MainView.cs" />
-    <Compile Include="VirindiViews\ViewSystemSelector.cs" />
-    <Compile Include="VirindiViews\Wrapper.cs" />
-    <Compile Include="VirindiViews\Wrapper_Decal.cs" />
-    <Compile Include="VirindiViews\Wrapper_MyHuds.cs" />
-    <Compile Include="VirindiViews\Wrapper_WireupHelper.cs" />
+    <Compile Include="Lib\VirindiViews\ViewSystemSelector.cs" />
+    <Compile Include="Lib\VirindiViews\Wrapper.cs" />
+    <Compile Include="Lib\VirindiViews\Wrapper_Decal.cs" />
+    <Compile Include="Lib\VirindiViews\Wrapper_MyHuds.cs" />
+    <Compile Include="Lib\VirindiViews\Wrapper_WireupHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\MainView.xml">
