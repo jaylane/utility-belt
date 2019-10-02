@@ -1,7 +1,6 @@
 ; Define your application name
 !define APPNAME "UtilityBelt"
 !define SOFTWARECOMPANY "SunnujDecalPlugins"
-!define VERSION	"0.0.8"
 !define APPGUID "{c51788b5-3c43-471a-8034-79d5865fd7bd}"
 
 !define ASSEMBLY "UtilityBelt.dll"
@@ -12,6 +11,9 @@
 ; Main Install settings
 ; compressor goes first
 SetCompressor LZMA
+
+!getdllversion "${BUILDPATH}\${ASSEMBLY}" Expv_
+!define VERSION ${Expv_1}.${Expv_2}.${Expv_3}
 
 Name "${APPNAME} ${VERSION}"
 InstallDir "C:\Games\Decal Plugins\${APPNAME}"
