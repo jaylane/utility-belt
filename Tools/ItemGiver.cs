@@ -68,6 +68,11 @@ namespace UtilityBelt.Tools {
 
         public void Think() {
             try {
+                //if itemgiver is running, and nav block has less than a second remaining, refresh it
+                if (needsGiving && VTankControl.navBlockedUntil < DateTime.UtcNow + TimeSpan.FromSeconds(1)) {
+                    VTankControl.Nav_Block(30000, false);
+                }
+
                 if (DateTime.Now - lastScanUpdate > TimeSpan.FromSeconds(10) && idItems.Count > 0) {
                     lastScanUpdate = DateTime.Now;
                     Util.WriteToChat("Items remaining to ID: " + idItems.Count());
@@ -215,6 +220,7 @@ namespace UtilityBelt.Tools {
                     Start();
                 }
                 if (giveMatch.Success && !isRunning) {
+                    VTankControl.Nav_Block(1000, false); // quick block to keep vtank from truckin' off before the profile loads, but short enough to not matter if it errors out and doesn't unlock
                     utlProfile = giveMatch.Groups["utlProfile"].Value.Trim();
                     targetPlayer = giveMatch.Groups["targetPlayer"].Value.Trim();
                     destinationId = FindPlayerID(targetPlayer);
@@ -331,6 +337,8 @@ namespace UtilityBelt.Tools {
 
         public void Start() {
             try {
+                VTankControl.Nav_Block(30000.0, false); //need global debug
+
                 startGive = DateTime.Now;
                 if (!isDroppingBuggedItems) {
                     isRunning = true;
@@ -372,6 +380,7 @@ namespace UtilityBelt.Tools {
                 //Util.WriteToChat(stopGive.ToString());
                 //Util.WriteToChat(startGive.ToString());
                 Util.WriteToChat("ItemGiver took " + Util.GetFriendlyTimeDifference(duration) + " to complete");
+                VTankControl.Nav_UnBlock();
                 Reset();
             }
             catch (Exception ex) { Logger.LogException(ex); }
