@@ -265,6 +265,8 @@ namespace UtilityBelt.Tools {
                 return;
             }
 
+            VTankControl.Nav_Block(1000.0, false); // quick block to keep vtank from truckin' off before the profile loads, but short enough to not matter if it errors out and doesn't unlock
+
             // Load our loot profile
             ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
             
@@ -303,6 +305,7 @@ namespace UtilityBelt.Tools {
             // it will be restored to previous values at the end
             VTankControl.PushSetting("AutoCram", false);
             VTankControl.PushSetting("AutoStack", false);
+            VTankControl.Nav_Block(30000.0, Globals.Config.AutoVendor.Debug.Value);
 
             Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
         }
@@ -333,6 +336,8 @@ namespace UtilityBelt.Tools {
 
             if (lootProfile != null) ((VTClassic.LootCore)lootProfile).UnloadProfile();
 
+            VTankControl.Nav_UnBlock();
+
             // restore cram/stack settings
             VTankControl.PopSetting("AutoCram");
             VTankControl.PopSetting("AutoStack");
@@ -344,6 +349,11 @@ namespace UtilityBelt.Tools {
 
                 if (DateTime.UtcNow - lastThought >= thinkInterval && DateTime.UtcNow - startedVendoring >= thinkInterval) {
                     lastThought = DateTime.UtcNow;
+
+                    //if autovendor is running, and nav block has less than a second plus thinkInterval remaining, refresh it
+                    if (needsVendoring && VTankControl.navBlockedUntil < DateTime.UtcNow + TimeSpan.FromSeconds(1) + thinkInterval) {
+                        VTankControl.Nav_Block(30000, Globals.Config.AutoVendor.Debug.Value);
+                    }
 
                     if (needsVendoring && waitingForIds) {
                         if (Globals.Assessor.NeedsInventoryData(itemsToId)) {
@@ -601,7 +611,7 @@ namespace UtilityBelt.Tools {
         }
 
         private bool PyrealsWillFitInMainPack(int amount) {
-            int packSlotsNeeded = (int)Math.Ceiling(amount / PYREAL_STACK_SIZE);
+            int packSlotsNeeded = 1 + (int)Math.Ceiling(amount / PYREAL_STACK_SIZE); // always leave 1 slot free. Fixes issue with main pack filling, and unable to buy a Trade Note.
 
             return Util.GetFreeMainPackSpace() > packSlotsNeeded;
         }

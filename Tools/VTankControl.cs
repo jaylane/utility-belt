@@ -8,6 +8,9 @@ using static uTank2.PluginCore;
 
 namespace UtilityBelt.Tools {
     class VTankControl {
+        private static bool navBlockDebug = false;
+        public static DateTime navBlockedUntil = DateTime.MinValue;
+
         private static Dictionary<eExternalsPermissionLevel, cExternalInterfaceTrustedRelay> vTankInstances = new Dictionary<eExternalsPermissionLevel, cExternalInterfaceTrustedRelay>();
         private static Dictionary<string, List<object>> settingsStack = new Dictionary<string, List<object>>();
 
@@ -29,6 +32,38 @@ namespace UtilityBelt.Tools {
             vTankInstances.Add(permissionLevel, vTank);
             
             return vTank;
+        }
+
+        public static void Decision_Lock(uTank2.ActionLockType lType, TimeSpan tSpan) {
+            try {
+                GetVTankInterface((uTank2.eExternalsPermissionLevel)15).Decision_Lock(lType, tSpan);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+        public static void Decision_UnLock(uTank2.ActionLockType lType) {
+            try {
+                GetVTankInterface((uTank2.eExternalsPermissionLevel)15).Decision_UnLock(lType);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        //todo: need a global debug checkbox (with verbosity levels?)
+        public static void Nav_Block(double msMax, bool debug) {
+            navBlockDebug = debug;
+            if (msMax > 0) {
+                if (navBlockDebug) {
+                    Util.WriteToChat("[Nav Blocked] for " + msMax + "ms");
+                }
+                TimeSpan blockDuration = TimeSpan.FromMilliseconds(msMax);
+                navBlockedUntil = DateTime.UtcNow + blockDuration;
+                Decision_Lock(uTank2.ActionLockType.Navigation, blockDuration);
+            }
+        }
+        public static void Nav_UnBlock() {
+            if (navBlockDebug) {
+                Util.WriteToChat("[Nav Block] removed");
+            }
+            Decision_UnLock(uTank2.ActionLockType.Navigation);
         }
 
         public static bool PushSetting(string setting, object value) {
