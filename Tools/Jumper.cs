@@ -56,7 +56,7 @@ namespace UtilityBelt.Tools {
                 if (isTurning) {
                     isTurning = false;
                     needToTurn = false;
-                    //Util.WriteToChat("failed to turn in 3 seconds");
+                    VTankControl.PopSetting("EnableNav");
                     turningSeconds = DateTime.UtcNow;
                 }
             }
