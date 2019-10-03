@@ -23,6 +23,10 @@ namespace UtilityBelt.Tools {
         private DateTime lastThought = DateTime.MinValue;
         private DateTime turningSeconds = DateTime.MinValue;
         private DateTime jumpReadyThoughtSeconds = DateTime.MinValue;
+        private DateTime navSettingTimer = DateTime.MinValue;
+        private int enableNavTimer;
+        private bool waitToJump = false;
+        private bool waitToTurn = false;
 
         public Jumper() {
             Globals.Core.CommandLineText += Current_CommandLineText;
@@ -32,19 +36,21 @@ namespace UtilityBelt.Tools {
             if (DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(100)) {
                 lastThought = DateTime.UtcNow;
                 if (isTurning && needToTurn) {
-                    //Util.WriteToChat("i'm turning to " + targetDirection);
                     if (targetDirection != Math.Round(CoreManager.Current.Actions.Heading, 0)) {
                         return;
+                        //Check for turning complete
                     } else if (targetDirection == Math.Round(CoreManager.Current.Actions.Heading, 0)) {
-                        //Util.WriteToChat("done turning");
+                        waitToTurn = true;
+                        navSettingTimer = DateTime.Now;
                         isTurning = false;
                         finishedTurning = true;
                         needToTurn = false;
-                        //Util.WriteToChat("isTurning :" + isTurning + " finishedTurning: " + finishedTurning);
                         lastThought = DateTime.UtcNow;
                     }
                 }
             }
+
+            //abort turning if takes longer than 3 seconds
             if (DateTime.UtcNow - turningSeconds >= TimeSpan.FromSeconds(3)) {
                 turningSeconds = DateTime.UtcNow;
                 if (isTurning) {
@@ -54,24 +60,42 @@ namespace UtilityBelt.Tools {
                     turningSeconds = DateTime.UtcNow;
                 }
             }
+            //Do the jump thing
             if (DateTime.UtcNow - jumpReadyThoughtSeconds >= TimeSpan.FromSeconds(1)) {
                 jumpReadyThoughtSeconds = DateTime.UtcNow;
                 if (!isTurning && finishedTurning && needToJump) {
                     isTurning = false;
-                    //Util.WriteToChat("ready to jump");
-                    //Util.WriteToChat("finishedTurning: " + finishedTurning.ToString());
+                    if (enableNavTimer > 0) {
+                        enableNavTimer += enableNavTimer + msToHoldDown + 1000;
+                    }
+                    else {
+                        enableNavTimer = msToHoldDown + 1000;
+                    }
+                    Util.WriteToChat(enableNavTimer.ToString());
+                    
+
                     PostMessageTools.SendSpace(msToHoldDown, addShift, addW, addZ, addX, addC);
                     finishedTurning = false;
+                    addShift = addW = addZ = addX = addC = false;
                     needToJump = false;
                     msToHoldDown = 0;
-                    addShift = addW = addZ = addX = addC = false;
+                    VTankControl.PushSetting("EnableNav", false);
+                    navSettingTimer = DateTime.UtcNow;
+                    waitToJump = true;
                 }
+            }
+            //Set vtank nav setting back to original state after jump/turn complete
+            if (DateTime.UtcNow - navSettingTimer >= TimeSpan.FromMilliseconds(enableNavTimer) && (waitToJump || waitToTurn)) {
+                navSettingTimer = DateTime.UtcNow;
+                VTankControl.PopSetting("EnableNav");
+                waitToJump = false;
+                waitToTurn = false;
+                enableNavTimer = 0;
             }
         }
 
         private static readonly Regex directionFace = new Regex(@"/ub face ");
         private static readonly Regex jumpRegex = new Regex(@"/ub (?<faceDirection>\d+)? ?(?<shift>s)?jump(?<jumpDirection>[wzxc]?) (?<msToHoldDown>\d+)?");
-        //Regex(@"\/ub ?(face )?(\d+)?( (s)jump(w|z|x|c))?( \d+)");
         void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
             try {
                 if (directionFace.IsMatch(e.Text)) {
@@ -80,8 +104,11 @@ namespace UtilityBelt.Tools {
                         if (!int.TryParse(e.Text.Substring(9, e.Text.Length - 9), out targetDirection))
                             return;
                         isTurning = true;
+                        needToTurn = true;
                         turningSeconds = DateTime.UtcNow;
                         CoreManager.Current.Actions.FaceHeading(targetDirection, true);
+
+                        VTankControl.PushSetting("EnableNav",false);
                     }
                     return;
                 }
@@ -98,28 +125,23 @@ namespace UtilityBelt.Tools {
                         //Util.WriteToChat(msToHoldDown.ToString() + " is not a valid number");
                         needToJump = false;
                         return;
-                    }
+                    } //check jump held for 0-1000 ms
                     else if (!string.IsNullOrEmpty(jumpMatch.Groups["msToHoldDown"].Value) && (msToHoldDown < 0 || msToHoldDown > 1000)) {
-                        //Util.WriteToChat(msToHoldDown.ToString() + " is out of range 0-1000");
                         needToJump = false;
                         needToTurn = false;
                         return;
-                    }
-                    //set face direction
+                    } //set face direction
                     else if (string.IsNullOrEmpty(jumpMatch.Groups["faceDirection"].Value)) {
-                        //Util.WriteToChat("No direction defined: not turning");
                         finishedTurning = true;
                         needToTurn = false;
                         isTurning = false;
                         needToJump = true;
-                    }
+                    } //check face direction is a int
                     else if (!string.IsNullOrEmpty(jumpMatch.Groups["faceDirection"].Value) && !int.TryParse(jumpMatch.Groups["faceDirection"].Value, out faceDirectionInt)) {
-                        //Util.WriteToChat(faceDirectionInt.ToString() + " is not a valid number");
                         needToJump = false;
                         return;
-                    }
+                    } //check face direction falls between 0-360
                     else if (!string.IsNullOrEmpty(jumpMatch.Groups["faceDirection"].Value) && (faceDirectionInt < 0 || faceDirectionInt > 359)) {
-                        //Util.WriteToChat(faceDirectionInt.ToString() + " is not within range 0-259");
                         needToJump = false;
                         return;
                     }
@@ -152,27 +174,22 @@ namespace UtilityBelt.Tools {
                         addShift = true;
                     }
 
-                    //Util.WriteToChat("targetDirection: " + targetDirection.ToString());
-
-                    //Util.WriteToChat("faceDirection: " + targetDirection.ToString() + "  addShift: " + addShift.ToString() + "  jumpDirection: " + jumpDirection.ToString() + "  msToHoldDown: " + msToHoldDown.ToString());
                     turningSeconds = DateTime.UtcNow;
-                    if(needToTurn) CoreManager.Current.Actions.FaceHeading(targetDirection, true);
+                    //start turning and set nav
+                    if (needToTurn) {
+                        CoreManager.Current.Actions.FaceHeading(targetDirection, true);
+                        VTankControl.PushSetting("EnableNav",false);
+                    }
                     return;
                 }
                 else if (e.Text.StartsWith("/ub jump")) {
                     e.Eat = true;
                     if (e.Text.Equals("/ub jump")) {
-                        //Util.WriteToChat("just a jump");
                         needToJump = true;
                         finishedTurning = true;
                     }
-                    else {
-                        //Util.WriteToChat("not sure what happened");
-                    }
                 }
-
                 else {
-                    //Util.WriteToChat("not turning");
                     finishedTurning = true;
                 }
             } catch (Exception ex) { Logger.LogException(ex); }
