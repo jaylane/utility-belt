@@ -7,6 +7,7 @@ UtilityBelt is a multipurpose decal plugin. Currently it has the following "modu
 - [ItemGiver](https://gitlab.com/trevis/utilitybelt/wikis/ItemGiver) - Command to give items matching a utl loot profile to a player/npc.
 - [QuestTracker](https://gitlab.com/trevis/utilitybelt/wikis/QuestTracker) - Shows quest timers.
 - [VisualNav](https://gitlab.com/trevis/utilitybelt/wikis/VisualNav) - Shows VTank nav route visually (like vi2 blue lines).
+- [Counter](https://gitlab.com/trevis/utilitybelt/wikis/Counter) - Counts items based on regex or utl loot profiles.
 
 ## Installation
 Download and run the installer: [UtilityBeltInstaller-0.0.8.exe](/uploads/f1b2c542a7630438732e2553dec3a725/UtilityBeltInstaller-0.0.8.exe)
