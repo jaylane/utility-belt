@@ -137,6 +137,7 @@
     <Compile Include="Tools\DungeonMaps.cs" />
     <Compile Include="Tools\ItemGiver.cs" />
     <Compile Include="Tools\Jumper.cs" />
+    <Compile Include="Tools\Misc.cs" />
     <Compile Include="Tools\QuestTracker.cs" />
     <Compile Include="Tools\VisualVTankRoutes.cs" />
     <Compile Include="Lib\VTNav\VTNavRoute.cs" />
