@@ -21,6 +21,7 @@ namespace UtilityBelt
         private QuestTracker questTracker;
         private VisualVTankRoutes visualVTankRoutes;
         private Jumper jumper;
+        private Misc misc;
         private Counter counter;
         private ItemGiver itemGiver;
         private VTankFellowHeals vTankFellowHeals;
@@ -51,6 +52,7 @@ namespace UtilityBelt
 		private void CharacterFilter_LoginComplete(object sender, EventArgs e)
 		{
 			try {
+                VTankControl.initializeVTankInterface();
                 string configFilePath = System.IO.Path.Combine(Util.GetCharacterDirectory(), "config.xml");
 
                 Mag.Shared.Settings.SettingsFile.Init(configFilePath, Globals.PluginName);
@@ -69,6 +71,7 @@ namespace UtilityBelt
                 dungeonMaps = new DungeonMaps();
                 emuConfig = new EmuConfig();
                 questTracker = new QuestTracker();
+                misc = new Misc();
                 jumper = new Jumper();
                 counter = new Counter();
                 itemGiver = new ItemGiver();
@@ -90,6 +93,7 @@ namespace UtilityBelt
                 if (Globals.AutoVendor != null) Globals.AutoVendor.Think();
                 if (itemGiver != null) itemGiver.Think();
                 if (dungeonMaps != null) dungeonMaps.Think();
+                if (misc != null) misc.Think();
                 if (jumper != null) jumper.Think();
                 if (counter != null) counter.Think();
                 if (visualVTankRoutes != null) visualVTankRoutes.Think();
@@ -109,6 +113,7 @@ namespace UtilityBelt
                 if (dungeonMaps != null) dungeonMaps.Dispose();
                 if (emuConfig != null) emuConfig.Dispose();
                 if (questTracker != null) questTracker.Dispose();
+                if (misc != null) misc.Dispose();
                 if (jumper != null) jumper.Dispose();
                 if (counter != null) counter.Dispose();
                 if (itemGiver != null) itemGiver.Dispose();

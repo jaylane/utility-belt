@@ -85,7 +85,7 @@ namespace UtilityBelt.Tools {
                 if (!Globals.Config.VisualNav.SaveNoneRoutes.Value) return;
 
                 var routePath = VTNavRoute.GetLoadedNavigationProfile();
-                var vTank = VTankControl.GetVTankInterface(uTank2.eExternalsPermissionLevel.FullUnderlying);
+                var vTank = VTankControl.vTankInstance;
 
                 if (vTank == null || vTank.NavNumPoints <= 0) return;
 
@@ -209,7 +209,7 @@ namespace UtilityBelt.Tools {
         }
 
         private void DrawCurrentRoute() {
-            var vTank = VTankControl.GetVTankInterface(uTank2.eExternalsPermissionLevel.FullUnderlying);
+            var vTank = VTankControl.vTankInstance;
             var routePath = Path.Combine(Util.GetVTankProfilesDirectory(), vTank.GetNavProfile());
             
             if (routePath == currentRoutePath && !forceUpdate) return;

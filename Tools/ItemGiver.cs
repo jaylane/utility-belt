@@ -337,8 +337,8 @@ namespace UtilityBelt.Tools {
 
         public void Start() {
             try {
-                VTankControl.Nav_Block(30000.0, false); //need global debug
-
+                VTankControl.Nav_Block(30000, false); //need global debug
+                VTankControl.Item_Block(30000, false); // stop autocram from making me too busy
                 startGive = DateTime.Now;
                 if (!isDroppingBuggedItems) {
                     isRunning = true;
@@ -381,6 +381,7 @@ namespace UtilityBelt.Tools {
                 //Util.WriteToChat(startGive.ToString());
                 Util.WriteToChat("ItemGiver took " + Util.GetFriendlyTimeDifference(duration) + " to complete");
                 VTankControl.Nav_UnBlock();
+                VTankControl.Item_UnBlock();
                 Reset();
             }
             catch (Exception ex) { Logger.LogException(ex); }

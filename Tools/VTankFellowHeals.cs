@@ -25,7 +25,7 @@ namespace UtilityBelt.Tools {
         public int BUFFER_SIZE = 1024 * 1024;
 
         public VTankFellowHeals() {
-            vTank = VTankControl.GetVTankInterface(eExternalsPermissionLevel.FullUnderlying);
+            vTank = VTankControl.vTankInstance;
 
             try {
                 sharedBuffer = new SharedMemory.BufferReadWrite(BUFFER_NAME, BUFFER_SIZE);

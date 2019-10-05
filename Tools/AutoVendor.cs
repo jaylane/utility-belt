@@ -20,7 +20,8 @@ namespace UtilityBelt.Tools {
         private DateTime lastVendorAction = DateTime.MinValue;
 
         private bool disposed;
-
+        private bool waitingForVendor = true;
+        private int lastVendorOpened = 0;
         private bool needsVendoring = false;
         private object lootProfile;
         private bool needsToBuy = false;
@@ -155,9 +156,14 @@ namespace UtilityBelt.Tools {
             try {
                 VendorCache.AddVendor(e.Vendor);
 
-                if (Globals.Config.AutoVendor.Enabled.Value == false) {
-                    return;
+                if (Globals.Config.AutoVendor.ShowMerchantInfo.Value && e.Vendor.MerchantId != lastVendorOpened) {
+                    Util.WriteToChat(string.Format("{0}[0x{4:X8}]: BuyRate: {1}% SellRate: {2}% MaxValue: {3:n0}",
+                        Globals.Core.WorldFilter[e.Vendor.MerchantId].Name, e.Vendor.BuyRate * 100, e.Vendor.SellRate * 100, e.Vendor.MaxValue, e.Vendor.MerchantId));
+                    lastVendorOpened = e.Vendor.MerchantId;
                 }
+
+                if (Globals.Config.AutoVendor.Enabled.Value == false)
+                    return;
 
                 if (Globals.Core.Actions.IsValidObject(e.MerchantId) == false) {
                     Stop();
@@ -166,12 +172,9 @@ namespace UtilityBelt.Tools {
 
                 if (needsVendoring && vendorId == e.Vendor.MerchantId) return;
 
-                if (Globals.Config.AutoVendor.ShowMerchantInfo.Value == true) {
-                    Util.WriteToChat(string.Format("{0}: BuyRate: {1}% SellRate: {2}% MaxValue: {3:n0}",
-                        Globals.Core.WorldFilter[e.Vendor.MerchantId].Name, e.Vendor.BuyRate * 100, e.Vendor.SellRate * 100, e.Vendor.MaxValue));
-                }
 
-                Start(e.Vendor.MerchantId);
+                if (waitingForVendor)
+                    Start(e.Vendor.MerchantId);
             } catch (Exception ex) { Logger.LogException(ex); }
         }
 
@@ -227,6 +230,7 @@ namespace UtilityBelt.Tools {
         }
 
         public void Start(int merchantId = 0, string useProfilePath = "") {
+            waitingForVendor = false;
             var hasLootCore = false;
             if (lootProfile == null) {
                 try {
@@ -265,7 +269,7 @@ namespace UtilityBelt.Tools {
                 return;
             }
 
-            VTankControl.Nav_Block(1000.0, false); // quick block to keep vtank from truckin' off before the profile loads, but short enough to not matter if it errors out and doesn't unlock
+            VTankControl.Nav_Block(1000, false); // quick block to keep vtank from truckin' off before the profile loads, but short enough to not matter if it errors out and doesn't unlock
 
             // Load our loot profile
             ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
@@ -301,11 +305,9 @@ namespace UtilityBelt.Tools {
             shouldStack = true;
             startedVendoring = DateTime.UtcNow;
 
-            // disable vtank autocram/stack because it interferes with vendoring.
-            // it will be restored to previous values at the end
-            VTankControl.PushSetting("AutoCram", false);
-            VTankControl.PushSetting("AutoStack", false);
-            VTankControl.Nav_Block(30000.0, Globals.Config.AutoVendor.Debug.Value);
+            // ~~disable~~ block vtank autocram/stack because it interferes with vendoring.
+            VTankControl.Item_Block(30000, Globals.Config.AutoVendor.Debug.Value);
+            VTankControl.Nav_Block(30000, Globals.Config.AutoVendor.Debug.Value);
 
             Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
         }
@@ -326,6 +328,7 @@ namespace UtilityBelt.Tools {
 
             Globals.InventoryManager.Resume();
 
+            waitingForVendor = true;
             needsVendoring = false;
             needsToBuy = false;
             needsToSell = false;
@@ -337,21 +340,20 @@ namespace UtilityBelt.Tools {
             if (lootProfile != null) ((VTClassic.LootCore)lootProfile).UnloadProfile();
 
             VTankControl.Nav_UnBlock();
-
             // restore cram/stack settings
-            VTankControl.PopSetting("AutoCram");
-            VTankControl.PopSetting("AutoStack");
+            VTankControl.Item_UnBlock();
         }
 
         public void Think() {
             try {
                 var thinkInterval = TimeSpan.FromMilliseconds(Globals.Config.AutoVendor.Speed.Value);
 
-                if (DateTime.UtcNow - lastThought >= thinkInterval && DateTime.UtcNow - startedVendoring >= thinkInterval) {
+                if (Globals.Config.AutoVendor.Enabled.Value && DateTime.UtcNow - lastThought >= thinkInterval && DateTime.UtcNow - startedVendoring >= thinkInterval) {
                     lastThought = DateTime.UtcNow;
 
                     //if autovendor is running, and nav block has less than a second plus thinkInterval remaining, refresh it
                     if (needsVendoring && VTankControl.navBlockedUntil < DateTime.UtcNow + TimeSpan.FromSeconds(1) + thinkInterval) {
+                        VTankControl.Item_Block(30000, Globals.Config.AutoVendor.Debug.Value);
                         VTankControl.Nav_Block(30000, Globals.Config.AutoVendor.Debug.Value);
                     }
 
@@ -424,10 +426,6 @@ namespace UtilityBelt.Tools {
                     }
                     Stop();
                     return;
-                }
-
-                if (Globals.Config.AutoVendor.Debug.Value == true) {
-                    Util.WriteToChat("AutoVendor:DoVendoring");
                 }
 
                 if (Globals.Config.AutoVendor.Debug.Value == true) {
