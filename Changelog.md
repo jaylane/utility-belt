@@ -5,6 +5,12 @@
 - Added ability to "think" about a quest flag status with `/ub quests check <flag>` (click on a quest in questtracker to see the flag)
 - Fix potential exception in UpdateVTankVitalInfo
 - AutoVendor no longer ids items that the vendor wont buy
+- Plugin Windows now remember size / position between sessions (per character)
+- Fix free packspace check when autovendoring (thanks Yonneh)
+- Dungeon Maps can now be panned (move around the map manually, instead of always following character)
+- Dungeon Maps now show vTank nav routes
+- Jump/AutoVendor/AutoSalvage now pauses vTank (nav/cram/stack) as needed (thanks Yonneh)
+- Dungeon Maps colors are now customizable
 
 ## 0.0.8 (2019-9-28) [UtilityBeltInstaller-0.0.8.exe](/uploads/f1b2c542a7630438732e2553dec3a725/UtilityBeltInstaller-0.0.8.exe)
 - Added experimental option to show embedded nav routes

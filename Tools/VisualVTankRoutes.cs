@@ -12,10 +12,10 @@ using UtilityBelt.Views;
 using UtilityBelt.Lib;
 
 namespace UtilityBelt.Tools {
-    class VisualVTankRoutes : IDisposable {
+    public class VisualVTankRoutes : IDisposable {
         private bool disposed = false;
         private string currentRoutePath = "";
-        private VTNavRoute currentRoute = null;
+        public VTNavRoute currentRoute = null;
         private bool forceUpdate = false;
         public bool needsDraw = false;
 

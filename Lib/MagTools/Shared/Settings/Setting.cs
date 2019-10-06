@@ -53,11 +53,14 @@ namespace Mag.Shared.Settings {
 
                     // The value differs, set it.
                     this.value = value;
-                    if (typeof(T) != typeof(List<string>) && typeof(T) != typeof(List<int>)) {
-                        Util.WriteToChat(String.Format("{0} = {1}", this.Xpath, this.value.ToString()));
-                    }
 
-                    StoreValueInConfigFile();
+                    if (Config.ShouldSave) {
+                        if (typeof(T) != typeof(List<string>) && typeof(T) != typeof(List<int>) && typeof(T) != typeof(Dictionary<string, int>)) {
+                            Util.WriteToChat(String.Format("{0} = {1}", this.Xpath, this.value.ToString()));
+                        }
+
+                        StoreValueInConfigFile();
+                    }
 
                     if (Changed != null)
                         Changed(this);

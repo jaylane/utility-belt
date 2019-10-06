@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <view icon="7923" title="Utility Belt Maps" width="299" height="281">
 		<control progid="DecalControls.FixedLayout" clipped="" name="DungeonMapsRenderContainer">
+      <control progid="DecalControls.PushButton" name="FollowCharacter" left="0" top="0" width="100" height="16" text="Follow Character"/>
 		</control>
+
 </view>

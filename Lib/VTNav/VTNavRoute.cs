@@ -295,5 +295,9 @@ namespace UtilityBelt.Lib.VTNav {
                 disposed = true;
             }
         }
+
+        internal List<VTNPoint> GetAllNavPoints() {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -412,6 +412,15 @@ namespace UtilityBelt
             };
         }
 
+        public static PointF MovePoint(PointF point, double degrees, double distance) {
+            var rad = degrees * Math.PI / 180;
+
+            return new PointF(
+                (float)(point.X + (distance * Math.Cos(rad))),
+                (float)(point.Y + (distance * Math.Sin(rad)))
+            );
+        }
+
         public static bool CompareFiles(string path1, string path2) {
             byte[] file1 = File.ReadAllBytes(path1);
             byte[] file2 = File.ReadAllBytes(path2);

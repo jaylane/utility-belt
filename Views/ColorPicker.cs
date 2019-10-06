@@ -14,6 +14,13 @@ namespace UtilityBelt.Views {
             Color = color;
         }
     }
+    public class ColorPickerChangeEventArgs : EventArgs {
+        public Color Color;
+
+        public ColorPickerChangeEventArgs(Color color) {
+            Color = color;
+        }
+    }
 
     public class ColorPicker : IDisposable {
         public VirindiViewService.ViewProperties properties;
@@ -36,6 +43,7 @@ namespace UtilityBelt.Views {
         bool disposed = false;
 
         public event EventHandler<ColorPickerSaveEventArgs> RaiseColorPickerSaveEvent;
+        public event EventHandler<ColorPickerChangeEventArgs> RaiseColorPickerChangeEvent;
         public event EventHandler<EventArgs> RaiseColorPickerCancelEvent;
 
         public ColorPicker(MainView mainView, string setting, Color defaultColor) {
@@ -114,6 +122,7 @@ namespace UtilityBelt.Views {
             Color = Color.FromArgb(Alpha.Position, Red.Position, Green.Position, Blue.Position);
             ColorPreview.Image = GetColorPreviewImage();
             view.Icon = GetIconImage();
+            RaiseColorPickerChangeEvent?.Invoke(null, new ColorPickerChangeEventArgs(Color));
         }
 
         private void Save_Hit(object sender, EventArgs e) {
