@@ -4,15 +4,15 @@ using System.Linq;
 using System.Text;
 
 namespace UtilityBelt.Lib.DungeonMaps {
-    public static class LandBlockCache {
-        private static Dictionary<int, LandBlock> cache = new Dictionary<int, LandBlock>();
+    public static class DungeonCache {
+        private static Dictionary<int, Dungeon> cache = new Dictionary<int, Dungeon>();
 
-        public static LandBlock Get(int cellId) {
+        public static Dungeon Get(int cellId) {
             if (cache.ContainsKey(cellId >> 16 << 16)) return cache[cellId >> 16 << 16];
             if ((uint)(cellId << 16 >> 16) < 0x0100) return null;
 
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            var block = new LandBlock(cellId);
+            var block = new Dungeon(cellId);
             watch.Stop();
 
             if (Globals.Config.DungeonMaps.Debug.Value == true) {

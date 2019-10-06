@@ -28,5 +28,7 @@ namespace UtilityBelt
         public static MapView MapView { get; internal set; }
         public static AutoVendor AutoVendor { get; set; }
         public static Assessor Assessor { get; internal set; }
+        public static DungeonMaps DungeonMaps { get; internal set; }
+        public static VisualVTankRoutes VisualVTankRoutes { get; internal set; }
     }
 }

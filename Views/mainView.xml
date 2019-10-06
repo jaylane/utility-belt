@@ -41,16 +41,26 @@
 
     </page>
     <page label="DungeonMaps">
-      <control progid="DecalControls.FixedLayout" clipped="">
-        <control progid="DecalControls.Checkbox" name="DungeonMapsEnabled" left="8" top="8" width="184" height="16" text="Enable Dungeon Maps"/>
-        <control progid="DecalControls.Checkbox" name="DungeonMapsDrawWhenClosed" left="8" top="32" width="208" height="16" text="Draw maps when window is closed"/>
-        <control progid="DecalControls.Slider" name="DungeonMapsOpacity" left="8" top="152" width="208" height="16" minimum="0" maximum="20" textcolor="0" vertical="0"/>
-        <control progid="DecalControls.StaticText" name="DungeonMapsOpacityLabel" left="8" top="136" width="200" height="16" justify="Center" text="Map Opacity"/>
-        <control progid="DecalControls.Checkbox" name="DungeonMapsDebug" left="8" top="56" width="208" height="16" text="Show Debug Messages"/>
-        <control progid="DecalControls.Checkbox" name="DungeonMapsShowVisitedTiles" left="8" top="80" width="208" height="16" text="Show visited tiles"/>
-        <control progid="DecalControls.PushButton" name="DungeonMapsClearTileCache" left="8" top="200" width="110" height="20" text="Clear Tile Cache"/>
+      <control progid="DecalControls.NoteBook">
+        <page label="Settings">
+          <control progid="DecalControls.FixedLayout" clipped="">
+            <control progid="DecalControls.Checkbox" name="DungeonMapsEnabled" left="8" top="8" width="184" height="16" text="Enable Dungeon Maps"/>
+            <control progid="DecalControls.Checkbox" name="DungeonMapsDrawWhenClosed" left="8" top="32" width="208" height="16" text="Draw maps when window is closed"/>
+            <control progid="DecalControls.Slider" name="DungeonMapsOpacity" left="8" top="152" width="208" height="16" minimum="0" maximum="20" textcolor="0" vertical="0"/>
+            <control progid="DecalControls.StaticText" name="DungeonMapsOpacityLabel" left="8" top="136" width="200" height="16" justify="Center" text="Map Opacity"/>
+            <control progid="DecalControls.Checkbox" name="DungeonMapsDebug" left="8" top="56" width="208" height="16" text="Show Debug Messages"/>
+            <control progid="DecalControls.Checkbox" name="DungeonMapsShowVisitedTiles" left="8" top="80" width="208" height="16" text="Show visited tiles"/>
+            <control progid="DecalControls.PushButton" name="DungeonMapsClearTileCache" left="8" top="190" width="110" height="20" text="Clear Tile Cache"/>
+          </control>
+        </page>
+        <page label="Display">
+          <control progid="DecalControls.List" name="DungeonMapsSettingsList" left="0" top="0" width="400" height="200">
+            <column progid="DecalControls.CheckColumn" name="DungeonMapsSettingsListEnabled"/>
+            <column progid="DecalControls.IconColumn" name="DungeonMapsSettingsListColor" fixedwidth="30" />
+            <column progid="DecalControls.TextColumn" name="DungeonMapsSettingsListSetting" />
+          </control>
+        </page>
       </control>
-
     </page>
     <page label="EmuConfig">
       <control progid="DecalControls.FixedLayout" clipped="">

@@ -16,10 +16,8 @@ namespace UtilityBelt
 	[FriendlyName("UtilityBelt")]
 	public class PluginCore : PluginBase {
         private AutoSalvage autoSalvage;
-        private DungeonMaps dungeonMaps;
         private EmuConfig emuConfig;
         private QuestTracker questTracker;
-        private VisualVTankRoutes visualVTankRoutes;
         private Jumper jumper;
         private Misc misc;
         private Counter counter;
@@ -66,16 +64,16 @@ namespace UtilityBelt
                 Globals.InventoryManager = new InventoryManager();
                 Globals.AutoVendor = new AutoVendor();
                 Globals.Assessor = new Assessor();
+                Globals.DungeonMaps = new DungeonMaps();
+                Globals.VisualVTankRoutes = new VisualVTankRoutes();
 
                 autoSalvage = new AutoSalvage();
-                dungeonMaps = new DungeonMaps();
                 emuConfig = new EmuConfig();
                 questTracker = new QuestTracker();
                 misc = new Misc();
                 jumper = new Jumper();
                 counter = new Counter();
                 itemGiver = new ItemGiver();
-                visualVTankRoutes = new VisualVTankRoutes();
                 vTankFellowHeals = new VTankFellowHeals();
                 chatNameClickHandler = new ChatNameClickHandler();
 
@@ -92,11 +90,11 @@ namespace UtilityBelt
                 if (autoSalvage != null) autoSalvage.Think();
                 if (Globals.AutoVendor != null) Globals.AutoVendor.Think();
                 if (itemGiver != null) itemGiver.Think();
-                if (dungeonMaps != null) dungeonMaps.Think();
                 if (misc != null) misc.Think();
+                if (Globals.DungeonMaps != null) Globals.DungeonMaps.Think();
                 if (jumper != null) jumper.Think();
                 if (counter != null) counter.Think();
-                if (visualVTankRoutes != null) visualVTankRoutes.Think();
+                if (Globals.VisualVTankRoutes != null) Globals.VisualVTankRoutes.Think();
 
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Think();
             }
@@ -110,14 +108,14 @@ namespace UtilityBelt
                 Globals.Core.RenderFrame -= Core_RenderFrame;
 
                 if (autoSalvage != null) autoSalvage.Dispose();
-                if (dungeonMaps != null) dungeonMaps.Dispose();
+                if (Globals.DungeonMaps != null) Globals.DungeonMaps.Dispose();
                 if (emuConfig != null) emuConfig.Dispose();
                 if (questTracker != null) questTracker.Dispose();
                 if (misc != null) misc.Dispose();
                 if (jumper != null) jumper.Dispose();
                 if (counter != null) counter.Dispose();
                 if (itemGiver != null) itemGiver.Dispose();
-                if (visualVTankRoutes != null) visualVTankRoutes.Dispose();
+                if (Globals.VisualVTankRoutes != null) Globals.VisualVTankRoutes.Dispose();
                 if (vTankFellowHeals != null) vTankFellowHeals.Dispose();
                 if (chatNameClickHandler != null) chatNameClickHandler.Dispose();
                 if (Globals.AutoVendor != null) Globals.AutoVendor.Dispose();

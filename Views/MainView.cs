@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
+using System.Windows.Forms;
+using UtilityBelt.Lib;
 using VirindiViewService;
 using VirindiViewService.XMLParsers;
 
@@ -24,6 +23,24 @@ namespace UtilityBelt.Views {
                 properties.Title = string.Format("{0} - v{1}", Globals.PluginName, Util.GetVersion());
 
                 view = new VirindiViewService.HudView(properties, controls);
+
+                view.Location = new Point(
+                    Globals.Config.Main.WindowPositionX.Value,
+                    Globals.Config.Main.WindowPositionY.Value
+                );
+
+                var timer = new Timer();
+                timer.Interval = 2000; // save the window position 2 seconds after it has stopped moving
+                timer.Tick += (s, e) => {
+                    timer.Stop();
+                    Globals.Config.Main.WindowPositionX.Value = view.Location.X;
+                    Globals.Config.Main.WindowPositionY.Value = view.Location.Y;
+                };
+
+                view.Moved += (s, e) => {
+                    if (timer.Enabled) timer.Stop();
+                    timer.Start();
+                };
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
