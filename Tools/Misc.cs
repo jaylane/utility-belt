@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using Decal.Adapter;
 using Decal.Adapter.Wrappers;
-using Mag.Shared.Settings;
 using UtilityBelt.Lib.VendorCache;
 using UtilityBelt.Views;
 using VirindiViewService.Controls;

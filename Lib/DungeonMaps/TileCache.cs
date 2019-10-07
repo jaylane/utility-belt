@@ -44,24 +44,24 @@ namespace UtilityBelt.Lib.DungeonMaps {
             ColorMap[] colorMap = new ColorMap[5];
 
             colorMap[0] = new ColorMap();
-            colorMap[0].OldColor = Color.FromArgb(Globals.Config.DungeonMaps.WallColor.DefaultValue);
-            colorMap[0].NewColor = Color.FromArgb(Globals.Config.DungeonMaps.WallColor.Value);
+            colorMap[0].OldColor = Color.FromArgb(Globals.Settings.DungeonMaps.Display.Walls.DefaultColor);
+            colorMap[0].NewColor = Color.FromArgb(Globals.Settings.DungeonMaps.Display.Walls.Color);
 
             colorMap[1] = new ColorMap();
-            colorMap[1].OldColor = Color.FromArgb(Globals.Config.DungeonMaps.InnerWallColor.DefaultValue);
-            colorMap[1].NewColor = Color.FromArgb(Globals.Config.DungeonMaps.InnerWallColor.Value);
+            colorMap[1].OldColor = Color.FromArgb(Globals.Settings.DungeonMaps.Display.InnerWalls.DefaultColor);
+            colorMap[1].NewColor = Color.FromArgb(Globals.Settings.DungeonMaps.Display.InnerWalls.Color);
 
             colorMap[2] = new ColorMap();
-            colorMap[2].OldColor = Color.FromArgb(Globals.Config.DungeonMaps.RampedWallColor.DefaultValue);
-            colorMap[2].NewColor = Color.FromArgb(Globals.Config.DungeonMaps.RampedWallColor.Value);
+            colorMap[2].OldColor = Color.FromArgb(Globals.Settings.DungeonMaps.Display.RampedWalls.DefaultColor);
+            colorMap[2].NewColor = Color.FromArgb(Globals.Settings.DungeonMaps.Display.RampedWalls.Color);
 
             colorMap[3] = new ColorMap();
-            colorMap[3].OldColor = Color.FromArgb(Globals.Config.DungeonMaps.FloorColor.DefaultValue);
-            colorMap[3].NewColor = Color.FromArgb(Globals.Config.DungeonMaps.FloorColor.Value);
+            colorMap[3].OldColor = Color.FromArgb(Globals.Settings.DungeonMaps.Display.Floors.DefaultColor);
+            colorMap[3].NewColor = Color.FromArgb(Globals.Settings.DungeonMaps.Display.Floors.Color);
 
             colorMap[4] = new ColorMap();
-            colorMap[4].OldColor = Color.FromArgb(Globals.Config.DungeonMaps.StairsColor.DefaultValue);
-            colorMap[4].NewColor = Color.FromArgb(Globals.Config.DungeonMaps.StairsColor.Value);
+            colorMap[4].OldColor = Color.FromArgb(Globals.Settings.DungeonMaps.Display.Stairs.DefaultColor);
+            colorMap[4].NewColor = Color.FromArgb(Globals.Settings.DungeonMaps.Display.Stairs.Color);
 
             return colorMap;
         }

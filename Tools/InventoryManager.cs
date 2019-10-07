@@ -1,6 +1,5 @@
 ﻿using Decal.Adapter;
 using Decal.Adapter.Wrappers;
-using Mag.Shared.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +24,6 @@ namespace UtilityBelt.Tools {
 
         HudCheckBox UIInventoryManagerAutoCram { get; set; }
         HudCheckBox UIInventoryManagerAutoStack { get; set; }
-        HudCheckBox UIInventoryManagerDebug { get; set; }
         HudButton UIInventoryManagerTest { get; set; }
 
         // TODO: support AutoPack profiles when cramming
@@ -34,55 +32,33 @@ namespace UtilityBelt.Tools {
             Globals.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
             Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
 
-            UIInventoryManagerTest = Globals.MainView.view != null ? (HudButton)Globals.MainView.view["InventoryManagerTest"] : new HudButton();
+            UIInventoryManagerTest = (HudButton)Globals.MainView.view["InventoryManagerTest"];
             UIInventoryManagerTest.Hit += UIInventoryManagerTest_Hit;
 
-            UIInventoryManagerDebug = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["InventoryManagerDebug"] : new HudCheckBox();
-            UIInventoryManagerDebug.Checked = Globals.Config.InventoryManager.Debug.Value;
-            UIInventoryManagerDebug.Change += UIInventoryManagerDebug_Change;
-            Globals.Config.InventoryManager.Debug.Changed += Config_InventoryManager_Debug_Changed;
-
-            UIInventoryManagerAutoCram = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["InventoryManagerAutoCram"] : new HudCheckBox();
-            UIInventoryManagerAutoCram.Checked = Globals.Config.InventoryManager.AutoCram.Value;
+            UIInventoryManagerAutoCram = (HudCheckBox)Globals.MainView.view["InventoryManagerAutoCram"];
             UIInventoryManagerAutoCram.Change += UIInventoryManagerAutoCram_Change;
-            Globals.Config.InventoryManager.AutoCram.Changed += Config_InventoryManager_AutoCram_Changed;
 
-            UIInventoryManagerAutoStack = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["InventoryManagerAutoStack"] : new HudCheckBox();
-            UIInventoryManagerAutoStack.Checked = Globals.Config.InventoryManager.AutoStack.Value;
+            UIInventoryManagerAutoStack = (HudCheckBox)Globals.MainView.view["InventoryManagerAutoStack"];
             UIInventoryManagerAutoStack.Change += UIInventoryManagerAutoStack_Change;
-            Globals.Config.InventoryManager.AutoStack.Changed += Config_InventoryManager_AutoStack_Changed;
 
-            if (Globals.Config.InventoryManager.AutoCram.Value || Globals.Config.InventoryManager.AutoStack.Value) {
-                //Start();
-            }
+            Globals.Settings.InventoryManager.PropertyChanged += (s, e) => { UpdateUI(); };
+        }
+
+        private void UpdateUI() {
+            UIInventoryManagerAutoStack.Checked = Globals.Settings.InventoryManager.AutoStack;
+            UIInventoryManagerAutoCram.Checked = Globals.Settings.InventoryManager.AutoCram;
         }
 
         private void UIInventoryManagerTest_Hit(object sender, EventArgs e) {
             Start();
         }
 
-        private void UIInventoryManagerDebug_Change(object sender, EventArgs e) {
-            Globals.Config.InventoryManager.Debug.Value = UIInventoryManagerDebug.Checked;
-        }
-
-        private void Config_InventoryManager_Debug_Changed(Setting<bool> obj) {
-            UIInventoryManagerDebug.Checked = Globals.Config.InventoryManager.Debug.Value;
-        }
-
         private void UIInventoryManagerAutoCram_Change(object sender, EventArgs e) {
-            Globals.Config.InventoryManager.AutoCram.Value = UIInventoryManagerAutoCram.Checked;
-        }
-
-        private void Config_InventoryManager_AutoCram_Changed(Setting<bool> obj) {
-            UIInventoryManagerAutoCram.Checked = Globals.Config.InventoryManager.AutoCram.Value;
+            Globals.Settings.InventoryManager.AutoCram = UIInventoryManagerAutoCram.Checked;
         }
 
         private void UIInventoryManagerAutoStack_Change(object sender, EventArgs e) {
-            Globals.Config.InventoryManager.AutoStack.Value = UIInventoryManagerAutoStack.Checked;
-        }
-
-        private void Config_InventoryManager_AutoStack_Changed(Setting<bool> obj) {
-            UIInventoryManagerAutoStack.Checked = Globals.Config.InventoryManager.AutoStack.Value;
+            Globals.Settings.InventoryManager.AutoStack = UIInventoryManagerAutoStack.Checked;
         }
 
         private void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
@@ -130,9 +106,8 @@ namespace UtilityBelt.Tools {
             isForced = force;
             movingObjectId = 0;
             tryCount = 0;
-            if (Globals.Config.InventoryManager.Debug.Value == true) {
-                Util.WriteToChat("InventoryManager Started");
-            }
+
+            Logger.Debug("InventoryManager Started");
 
             CleanupBlacklists();
         }
@@ -145,22 +120,16 @@ namespace UtilityBelt.Tools {
 
             Util.Think("AutoInventory finished.");
 
-            if (Globals.Config.InventoryManager.Debug.Value == true) {
-                Util.WriteToChat("InventoryManager Finished");
-            }
+            Logger.Debug("InventoryManager Finished");
         }
 
         public void Pause() {
-            if (Globals.Config.InventoryManager.Debug.Value == true) {
-                Util.WriteToChat("InventoryManager Paused");
-            }
+            Logger.Debug("InventoryManager Paused");
             isPaused = true;
         }
 
         public void Resume() {
-            if (Globals.Config.InventoryManager.Debug.Value == true) {
-                Util.WriteToChat("InventoryManager Resumed");
-            }
+            Logger.Debug("InventoryManager Resumed");
             isPaused = false;
         }
 
@@ -184,9 +153,8 @@ namespace UtilityBelt.Tools {
         }
 
         public bool AutoCram(List<int> excludeList = null, bool excludeMoney=true) {
-            if (Globals.Config.InventoryManager.Debug.Value == true) {
-                Util.WriteToChat("InventoryManager::AutoCram started");
-            }
+            Logger.Debug("InventoryManager::AutoCram started");
+
             foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
                 if (excludeMoney && (wo.Values(LongValueKey.Type, 0) == 273/* pyreals */ || wo.ObjectClass == ObjectClass.TradeNote)) continue;
                 if (excludeList != null && excludeList.Contains(wo.Id)) continue;
@@ -201,9 +169,8 @@ namespace UtilityBelt.Tools {
         }
 
         public bool AutoStack(List<int> excludeList = null) {
-            if (Globals.Config.InventoryManager.Debug.Value == true) {
-                Util.WriteToChat("InventoryManager::AutoStack started");
-            }
+            Logger.Debug("InventoryManager::AutoStack started");
+
             foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
                 if (excludeList != null && excludeList.Contains(wo.Id)) continue;
 
@@ -246,8 +213,8 @@ namespace UtilityBelt.Tools {
 
                 if ((!isRunning || isPaused) && !isForced) return;
 
-                if (Globals.Config.InventoryManager.AutoCram.Value == true && AutoCram()) return;
-                if (Globals.Config.InventoryManager.AutoStack.Value == true && AutoStack()) return;
+                if (Globals.Settings.InventoryManager.AutoCram == true && AutoCram()) return;
+                if (Globals.Settings.InventoryManager.AutoStack == true && AutoStack()) return;
 
                 Stop();
             }
@@ -262,11 +229,9 @@ namespace UtilityBelt.Tools {
 
                     if (freePackSpace <= 0) continue;
 
-                    if (Globals.Config.InventoryManager.Debug.Value == true) {
-                        Util.WriteToChat(string.Format("AutoCram: trying to move {0} to {1}({2}) because it has {3} slots open",
+                    Logger.Debug(string.Format("AutoCram: trying to move {0} to {1}({2}) because it has {3} slots open",
                             Util.GetObjectName(stackThis.Id), container.Name, slot, freePackSpace));
-                    }
-
+                    
                     // blacklist this container
                     if (tryCount > 10) {
                         tryCount = 0;
@@ -327,13 +292,12 @@ namespace UtilityBelt.Tools {
                 }
 
                 if (woStackCount + stackThisCount <= woStackMax) {
-                    if (Globals.Config.InventoryManager.Debug.Value == true) {
-                        Util.WriteToChat(string.Format("InventoryManager::AutoStack stack {0}({1}) on {2}({3})",
+                    Logger.Debug(string.Format("InventoryManager::AutoStack stack {0}({1}) on {2}({3})",
                             Util.GetObjectName(stackThis.Id),
                             stackThisCount,
                             Util.GetObjectName(wo.Id),
                             woStackCount));
-                    }
+
                     Globals.Core.Actions.SelectItem(stackThis.Id);
                     Globals.Core.Actions.MoveItem(stackThis.Id, wo.Container, slot, true);
                 }
@@ -341,14 +305,13 @@ namespace UtilityBelt.Tools {
                     return false;
                 }
                 else {
-                    if (Globals.Config.InventoryManager.Debug.Value == true) {
-                        Util.WriteToChat(string.Format("InventoryManager::AutoStack stack {0}({1}/{2}) on {3}({4})",
+                    Logger.Debug(string.Format("InventoryManager::AutoStack stack {0}({1}/{2}) on {3}({4})",
                             Util.GetObjectName(stackThis.Id),
                             woStackMax - woStackCount,
                             stackThisCount,
                             Util.GetObjectName(wo.Id),
                             woStackCount));
-                    }
+
                     Globals.Core.Actions.SelectItem(stackThis.Id);
                     Globals.Core.Actions.SelectedStackCount = woStackMax - woStackCount;
                     Globals.Core.Actions.MoveItem(stackThis.Id, wo.Container, slot, true);

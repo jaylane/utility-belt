@@ -1,6 +1,5 @@
 ﻿using Decal.Adapter;
 using Decal.Adapter.Wrappers;
-using Mag.Shared.Settings;
 using System;
 using System.Collections.Generic;
 using UtilityBelt.Constants;
@@ -221,9 +220,7 @@ namespace UtilityBelt.Tools {
             Globals.Core.Actions.SalvagePanelAdd(id);
             inventoryItems.Remove(id);
 
-            if (Globals.Settings.Debug == true) {
-                Util.WriteToChat($"AutoSalvage: Add: {Util.GetObjectName(id)}");
-            }
+            Logger.Debug($"AutoSalvage: Add: {Util.GetObjectName(id)}");
 
             readyToSalvage = true;
         }

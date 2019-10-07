@@ -24,12 +24,12 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
         }
 
         public override void Draw() {
-            if (!Globals.Config.VisualNav.ShowChatText.Value) return;
+            if (!Globals.Settings.VisualNav.Display.ChatText.Enabled) return;
 
             var rp = GetPreviousPoint();
             rp = rp == null ? GetNextPoint() : rp;
             rp = rp == null ? this : rp;
-            DrawText($"Chat: {Message}", rp, 0, Color.FromArgb(Globals.Config.VisualNav.ChatTextColor.Value));
+            DrawText($"Chat: {Message}", rp, 0, Color.FromArgb(Globals.Settings.VisualNav.Display.ChatText.Color));
         }
     }
 }

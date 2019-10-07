@@ -11,15 +11,19 @@ namespace UtilityBelt.Lib.Settings.Sections {
         [Summary("Think to yourself when auto salvage is completed")]
         [DefaultValue(false)]
         public bool Think {
-            get { return (bool)GetSetting(); }
-            set { UpdateSetting(value); }
+            get { return (bool)GetSetting("Think"); }
+            set { UpdateSetting("Think", value); }
         }
 
         [Summary("Only salvage things in your main pack")]
         [DefaultValue(false)]
         public bool OnlyFromMainPack {
-            get { return (bool)GetSetting(); }
-            set { UpdateSetting(value); }
+            get { return (bool)GetSetting("OnlyFromMainPack"); }
+            set { UpdateSetting("OnlyFromMainPack", value); }
+        }
+
+        public AutoSalvage(SectionBase parent) : base(parent) {
+            Name = "AutoSalvage";
         }
     }
 }

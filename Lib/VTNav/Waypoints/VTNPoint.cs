@@ -138,9 +138,9 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
 
             rp = GetPreviousPoint();
 
-            var color = Color.FromArgb(Globals.Config.VisualNav.LineColor.Value);
+            var color = Color.FromArgb(Globals.Settings.VisualNav.Display.Lines.Color);
 
-            if (Globals.Config.VisualNav.ShowLine.Value) {
+            if (Globals.Settings.VisualNav.Display.Lines.Enabled) {
                 DrawLineTo(rp, color);
             }
         }

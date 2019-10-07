@@ -98,12 +98,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Lib\Settings\ColorToggleOption.cs" />
+    <Compile Include="Lib\Settings\DisplaySectionBase.cs" />
     <Compile Include="Lib\Settings\Sections\AutoVendor.cs" />
+    <Compile Include="Lib\Settings\Sections\DungeonMaps.cs" />
+    <Compile Include="Lib\Settings\Sections\InventoryManager.cs" />
+    <Compile Include="Lib\Settings\Sections\Main.cs" />
+    <Compile Include="Lib\Settings\Sections\VisualNav.cs" />
     <Compile Include="Lib\Settings\SettingAttributes.cs" />
     <Compile Include="Lib\Settings\Sections\AutoSalvage.cs" />
     <Compile Include="Lib\Settings\SectionBase.cs" />
     <Compile Include="Lib\Settings\Settings.cs" />
-    <Compile Include="Lib\Config.cs" />
     <Compile Include="Lib\Constants\CharOptions2.cs" />
     <Compile Include="Lib\Constants\CharOptions.cs" />
     <Compile Include="Lib\Geometry.cs" />
@@ -132,8 +137,6 @@
     <Compile Include="Lib\VTNav\Waypoints\VTNUseNPC.cs" />
     <Compile Include="Lib\Logger.cs" />
     <Compile Include="Lib\MagTools\Shared\PostMessageTools.cs" />
-    <Compile Include="Lib\MagTools\Shared\Settings\Setting.cs" />
-    <Compile Include="Lib\MagTools\Shared\Settings\SettingsFile.cs" />
     <Compile Include="Lib\MagTools\Shared\User32.cs" />
     <Compile Include="PluginCore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

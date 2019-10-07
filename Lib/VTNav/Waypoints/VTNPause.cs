@@ -30,11 +30,11 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
 
         public override void Draw() {
             var rp = GetPreviousPoint();
-            var color = Color.FromArgb(Globals.Config.VisualNav.PauseColor.Value);
+            var color = Color.FromArgb(Globals.Settings.VisualNav.Display.Pause.Color);
             rp = rp == null ? GetNextPoint() : rp;
             rp = rp == null ? this : rp;
 
-            if (Globals.Config.VisualNav.ShowPause.Value) {
+            if (Globals.Settings.VisualNav.Display.Pause.Enabled) {
                 DrawText($"Pause for {Pause / 1000} seconds", rp, 0, color);
             }
         }

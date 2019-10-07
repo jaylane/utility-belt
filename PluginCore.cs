@@ -50,21 +50,13 @@ namespace UtilityBelt
 		private void CharacterFilter_LoginComplete(object sender, EventArgs e)
 		{
 			try {
-                VTankControl.initializeVTankInterface();
-                string configFilePath = System.IO.Path.Combine(Util.GetCharacterDirectory(), "config.xml");
-
-                Mag.Shared.Settings.SettingsFile.Init(configFilePath, Globals.PluginName);
-
                 Util.CreateDataDirectories();
                 Logger.Init();
 
                 Globals.Settings = new Settings();
-                //Globals.Settings.Save();
 
-                Util.WriteToChat($"AutoSalvage.Think: {Globals.Settings.AutoSalvage.Think}");
-                Util.WriteToChat($"AutoSalvage.OnlyFromMainPack: {Globals.Settings.AutoSalvage.OnlyFromMainPack}");
-
-                Globals.Config = new Config();
+                VTankControl.initializeVTankInterface();
+                
                 Globals.MainView = new MainView();
                 Globals.MapView = new MapView();
                 Globals.InventoryManager = new InventoryManager();
@@ -86,6 +78,8 @@ namespace UtilityBelt
                 Globals.Core.RenderFrame += Core_RenderFrame;
 
                 UpdateChecker.CheckForUpdate();
+
+                //Globals.Settings.ShouldSave = true;
             }
 			catch (Exception ex) { Logger.LogException(ex); }
 		}
@@ -129,7 +123,6 @@ namespace UtilityBelt
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();
                 if (Globals.MapView != null) Globals.MapView.Dispose();
                 if (Globals.MainView != null) Globals.MainView.Dispose();
-                if (Globals.Config != null) Globals.Config.Dispose();
             }
 			catch (Exception ex) { Logger.LogException(ex); }
 		}

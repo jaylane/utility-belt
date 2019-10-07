@@ -12,57 +12,97 @@ namespace UtilityBelt.Lib.Settings {
         public event PropertyChangedEventHandler PropertyChanged;
 
         [JsonIgnore]
-        public string Name { get; protected set; } = "unknown";
+        public string Name { get; set; } = "unknown";
 
-        private bool hasValueSet = false;
-        private bool internallySettingValue = false;
+        protected SectionBase parent;
+        private Dictionary<string, object> propValues = new Dictionary<string, object>();
 
-        protected object GetSetting() {
+        public SectionBase(SectionBase parent) {
+            this.parent = parent;
+        }
+
+        // get this setting's value.  this keeps track of if this settings has
+        // been set, and if not returns a DefaultValueAttribute
+        protected object GetSetting(string propName) {
             try {
-                var propName = new StackFrame(1).GetMethod().Name.Substring(4);
                 var prop = GetType().GetProperty(propName);
 
                 if (prop == null) return null;
 
+                if (propValues.ContainsKey(prop.Name)) {
+                    return propValues[prop.Name];
+                }
+
                 // no value has been set, so return the DefaultValue attribute value
-                if (!hasValueSet) {
+                if (!propValues.ContainsKey(prop.Name)) {
                     var d = prop.GetCustomAttributes(typeof(DefaultValueAttribute), true);
                     if (d.Length == 1) {
-                        return ((DefaultValueAttribute)d[0]).Value;
+                        var defaultValue = ((DefaultValueAttribute)d[0]).Value;
+                        propValues.Add(prop.Name, defaultValue);
+
+                        return defaultValue;
                     }
                 }
 
-                return prop.GetValue(this, null);
+                return null;
             }
             catch (Exception ex) { Logger.LogException(ex); }
 
             return null;
         }
 
-        protected void UpdateSetting(object value) {
+        // update this setting's value. this fires the PropertyChanged event with the name
+        // of the property that was changed
+        protected void UpdateSetting(string propName, object value, bool force=false) {
             try {
-                if (internallySettingValue) return;
-
-                var propName = new StackFrame(1).GetMethod().Name.Substring(4);
                 var prop = GetType().GetProperty(propName);
 
-                if (prop != null) {
-                    try {
-                        if (Globals.Settings != null && Globals.Settings.Debug) {
-                            Util.WriteToChat($"Setting: {Name}.{propName} = {value.ToString()}");
-                        }
+                // skip if this value hasn't changed
+                if (!force && GetSetting(propName).ToString() == value.ToString()) return;
 
-                        internallySettingValue = true;
-                        prop.SetValue(this, value, null);
-                        hasValueSet = true;
-                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+                if (prop != null) {
+                    if (propValues.ContainsKey(prop.Name)) {
+                        if (propValues[prop.Name] == value) return;
+
+                        propValues[prop.Name] = value;
                     }
-                    finally {
-                        internallySettingValue = false;
+                    else {
+                        if (GetSetting(propName) == value) return;
+
+                        propValues.Add(prop.Name, value);
                     }
+
+                    OnPropertyChanged(propName);
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        protected string GetAncestry() {
+            var ancestry = "";
+            try {
+                var node = this;
+
+                while (node != null) {
+                    ancestry = node.Name + "." + ancestry;
+                    node = node.parent;
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return ancestry;
+        }
+
+        protected void OnPropertyChanged(string propName, bool direct=true) {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+
+            var prop = GetType().GetProperty(propName);
+
+            if (direct && prop != null && Globals.Settings != null && Globals.Settings.ShouldSave) {
+                Logger.Debug($"{GetAncestry()}{propName} = {prop.GetValue(this, null)}");
+            }
+
+            if (parent != null) parent.OnPropertyChanged(Name, false);
         }
     }
 }

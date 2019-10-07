@@ -212,12 +212,12 @@ namespace UtilityBelt.Lib.VTNav {
         }
 
         public void Draw() {
-            if (NavType == eNavType.Target && Globals.Config.VisualNav.ShowFollowArrow.Value) {
+            if (NavType == eNavType.Target && Globals.Settings.VisualNav.Display.FollowArrow.Enabled) {
                 if (TargetId != 0) {
                     var wo = Globals.Core.WorldFilter[TargetId];
 
                     if (wo != null) {
-                        var color = Globals.Config.VisualNav.FollowArrowColor.Value;
+                        var color = Globals.Settings.VisualNav.Display.FollowArrow.Color;
                         var shape = Globals.Core.D3DService.PointToObject(TargetId, color);
                         shape.Scale(0.6f);
                         shapes.Add(shape);

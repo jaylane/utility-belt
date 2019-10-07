@@ -1,7 +1,6 @@
 ﻿using Decal.Adapter;
 using Decal.Adapter.Wrappers;
 using Decal.Filters;
-using Mag.Shared.Settings;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -13,6 +12,7 @@ using System.Reflection;
 using System.Threading;
 using UtilityBelt;
 using UtilityBelt.Lib.DungeonMaps;
+using UtilityBelt.Lib.Settings;
 using UtilityBelt.Tools;
 using UtilityBelt.Views;
 using VirindiViewService;
@@ -58,7 +58,6 @@ namespace UtilityBelt.Tools {
         System.Windows.Forms.Timer zoomSaveTimer;
 
         HudCheckBox UIDungeonMapsEnabled { get; set; }
-        HudCheckBox UIDungeonMapsDebug { get; set; }
         HudCheckBox UIDungeonMapsDrawWhenClosed { get; set; }
         HudCheckBox UIDungeonMapsShowVisitedTiles { get; set; }
         HudHSlider UIDungeonMapsOpacity { get; set; }
@@ -70,7 +69,7 @@ namespace UtilityBelt.Tools {
 
         public DungeonMaps() {
             try {
-                scale = Globals.Config.DungeonMaps.MapZoom.Value;
+                scale = Globals.Settings.DungeonMaps.MapZoom;
 
                 #region UI Setup
                 UIFollowCharacter = (HudButton)Globals.MapView.view["FollowCharacter"];
@@ -83,31 +82,21 @@ namespace UtilityBelt.Tools {
                 UIDungeonMapsClearTileCache.Hit += UIDungeonMapsClearTileCache_Hit;
 
                 UIDungeonMapsEnabled = (HudCheckBox)Globals.MainView.view["DungeonMapsEnabled"];
-                UIDungeonMapsEnabled.Checked = Globals.Config.DungeonMaps.Enabled.Value;
                 UIDungeonMapsEnabled.Change += UIDungeonMapsEnabled_Change;
-                Globals.Config.DungeonMaps.Enabled.Changed += Config_DungeonMaps_Enabled_Changed;
-
-                UIDungeonMapsDebug = (HudCheckBox)Globals.MainView.view["DungeonMapsDebug"];
-                UIDungeonMapsDebug.Checked = Globals.Config.DungeonMaps.Debug.Value;
-                UIDungeonMapsDebug.Change += UIDungeonMapsDebug_Change;
-                Globals.Config.DungeonMaps.Debug.Changed += Config_DungeonMaps_Debug_Changed;
 
                 UIDungeonMapsDrawWhenClosed = (HudCheckBox)Globals.MainView.view["DungeonMapsDrawWhenClosed"];
-                UIDungeonMapsDrawWhenClosed.Checked = Globals.Config.DungeonMaps.DrawWhenClosed.Value;
                 UIDungeonMapsDrawWhenClosed.Change += UIDungeonMapsDrawWhenClosed_Change;
-                Globals.Config.DungeonMaps.DrawWhenClosed.Changed += Config_DungeonMaps_DrawWhenClosed_Changed;
 
                 UIDungeonMapsShowVisitedTiles = (HudCheckBox)Globals.MainView.view["DungeonMapsShowVisitedTiles"];
-                UIDungeonMapsShowVisitedTiles.Checked = Globals.Config.DungeonMaps.ShowVisitedTiles.Value;
                 UIDungeonMapsShowVisitedTiles.Change += UIDungeonMapsShowVisitedTiles_Change;
-                Globals.Config.DungeonMaps.ShowVisitedTiles.Changed += Config_DungeonMaps_ShowVisitedTiles_Changed;
 
                 UIDungeonMapsOpacity = (HudHSlider)Globals.MainView.view["DungeonMapsOpacity"];
-                UIDungeonMapsOpacity.Position = Globals.Config.DungeonMaps.Opacity.Value;
                 UIDungeonMapsOpacity.Changed += UIDungeonMapsOpacity_Changed;
 
                 UIDungeonMapsSettingsList = (HudList)Globals.MainView.view["DungeonMapsSettingsList"];
                 UIDungeonMapsSettingsList.Click += UIDungeonMapsSettingsList_Click;
+
+                UpdateUI();
 
                 #endregion
 
@@ -138,7 +127,7 @@ namespace UtilityBelt.Tools {
                 zoomSaveTimer.Interval = 2000; // save the window position 2 seconds after it has stopped moving
                 zoomSaveTimer.Tick += (s, e) => {
                     zoomSaveTimer.Stop();
-                    Globals.Config.DungeonMaps.MapZoom.Value = scale;
+                    Globals.Settings.DungeonMaps.MapZoom = scale;
                 };
 
                 uTank2.PluginCore.PC.NavRouteChanged += PC_NavRouteChanged;
@@ -147,6 +136,13 @@ namespace UtilityBelt.Tools {
                 PopulateSettings();
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void UpdateUI() {
+            UIDungeonMapsEnabled.Checked = Globals.Settings.DungeonMaps.Enabled;
+            UIDungeonMapsDrawWhenClosed.Checked = Globals.Settings.DungeonMaps.DrawWhenClosed;
+            UIDungeonMapsShowVisitedTiles.Checked = Globals.Settings.DungeonMaps.ShowVisitedTiles;
+            UIDungeonMapsOpacity.Position = Globals.Settings.DungeonMaps.Opacity;
         }
 
         private void PC_NavWaypointChanged() {
@@ -165,67 +161,31 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void Config_DungeonMaps_Enabled_Changed(Setting<bool> obj) {
-            try {
-                UIDungeonMapsEnabled.Checked = Globals.Config.DungeonMaps.Enabled.Value;
-                Toggle();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
         private void UIDungeonMapsEnabled_Change(object sender, EventArgs e) {
             try {
-                Globals.Config.DungeonMaps.Enabled.Value = UIDungeonMapsEnabled.Checked;
+                Globals.Settings.DungeonMaps.Enabled = UIDungeonMapsEnabled.Checked;
                 Toggle();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void Config_DungeonMaps_Debug_Changed(Setting<bool> obj) {
-            try {
-                UIDungeonMapsDebug.Checked = Globals.Config.DungeonMaps.Debug.Value;
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void UIDungeonMapsDebug_Change(object sender, EventArgs e) {
-            try {
-                Globals.Config.DungeonMaps.Debug.Value = UIDungeonMapsDebug.Checked;
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void Config_DungeonMaps_DrawWhenClosed_Changed(Setting<bool> obj) {
-            try {
-                UIDungeonMapsDrawWhenClosed.Checked = Globals.Config.DungeonMaps.DrawWhenClosed.Value;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UIDungeonMapsDrawWhenClosed_Change(object sender, EventArgs e) {
             try {
-                Globals.Config.DungeonMaps.DrawWhenClosed.Value = UIDungeonMapsDrawWhenClosed.Checked;
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void Config_DungeonMaps_ShowVisitedTiles_Changed(Setting<bool> obj) {
-            try {
-                UIDungeonMapsShowVisitedTiles.Checked = Globals.Config.DungeonMaps.ShowVisitedTiles.Value;
+                Globals.Settings.DungeonMaps.DrawWhenClosed = UIDungeonMapsDrawWhenClosed.Checked;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UIDungeonMapsShowVisitedTiles_Change(object sender, EventArgs e) {
             try {
-                Globals.Config.DungeonMaps.ShowVisitedTiles.Value = UIDungeonMapsShowVisitedTiles.Checked;
+                Globals.Settings.DungeonMaps.ShowVisitedTiles = UIDungeonMapsShowVisitedTiles.Checked;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UIDungeonMapsOpacity_Changed(int min, int max, int pos) {
-            if (pos != Globals.Config.DungeonMaps.Opacity.Value) {
-                Globals.Config.DungeonMaps.Opacity.Value = pos;
+            if (pos != Globals.Settings.DungeonMaps.Opacity) {
+                Globals.Settings.DungeonMaps.Opacity = pos;
                 needsDraw = true;
             }
         }
@@ -241,7 +201,7 @@ namespace UtilityBelt.Tools {
 
         private void View_Moved(object sender, EventArgs e) {
             try {
-                if (!Globals.Config.DungeonMaps.Enabled.Value) return;
+                if (!Globals.Settings.DungeonMaps.Enabled) return;
 
                 RemoveHud();
                 CreateHud();
@@ -307,23 +267,29 @@ namespace UtilityBelt.Tools {
             try {
                 HudList.HudListRowAccessor clickedRow = UIDungeonMapsSettingsList[row];
                 var name = ((HudStaticText)clickedRow[COL_NAME]).Text;
+                var option = Globals.Settings.DungeonMaps.Display.GetPropValue<ColorToggleOption>(name);
+
+                if (option == null) {
+                    Util.WriteToChat("Bad option clicked: " + name);
+                    return;
+                }
 
                 switch (col) {
                     case COL_ENABLED:
-                        Globals.Config.DungeonMaps.GetFieldValue<Setting<bool>>($"Show{name}").Value = ((HudCheckBox)clickedRow[COL_ENABLED]).Checked;
+                        option.Enabled = ((HudCheckBox)clickedRow[COL_ENABLED]).Checked;
                         needsDraw = true;
                         break;
 
                     case COL_ICON:
-                        int originalColor = Globals.Config.DungeonMaps.GetFieldValue<Setting<int>>($"{name}Color").Value;
+                        int originalColor = option.Color;
                         var picker = new ColorPicker(Globals.MainView, name, Color.FromArgb(originalColor));
 
-                        Globals.Config.DisableSaving();
+                        Globals.Settings.DisableSaving();
                         
                         picker.RaiseColorPickerCancelEvent += (s, e) => {
                             // restore color
                             SetDisplayColor(name, originalColor);
-                            Globals.Config.EnableSaving();
+                            Globals.Settings.EnableSaving();
                             picker.Dispose();
                             needsDraw = true;
                         };
@@ -331,7 +297,7 @@ namespace UtilityBelt.Tools {
                         picker.RaiseColorPickerSaveEvent += (s, e) => {
                             // this is to force a change event
                             SetDisplayColor(name, originalColor);
-                            Globals.Config.EnableSaving();
+                            Globals.Settings.EnableSaving();
                             SetDisplayColor(name, e.Color.ToArgb());
                             PopulateSettings();
                             picker.Dispose();
@@ -346,7 +312,7 @@ namespace UtilityBelt.Tools {
                         picker.view.VisibleChanged += (s, e) => {
                             // restore color
                             SetDisplayColor(name, originalColor);
-                            Globals.Config.EnableSaving();
+                            Globals.Settings.EnableSaving();
                             if (!picker.view.Visible) {
                                 picker.Dispose();
                             }
@@ -361,10 +327,10 @@ namespace UtilityBelt.Tools {
         #endregion
 
         private void SetDisplayColor(string name, int color) {
-            Util.WriteToChat($"set {name}Color = {color} {Config.ShouldSave}");
-            Globals.Config.DungeonMaps.GetFieldValue<Setting<int>>($"{name}Color").Value = color;
+            var option = Globals.Settings.DungeonMaps.Display.GetPropValue<ColorToggleOption>(name);
+            option.Color = color;
 
-            if (Globals.Config.DungeonMaps.TileSettings.Contains(name)) {
+            if (Globals.Settings.DungeonMaps.Display.TileOptions.Contains(name)) {
                 ClearTileCache();
             }
         }
@@ -378,14 +344,18 @@ namespace UtilityBelt.Tools {
 
                 UIDungeonMapsSettingsList.ClearRows();
 
-                foreach (var setting in Globals.Config.DungeonMaps.Settings) {
-                    HudList.HudListRowAccessor row = UIDungeonMapsSettingsList.AddRow();
+                foreach (var setting in Globals.Settings.DungeonMaps.Display.ValidSettings) {
+                    var option = Globals.Settings.DungeonMaps.Display.GetPropValue<ColorToggleOption>(setting);
 
-                    bool isChecked = Globals.Config.DungeonMaps.GetFieldValue<Setting<bool>>($"Show{setting}").Value;
-
-                    ((HudCheckBox)row[COL_ENABLED]).Checked = isChecked;
-                    ((HudStaticText)row[COL_NAME]).Text = setting;
-                    ((HudPictureBox)row[COL_ICON]).Image = GetSettingIcon(setting);
+                    if (option != null) {
+                        HudList.HudListRowAccessor row = UIDungeonMapsSettingsList.AddRow();
+                        ((HudCheckBox)row[COL_ENABLED]).Checked = option.Enabled;
+                        ((HudStaticText)row[COL_NAME]).Text = setting;
+                        ((HudPictureBox)row[COL_ICON]).Image = GetSettingIcon(option);
+                    }
+                    else {
+                        Util.WriteToChat("Bad DisplayOption: " + setting);
+                    }
                 }
 
                 UIDungeonMapsSettingsList.ScrollPosition = scroll;
@@ -393,12 +363,10 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private ACImage GetSettingIcon(string setting) {
-            int color = Globals.Config.DungeonMaps.GetFieldValue<Setting<int>>($"{setting}Color").Value;
-
+        private ACImage GetSettingIcon(ColorToggleOption option) {
             var bmp = new Bitmap(32, 32);
             using (Graphics gfx = Graphics.FromImage(bmp)) {
-                using (SolidBrush brush = new SolidBrush(Color.FromArgb(color))) {
+                using (SolidBrush brush = new SolidBrush(Color.FromArgb(option.Color))) {
                     gfx.FillRectangle(brush, 0, 0, 32, 32);
                 }
             }
@@ -415,7 +383,7 @@ namespace UtilityBelt.Tools {
 
         private void Toggle() {
             try {
-                var enabled = Globals.Config.DungeonMaps.Enabled.Value;
+                var enabled = Globals.Settings.DungeonMaps.Enabled;
                 Globals.MapView.view.ShowInBar = enabled;
 
                 if (!enabled) {
@@ -446,16 +414,18 @@ namespace UtilityBelt.Tools {
 
         private void Core_RegionChange3D(object sender, RegionChange3DEventArgs e) {
             try {
-                if (!Globals.Config.DungeonMaps.Enabled.Value) return;
                 RemoveHud();
-                CreateHud();
+
+                if (Globals.Settings.DungeonMaps.Enabled) {
+                    CreateHud();
+                }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
             try {
-                if (!Globals.Config.DungeonMaps.Enabled.Value) return;
+                if (!Globals.Settings.DungeonMaps.Enabled) return;
 
                 if (e.New.ObjectClass == ObjectClass.Portal) {
                     var currentLandblock = DungeonCache.Get(Globals.Core.Actions.Landcell);
@@ -517,7 +487,7 @@ namespace UtilityBelt.Tools {
         }
 
         public bool DoesHudNeedUpdate() {
-            if (!Globals.Config.DungeonMaps.Enabled.Value) return false;
+            if (!Globals.Settings.DungeonMaps.Enabled) return false;
 
             return false;
         }
@@ -544,7 +514,7 @@ namespace UtilityBelt.Tools {
                 catch (Exception ex) { Logger.LogException(ex); }
                 finally {
                     hud.EndRender();
-                    hud.Alpha = (int)Math.Round(((Globals.Config.DungeonMaps.Opacity.Value * 5) / 100F)*255);
+                    hud.Alpha = (int)Math.Round(((Globals.Settings.DungeonMaps.Opacity * 5) / 100F)*255);
                     hud.Enabled = true;
                 }
             }
@@ -553,7 +523,7 @@ namespace UtilityBelt.Tools {
 
         private void DrawCompass(Hud hud) {
             // compass icon that always points north
-            if (Globals.Config.DungeonMaps.ShowCompass.Value && compassBitmap != null) {
+            if (Globals.Settings.DungeonMaps.ShowCompass && compassBitmap != null) {
                 using (Bitmap rotatedCompass = new Bitmap(compassBitmap.Width, compassBitmap.Height)) {
                     using (Graphics compassGfx = Graphics.FromImage(rotatedCompass)) {
                         compassGfx.TranslateTransform(compassBitmap.Width / 2, compassBitmap.Height / 2);
@@ -567,7 +537,7 @@ namespace UtilityBelt.Tools {
         }
 
         private void DrawPortalLabels(Hud hud) {
-            if (!Globals.Config.DungeonMaps.ShowPortalsLabel.Value) return;
+            if (!Globals.Settings.DungeonMaps.Display.PortalLabels.Enabled) return;
 
             // draw portal labels, the portal icons are drawn on the map itself
             // we only draw portal labels if the portal is on the same zLevel as us
@@ -586,7 +556,7 @@ namespace UtilityBelt.Tools {
 
                     var rpoint = Util.RotatePoint(new Point((int)x, (int)y), new Point(0, 0), rotation + 180);
                     var rect = new Rectangle(rpoint.X + (hud.Region.Width / 2), rpoint.Y + (hud.Region.Height / 2), 200, 12);
-                    var labelColor = Globals.Config.DungeonMaps.PortalsLabelColor.Value;
+                    var labelColor = Globals.Settings.DungeonMaps.Display.PortalLabels.Color;
 
                     hud.WriteText(portal.Name, labelColor, Decal.Adapter.Wrappers.WriteTextFormats.SingleLine, rect);
                 }
@@ -596,7 +566,7 @@ namespace UtilityBelt.Tools {
 
         private void DrawMapDebug(Hud hud) {
             // debug cell / environment debug text
-            if (Globals.Config.DungeonMaps.Debug.Value) {
+            if (Globals.Settings.Main.Debug) {
                 hud.BeginText("mono", 14, Decal.Adapter.Wrappers.FontWeight.Heavy, false);
                 var cells = currentBlock.GetCurrentCells();
                 var offset = 0;
@@ -624,9 +594,9 @@ namespace UtilityBelt.Tools {
             var _needsDraw = needsDraw;
             needsDraw = false;
 
-            if (!Globals.Config.DungeonMaps.Enabled.Value) return false;
+            if (!Globals.Settings.DungeonMaps.Enabled) return false;
 
-            if (Globals.Config.DungeonMaps.DrawWhenClosed.Value == false && Globals.MapView.view.Visible == false) {
+            if (Globals.Settings.DungeonMaps.DrawWhenClosed == false && Globals.MapView.view.Visible == false) {
                 hud.Clear();
                 return false;
             }
@@ -683,9 +653,7 @@ namespace UtilityBelt.Tools {
                     watch2.Stop();
                     if (counter % 60 == 0) {
                         counter = 0;
-                        if (Globals.Config.DungeonMaps.Debug.Value) {
-                            Util.WriteToChat(string.Format("DungeonMaps: draw: {0}ms update: {1}ms (drew {2} tiles)", watch.ElapsedMilliseconds, watch2.ElapsedMilliseconds, currentBlock.drawCount));
-                        }
+                        Logger.Debug(string.Format("DungeonMaps: draw: {0}ms update: {1}ms (drew {2} tiles)", watch.ElapsedMilliseconds, watch2.ElapsedMilliseconds, currentBlock.drawCount));
                     }
                     ++counter;
                 }

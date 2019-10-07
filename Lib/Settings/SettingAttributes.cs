@@ -21,4 +21,22 @@ namespace UtilityBelt.Lib.Settings {
             Text = text;
         }
     }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    class DefaultColorAttribute : Attribute {
+        public int Color { get; set; }
+
+        public DefaultColorAttribute(int color) {
+            Color = color;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    class DefaultEnabledAttribute : Attribute {
+        public bool Enabled { get; set; }
+
+        public DefaultEnabledAttribute(bool enabled) {
+            Enabled = enabled;
+        }
+    }
 }

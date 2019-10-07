@@ -139,11 +139,10 @@ namespace UtilityBelt
             return (T)retval;
         }
 
-        public static void WriteToChat(string message)
-		{
+        public static void WriteToChat(string message) {
 			try
 			{
-				Globals.Host.Actions.AddChatText("[" + Globals.PluginName + "] " + message, 5);
+				Globals.Host.Actions.AddChatText("[UB] " + message, 5);
                 WriteToDebugLog(message);
 			}
 			catch (Exception ex) { Logger.LogException(ex); }

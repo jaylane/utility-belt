@@ -33,10 +33,10 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             var spell = service.SpellTable.GetById(RecallSpellId);
 
             VTNPoint rp = GetPreviousPoint();
-            var color = Color.FromArgb(Globals.Config.VisualNav.RecallColor.Value);
+            var color = Color.FromArgb(Globals.Settings.VisualNav.Display.Recall.Color);
             VTNPoint point = rp == null ? this : rp;
 
-            if (Globals.Config.VisualNav.ShowRecall.Value) {
+            if (Globals.Settings.VisualNav.Display.Recall.Enabled) {
                 DrawText(spell.Name, point, 0.25f, color);
                 DrawIcon(spell.IconId, 0.35f, point);
             }

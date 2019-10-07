@@ -42,12 +42,12 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
 
         public override void Draw() {
             var rp = GetPreviousPoint();
-            var textColor = Color.FromArgb(Globals.Config.VisualNav.JumpTextColor.Value);
-            var arrowColor = Color.FromArgb(Globals.Config.VisualNav.JumpArrowColor.Value);
+            var textColor = Color.FromArgb(Globals.Settings.VisualNav.Display.JumpText.Color);
+            var arrowColor = Color.FromArgb(Globals.Settings.VisualNav.Display.JumpArrow.Color);
             var tp = rp == null ? GetNextPoint() : rp;
             rp = rp == null ? this : rp;
 
-            if (Globals.Config.VisualNav.ShowJumpArrow.Value) {
+            if (Globals.Settings.VisualNav.Display.JumpText.Enabled) {
                 var obj = Globals.Core.D3DService.MarkCoordsWithShape((float)tp.NS, (float)tp.EW, (float)(tp.Z * 240) + (float)route.GetZOffset(tp.NS, tp.EW), D3DShape.HorizontalArrow, arrowColor.ToArgb());
                 float dist = 1f;
                 float a = (float)((360 - (Heading - 90)) * Math.PI / 180f);
@@ -58,7 +58,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
                 shapes.Add(obj);
             }
 
-            if (Globals.Config.VisualNav.ShowJumpText.Value) {
+            if (Globals.Settings.VisualNav.Display.JumpArrow.Enabled) {
                 DrawText($"{(ShiftJump ? "Shift" : "")} Jump {Math.Round(Milliseconds / 10, 0)}%", tp, 0, textColor);
             }
         }

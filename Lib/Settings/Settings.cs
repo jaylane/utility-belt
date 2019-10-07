@@ -6,26 +6,17 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
-using UtilityBelt.Lib.Settings.Sections;
 
 namespace UtilityBelt.Lib.Settings {
     [JsonObject(MemberSerialization.OptIn)]
     public class Settings {
         private string pluginStorageDirectory;
-        private bool shouldSave = false;
+        public bool ShouldSave = false;
 
         public event EventHandler Changed;
 
         #region Public Properties
         public bool HasCharacterSettingsLoaded { get; set; } = false;
-
-        [JsonProperty]
-        [SummaryAttribute("Check for plugin updates on login")]
-        public bool CheckForUpdates { get; private set; } = true;
-
-        [JsonProperty]
-        [SummaryAttribute("Show debug messages")]
-        public bool Debug { get; private set; } = false;
 
         // no JsonProperty because we dont want to store this with each character,
         // todo: make sure this gets loaded in properly with PopulateObject from settings.default.json
@@ -67,17 +58,52 @@ namespace UtilityBelt.Lib.Settings {
 
         #region Settings Sections
         [JsonProperty]
+        [SummaryAttribute("Global plugin Settings")]
+        public Sections.Main Main { get; set; }
+
+        [JsonProperty]
         [SummaryAttribute("AutoSalvage Settings")]
-        public AutoSalvage AutoSalvage { get; set; }
+        public Sections.AutoSalvage AutoSalvage { get; set; }
+
+        [JsonProperty]
+        [SummaryAttribute("AutoVendor Settings")]
+        public Sections.AutoVendor AutoVendor { get; set; }
+
+        [JsonProperty]
+        [SummaryAttribute("DungeonMaps Settings")]
+        public Sections.DungeonMaps DungeonMaps { get; set; }
+
+        [JsonProperty]
+        [SummaryAttribute("InventoryManager Settings")]
+        public Sections.InventoryManager InventoryManager { get; set; }
+
+        [JsonProperty]
+        [SummaryAttribute("VisualNav Settings")]
+        public Sections.VisualNav VisualNav { get; set; }
         #endregion
 
         public Settings() {
             try {
-                SetupSection(AutoSalvage = new AutoSalvage());
+                SetupSection(Main = new Sections.Main(null));
+                SetupSection(AutoSalvage = new Sections.AutoSalvage(null));
+                SetupSection(AutoVendor = new Sections.AutoVendor(null));
+                SetupSection(DungeonMaps = new Sections.DungeonMaps(null));
+                SetupSection(InventoryManager = new Sections.InventoryManager(null));
+                SetupSection(VisualNav = new Sections.VisualNav(null));
 
+                ShouldSave = false;
                 Load();
+                ShouldSave = true;
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        public void EnableSaving() {
+            ShouldSave = true;
+        }
+
+        public void DisableSaving() {
+            ShouldSave = false;
         }
 
         // section setup / events
@@ -113,15 +139,13 @@ namespace UtilityBelt.Lib.Settings {
         public void Load() {
             try {
                 var path = Path.Combine(CharacterStoragePath, "settings.json");
-
-                shouldSave = false;
+                
                 LoadDefaults();
                 LoadOldXML();
 
                 if (File.Exists(path)) {
                     JsonConvert.PopulateObject(File.ReadAllText(path), this);
                 }
-                shouldSave = true;
             }
             catch (Exception ex) { Logger.LogException(ex); }
             finally {
@@ -134,7 +158,7 @@ namespace UtilityBelt.Lib.Settings {
         // save character specific settings
         public void Save() {
             try {
-                if (!shouldSave) return;
+                if (!ShouldSave) return;
 
                 var json = JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented);
                 var path = Path.Combine(CharacterStoragePath, "settings.json");
@@ -160,22 +184,98 @@ namespace UtilityBelt.Lib.Settings {
                 foreach (XmlNode node in config.ChildNodes) {
                     switch (node.Name) {
                         case "AutoSalvage":
-                            AutoSalvage.Think = ParseOldBoolNode(node, "Think", AutoSalvage.Think);
-                            AutoSalvage.OnlyFromMainPack = ParseOldBoolNode(node, "OnlyFromMainPack", AutoSalvage.OnlyFromMainPack);
+                            AutoSalvage.Think = ParseOldNode(node, "Think", AutoSalvage.Think);
+                            AutoSalvage.OnlyFromMainPack = ParseOldNode(node, "OnlyFromMainPack", AutoSalvage.OnlyFromMainPack);
                             break;
 
                         case "AutoVendor":
-                            AutoSalvage.Think = ParseOldBoolNode(node, "Think", AutoSalvage.Think);
-                            AutoSalvage.OnlyFromMainPack = ParseOldBoolNode(node, "OnlyFromMainPack", AutoSalvage.OnlyFromMainPack);
+                            AutoVendor.Enabled = ParseOldNode(node, "Enabled", AutoVendor.Enabled);
+                            AutoVendor.Think = ParseOldNode(node, "Think", AutoVendor.Think);
+                            AutoVendor.TestMode = ParseOldNode(node, "TestMode", AutoVendor.TestMode);
+                            AutoVendor.ShowMerchantInfo = ParseOldNode(node, "ShowMerchantInfo", AutoVendor.ShowMerchantInfo);
+                            AutoVendor.OnlyFromMainPack = ParseOldNode(node, "OnlyFromMainPack", AutoVendor.OnlyFromMainPack);
+                            AutoVendor.Speed = ParseOldNode(node, "Speed", AutoVendor.Speed);
                             break;
 
+                        case "DungeonMaps":
+                            DungeonMaps.Enabled = ParseOldNode(node, "Enabled", DungeonMaps.Enabled);
+                            DungeonMaps.DrawWhenClosed = ParseOldNode(node, "DrawWhenClosed ", DungeonMaps.DrawWhenClosed);
+                            DungeonMaps.ShowVisitedTiles = ParseOldNode(node, "ShowVisitedTiles", DungeonMaps.ShowVisitedTiles);
+                            DungeonMaps.ShowCompass = ParseOldNode(node, "ShowCompass", DungeonMaps.ShowCompass);
+                            DungeonMaps.MapWindowX = ParseOldNode(node, "MapWindowX", DungeonMaps.MapWindowX);
+                            DungeonMaps.MapWindowY = ParseOldNode(node, "MapWindowY", DungeonMaps.MapWindowY);
+                            DungeonMaps.MapWindowWidth = ParseOldNode(node, "MapWindowWidth", DungeonMaps.MapWindowWidth);
+                            DungeonMaps.MapWindowHeight = ParseOldNode(node, "MapWindowHeight", DungeonMaps.MapWindowHeight);
+                            DungeonMaps.Opacity = ParseOldNode(node, "Opacity", DungeonMaps.Opacity);
+                            DungeonMaps.MapZoom = ParseOldNode(node, "MapZoom", DungeonMaps.MapZoom);
+                            
+                            DungeonMaps.Display.Walls.Color = ParseOldNode(node, "WallColor", DungeonMaps.Display.Walls.Color);
+                            DungeonMaps.Display.InnerWalls.Color = ParseOldNode(node, "InnerWallColor", DungeonMaps.Display.InnerWalls.Color);
+                            DungeonMaps.Display.RampedWalls.Color = ParseOldNode(node, "RampedWallColor", DungeonMaps.Display.RampedWalls.Color);
+                            DungeonMaps.Display.Stairs.Color = ParseOldNode(node, "StairsColor", DungeonMaps.Display.Stairs.Color);
+                            DungeonMaps.Display.Floors.Color = ParseOldNode(node, "FloorColor", DungeonMaps.Display.Floors.Color);
+                            DungeonMaps.Display.Portals.Color = ParseOldNode(node, "PortalsColor", DungeonMaps.Display.Portals.Color);
+                            DungeonMaps.Display.PortalLabels.Color = ParseOldNode(node, "PortalsLabelColor", DungeonMaps.Display.PortalLabels.Color);
+                            DungeonMaps.Display.Player.Color = ParseOldNode(node, "PlayerColor", DungeonMaps.Display.Player.Color);
+                            DungeonMaps.Display.PlayerLabel.Color = ParseOldNode(node, "PlayerLabelColor", DungeonMaps.Display.PlayerLabel.Color);
+                            DungeonMaps.Display.OtherPlayers.Color = ParseOldNode(node, "OtherPlayersColor", DungeonMaps.Display.OtherPlayers.Color);
+                            DungeonMaps.Display.OtherPlayerLabels.Color = ParseOldNode(node, "OtherPlayersLabelColor", DungeonMaps.Display.OtherPlayerLabels.Color);
+                            DungeonMaps.Display.VisualNavStickyPoint.Color = ParseOldNode(node, "VisualNavStickyPointColor", DungeonMaps.Display.VisualNavStickyPoint.Color);
+                            DungeonMaps.Display.VisualNavLines.Color = ParseOldNode(node, "VisualNavLineColor", DungeonMaps.Display.VisualNavLines.Color);
+
+                            DungeonMaps.Display.Walls.Enabled = ParseOldNode(node, "ShowWall", DungeonMaps.Display.Walls.Enabled);
+                            DungeonMaps.Display.InnerWalls.Enabled = ParseOldNode(node, "ShowInnerWall", DungeonMaps.Display.InnerWalls.Enabled);
+                            DungeonMaps.Display.RampedWalls.Enabled = ParseOldNode(node, "ShowRampedWall", DungeonMaps.Display.RampedWalls.Enabled);
+                            DungeonMaps.Display.Stairs.Enabled = ParseOldNode(node, "ShowStairs", DungeonMaps.Display.Stairs.Enabled);
+                            DungeonMaps.Display.Floors.Enabled = ParseOldNode(node, "ShowFloor", DungeonMaps.Display.Floors.Enabled);
+                            DungeonMaps.Display.Portals.Enabled = ParseOldNode(node, "ShowPortals", DungeonMaps.Display.Portals.Enabled);
+                            DungeonMaps.Display.PortalLabels.Enabled = ParseOldNode(node, "ShowPortalsLabel", DungeonMaps.Display.PortalLabels.Enabled);
+                            DungeonMaps.Display.Player.Enabled = ParseOldNode(node, "ShowPlayer", DungeonMaps.Display.Player.Enabled);
+                            DungeonMaps.Display.PlayerLabel.Enabled = ParseOldNode(node, "ShowPlayerLabel", DungeonMaps.Display.PlayerLabel.Enabled);
+                            DungeonMaps.Display.OtherPlayers.Enabled = ParseOldNode(node, "ShowOtherPlayers", DungeonMaps.Display.OtherPlayers.Enabled);
+                            DungeonMaps.Display.OtherPlayerLabels.Enabled = ParseOldNode(node, "ShowOtherPlayersLabel", DungeonMaps.Display.OtherPlayerLabels.Enabled);
+                            DungeonMaps.Display.VisualNavStickyPoint.Enabled = ParseOldNode(node, "ShowVisualNavStickyPoint", DungeonMaps.Display.VisualNavStickyPoint.Enabled);
+                            DungeonMaps.Display.VisualNavLines.Enabled = ParseOldNode(node, "ShowVisualNavLine", DungeonMaps.Display.VisualNavLines.Enabled);
+                            break;
                     }
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private bool ParseOldBoolNode(XmlNode parentNode, string childTag, bool defaultValue) {
+        private float ParseOldNode(XmlNode parentNode, string childTag, float defaultValue) {
+            try {
+                XmlNode node = parentNode.SelectSingleNode($"{childTag}");
+                if (node != null) {
+                    float value = 0;
+
+                    if (float.TryParse(node.InnerText, out value)) {
+                        return value;
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return defaultValue;
+        }
+
+        private int ParseOldNode(XmlNode parentNode, string childTag, int defaultValue) {
+            try {
+                XmlNode node = parentNode.SelectSingleNode($"{childTag}");
+                if (node != null) {
+                    int value = 0;
+
+                    if (int.TryParse(node.InnerText, out value)) {
+                        return value;
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return defaultValue;
+        }
+
+        private bool ParseOldNode(XmlNode parentNode, string childTag, bool defaultValue) {
             try {
                 XmlNode node = parentNode.SelectSingleNode($"{childTag}");
                 if (node != null) {

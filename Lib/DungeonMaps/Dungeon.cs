@@ -178,7 +178,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
                     var isVisited = false;
 
                     //visited cells
-                    if (Globals.Config.DungeonMaps.ShowVisitedTiles.Value && visitedTiles.Contains((uint)(cell.CellId << 16 >> 16))) {
+                    if (Globals.Settings.DungeonMaps.ShowVisitedTiles && visitedTiles.Contains((uint)(cell.CellId << 16 >> 16))) {
                         isVisited = true;
                     }
                     // floors directly above your character
@@ -264,10 +264,10 @@ namespace UtilityBelt.Lib.DungeonMaps {
         }
 
         private void DrawPortalDots(Graphics drawGfx, int zLayer) {
-            if (!Globals.Config.DungeonMaps.ShowPortals.Value) return;
+            if (!Globals.Settings.DungeonMaps.Display.Portals.Enabled) return;
 
             var opacity = Math.Max(Math.Min(1 - (Math.Abs(Globals.Core.Actions.LocationZ - zLayer) / 6) * 0.4F, 1), 0) * 255;
-            portalBrush.Color = Color.FromArgb(Globals.Config.DungeonMaps.PortalsColor.Value);
+            portalBrush.Color = Color.FromArgb(Globals.Settings.DungeonMaps.Display.Portals.Color);
 
             // draw portal markers
             if (zPortals.ContainsKey(zLayer)) {
@@ -278,12 +278,12 @@ namespace UtilityBelt.Lib.DungeonMaps {
         }
 
         private void DrawPlayerMarker(Graphics drawGfx) {
-            if (!Globals.Config.DungeonMaps.ShowPlayer.Value) return;
+            if (!Globals.Settings.DungeonMaps.Display.Player.Enabled) return;
 
             var playerXOffset = -(float)Globals.Core.Actions.LocationX;
             var playerYOffset = (float)Globals.Core.Actions.LocationY;
 
-            playerBrush.Color = Color.FromArgb(Globals.Config.DungeonMaps.PlayerColor.Value);
+            playerBrush.Color = Color.FromArgb(Globals.Settings.DungeonMaps.Display.Player.Color);
             drawGfx.FillEllipse(playerBrush, playerXOffset - 1, playerYOffset - 1, 2f, 2f);
         }
 
@@ -310,19 +310,19 @@ namespace UtilityBelt.Lib.DungeonMaps {
 
             // sticky point
             if (allPoints.Length == 1 && route.NavType == VTNav.eNavType.Circular) {
-                if (!Globals.Config.DungeonMaps.ShowVisualNavStickyPoint.Value) return;
+                if (!Globals.Settings.DungeonMaps.Display.VisualNavStickyPoint.Enabled) return;
 
                 VTNPoint point = allPoints[0];
                 var landblock = Geometry.GetLandblockFromCoordinates((float)point.EW, (float)point.NS);
                 var pointOffset = Geometry.LandblockOffsetFromCoordinates(LandBlockId, (float)point.EW, (float)point.NS);
 
-                navPen.Color = Color.FromArgb(Globals.Config.DungeonMaps.VisualNavStickyPointColor.Value);
+                navPen.Color = Color.FromArgb(Globals.Settings.DungeonMaps.Display.VisualNavStickyPoint.Color);
                 drawGfx.DrawEllipse(navPen, -pointOffset.X - 1.5f, pointOffset.Y - 1.5f, 3f, 3f);
                 return;
             }
 
             // circular / once / linear routes.. currently not discriminating
-            if (!Globals.Config.DungeonMaps.ShowVisualNavLine.Value) return;
+            if (!Globals.Settings.DungeonMaps.Display.VisualNavLines.Enabled) return;
          
             foreach (var point in route.points) {
                 var prev = point.GetPreviousPoint();
@@ -353,7 +353,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
                     if (prevZ < pointZ && !pointIsOnActiveLayer) continue;
                     if (prevZ > pointZ && !prevIsOnActiveLayer) continue;
 
-                    navPen.Color = Color.FromArgb(Globals.Config.DungeonMaps.VisualNavLineColor.Value);
+                    navPen.Color = Color.FromArgb(Globals.Settings.DungeonMaps.Display.VisualNavLines.Color);
 
                     drawGfx.DrawLine(navPen, -prevOffset.X, prevOffset.Y, -pointOffset.X, pointOffset.Y);
 

@@ -6,10 +6,10 @@ using UtilityBelt.Lib.VTNav;
 using System.Drawing;
 using System.Collections.Generic;
 using VirindiViewService.Controls;
-using Mag.Shared.Settings;
 using VirindiViewService;
 using UtilityBelt.Views;
 using UtilityBelt.Lib;
+using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     public class VisualVTankRoutes : IDisposable {
@@ -39,7 +39,6 @@ namespace UtilityBelt.Tools {
             VisualNavSettingsList.Click += VisualNavSettingsList_Click;
 
             VisualNavSaveNoneRoutes = (HudCheckBox)Globals.MainView.view["VisualNavSaveNoneRoutes"];
-            VisualNavSaveNoneRoutes.Checked = Globals.Config.VisualNav.SaveNoneRoutes.Value;
             VisualNavSaveNoneRoutes.Change += VisualNavSaveNoneRoutes_Change;
 
             PopulateSettings();
@@ -55,34 +54,22 @@ namespace UtilityBelt.Tools {
 
             profilesWatcher.EnableRaisingEvents = true;
 
-            Globals.Config.VisualNav.ChatTextColor.Changed += ConfigChanged;
-            Globals.Config.VisualNav.JumpArrowColor.Changed += ConfigChanged;
-            Globals.Config.VisualNav.JumpTextColor.Changed += ConfigChanged;
-            Globals.Config.VisualNav.LineColor.Changed += ConfigChanged;
-            Globals.Config.VisualNav.LineOffset.Changed += ConfigChanged;
-            Globals.Config.VisualNav.OpenVendorColor.Changed += ConfigChanged;
-            Globals.Config.VisualNav.PauseColor.Changed += ConfigChanged;
-            Globals.Config.VisualNav.PortalColor.Changed += ConfigChanged;
-            Globals.Config.VisualNav.RecallColor.Changed += ConfigChanged;
-            Globals.Config.VisualNav.ShowChatText.Changed += ConfigChanged;
-            Globals.Config.VisualNav.ShowJumpArrow.Changed += ConfigChanged;
-            Globals.Config.VisualNav.ShowJumpText.Changed += ConfigChanged;
-            Globals.Config.VisualNav.ShowLine.Changed += ConfigChanged;
-            Globals.Config.VisualNav.ShowOpenVendor.Changed += ConfigChanged;
-            Globals.Config.VisualNav.ShowPause.Changed += ConfigChanged;
-            Globals.Config.VisualNav.ShowPortal.Changed += ConfigChanged;
-            Globals.Config.VisualNav.ShowRecall.Changed += ConfigChanged;
-            Globals.Config.VisualNav.ShowUseNPC.Changed += ConfigChanged;
-            Globals.Config.VisualNav.UseNPCColor.Changed += ConfigChanged;
-            
+            Globals.Settings.VisualNav.Display.PropertyChanged += (s, e) => { needsDraw = true; };
+
             DrawCurrentRoute();
 
             uTank2.PluginCore.PC.NavRouteChanged += PC_NavRouteChanged;
+
+            UpdateUI();
+        }
+
+        private void UpdateUI() {
+            VisualNavSaveNoneRoutes.Checked = Globals.Settings.VisualNav.SaveNoneRoutes;
         }
 
         private void PC_NavRouteChanged() {
             try {
-                if (!Globals.Config.VisualNav.SaveNoneRoutes.Value) return;
+                if (!Globals.Settings.VisualNav.SaveNoneRoutes) return;
 
                 var routePath = VTNavRoute.GetLoadedNavigationProfile();
                 var vTank = VTankControl.vTankInstance;
@@ -104,12 +91,8 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void ConfigChanged(object obj) {
-            needsDraw = true;
-        }
-
         private void VisualNavSaveNoneRoutes_Change(object sender, EventArgs e) {
-            Globals.Config.VisualNav.SaveNoneRoutes.Value = VisualNavSaveNoneRoutes.Checked;
+            Globals.Settings.VisualNav.SaveNoneRoutes = VisualNavSaveNoneRoutes.Checked;
         }
 
         private void PopulateSettings() {
@@ -120,25 +103,23 @@ namespace UtilityBelt.Tools {
 
             VisualNavSettingsList.ClearRows();
 
-            foreach (var setting in Globals.Config.VisualNav.Settings) {
+            foreach (var setting in Globals.Settings.VisualNav.Display.ValidSettings) {
                 HudList.HudListRowAccessor row = VisualNavSettingsList.AddRow();
 
-                bool isChecked = Globals.Config.VisualNav.GetFieldValue<Setting<bool>>($"Show{setting}").Value;
-                
-                ((HudCheckBox)row[COL_ENABLED]).Checked = isChecked;
+                var option = Globals.Settings.VisualNav.Display.GetPropValue<ColorToggleOption>(setting);
+
+                ((HudCheckBox)row[COL_ENABLED]).Checked = option.Enabled;
                 ((HudStaticText)row[COL_NAME]).Text = setting;
-                ((HudPictureBox)row[COL_ICON]).Image = GetSettingIcon(setting);
+                ((HudPictureBox)row[COL_ICON]).Image = GetSettingIcon(option);
             }
 
             VisualNavSettingsList.ScrollPosition = scroll;
         }
 
-        private ACImage GetSettingIcon(string setting) {
-           int color = Globals.Config.VisualNav.GetFieldValue<Setting<int>>($"{setting}Color").Value;
-
+        private ACImage GetSettingIcon(ColorToggleOption option) {
             var bmp = new Bitmap(32, 32);
             using (Graphics gfx = Graphics.FromImage(bmp)) {
-                using (SolidBrush brush = new SolidBrush(Color.FromArgb(color))) {
+                using (SolidBrush brush = new SolidBrush(Color.FromArgb(option.Color))) {
                     gfx.FillRectangle(brush, 0, 0, 32, 32);
                 }
             }
@@ -150,30 +131,55 @@ namespace UtilityBelt.Tools {
             try {
                 HudList.HudListRowAccessor clickedRow = VisualNavSettingsList[row];
                 var name = ((HudStaticText)clickedRow[COL_NAME]).Text;
+                var option = Globals.Settings.DungeonMaps.Display.GetPropValue<ColorToggleOption>(name);
+
+                if (option == null) {
+                    Util.WriteToChat("Bad option clicked: " + name);
+                    return;
+                }
 
                 switch (col) {
                     case COL_ENABLED:
-                        Globals.Config.VisualNav.GetFieldValue<Setting<bool>>($"Show{name}").Value = ((HudCheckBox)clickedRow[COL_ENABLED]).Checked;
+                        option.Enabled = ((HudCheckBox)clickedRow[COL_ENABLED]).Checked;
                         break;
 
                     case COL_ICON:
-                        int color = Globals.Config.VisualNav.GetFieldValue<Setting<int>>($"{name}Color").Value;
-                        var picker = new ColorPicker(Globals.MainView, name, Color.FromArgb(color));
+                        int originalColor = option.Color;
+                        var picker = new ColorPicker(Globals.MainView, name, Color.FromArgb(originalColor));
+
+                        Globals.Settings.DisableSaving();
 
                         picker.RaiseColorPickerCancelEvent += (s, e) => {
+                            // restore color
+                            option.Color = originalColor;
+                            Globals.Settings.EnableSaving();
                             picker.Dispose();
+                            needsDraw = true;
                         };
 
                         picker.RaiseColorPickerSaveEvent += (s,  e) => {
-                            Globals.Config.VisualNav.GetFieldValue<Setting<int>>($"{name}Color").Value = e.Color.ToArgb();
+                            // this is to force a change event
+                            option.Color = originalColor;
+                            Globals.Settings.EnableSaving();
+                            option.Color = e.Color.ToArgb();
                             PopulateSettings();
                             picker.Dispose();
+                            needsDraw = true;
+                        };
+
+                        picker.RaiseColorPickerChangeEvent += (s, e) => {
+                            option.Color = e.Color.ToArgb();
+                            needsDraw = true;
                         };
 
                         picker.view.VisibleChanged += (s, e) => {
+                            // restore color
+                            option.Color = originalColor;
+                            Globals.Settings.EnableSaving();
                             if (!picker.view.Visible) {
                                 picker.Dispose();
                             }
+                            needsDraw = true;
                         };
 
                         break;

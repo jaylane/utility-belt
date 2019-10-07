@@ -115,10 +115,10 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
 
         public override void Draw() {
             var rp = GetPreviousPoint();
-            var color = Color.FromArgb(Globals.Config.VisualNav.LineColor.Value);
+            var color = Color.FromArgb(Globals.Settings.VisualNav.Display.Lines.Color);
 
             if (closestDistance < double.MaxValue) {
-                if (rp != null && Globals.Config.VisualNav.ShowLine.Value) {
+                if (rp != null && Globals.Settings.VisualNav.Display.Lines.Enabled) {
                     DrawLineTo(rp, color);
                 }
 
@@ -128,9 +128,9 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
                 }
                 height = height > 0 ? (height) : (1.55f);
 
-                color = Color.FromArgb(Globals.Config.VisualNav.UseNPCColor.Value);
+                color = Color.FromArgb(Globals.Settings.VisualNav.Display.UseNPC.Color);
 
-                if (Globals.Config.VisualNav.ShowUseNPC.Value) {
+                if (Globals.Settings.VisualNav.Display.UseNPC.Enabled) {
                     DrawText("Talk: " + Name, this, height, color);
                 }
             }

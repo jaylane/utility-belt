@@ -116,14 +116,14 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
 
         public override void Draw() {
             var rp = GetPreviousPoint();
-            var color = Color.FromArgb(Globals.Config.VisualNav.LineColor.Value);
+            var color = Color.FromArgb(Globals.Settings.VisualNav.Display.Lines.Color);
 
             if (closestDistance < double.MaxValue) {
-                if (rp != null && Globals.Config.VisualNav.ShowLine.Value) {
+                if (rp != null && Globals.Settings.VisualNav.Display.Lines.Enabled) {
                     DrawLineTo(rp, color);
                 }
 
-                color = Color.FromArgb(Globals.Config.VisualNav.PortalColor.Value);
+                color = Color.FromArgb(Globals.Settings.VisualNav.Display.Portal.Color);
 
                 var height = 1.55f;
                 if (Globals.Core.Actions.IsValidObject(Id)) {
@@ -131,7 +131,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
                 }
                 height = height > 0 ? height : 1.55f;
 
-                if (Globals.Config.VisualNav.ShowPortal.Value) {
+                if (Globals.Settings.VisualNav.Display.Portal.Enabled) {
                     DrawText("Use: " + Name, this, height, color);
                 }
             }

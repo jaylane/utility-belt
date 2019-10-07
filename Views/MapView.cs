@@ -29,20 +29,20 @@ namespace UtilityBelt.Views {
                 view.UserResizeable = true;
 
                 view.Location = new Point(
-                    Globals.Config.DungeonMaps.MapWindowX.Value,
-                    Globals.Config.DungeonMaps.MapWindowY.Value
+                    Globals.Settings.DungeonMaps.MapWindowX,
+                    Globals.Settings.DungeonMaps.MapWindowY
                 );
-                view.Width = Globals.Config.DungeonMaps.MapWindowWidth.Value;
-                view.Height = Globals.Config.DungeonMaps.MapWindowHeight.Value;
+                view.Width = Globals.Settings.DungeonMaps.MapWindowWidth;
+                view.Height = Globals.Settings.DungeonMaps.MapWindowHeight;
 
                 var timer = new Timer();
                 timer.Interval = 2000; // save the window position 2 seconds after it has stopped moving
                 timer.Tick += (s, e) => {
                     timer.Stop();
-                    Globals.Config.DungeonMaps.MapWindowX.Value = view.Location.X;
-                    Globals.Config.DungeonMaps.MapWindowY.Value = view.Location.Y;
-                    Globals.Config.DungeonMaps.MapWindowWidth.Value = view.Width;
-                    Globals.Config.DungeonMaps.MapWindowHeight.Value = view.Height;
+                    Globals.Settings.DungeonMaps.MapWindowX = view.Location.X;
+                    Globals.Settings.DungeonMaps.MapWindowY = view.Location.Y;
+                    Globals.Settings.DungeonMaps.MapWindowWidth = view.Width;
+                    Globals.Settings.DungeonMaps.MapWindowHeight = view.Height;
                 };
 
                 view.Moved += (s, e) => {
