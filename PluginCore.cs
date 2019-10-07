@@ -24,7 +24,6 @@ namespace UtilityBelt
         private ItemGiver itemGiver;
         private VTankFellowHeals vTankFellowHeals;
         private ChatNameClickHandler chatNameClickHandler;
-        private DateTime lastThought = DateTime.MinValue;
 
         /// <summary>
         /// This is called when the plugin is started up. This happens only once.

@@ -13,7 +13,7 @@ using VirindiViewService.Controls;
 namespace UtilityBelt.Tools {
     public class AutoVendor : IDisposable {
         private const int MAX_VENDOR_BUY_COUNT = 5000;
-        private const double PYREAL_STACK_SIZE = 25000.0;
+        private const int PYREAL_STACK_SIZE = 25000;
         private DateTime lastThought = DateTime.MinValue;
         private DateTime startedVendoring = DateTime.MinValue;
         private DateTime lastVendorAction = DateTime.MinValue;
@@ -352,7 +352,11 @@ namespace UtilityBelt.Tools {
         }
 
         public void Think() {
+            if (!Globals.Config.AutoVendor.Enabled.Value)
+                return;
+
             try {
+
                 var thinkInterval = TimeSpan.FromMilliseconds(Globals.Config.AutoVendor.Speed.Value);
 
                 if (Globals.Config.AutoVendor.Enabled.Value && DateTime.UtcNow - lastThought >= thinkInterval && DateTime.UtcNow - startedVendoring >= thinkInterval) {
@@ -367,8 +371,7 @@ namespace UtilityBelt.Tools {
                     if (needsVendoring && waitingForIds) {
                         if (Globals.Assessor.NeedsInventoryData(itemsToId)) {
                             if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15)) {
-                                lastIdSpam = DateTime.UtcNow;
-                                startedVendoring = DateTime.UtcNow;
+                                lastIdSpam = startedVendoring = DateTime.UtcNow;
 
                                 if (Globals.Config.AutoVendor.Debug.Value == true) {
                                     Util.WriteToChat(string.Format("AutoVendor waiting to id {0} items, this will take approximately {0} seconds.", Globals.Assessor.GetNeededIdCount(itemsToId)));
@@ -436,8 +439,10 @@ namespace UtilityBelt.Tools {
                 }
 
                 if (Globals.Config.AutoVendor.Debug.Value == true) {
-                    Util.WriteToChat(string.Format("AutoVendor Wants Buy: {0}", buyItems.Count > 0 ? buyItems[0].Item.Name : "null"));
-                    Util.WriteToChat(string.Format("AutoVendor Wants Sell: {0} ({1})", sellItems.Count > 0 ? Util.GetObjectName(sellItems[0].Id) : "null", (sellItems.Count > 0 ? sellItems[0].Values(LongValueKey.StackCount).ToString() : "0")));
+                    Util.WriteToChat(string.Format("AutoVendor Wants Buy: {0}: ({1}, Sell: {2}: {3} ({4})",
+                        buyItems.Count,  buyItems.Count > 0 ? buyItems[0].Item.Name : "null",
+                        sellItems.Count, sellItems.Count > 0 ? Util.GetObjectName(sellItems[0].Id) : "null",
+                        (sellItems.Count > 0 ? sellItems[0].Values(LongValueKey.StackCount).ToString() : "0")));
                 }
 
                 Globals.Core.Actions.VendorClearBuyList();
@@ -458,7 +463,7 @@ namespace UtilityBelt.Tools {
                     }
 
                     if ((totalBuyPyreals + GetVendorSellPrice(buyItem.Item)) <= pyrealCount && (freeSlots - totalBuySlots) > 1) {
-                        int buyCount = (pyrealCount - totalBuyPyreals) / vendorPrice;
+                        int buyCount = (int)((pyrealCount - totalBuyPyreals) / vendorPrice);
                         if (buyCount > buyItem.Amount) {
                             buyCount = buyItem.Amount;
                         }
@@ -466,7 +471,7 @@ namespace UtilityBelt.Tools {
                         needsToBuy = true;
                         Globals.Core.Actions.VendorAddBuyList(buyItem.Item.Id, buyCount);
                         totalBuySlots++;
-                        totalBuyPyreals += vendorPrice * buyCount;
+                        totalBuyPyreals += (int)(vendorPrice * buyCount);
                         totalBuyCount++;
 
                         if (Globals.Config.AutoVendor.Debug.Value == true) {
@@ -490,7 +495,7 @@ namespace UtilityBelt.Tools {
                 int totalSellValue = 0;
                 int sellItemCount = 0;
 
-                while (sellItemCount < sellItems.Count && sellItemCount < Util.GetFreeMainPackSpace()) {
+                while (sellItemCount < sellItems.Count && sellItemCount < 99) { // GDLE limits transactions to 99 items. (less than 100)
                     var item = sellItems[sellItemCount];
                     var value = GetVendorBuyPrice(item);
                     var stackSize = item.Values(LongValueKey.StackCount, 1);
@@ -545,7 +550,7 @@ namespace UtilityBelt.Tools {
 
                         while (stackCount <= stackSize) {
                             // we include an extra PYREAL_STACK_SIZE because we know we are going to split this item
-                            if (!PyrealsWillFitInMainPack((int)PYREAL_STACK_SIZE + totalSellValue + (value * (stackCount)))) {
+                            if (!PyrealsWillFitInMainPack(PYREAL_STACK_SIZE + totalSellValue + (value * (stackCount)))) {
                                 Globals.Core.Actions.SelectItem(item.Id);
                                 Globals.Core.Actions.SelectedStackCount = stackCount > 1 ? stackCount - 1 : 1;
                                 Globals.Core.Actions.MoveItem(item.Id, Globals.Core.CharacterFilter.Id, 0, false);
@@ -566,7 +571,7 @@ namespace UtilityBelt.Tools {
                     }
 
                     if (!PyrealsWillFitInMainPack(totalSellValue + (value * stackCount))) {
-                        Util.WriteToChat(string.Format("break to sell 2: {0} - {1}", sellItemCount, stackCount));
+                        Util.WriteToChat(string.Format("No room in inventory, breaking to sell: {0} - {1}", sellItemCount, stackCount));
                         break;
                     }
 
@@ -589,15 +594,17 @@ namespace UtilityBelt.Tools {
             } catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private int GetVendorSellPrice(VendorItem item) {
-            var price = 0;
+        private float GetVendorSellPrice(VendorItem item) {
+            var price = (float)0;
             var vendor = VendorCache.GetVendor(Globals.Core.Actions.VendorId);
 
             try {
                 if (vendorId == 0 || vendor == null) return 0;
+                var eachItemValue = (int)(item.Value / item.StackCount);
 
+                price = (float)(eachItemValue * (item.ObjectClass == ObjectClass.TradeNote ? 1.15 : (float)vendor.SellRate));
+                //Util.WriteToChat(string.Format("Value of {0}[0x{1:X8}] is {2:n0} (original {3:n0}", item.Name, item.Id, price, eachItemValue));
 
-                price = (int)Math.Ceiling((item.Value / item.StackCount) * (item.ObjectClass == ObjectClass.TradeNote ? 1.15 : vendor.SellRate));
             } catch (Exception ex) { Logger.LogException(ex); }
 
             return price;
@@ -610,16 +617,28 @@ namespace UtilityBelt.Tools {
             try {
                 if (vendorId == 0 || vendor == null) return 0;
 
-                price = (int)Math.Floor((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * (wo.ObjectClass == ObjectClass.TradeNote ? 1 : vendor.BuyRate));
+                var eachItemValue = (int)wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1);
+
+                price = (int)Math.Round((eachItemValue * (wo.ObjectClass == ObjectClass.TradeNote ? 1 : (float)vendor.BuyRate)), 0);
+                //Util.WriteToChat(string.Format("Value of {0}[0x{1:X8}] is {2:n0} (original {3:n0}", wo.Name, wo.Id, price, eachItemValue));
             } catch (Exception ex) { Logger.LogException(ex); }
 
             return price;
         }
 
         private bool PyrealsWillFitInMainPack(int amount) {
-            int packSlotsNeeded = 1 + (int)Math.Ceiling(amount / PYREAL_STACK_SIZE); // always leave 1 slot free. Fixes issue with main pack filling, and unable to buy a Trade Note.
-
-            return Util.GetFreeMainPackSpace() > packSlotsNeeded;
+            var myPyreals = Util.PyrealCount();
+            var mySlots = Util.GetFreeMainPackSpace();
+            var myPartial = myPyreals % PYREAL_STACK_SIZE;
+            //Util.WriteToChat(string.Format("PyrealsWillFitInMainPack({0:n0}): {1:n0} slots free, I have {2:n0} pyreals.", amount, mySlots, myPyreals));
+            if (myPartial > 0) {
+                amount -= (PYREAL_STACK_SIZE - myPartial);      // Free storage of these pyreals in the existing stack!
+            }
+            mySlots -= (amount / PYREAL_STACK_SIZE);            // take slots for bulk of pyreals
+            if ((amount % PYREAL_STACK_SIZE) > 0) {
+                mySlots--;                          // take slot for remaining partial
+            }
+            return (mySlots > 0); // ensures 1 pack slot always remains free.
         }
 
         private List<BuyItem> GetBuyItems() {

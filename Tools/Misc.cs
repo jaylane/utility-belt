@@ -13,13 +13,11 @@ using System.Text.RegularExpressions;
 
 namespace UtilityBelt.Tools {
     public class Misc : IDisposable {
-        private TimeSpan THINK_INTERVAL = TimeSpan.FromMilliseconds(500);
-        private DateTime lastThought = DateTime.MinValue;
-
         private DateTime vendorTimestamp = DateTime.MinValue;
         private int vendorOpening = 0;
-        private WorldObject vendor = null;
+        private static WorldObject vendor = null;
 
+        private const int VENDOR_OPEN_TIMEOUT = 5000;
 
         private bool disposed = false;
 
@@ -70,8 +68,7 @@ namespace UtilityBelt.Tools {
                 "   /ub help - you are here.\n" +
                 "   /ub testblock <int> <duration> - test Decision_Lock parameters (potentially dangerous)\n" +
                 "   /ub vendor {buyall,sellall,clearbuy,clearsell}\n" +
-                "   /ub vendor open {vendorname,vendorid,vendorhex}\n" +
-                "   /ub vendor openp {vendorname,vendorid,vendorhex}\n" +
+                "   /ub vendor open[p] {vendorname,vendorid,vendorhex}\n" +
                 "TODO: Add rest of commands");
         }
         public void UB_testBlock(string theRest) {
@@ -143,11 +140,13 @@ namespace UtilityBelt.Tools {
             }
         }
         private void OpenVendor() {
-            VTankControl.Nav_Block(6500, false);
-            vendorOpening++;
-            vendorTimestamp = DateTime.UtcNow;
+            VTankControl.Nav_Block(500 + VENDOR_OPEN_TIMEOUT, false);
+            vendorOpening = 1;
+
+            vendorTimestamp = DateTime.UtcNow - TimeSpan.FromMilliseconds(VENDOR_OPEN_TIMEOUT - 250); // fudge timestamp so next think hits in 500ms
+            Globals.Core.Actions.SetAutorun(false);
             // Util.WriteToChat("Attempting to open vendor " + vendor.Name);
-            CoreManager.Current.Actions.UseItem(vendor.Id, 0);
+
         }
 
         //Do not use this in a loop, it gets an F for eFFiciency.
@@ -190,19 +189,19 @@ namespace UtilityBelt.Tools {
 
         public void Think() {
             try {
-                if (DateTime.UtcNow - lastThought >= THINK_INTERVAL) {
-                    lastThought = DateTime.UtcNow;
-                    if (vendorOpening > 0 && DateTime.UtcNow - vendorTimestamp > TimeSpan.FromSeconds(6))
-                    {
+                if (vendorOpening > 0 && DateTime.UtcNow - vendorTimestamp > TimeSpan.FromMilliseconds(VENDOR_OPEN_TIMEOUT)) {
+                    if (vendorOpening > 1)
                         Util.WriteToChat("Vendor Open Timed out, trying again");
-                        if (vendorOpening < 4) {
-                            OpenVendor();
-                        } else {
-                            Util.WriteToChat("Unable to open vendor "+vendor.Name);
-                            vendor = null;
-                            vendorOpening = 0;
-                            VTankControl.Nav_UnBlock();
-                        }
+                    if (vendorOpening < 4) {
+                        VTankControl.Nav_Block(500 + VENDOR_OPEN_TIMEOUT, false);
+                        vendorOpening++;
+                        vendorTimestamp = DateTime.UtcNow;
+                        CoreManager.Current.Actions.UseItem(vendor.Id, 0);
+                    } else {
+                        Util.WriteToChat("Unable to open vendor "+vendor.Name);
+                        vendor = null;
+                        vendorOpening = 0;
+                        VTankControl.Nav_UnBlock();
                     }
                 }
             }
