@@ -21,7 +21,6 @@ namespace UtilityBelt.Tools {
         private int targetDirection;
         private DateTime lastThought = DateTime.MinValue;
         private DateTime turningSeconds = DateTime.MinValue;
-        private DateTime jumpReadyThoughtSeconds = DateTime.MinValue;
         private DateTime navSettingTimer = DateTime.MinValue;
         private TimeSpan enableNavTimer;
         private bool waitingForJump = false;
