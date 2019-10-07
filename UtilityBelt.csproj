@@ -98,6 +98,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Lib\Settings\Sections\AutoVendor.cs" />
+    <Compile Include="Lib\Settings\SettingAttributes.cs" />
+    <Compile Include="Lib\Settings\Sections\AutoSalvage.cs" />
+    <Compile Include="Lib\Settings\SectionBase.cs" />
+    <Compile Include="Lib\Settings\Settings.cs" />
     <Compile Include="Lib\Config.cs" />
     <Compile Include="Lib\Constants\CharOptions2.cs" />
     <Compile Include="Lib\Constants\CharOptions.cs" />

@@ -4,6 +4,7 @@ using Decal.Adapter;
 using Decal.Adapter.Wrappers;
 using MyClasses.MetaViewWrappers;
 using UtilityBelt.Lib;
+using UtilityBelt.Lib.Settings;
 using UtilityBelt.Tools;
 using UtilityBelt.Views;
 
@@ -56,6 +57,12 @@ namespace UtilityBelt
 
                 Util.CreateDataDirectories();
                 Logger.Init();
+
+                Globals.Settings = new Settings();
+                //Globals.Settings.Save();
+
+                Util.WriteToChat($"AutoSalvage.Think: {Globals.Settings.AutoSalvage.Think}");
+                Util.WriteToChat($"AutoSalvage.OnlyFromMainPack: {Globals.Settings.AutoSalvage.OnlyFromMainPack}");
 
                 Globals.Config = new Config();
                 Globals.MainView = new MainView();

@@ -15,8 +15,7 @@ namespace UtilityBelt.Tools {
         private List<int> blacklistedIds = new List<int>();
         private bool isRunning = false;
         private bool shouldSalvage = false;
-
-        HudCheckBox UIAutoSalvageDebug { get; set; }
+        
         HudCheckBox UIAutoSalvageThink { get; set; }
         HudCheckBox UIAutoSalvageOnlyFromMainPack { get; set; }
         HudButton UIAutoSalvageStart { get; set; }
@@ -36,20 +35,22 @@ namespace UtilityBelt.Tools {
             UIAutoSalvageStart = Globals.MainView.view != null ? (HudButton)Globals.MainView.view["AutoSalvageStart"] : new HudButton();
             UIAutoSalvageStart.Hit += UIAutoSalvageStart_Hit;
 
-            UIAutoSalvageDebug = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoSalvageDebug"] : new HudCheckBox();
-            UIAutoSalvageDebug.Checked = Globals.Config.AutoSalvage.Debug.Value;
-            UIAutoSalvageDebug.Change += UIAutoSalvageDebug_Change;
-            Globals.Config.AutoSalvage.Debug.Changed += Config_AutoSalvage_Debug_Changed;
-
             UIAutoSalvageThink = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoSalvageThink"] : new HudCheckBox();
-            UIAutoSalvageThink.Checked = Globals.Config.AutoSalvage.Think.Value;
             UIAutoSalvageThink.Change += UIAutoSalvageThink_Change;
-            Globals.Config.AutoSalvage.Think.Changed += Config_AutoSalvage_Think_Changed;
 
             UIAutoSalvageOnlyFromMainPack = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoSalvageOnlyFromMainPack"] : new HudCheckBox();
-            UIAutoSalvageOnlyFromMainPack.Checked = Globals.Config.AutoSalvage.OnlyFromMainPack.Value;
             UIAutoSalvageOnlyFromMainPack.Change += UIAutoSalvageOnlyFromMainPack_Change;
-            Globals.Config.AutoSalvage.OnlyFromMainPack.Changed += OnlyFromMainPack_Changed;
+
+            Globals.Settings.AutoSalvage.PropertyChanged += (s, e) => {
+                UpdateUI();
+            };
+
+            UpdateUI();
+        }
+
+        private void UpdateUI() {
+            UIAutoSalvageOnlyFromMainPack.Checked = Globals.Settings.AutoSalvage.OnlyFromMainPack;
+            UIAutoSalvageThink.Checked = Globals.Settings.AutoSalvage.Think;
         }
 
         private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
@@ -68,28 +69,12 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void UIAutoSalvageDebug_Change(object sender, EventArgs e) {
-            Globals.Config.AutoSalvage.Debug.Value = UIAutoSalvageDebug.Checked;
-        }
-
-        private void Config_AutoSalvage_Debug_Changed(Setting<bool> obj) {
-            UIAutoSalvageDebug.Checked = Globals.Config.AutoSalvage.Debug.Value;
-        }
-
         private void UIAutoSalvageThink_Change(object sender, EventArgs e) {
-            Globals.Config.AutoSalvage.Think.Value = UIAutoSalvageThink.Checked;
-        }
-
-        private void Config_AutoSalvage_Think_Changed(Setting<bool> obj) {
-            UIAutoSalvageThink.Checked = Globals.Config.AutoSalvage.Think.Value;
+            Globals.Settings.AutoSalvage.Think = UIAutoSalvageThink.Checked;
         }
 
         private void UIAutoSalvageOnlyFromMainPack_Change(object sender, EventArgs e) {
-            Globals.Config.AutoSalvage.OnlyFromMainPack.Value = UIAutoSalvageOnlyFromMainPack.Checked;
-        }
-
-        private void OnlyFromMainPack_Changed(Setting<bool> obj) {
-            UIAutoSalvageOnlyFromMainPack.Checked = Globals.Config.AutoSalvage.OnlyFromMainPack.Value;
+            Globals.Settings.AutoSalvage.OnlyFromMainPack = UIAutoSalvageOnlyFromMainPack.Checked;
         }
 
         private void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
@@ -121,7 +106,7 @@ namespace UtilityBelt.Tools {
             Reset();
             isRunning = false;
 
-            if (Globals.Config.AutoSalvage.Think.Value == true) {
+            if (Globals.Settings.AutoSalvage.Think == true) {
                 Util.Think("AutoSalvage complete.");
             }
             else {
@@ -141,7 +126,7 @@ namespace UtilityBelt.Tools {
             var inventory = Globals.Core.WorldFilter.GetInventory();
 
             // prefilter inventory if we are only selling from the main pack
-            if (Globals.Config.AutoSalvage.OnlyFromMainPack.Value == true) {
+            if (Globals.Settings.AutoSalvage.OnlyFromMainPack == true) {
                 inventory.SetFilter(new ByContainerFilter(Globals.Core.CharacterFilter.Id));
             }
 
@@ -167,7 +152,7 @@ namespace UtilityBelt.Tools {
             if (blacklistedIds.Contains(item.Id)) return false;
 
             // bail if we are only salvaging from main pack and this isnt in there
-            if (Globals.Config.AutoSalvage.OnlyFromMainPack.Value == true && item.Container != Globals.Core.CharacterFilter.Id) {
+            if (Globals.Settings.AutoSalvage.OnlyFromMainPack == true && item.Container != Globals.Core.CharacterFilter.Id) {
                 return false;
             }
 
@@ -236,7 +221,7 @@ namespace UtilityBelt.Tools {
             Globals.Core.Actions.SalvagePanelAdd(id);
             inventoryItems.Remove(id);
 
-            if (Globals.Config.AutoSalvage.Debug.Value == true) {
+            if (Globals.Settings.Debug == true) {
                 Util.WriteToChat($"AutoSalvage: Add: {Util.GetObjectName(id)}");
             }
 

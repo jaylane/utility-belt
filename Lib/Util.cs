@@ -32,6 +32,10 @@ namespace UtilityBelt
             return "0.0.0";
         }
 
+        public static string GetAssemblyDirectory() {
+            return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        }
+
         public static string GetPluginDirectory() {
             return Path.Combine(GetDecalPluginsDirectory(), Globals.PluginName);
         }

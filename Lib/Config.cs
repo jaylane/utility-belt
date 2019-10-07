@@ -16,8 +16,8 @@ namespace UtilityBelt {
     public class Config : IDisposable {
         private bool disposed;
 
-        public AutoSalvageConfig AutoSalvage;
-        public AutoVendorConfig AutoVendor;
+        //public AutoSalvageConfig AutoSalvage;
+        //public AutoVendorConfig AutoVendor;
         public DungeonMapsConfig DungeonMaps;
         public InventoryManagerConfig InventoryManager;
         public VisualNavConfig VisualNav;
@@ -429,8 +429,8 @@ namespace UtilityBelt {
 
         public Config() {
             Main = new MainConfig();
-            AutoSalvage = new AutoSalvageConfig();
-            AutoVendor = new AutoVendorConfig();
+            //AutoSalvage = new AutoSalvageConfig();
+            //AutoVendor = new AutoVendorConfig();
             DungeonMaps = new DungeonMapsConfig();
             InventoryManager = new InventoryManagerConfig();
             VisualNav = new VisualNavConfig();
@@ -444,8 +444,8 @@ namespace UtilityBelt {
         protected virtual void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
-                    if (AutoSalvage != null) AutoSalvage.Dispose();
-                    if (AutoVendor != null) AutoVendor.Dispose();
+                    //if (AutoSalvage != null) AutoSalvage.Dispose();
+                    //if (AutoVendor != null) AutoVendor.Dispose();
                     if (InventoryManager != null) InventoryManager.Dispose();
                     if (VisualNav != null) VisualNav.Dispose();
                     if (Main != null) Main.Dispose();
