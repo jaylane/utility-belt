@@ -14,7 +14,6 @@ using System.Text.RegularExpressions;
 namespace UtilityBelt.Tools {
     public class Misc : IDisposable {
         private TimeSpan THINK_INTERVAL = TimeSpan.FromMilliseconds(500);
-        private DateTime firstThought = DateTime.MinValue;
         private DateTime lastThought = DateTime.MinValue;
 
         private DateTime vendorTimestamp = DateTime.MinValue;
@@ -121,9 +120,9 @@ namespace UtilityBelt.Tools {
                         Util.WriteToChat("Usage: /ub vendor open {vendorname,vendorid}");
                         return;
                     }
-                    vendor = findName(parameter[1], false);
+                    vendor = FindName(parameter[1], false);
                     if (vendor != null) {
-                        openVendor();
+                        OpenVendor();
                         break;
                     }
                     Util.WriteToChat("Pretty sure " + parameter[1] + " is not near me");
@@ -134,16 +133,16 @@ namespace UtilityBelt.Tools {
                         Util.WriteToChat("Usage: /ub vendor open {vendorname,vendorid}");
                         return;
                     }
-                    vendor = findName(parameter[1], true);
+                    vendor = FindName(parameter[1], true);
                     if (vendor != null) {
-                        openVendor();
+                        OpenVendor();
                         break;
                     }
                     Util.WriteToChat("Pretty sure " + parameter[1] + " is not near me");
                     break;
             }
         }
-        private void openVendor() {
+        private void OpenVendor() {
             VTankControl.Nav_Block(6500, false);
             vendorOpening++;
             vendorTimestamp = DateTime.UtcNow;
@@ -152,7 +151,7 @@ namespace UtilityBelt.Tools {
         }
 
         //Do not use this in a loop, it gets an F for eFFiciency.
-        private WorldObject findName(string searchname, bool partial) {
+        private WorldObject FindName(string searchname, bool partial) {
             //try int id first
             if (int.TryParse(searchname, out int id)) {
                 if (Globals.Core.WorldFilter[id] != null) {
@@ -197,7 +196,7 @@ namespace UtilityBelt.Tools {
                     {
                         Util.WriteToChat("Vendor Open Timed out, trying again");
                         if (vendorOpening < 4) {
-                            openVendor();
+                            OpenVendor();
                         } else {
                             Util.WriteToChat("Unable to open vendor "+vendor.Name);
                             vendor = null;

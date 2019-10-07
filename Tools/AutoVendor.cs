@@ -14,14 +14,12 @@ namespace UtilityBelt.Tools {
     public class AutoVendor : IDisposable {
         private const int MAX_VENDOR_BUY_COUNT = 5000;
         private const double PYREAL_STACK_SIZE = 25000.0;
-        private DateTime firstThought = DateTime.MinValue;
         private DateTime lastThought = DateTime.MinValue;
         private DateTime startedVendoring = DateTime.MinValue;
         private DateTime lastVendorAction = DateTime.MinValue;
 
         private bool disposed;
         private bool waitingForVendor = true;
-        private int lastVendorOpened = 0;
         private bool needsVendoring = false;
         private object lootProfile;
         private bool needsToBuy = false;
@@ -155,20 +153,22 @@ namespace UtilityBelt.Tools {
         private void WorldFilter_ApproachVendor(object sender, ApproachVendorEventArgs e) {
             try {
                 VendorCache.AddVendor(e.Vendor);
-
-                if (Globals.Config.AutoVendor.ShowMerchantInfo.Value && e.Vendor.MerchantId != lastVendorOpened) {
-                    Util.WriteToChat(string.Format("{0}[0x{4:X8}]: BuyRate: {1}% SellRate: {2}% MaxValue: {3:n0}",
-                        Globals.Core.WorldFilter[e.Vendor.MerchantId].Name, e.Vendor.BuyRate * 100, e.Vendor.SellRate * 100, e.Vendor.MaxValue, e.Vendor.MerchantId));
-                    lastVendorOpened = e.Vendor.MerchantId;
+                if (!Globals.Core.Actions.IsValidObject(e.MerchantId)) {
+                    Stop();
+                    return;
                 }
+                if (vendorId != e.Vendor.MerchantId) {
+                    if (Globals.Config.AutoVendor.ShowMerchantInfo.Value) {
+                        Util.WriteToChat(string.Format("{0}[0x{4:X8}]: BuyRate: {1}% SellRate: {2}% MaxValue: {3:n0}",
+                            Globals.Core.WorldFilter[e.Vendor.MerchantId].Name, e.Vendor.BuyRate * 100, e.Vendor.SellRate * 100, e.Vendor.MaxValue, e.Vendor.MerchantId));
+                    }
+                }
+
+
 
                 if (Globals.Config.AutoVendor.Enabled.Value == false)
                     return;
 
-                if (Globals.Core.Actions.IsValidObject(e.MerchantId) == false) {
-                    Stop();
-                    return;
-                }
 
                 if (needsVendoring && vendorId == e.Vendor.MerchantId) return;
 
@@ -230,6 +230,12 @@ namespace UtilityBelt.Tools {
         }
 
         public void Start(int merchantId = 0, string useProfilePath = "") {
+            if (Util.GetFreeMainPackSpace() < 1) {
+                Util.WriteToChat("AutoVendor Fatal - insufficient pack space!");
+                Stop(false);
+                return;
+            }
+
             waitingForVendor = false;
             var hasLootCore = false;
             if (lootProfile == null) {
@@ -283,9 +289,10 @@ namespace UtilityBelt.Tools {
             }
 
             // build a list of items to id from our inventory, attempting to be smart about it
+            VendorInfo vendor = VendorCache.GetVendor(vendorId);
             foreach (var item in inventory) {
                 // will the vendor buy this item?
-                VendorInfo vendor = VendorCache.GetVendor(vendorId);
+
                 if (vendor != null && (vendor.Categories & item.Category) == 0) continue;
 
                 itemsToId.Add(item.Id);
@@ -306,7 +313,7 @@ namespace UtilityBelt.Tools {
             startedVendoring = DateTime.UtcNow;
 
             // ~~disable~~ block vtank autocram/stack because it interferes with vendoring.
-            VTankControl.Item_Block(30000, Globals.Config.AutoVendor.Debug.Value);
+            VTankControl.Item_Block(30000, false);
             VTankControl.Nav_Block(30000, Globals.Config.AutoVendor.Debug.Value);
 
             Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
@@ -438,31 +445,39 @@ namespace UtilityBelt.Tools {
 
                 var totalBuyCount = 0;
                 var totalBuyPyreals = 0;
-                foreach (var buyItem in buyItems) {
-                    if (totalBuyPyreals + GetVendorSellPrice(buyItem.Item) <= Util.PyrealCount()) {
-                        int buyCount = 1;
+                var totalBuySlots = 0;
+                var freeSlots = Util.GetFreeMainPackSpace();
+                var pyrealCount = Util.PyrealCount();
+                //Util.WriteToChat(string.Format("AutoVendor adding buy with {0:n} Pack slots and {1:n} Pyreals.", freeSlots, pyrealCount));
 
-                        // TODO check stack size of incoming item to make sure we have enough space...
+                foreach (var buyItem in buyItems.OrderBy(o=>o.Item.Value).ToList()) {
+                    var vendorPrice = GetVendorSellPrice(buyItem.Item);
+                    if (vendorPrice == 0) {
+                        Util.WriteToChat(string.Format("Fatal: No vendor price found while adding {0:n}x {1}[0x{2:X8}] Value: {3:n}", buyItem.Amount, buyItem.Item.Name, buyItem.Item.Id, vendorPrice));
+                        return;
+                    }
 
-                        while (buyCount < buyItem.Amount && totalBuyPyreals + (GetVendorSellPrice(buyItem.Item) * (buyCount + 1)) <= Util.PyrealCount()) {
-                            ++buyCount;
+                    if ((totalBuyPyreals + GetVendorSellPrice(buyItem.Item)) <= pyrealCount && (freeSlots - totalBuySlots) > 1) {
+                        int buyCount = (pyrealCount - totalBuyPyreals) / vendorPrice;
+                        if (buyCount > buyItem.Amount) {
+                            buyCount = buyItem.Amount;
                         }
 
+                        needsToBuy = true;
                         Globals.Core.Actions.VendorAddBuyList(buyItem.Item.Id, buyCount);
-                        totalBuyPyreals += GetVendorSellPrice(buyItem.Item) * buyCount;
+                        totalBuySlots++;
+                        totalBuyPyreals += vendorPrice * buyCount;
                         totalBuyCount++;
 
                         if (Globals.Config.AutoVendor.Debug.Value == true) {
-                            Util.WriteToChat(string.Format("AutoVendor Buying {0} {1} - {2}/{3}", buyCount, buyItem.Item.Name, totalBuyPyreals, Util.PyrealCount()));
+                            Util.WriteToChat(string.Format("AutoVendor Buying {0} {1} - {2}/{3}", buyCount, buyItem.Item.Name, totalBuyPyreals, pyrealCount));
                         }
                     } else if (totalBuyCount > 0) {
-                        needsToBuy = true;
                         return;
                     }
                 }
 
                 if (totalBuyCount > 0) {
-                    needsToBuy = true;
                     return;
                 }
 
@@ -580,12 +595,9 @@ namespace UtilityBelt.Tools {
 
             try {
                 if (vendorId == 0 || vendor == null) return 0;
-                var sellRate = vendor.SellRate;
 
-                // notes are always 1.15 when buying
-                if (item.ObjectClass == ObjectClass.TradeNote) sellRate = 1.15;
 
-                price = (int)Math.Ceiling((item.Value / item.StackCount) * sellRate);
+                price = (int)Math.Ceiling((item.Value / item.StackCount) * (item.ObjectClass == ObjectClass.TradeNote ? 1.15 : vendor.SellRate));
             } catch (Exception ex) { Logger.LogException(ex); }
 
             return price;
@@ -597,12 +609,8 @@ namespace UtilityBelt.Tools {
 
             try {
                 if (vendorId == 0 || vendor == null) return 0;
-                var buyRate = vendor.BuyRate;
 
-                // notes are always 1 when selling
-                if (wo.ObjectClass == ObjectClass.TradeNote) buyRate = 1;
-
-                price = (int)Math.Floor((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * buyRate);
+                price = (int)Math.Floor((wo.Values(LongValueKey.Value, 0) / wo.Values(LongValueKey.StackCount, 1)) * (wo.ObjectClass == ObjectClass.TradeNote ? 1 : vendor.BuyRate));
             } catch (Exception ex) { Logger.LogException(ex); }
 
             return price;
@@ -635,18 +643,16 @@ namespace UtilityBelt.Tools {
 
                 amount = result.Data1 - Util.GetItemCountInInventoryByName(item.Name);
 
-                if (amount > item.StackMax) {
-                    amount = item.StackMax;
-                }
-
-                if (amount > MAX_VENDOR_BUY_COUNT) amount = MAX_VENDOR_BUY_COUNT;
-
-                if (amount > 0) {
+                while (amount > 0) {
+                    var thisamount = amount;
+                    if (thisamount > MAX_VENDOR_BUY_COUNT) thisamount = MAX_VENDOR_BUY_COUNT;
+                    if (thisamount > item.StackMax) thisamount = item.StackMax;
                     if (Globals.Config.AutoVendor.Debug.Value == true) {
-                        Util.WriteToChat("AutoVendor: Buy " + item.Name);
+                        Util.WriteToChat("AutoVendor: Buy ("+thisamount+") " + item.Name);
                     }
 
-                    buyItems.Add(new BuyItem(item, amount));
+                    buyItems.Add(new BuyItem(item, thisamount));
+                    amount -= thisamount;
                 }
             }
 
