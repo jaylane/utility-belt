@@ -9,8 +9,22 @@ using UtilityBelt.Lib.VendorCache;
 using UtilityBelt.Views;
 using VirindiViewService.Controls;
 using System.Text.RegularExpressions;
+using System.ComponentModel;
+using System.Reflection;
 
 namespace UtilityBelt.Tools {
+    public class OptionResult {
+        public object Object;
+        public object Parent;
+        public PropertyInfo Property;
+
+        public OptionResult(object obj, PropertyInfo propertyInfo, object parent) {
+            Object = obj;
+            Parent = parent;
+            Property = propertyInfo;
+        }
+    }
+
     public class Misc : IDisposable {
         private DateTime vendorTimestamp = DateTime.MinValue;
         private int vendorOpening = 0;
@@ -46,6 +60,9 @@ namespace UtilityBelt.Tools {
                         case "vendor":
                             UB_vendor(match.Groups["params"].Value);
                             break;
+                        case "opt":
+                            UB_opt(match.Groups["params"].Value);
+                            break;
                     }
                     // Util.WriteToChat("UB called with command <" + match.Groups["command"].Value + ">, params <" + match.Groups["params"].Value+">");
 
@@ -58,6 +75,7 @@ namespace UtilityBelt.Tools {
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
+
         public void UB() {
             Util.WriteToChat("UtilityBelt v"+Util.GetVersion()+" by trevis type /ub help for a list of commands");
         }
@@ -138,6 +156,74 @@ namespace UtilityBelt.Tools {
                     break;
             }
         }
+
+        T Cast<T>(object obj, T type) { return (T)obj; }
+
+        private Regex optionRe = new Regex(@"^(?<option>[^\s]+)\s?(?<value>.*)", RegexOptions.IgnoreCase);
+        private void UB_opt(string args) {
+            try {
+                if (!optionRe.IsMatch(args.Trim())) return;
+
+                var match = optionRe.Match(args.Trim());
+                var option = GetOptionProperty(match.Groups["option"].Value);
+                string name = match.Groups["option"].Value;
+                string newValue = match.Groups["value"].Value;
+
+                if (name.StartsWith("set ")) name.Replace("set ", "");
+
+                if (option == null || option.Object == null) {
+                    Util.WriteToChat("Invalid option: " + name);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(newValue)) {
+                    Util.WriteToChat(name + " = " + option.Object.ToString());
+                }
+                else {
+                    try {
+                        option.Property.SetValue(option.Parent, Convert.ChangeType(newValue, option.Property.PropertyType), null);
+                        Util.WriteToChat($"Set {name} = {option.Property.GetValue(option.Parent, null)}");
+                    }
+                    catch (Exception ex) { Logger.LogException(ex); }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private OptionResult GetOptionProperty(string key) {
+            try {
+                var parts = key.Split('.');
+                object obj = Globals.Settings;
+                PropertyInfo lastProp = null;
+                object lastObj = obj;
+                for (var i = 0; i < parts.Length; i++) {
+                    if (obj == null) return null;
+
+                    var found = false;
+                    foreach (var prop in obj.GetType().GetProperties()) {
+                        if (prop.Name.ToLower() == parts[i].ToLower()) {
+                            lastProp = prop;
+                            lastObj = obj;
+                            obj = prop.GetValue(obj, null);
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) return null;
+                }
+
+                if (lastProp != null) {
+                    var d = lastProp.GetCustomAttributes(typeof(DefaultValueAttribute), true);
+
+                    return d.Length > 0 ? new OptionResult(obj, lastProp, lastObj) : null;
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return null;
+        }
+
         private void OpenVendor() {
             VTankControl.Nav_Block(500 + VENDOR_OPEN_TIMEOUT, false);
             vendorOpening = 1;
