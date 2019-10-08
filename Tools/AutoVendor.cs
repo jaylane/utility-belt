@@ -453,12 +453,13 @@ namespace UtilityBelt.Tools {
                 var totalBuySlots = 0;
                 var freeSlots = Util.GetFreeMainPackSpace();
                 var pyrealCount = Util.PyrealCount();
-                //Util.WriteToChat(string.Format("AutoVendor adding buy with {0:n} Pack slots and {1:n} Pyreals.", freeSlots, pyrealCount));
+                StringBuilder buyAdded = new StringBuilder("Autovendor Buy List Added: ");
 
                 foreach (var buyItem in buyItems.OrderBy(o=>o.Item.Value).ToList()) {
                     var vendorPrice = GetVendorSellPrice(buyItem.Item);
                     if (vendorPrice == 0) {
                         Util.WriteToChat(string.Format("Fatal: No vendor price found while adding {0:n}x {1}[0x{2:X8}] Value: {3:n}", buyItem.Amount, buyItem.Item.Name, buyItem.Item.Id, vendorPrice));
+                        Stop(false);
                         return;
                     }
 
@@ -467,22 +468,24 @@ namespace UtilityBelt.Tools {
                         if (buyCount > buyItem.Amount) {
                             buyCount = buyItem.Amount;
                         }
-
                         needsToBuy = true;
                         Globals.Core.Actions.VendorAddBuyList(buyItem.Item.Id, buyCount);
                         totalBuySlots++;
                         totalBuyPyreals += (int)(vendorPrice * buyCount);
                         totalBuyCount++;
-
-                        if (Globals.Config.AutoVendor.Debug.Value == true) {
-                            Util.WriteToChat(string.Format("AutoVendor Buying {0} {1} - {2}/{3}", buyCount, buyItem.Item.Name, totalBuyPyreals, pyrealCount));
+                        if (Globals.Config.AutoVendor.Debug.Value) {
+                            if (totalBuyCount > 1)
+                                buyAdded.Append(",");
+                            buyAdded.Append(string.Format("{0} {1}", buyCount, buyItem.Item.Name));
                         }
                     } else if (totalBuyCount > 0) {
-                        return;
+                        break;
                     }
                 }
 
                 if (totalBuyCount > 0) {
+                    if (Globals.Config.AutoVendor.Debug.Value)
+                        Util.WriteToChat(string.Format("{0} - {1}/{2}", buyAdded.ToString(), totalBuyPyreals, pyrealCount));
                     return;
                 }
 
@@ -495,6 +498,7 @@ namespace UtilityBelt.Tools {
                 int totalSellValue = 0;
                 int sellItemCount = 0;
 
+                StringBuilder sellAdded = new StringBuilder("Autovendor Sell List Added: ");
                 while (sellItemCount < sellItems.Count && sellItemCount < 99) { // GDLE limits transactions to 99 items. (less than 100)
                     var item = sellItems[sellItemCount];
                     var value = GetVendorBuyPrice(item);
@@ -503,8 +507,7 @@ namespace UtilityBelt.Tools {
 
                     // dont sell notes if we are trying to buy notes...
                     if (((nextBuyItem != null && nextBuyItem.ObjectClass == ObjectClass.TradeNote) || nextBuyItem == null) && item.ObjectClass == ObjectClass.TradeNote) {
-
-                        if (Globals.Config.AutoVendor.Debug.Value == true) {
+                        if (Globals.Config.AutoVendor.Debug.Value) {
                             Util.WriteToChat(string.Format("AutoVendor bail: buyItem: {0} sellItem: {1}", nextBuyItem == null ? "null" : nextBuyItem.Name, Util.GetObjectName(item.Id)));
                         }
                         break;
@@ -521,7 +524,7 @@ namespace UtilityBelt.Tools {
                         // see if we already have a single stack of this item
                         foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
                             if (wo.Name == item.Name && wo.Values(LongValueKey.StackCount, 0) == 1) {
-                                if (Globals.Config.AutoVendor.Debug.Value == true) {
+                                if (Globals.Config.AutoVendor.Debug.Value) {
                                     Util.WriteToChat("AutoVendor Selling single " + wo.Name + " so we can afford to buy: " + nextBuyItem.Name);
                                 }
                                 Globals.Core.Actions.VendorAddSellList(wo.Id);
@@ -534,7 +537,7 @@ namespace UtilityBelt.Tools {
                         Globals.Core.Actions.SelectedStackCount = 1;
                         Globals.Core.Actions.MoveItem(item.Id, Globals.Core.CharacterFilter.Id, 0, false);
 
-                        if (Globals.Config.AutoVendor.Debug.Value == true) {
+                        if (Globals.Config.AutoVendor.Debug.Value) {
                             Util.WriteToChat(string.Format("AutoVendor Splitting {0}. old: {1} new: {2}", Util.GetObjectName(item.Id), item.Values(LongValueKey.StackCount), 1));
                         }
 
@@ -571,12 +574,18 @@ namespace UtilityBelt.Tools {
                     }
 
                     if (!PyrealsWillFitInMainPack(totalSellValue + (value * stackCount))) {
-                        Util.WriteToChat(string.Format("No room in inventory, breaking to sell: {0} - {1}", sellItemCount, stackCount));
+                        if (sellItemCount < 1) {
+                            Util.WriteToChat("AutoVendor No inventory room to sell... " + Util.GetObjectName(item.Id));
+                            Stop();
+                            return;
+                        }
                         break;
                     }
 
-                    if (Globals.Config.AutoVendor.Debug.Value == true) {
-                        Util.WriteToChat(string.Format("AutoVendor Adding {0} to sell list", Util.GetObjectName(item.Id)));
+                    if (Globals.Config.AutoVendor.Debug.Value) {
+                        if (sellItemCount > 0)
+                            sellAdded.Append(", ");
+                        sellAdded.Append(Util.GetObjectName(item.Id));
                     }
 
                     Globals.Core.Actions.VendorAddSellList(item.Id);
@@ -586,10 +595,11 @@ namespace UtilityBelt.Tools {
                 }
 
                 if (sellItemCount > 0) {
+                    if (Globals.Config.AutoVendor.Debug.Value)
+                        Util.WriteToChat(sellAdded.ToString()+" - "+totalSellValue);
                     needsToSell = true;
                     return;
                 }
-
                 Stop();
             } catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -651,25 +661,18 @@ namespace UtilityBelt.Tools {
             // keepUpTo rules first, just like mag-tools
             foreach (VendorItem item in vendor.Items.Values) {
                 var amount = 0;
-
                 uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithVendorObjectTemplateID(item.Id);
-
-                if (itemInfo == null) continue;
-
+                if (itemInfo == null)
+                    continue;
                 uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
-
-                if (!result.IsKeepUpTo) continue;
-
+                if (!result.IsKeepUpTo)
+                    continue;
                 amount = result.Data1 - Util.GetItemCountInInventoryByName(item.Name);
 
                 while (amount > 0) {
                     var thisamount = amount;
                     if (thisamount > MAX_VENDOR_BUY_COUNT) thisamount = MAX_VENDOR_BUY_COUNT;
                     if (thisamount > item.StackMax) thisamount = item.StackMax;
-                    if (Globals.Config.AutoVendor.Debug.Value == true) {
-                        Util.WriteToChat("AutoVendor: Buy ("+thisamount+") " + item.Name);
-                    }
-
                     buyItems.Add(new BuyItem(item, thisamount));
                     amount -= thisamount;
                 }
