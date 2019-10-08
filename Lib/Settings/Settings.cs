@@ -58,27 +58,27 @@ namespace UtilityBelt.Lib.Settings {
 
         #region Settings Sections
         [JsonProperty]
-        [SummaryAttribute("Global plugin Settings")]
+        [Summary("Global plugin Settings")]
         public Sections.Main Main { get; set; }
 
         [JsonProperty]
-        [SummaryAttribute("AutoSalvage Settings")]
+        [Summary("AutoSalvage Settings")]
         public Sections.AutoSalvage AutoSalvage { get; set; }
 
         [JsonProperty]
-        [SummaryAttribute("AutoVendor Settings")]
+        [Summary("AutoVendor Settings")]
         public Sections.AutoVendor AutoVendor { get; set; }
 
         [JsonProperty]
-        [SummaryAttribute("DungeonMaps Settings")]
+        [Summary("DungeonMaps Settings")]
         public Sections.DungeonMaps DungeonMaps { get; set; }
 
         [JsonProperty]
-        [SummaryAttribute("InventoryManager Settings")]
+        [Summary("InventoryManager Settings")]
         public Sections.InventoryManager InventoryManager { get; set; }
 
         [JsonProperty]
-        [SummaryAttribute("VisualNav Settings")]
+        [Summary("VisualNav Settings")]
         public Sections.VisualNav VisualNav { get; set; }
         #endregion
 
@@ -94,6 +94,8 @@ namespace UtilityBelt.Lib.Settings {
                 ShouldSave = false;
                 Load();
                 ShouldSave = true;
+
+                Logger.Debug("Finished loading settings");
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -169,8 +171,9 @@ namespace UtilityBelt.Lib.Settings {
         }
         #endregion
 
-        #region Old Mag-Tools style settings migration
+        #region Old Mag-Tools style config.xml migration
         // load old mag-tools style xml config, this is just for migrating
+        // it will be deleted afterwards
         private void LoadOldXML() {
             try {
                 var path = Path.Combine(CharacterStoragePath, "config.xml");
@@ -180,6 +183,7 @@ namespace UtilityBelt.Lib.Settings {
                 XmlDocument doc = new XmlDocument();
                 doc.Load(path);
                 XmlNode config = doc.DocumentElement.SelectSingleNode("/UtilityBelt/Config");
+
                 
                 foreach (XmlNode node in config.ChildNodes) {
                     switch (node.Name) {
@@ -237,6 +241,42 @@ namespace UtilityBelt.Lib.Settings {
                             DungeonMaps.Display.VisualNavStickyPoint.Enabled = ParseOldNode(node, "ShowVisualNavStickyPoint", DungeonMaps.Display.VisualNavStickyPoint.Enabled);
                             DungeonMaps.Display.VisualNavLines.Enabled = ParseOldNode(node, "ShowVisualNavLine", DungeonMaps.Display.VisualNavLines.Enabled);
                             break;
+
+                        case "InventoryManager":
+                            InventoryManager.AutoCram = ParseOldNode(node, "AutoCram", InventoryManager.AutoCram);
+                            InventoryManager.AutoStack = ParseOldNode(node, "AutoStack", InventoryManager.AutoStack);
+                            break;
+                            
+                        case "VisualNav":
+                            VisualNav.SaveNoneRoutes = ParseOldNode(node, "SaveNoneRoutes", VisualNav.SaveNoneRoutes);
+
+                            VisualNav.Display.Lines.Color = ParseOldNode(node, "LineColor", VisualNav.Display.Lines.Color);
+                            VisualNav.Display.ChatText.Color = ParseOldNode(node, "ChatTextColor", VisualNav.Display.ChatText.Color);
+                            VisualNav.Display.JumpText.Color = ParseOldNode(node, "JumpTextColor", VisualNav.Display.JumpText.Color);
+                            VisualNav.Display.JumpArrow.Color = ParseOldNode(node, "JumpArrowColor", VisualNav.Display.JumpArrow.Color);
+                            VisualNav.Display.OpenVendor.Color = ParseOldNode(node, "OpenVendorColor", VisualNav.Display.OpenVendor.Color);
+                            VisualNav.Display.Pause.Color = ParseOldNode(node, "PauseColor", VisualNav.Display.Pause.Color);
+                            VisualNav.Display.Portal.Color = ParseOldNode(node, "PortalColor", VisualNav.Display.Portal.Color);
+                            VisualNav.Display.Recall.Color = ParseOldNode(node, "RecallColor", VisualNav.Display.Recall.Color);
+                            VisualNav.Display.UseNPC.Color = ParseOldNode(node, "UseNPCColor", VisualNav.Display.UseNPC.Color);
+                            VisualNav.Display.FollowArrow.Color = ParseOldNode(node, "FollowArrowColor", VisualNav.Display.FollowArrow.Color);
+
+                            VisualNav.Display.Lines.Enabled = ParseOldNode(node, "ShowLine", VisualNav.Display.Lines.Enabled);
+                            VisualNav.Display.ChatText.Enabled = ParseOldNode(node, "ShowChatText", VisualNav.Display.ChatText.Enabled);
+                            VisualNav.Display.JumpText.Enabled = ParseOldNode(node, "ShowJumpText", VisualNav.Display.JumpText.Enabled);
+                            VisualNav.Display.JumpArrow.Enabled = ParseOldNode(node, "ShowJumpArrow", VisualNav.Display.JumpArrow.Enabled);
+                            VisualNav.Display.OpenVendor.Enabled = ParseOldNode(node, "ShowOpenVendor", VisualNav.Display.OpenVendor.Enabled);
+                            VisualNav.Display.Pause.Enabled = ParseOldNode(node, "ShowPause", VisualNav.Display.Pause.Enabled);
+                            VisualNav.Display.Portal.Enabled = ParseOldNode(node, "ShowPortal", VisualNav.Display.Portal.Enabled);
+                            VisualNav.Display.Recall.Enabled = ParseOldNode(node, "ShowRecall", VisualNav.Display.Recall.Enabled);
+                            VisualNav.Display.UseNPC.Enabled = ParseOldNode(node, "ShowUseNPC", VisualNav.Display.UseNPC.Enabled);
+                            VisualNav.Display.FollowArrow.Enabled = ParseOldNode(node, "ShowFollowArrow", VisualNav.Display.FollowArrow.Enabled);
+                            break;
+                            
+                        case "Main":
+                            Main.WindowPositionX = ParseOldNode(node, "WindowPositionX", Main.WindowPositionX);
+                            Main.WindowPositionY = ParseOldNode(node, "WindowPositionY", Main.WindowPositionY);
+                            break;
                     }
                 }
             }
@@ -245,7 +285,7 @@ namespace UtilityBelt.Lib.Settings {
 
         private float ParseOldNode(XmlNode parentNode, string childTag, float defaultValue) {
             try {
-                XmlNode node = parentNode.SelectSingleNode($"{childTag}");
+                XmlNode node = parentNode.SelectSingleNode(childTag);
                 if (node != null) {
                     float value = 0;
 

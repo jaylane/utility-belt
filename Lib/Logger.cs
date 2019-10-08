@@ -18,18 +18,18 @@ namespace UtilityBelt {
             PruneOldLogs();
         }
 
-        private static void PruneOldLogs() {
-            PruneLogDirectory(Path.Combine(Util.GetCharacterDirectory(), "logs"));
-        }
-
         public static void Debug(string message) {
             try {
-                if (Globals.Settings != null && Globals.Settings.Main.Debug == true) {
-                    Globals.Host.Actions.AddChatText("[UB:DBG] " + message, 5);
+                if (Globals.Settings != null && Globals.Settings.Main.Debug) {
+                    Globals.Host.Actions.AddChatText("[UB] DBG: " + message, 5);
                     Util.WriteToDebugLog(message);
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private static void PruneOldLogs() {
+            PruneLogDirectory(Path.Combine(Util.GetCharacterDirectory(), "logs"));
         }
 
         private static void PruneLogDirectory(string logDirectory) {

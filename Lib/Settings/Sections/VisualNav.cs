@@ -28,6 +28,7 @@ namespace UtilityBelt.Lib.Settings.Sections {
         public VisualNavDisplayOptions Display { get; set; } = null;
 
         public VisualNav(SectionBase parent) : base(parent) {
+            Logger.Debug("VisualNav constructor");
             Name = "VisualNav";
             Display = new VisualNavDisplayOptions(this);
         }

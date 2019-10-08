@@ -34,5 +34,9 @@ namespace UtilityBelt.Lib.Settings {
             Color = color;
             DefaultColor = color;
         }
+
+        new public string ToString() {
+            return $"Enabled:{Enabled} Color:{Color} DefaultColor:{Color}";
+        }
     }
 }

@@ -143,8 +143,8 @@ namespace UtilityBelt
 			try
 			{
 				Globals.Host.Actions.AddChatText("[UB] " + message, 5);
-                WriteToDebugLog(message);
-			}
+                Util.WriteToDebugLog(message);
+            }
 			catch (Exception ex) { Logger.LogException(ex); }
 		}
 

@@ -60,6 +60,8 @@ namespace UtilityBelt.Tools {
 
             uTank2.PluginCore.PC.NavRouteChanged += PC_NavRouteChanged;
 
+            Globals.Settings.VisualNav.PropertyChanged += (s, e) => { UpdateUI(); };
+
             UpdateUI();
         }
 
@@ -92,7 +94,10 @@ namespace UtilityBelt.Tools {
         }
 
         private void VisualNavSaveNoneRoutes_Change(object sender, EventArgs e) {
-            Globals.Settings.VisualNav.SaveNoneRoutes = VisualNavSaveNoneRoutes.Checked;
+            try {
+                Globals.Settings.VisualNav.SaveNoneRoutes = VisualNavSaveNoneRoutes.Checked;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void PopulateSettings() {

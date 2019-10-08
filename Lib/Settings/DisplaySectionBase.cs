@@ -13,6 +13,21 @@ namespace UtilityBelt.Lib.Settings {
         private Dictionary<string, ColorToggleOption> toggleOptions = new Dictionary<string, ColorToggleOption>();
 
         public DisplaySectionBase(SectionBase parent) : base(parent) {
+            InitProperties();
+        }
+
+        private void InitProperties() {
+            try {
+                var props = GetType().GetProperties();
+
+                foreach (var prop in props) {
+                    try {
+                        var x = prop.GetValue(this, null);
+                    }
+                    catch { }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         // get this setting's value.  if it has not been requested yet
@@ -27,7 +42,7 @@ namespace UtilityBelt.Lib.Settings {
                     return toggleOptions[prop.Name];
                 }
 
-                // no value has been set, so make a new displayoption instance
+                // no value has been set, so make a new ColorToggleOption instance
                 if (!toggleOptions.ContainsKey(prop.Name)) {
                     var defaultEnabled = false;
                     var defaultColor = System.Drawing.Color.White.ToArgb();
@@ -44,6 +59,7 @@ namespace UtilityBelt.Lib.Settings {
 
                     var toggleOption = new ColorToggleOption(this, defaultEnabled, defaultColor);
                     toggleOption.Name = prop.Name;
+                    Logger.Debug($"Setting name to {prop.Name} for {propName}");
                     toggleOptions.Add(prop.Name, toggleOption);
 
                     return toggleOption;
@@ -62,6 +78,7 @@ namespace UtilityBelt.Lib.Settings {
 
                 if (prop != null) {
                     if (toggleOptions.ContainsKey(propName)) {
+                        // todo isEqual
                         if (toggleOptions[prop.Name].Enabled == value.Enabled && toggleOptions[prop.Name].Color == value.Color) return;
                         toggleOptions[propName] = value;
                     }
