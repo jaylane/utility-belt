@@ -6,8 +6,8 @@ using System.Linq;
 using System.Text;
 
 namespace UtilityBelt.Lib.Settings.Sections {
-    [Section("Main")]
-    public class Main : SectionBase {
+    [Section("Plugin")]
+    public class Plugin : SectionBase {
         [Summary("Check for plugin updates on login")]
         [DefaultValue(true)]
         public bool CheckForUpdates {
@@ -36,8 +36,8 @@ namespace UtilityBelt.Lib.Settings.Sections {
             set { UpdateSetting("WindowPositionY", value); }
         }
 
-        public Main(SectionBase parent) : base(parent) {
-            Name = "Main";
+        public Plugin(SectionBase parent) : base(parent) {
+            Name = "Plugin";
         }
     }
 }

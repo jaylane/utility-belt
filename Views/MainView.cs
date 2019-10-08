@@ -25,16 +25,16 @@ namespace UtilityBelt.Views {
                 view = new VirindiViewService.HudView(properties, controls);
 
                 view.Location = new Point(
-                    Globals.Settings.Main.WindowPositionX,
-                    Globals.Settings.Main.WindowPositionY
+                    Globals.Settings.Plugin.WindowPositionX,
+                    Globals.Settings.Plugin.WindowPositionY
                 );
 
                 var timer = new Timer();
                 timer.Interval = 2000; // save the window position 2 seconds after it has stopped moving
                 timer.Tick += (s, e) => {
                     timer.Stop();
-                    Globals.Settings.Main.WindowPositionX = view.Location.X;
-                    Globals.Settings.Main.WindowPositionY = view.Location.Y;
+                    Globals.Settings.Plugin.WindowPositionX = view.Location.X;
+                    Globals.Settings.Plugin.WindowPositionY = view.Location.Y;
                 };
 
                 view.Moved += (s, e) => {

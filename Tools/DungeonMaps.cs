@@ -566,7 +566,7 @@ namespace UtilityBelt.Tools {
 
         private void DrawMapDebug(Hud hud) {
             // debug cell / environment debug text
-            if (Globals.Settings.Main.Debug) {
+            if (Globals.Settings.Plugin.Debug) {
                 hud.BeginText("mono", 14, Decal.Adapter.Wrappers.FontWeight.Heavy, false);
                 var cells = currentBlock.GetCurrentCells();
                 var offset = 0;

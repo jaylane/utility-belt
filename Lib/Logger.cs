@@ -20,7 +20,7 @@ namespace UtilityBelt {
 
         public static void Debug(string message) {
             try {
-                if (Globals.Settings != null && Globals.Settings.Main.Debug) {
+                if (Globals.Settings != null && Globals.Settings.Plugin.Debug) {
                     Globals.Host.Actions.AddChatText("[UB] DBG: " + message, 5);
                     Util.WriteToDebugLog(message);
                 }

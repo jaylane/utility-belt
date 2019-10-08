@@ -274,7 +274,7 @@ namespace UtilityBelt.Tools {
 
             // ~~disable~~ block vtank autocram/stack because it interferes with vendoring.
             VTankControl.Item_Block(30000, false);
-            VTankControl.Nav_Block(30000, Globals.Settings.Main.Debug);
+            VTankControl.Nav_Block(30000, Globals.Settings.Plugin.Debug);
 
             Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
         }
@@ -323,8 +323,8 @@ namespace UtilityBelt.Tools {
 
                     //if autovendor is running, and nav block has less than a second plus thinkInterval remaining, refresh it
                     if (needsVendoring && VTankControl.navBlockedUntil < DateTime.UtcNow + TimeSpan.FromSeconds(1) + thinkInterval) {
-                        VTankControl.Item_Block(30000, Globals.Settings.Main.Debug);
-                        VTankControl.Nav_Block(30000, Globals.Settings.Main.Debug);
+                        VTankControl.Item_Block(30000, Globals.Settings.Plugin.Debug);
+                        VTankControl.Nav_Block(30000, Globals.Settings.Plugin.Debug);
                     }
 
                     if (needsVendoring && waitingForIds) {
@@ -427,7 +427,7 @@ namespace UtilityBelt.Tools {
                         totalBuyPyreals += (int)(vendorPrice * buyCount);
                         totalBuyCount++;
 
-                        if (Globals.Settings.Main.Debug) {
+                        if (Globals.Settings.Plugin.Debug) {
                             if (totalBuyCount > 1)
                                 buyAdded.Append(",");
                             buyAdded.Append(string.Format("{0} {1}", buyCount, buyItem.Item.Name));
@@ -529,7 +529,7 @@ namespace UtilityBelt.Tools {
                         break;
                     }
                     
-                    if (Globals.Settings.Main.Debug) {
+                    if (Globals.Settings.Plugin.Debug) {
                         if (sellItemCount > 0)
                             sellAdded.Append(", ");
                         sellAdded.Append(Util.GetObjectName(item.Id));

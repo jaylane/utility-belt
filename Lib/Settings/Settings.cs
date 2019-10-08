@@ -59,7 +59,7 @@ namespace UtilityBelt.Lib.Settings {
         #region Settings Sections
         [JsonProperty]
         [Summary("Global plugin Settings")]
-        public Sections.Main Main { get; set; }
+        public Sections.Plugin Plugin { get; set; }
 
         [JsonProperty]
         [Summary("AutoSalvage Settings")]
@@ -84,7 +84,7 @@ namespace UtilityBelt.Lib.Settings {
 
         public Settings() {
             try {
-                SetupSection(Main = new Sections.Main(null));
+                SetupSection(Plugin = new Sections.Plugin(null));
                 SetupSection(AutoSalvage = new Sections.AutoSalvage(null));
                 SetupSection(AutoVendor = new Sections.AutoVendor(null));
                 SetupSection(DungeonMaps = new Sections.DungeonMaps(null));
@@ -274,8 +274,8 @@ namespace UtilityBelt.Lib.Settings {
                             break;
                             
                         case "Main":
-                            Main.WindowPositionX = ParseOldNode(node, "WindowPositionX", Main.WindowPositionX);
-                            Main.WindowPositionY = ParseOldNode(node, "WindowPositionY", Main.WindowPositionY);
+                            Plugin.WindowPositionX = ParseOldNode(node, "WindowPositionX", Plugin.WindowPositionX);
+                            Plugin.WindowPositionY = ParseOldNode(node, "WindowPositionY", Plugin.WindowPositionY);
                             break;
                     }
                 }
