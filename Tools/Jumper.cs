@@ -90,8 +90,8 @@ namespace UtilityBelt.Tools {
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
-        private static readonly Regex faceRegex = new Regex(@"/ub face (?<faceDirection>\d+)");
-        private static readonly Regex jumpRegex = new Regex(@"/ub (?<faceDirection>\d+)? ?(?<shift>s)?jump(?<jumpDirection>[wzxc])?( )?(?<msToHoldDown>\d+)?");
+        private static readonly Regex faceRegex = new Regex(@"^\/ub face (?<faceDirection>\d+)");
+        private static readonly Regex jumpRegex = new Regex(@"^\/ub (?<faceDirection>\d+)? ?(?<shift>s)?jump(?<jumpDirection>[wzxc])?( )?(?<msToHoldDown>\d+)?");
         void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
             try {
                 // handle /ub face command
