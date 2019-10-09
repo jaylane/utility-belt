@@ -57,9 +57,9 @@ namespace UtilityBelt.Tools {
 
         private void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
             try {
-                Regex itemRegex = new Regex(@"/ub count item (?<name>.*?)(?<options>(debug|think|\s)*)$");
+                Regex itemRegex = new Regex(@"^\/ub count item (?<name>.*?)(?<options>(debug|think|\s)*)$");
                 Match itemMatch = itemRegex.Match(e.Text);
-                Regex profileRegex = new Regex(@"/ub count profile (?<item>\S+) ?(?<think>.*)$");
+                Regex profileRegex = new Regex(@"^\/ub count profile (?<item>\S+) ?(?<think>.*)$");
                 Match profileMatch = profileRegex.Match(e.Text);
 
                 if (e.Text.StartsWith("/ub count")) {
