@@ -345,13 +345,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
                 brush.Color = Color.FromArgb(a, color.R, color.G, color.B);
 
                 if (wo.ObjectClass == ObjectClass.Door && !useIcon) {
-                    var onYAxis = Math.Abs(wo.Orientation().W) > 0.6 && Math.Abs(wo.Orientation().W) < 0.8;
-                    if (onYAxis) {
-                        gfx.FillRectangle(brush, x - 0.2f, y - 1.5f, 0.4f, 3);
-                    }
-                    else {
-                        gfx.FillRectangle(brush, x - 1.5f, y - 0.2f, 3, 0.4f);
-                    }
+                    DrawDoor(wo, gfx, brush, x, y);
                     return;
                 }
                 else if (useIcon) {
@@ -368,6 +362,20 @@ namespace UtilityBelt.Lib.DungeonMaps {
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void DrawDoor(WorldObject wo, Graphics gfx, SolidBrush brush, float x, float y) {
+            var onYAxis = Math.Abs(wo.Orientation().W) > 0.6 && Math.Abs(wo.Orientation().W) < 0.8;
+
+            // currently we are only drawing closed doors...
+            if (!Globals.DoorWatcher.GetOpenStatus(wo.Id)) {
+                if (onYAxis) {
+                    gfx.FillRectangle(brush, x - 0.2f, y - 1.5f, 0.4f, 3);
+                }
+                else {
+                    gfx.FillRectangle(brush, x - 1.5f, y - 0.2f, 3, 0.4f);
+                }
+            }
         }
 
         private void DrawPlayerMarker(Graphics gfx, int rotation) {

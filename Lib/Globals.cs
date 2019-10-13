@@ -2,6 +2,7 @@
 
 using Decal.Adapter;
 using Decal.Adapter.Wrappers;
+using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using UtilityBelt.Tools;
 using UtilityBelt.Views;
@@ -22,11 +23,13 @@ namespace UtilityBelt
         public static Assessor Assessor { get; internal set; }
         public static DungeonMaps DungeonMaps { get; internal set; }
         public static VisualVTankRoutes VisualVTankRoutes { get; internal set; }
+        public static DoorWatcher DoorWatcher { get; internal set; }
 
         public static void Init(string pluginName, PluginHost host, CoreManager core) {
-			PluginName = pluginName;
-			Host = host;
-			Core = core;
+            PluginName = pluginName;
+            Host = host;
+            Core = core;
+            DoorWatcher = new DoorWatcher();
         }
     }
 }
