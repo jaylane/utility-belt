@@ -21,9 +21,17 @@ namespace UtilityBelt {
         public static void Debug(string message) {
             try {
                 if (Globals.Settings != null && Globals.Settings.Plugin.Debug) {
-                    Globals.Host.Actions.AddChatText("[UB] DBG: " + message, 5);
+                    Globals.Host.Actions.AddChatText("[UB] " + message, 5);
                     Util.WriteToDebugLog(message);
                 }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        internal static void Error(string message) {
+            try {
+                Globals.Host.Actions.AddChatText("[UB] Error: " + message, 2);
+                Util.WriteToDebugLog(message);
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

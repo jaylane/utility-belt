@@ -91,9 +91,7 @@ namespace UtilityBelt.Lib.Settings {
                 SetupSection(InventoryManager = new Sections.InventoryManager(null));
                 SetupSection(VisualNav = new Sections.VisualNav(null));
 
-                ShouldSave = false;
                 Load();
-                ShouldSave = true;
 
                 Logger.Debug("Finished loading settings");
             }
@@ -141,7 +139,9 @@ namespace UtilityBelt.Lib.Settings {
         public void Load() {
             try {
                 var path = Path.Combine(CharacterStoragePath, "settings.json");
-                
+
+                DisableSaving();
+
                 LoadDefaults();
                 LoadOldXML();
 
@@ -154,13 +154,14 @@ namespace UtilityBelt.Lib.Settings {
                 // even if it fails to load... this is just for making sure
                 // not to try to do stuff until we have settings loaded
                 HasCharacterSettingsLoaded = true;
+                EnableSaving();
             }
         }
 
         // save character specific settings
-        public void Save() {
+        public void Save(bool force=false) {
             try {
-                if (!ShouldSave) return;
+                if (!ShouldSave && !force) return;
 
                 var json = JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented);
                 var path = Path.Combine(CharacterStoragePath, "settings.json");
@@ -177,6 +178,8 @@ namespace UtilityBelt.Lib.Settings {
         private void LoadOldXML() {
             try {
                 var path = Path.Combine(CharacterStoragePath, "config.xml");
+
+                Logger.Debug($"Loading old xml for migration: {path}");
 
                 if (!File.Exists(path)) return;
 
@@ -237,6 +240,18 @@ namespace UtilityBelt.Lib.Settings {
                             Plugin.WindowPositionY = ParseOldNode(node, "WindowPositionY", Plugin.WindowPositionY);
                             break;
                     }
+                }
+
+                // force a save of our new settings
+                Save(true);
+
+                // if we successfully migrated, delete the old xml config
+                if (File.Exists(Path.Combine(CharacterStoragePath, "settings.json"))) {
+                    Logger.Debug($"Deleting old xml after migration: {path}");
+                    File.Delete(path);
+                }
+                else {
+                    Logger.Error("Unable to migrate settings, something went wrong");
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
