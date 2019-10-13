@@ -48,7 +48,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Test|AnyCPU'">
     <OutputPath>bin\Test\</OutputPath>
@@ -98,8 +98,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Lib\Constants\UseFlags.cs" />
+    <Compile Include="Lib\DungeonMaps\IconCache.cs" />
+    <Compile Include="Lib\PhysicsObject.cs" />
     <Compile Include="Lib\Settings\ColorToggleOption.cs" />
     <Compile Include="Lib\Settings\DisplaySectionBase.cs" />
+    <Compile Include="Lib\Settings\MarkerToggleOption.cs" />
     <Compile Include="Lib\Settings\Sections\AutoVendor.cs" />
     <Compile Include="Lib\Settings\Sections\DungeonMaps.cs" />
     <Compile Include="Lib\Settings\Sections\InventoryManager.cs" />
@@ -165,6 +169,7 @@
     <Compile Include="Lib\VirindiViews\Wrapper_Decal.cs" />
     <Compile Include="Lib\VirindiViews\Wrapper_MyHuds.cs" />
     <Compile Include="Lib\VirindiViews\Wrapper_WireupHelper.cs" />
+    <Compile Include="Views\MarkerOptions.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\MainView.xml">
@@ -239,6 +244,7 @@
     <EmbeddedResource Include="Views\MapView.xml" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Views\MarkerOptions.xml" />
     <None Include="Dependencies\System.Data.SQLite.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -1189,9 +1195,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resources\tiles\195.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\tiles\197.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resources\tiles\198.bmp">

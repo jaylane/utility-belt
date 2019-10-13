@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using UtilityBelt;
+using UtilityBelt.Lib;
 using UtilityBelt.Lib.DungeonMaps;
 using UtilityBelt.Lib.Settings;
 using UtilityBelt.Tools;
@@ -33,7 +34,7 @@ namespace UtilityBelt.Tools {
         private Rectangle hudRect;
         internal Bitmap drawBitmap = null;
         private Bitmap compassBitmap = null;
-        private int counter = 0;
+        private int drawCounter = 0;
         private float scale = 1;
         private int rawScale = 12;
         private int currentLandBlock = 0;
@@ -50,12 +51,15 @@ namespace UtilityBelt.Tools {
         private Vector3Object lastPosition = new Vector3Object(0, 0, 0);
         private double lastHeading = 0;
         private bool needsDraw = true;
+        private int markerCount = 0;
 
         const int COL_ENABLED = 0;
         const int COL_ICON = 1;
         const int COL_NAME = 2;
 
         System.Windows.Forms.Timer zoomSaveTimer;
+        private long lastDrawMs = 0;
+        private long lastHudMs = 0;
 
         HudCheckBox UIDungeonMapsEnabled { get; set; }
         HudCheckBox UIDungeonMapsDrawWhenClosed { get; set; }
@@ -66,6 +70,7 @@ namespace UtilityBelt.Tools {
         HudButton UIFollowCharacter { get; set; }
 
         HudList UIDungeonMapsSettingsList { get; set; }
+        HudList UIDungeonMapsMarkersList { get; set; }
 
         public DungeonMaps() {
             try {
@@ -96,6 +101,9 @@ namespace UtilityBelt.Tools {
                 UIDungeonMapsSettingsList = (HudList)Globals.MainView.view["DungeonMapsSettingsList"];
                 UIDungeonMapsSettingsList.Click += UIDungeonMapsSettingsList_Click;
 
+                UIDungeonMapsMarkersList = (HudList)Globals.MainView.view["DungeonMapsMarkersList"];
+                UIDungeonMapsMarkersList.Click += UIDungeonMapsMarkersList_Click; ;
+
                 UpdateUI();
 
                 #endregion
@@ -108,20 +116,11 @@ namespace UtilityBelt.Tools {
                 }
 
                 Globals.Core.RegionChange3D += Core_RegionChange3D;
-                Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
 
                 Globals.MapView.view.Resize += View_Resize;
                 Globals.MapView.view.Moved += View_Moved;
 
                 Toggle();
-
-                var currentLandblock = DungeonCache.Get(Globals.Core.Actions.Landcell);
-
-                if (currentLandblock != null) {
-                    foreach (var portal in Globals.Core.WorldFilter.GetByObjectClass(ObjectClass.Portal)) {
-                        currentLandblock.AddPortal(portal);
-                    }
-                }
 
                 zoomSaveTimer = new System.Windows.Forms.Timer();
                 zoomSaveTimer.Interval = 2000; // save the window position 2 seconds after it has stopped moving
@@ -324,6 +323,66 @@ namespace UtilityBelt.Tools {
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
+
+        private void UIDungeonMapsMarkersList_Click(object sender, int row, int col) {
+            try {
+                HudList.HudListRowAccessor clickedRow = UIDungeonMapsMarkersList[row];
+                var name = ((HudStaticText)clickedRow[COL_NAME]).Text;
+                var option = Globals.Settings.DungeonMaps.Display.Markers.GetPropValue<MarkerToggleOption>(name);
+
+                if (option == null) {
+                    Util.WriteToChat("Bad option clicked: " + name);
+                    return;
+                }
+
+                switch (col) {
+                    case COL_ENABLED:
+                        option.Enabled = ((HudCheckBox)clickedRow[COL_ENABLED]).Checked;
+                        needsDraw = true;
+                        break;
+
+                    case COL_ICON:
+                        // todo: make this only disable saving this specific setting
+                        Globals.Settings.DisableSaving();
+
+                        var originalOptions = option.Clone();
+                        var markerOptionsView = new MarkerOptions(Globals.MainView, option);
+
+                        markerOptionsView.RaiseCancelEvent += (s, e) => {
+                            option.RestoreFrom(originalOptions);
+                            Globals.Settings.EnableSaving();
+                            markerOptionsView.Dispose();
+                            needsDraw = true;
+                        };
+
+                        markerOptionsView.RaiseSaveEvent += (s, e) => {
+                            var newOptions = option.Clone();
+                            option.RestoreFrom(originalOptions);
+                            Globals.Settings.EnableSaving();
+                            option.RestoreFrom(newOptions);
+                            PopulateSettings();
+                            markerOptionsView.Dispose();
+                            needsDraw = true;
+                        };
+
+                        markerOptionsView.RaiseChangeEvent += (s, e) => {
+                            needsDraw = true;
+                        };
+
+                        markerOptionsView.view.VisibleChanged += (s, e) => {
+                            if (!markerOptionsView.view.Visible) {
+                                option.RestoreFrom(originalOptions);
+                                Globals.Settings.EnableSaving();
+                                markerOptionsView.Dispose();
+                            }
+                            needsDraw = true;
+                        };
+
+                        break;
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
         #endregion
 
         private void SetDisplayColor(string name, int color) {
@@ -337,36 +396,66 @@ namespace UtilityBelt.Tools {
 
         private void PopulateSettings() {
             try {
-                int scroll = 0;
-                if (Globals.MainView.view.Visible) {
-                    scroll = UIDungeonMapsSettingsList.ScrollPosition;
-                }
-
-                UIDungeonMapsSettingsList.ClearRows();
-
-                foreach (var setting in Globals.Settings.DungeonMaps.Display.ValidSettings) {
-                    var option = Globals.Settings.DungeonMaps.Display.GetPropValue<ColorToggleOption>(setting);
-
-                    if (option != null) {
-                        HudList.HudListRowAccessor row = UIDungeonMapsSettingsList.AddRow();
-                        ((HudCheckBox)row[COL_ENABLED]).Checked = option.Enabled;
-                        ((HudStaticText)row[COL_NAME]).Text = setting;
-                        ((HudPictureBox)row[COL_ICON]).Image = GetSettingIcon(option);
-                    }
-                    else {
-                        Util.WriteToChat("Bad DisplayOption: " + setting);
-                    }
-                }
-
-                UIDungeonMapsSettingsList.ScrollPosition = scroll;
+                PopulateDisplaySettings();
+                PopulateMarkerSettings();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private ACImage GetSettingIcon(ColorToggleOption option) {
+        private void PopulateMarkerSettings() {
+            int scroll = 0;
+            if (Globals.MainView.view.Visible) {
+                scroll = UIDungeonMapsMarkersList.ScrollPosition;
+            }
+
+            UIDungeonMapsMarkersList.ClearRows();
+
+            foreach (var setting in Globals.Settings.DungeonMaps.Display.Markers.ValidSettings) {
+                var option = Globals.Settings.DungeonMaps.Display.Markers.GetPropValue<MarkerToggleOption>(setting);
+
+                if (option != null) {
+                    HudList.HudListRowAccessor row = UIDungeonMapsMarkersList.AddRow();
+                    ((HudCheckBox)row[COL_ENABLED]).Checked = option.Enabled;
+                    ((HudStaticText)row[COL_NAME]).Text = setting;
+                    ((HudPictureBox)row[COL_ICON]).Image = GetSettingIcon(Color.FromArgb(option.Color));
+                }
+                else {
+                    Util.WriteToChat("Bad DisplayOption: " + setting);
+                }
+            }
+
+            UIDungeonMapsMarkersList.ScrollPosition = scroll;
+        }
+
+        private void PopulateDisplaySettings() {
+            int scroll = 0;
+            if (Globals.MainView.view.Visible) {
+                scroll = UIDungeonMapsSettingsList.ScrollPosition;
+            }
+
+            UIDungeonMapsSettingsList.ClearRows();
+
+            foreach (var setting in Globals.Settings.DungeonMaps.Display.ValidSettings) {
+                var option = Globals.Settings.DungeonMaps.Display.GetPropValue<ColorToggleOption>(setting);
+
+                if (option != null) {
+                    HudList.HudListRowAccessor row = UIDungeonMapsSettingsList.AddRow();
+                    ((HudCheckBox)row[COL_ENABLED]).Checked = option.Enabled;
+                    ((HudStaticText)row[COL_NAME]).Text = setting;
+                    ((HudPictureBox)row[COL_ICON]).Image = GetSettingIcon(Color.FromArgb(option.Color));
+                }
+                else {
+                    Util.WriteToChat("Bad DisplayOption: " + setting);
+                }
+            }
+
+            UIDungeonMapsSettingsList.ScrollPosition = scroll;
+        }
+
+        private ACImage GetSettingIcon(Color color) {
             var bmp = new Bitmap(32, 32);
             using (Graphics gfx = Graphics.FromImage(bmp)) {
-                using (SolidBrush brush = new SolidBrush(Color.FromArgb(option.Color))) {
+                using (SolidBrush brush = new SolidBrush(color)) {
                     gfx.FillRectangle(brush, 0, 0, 32, 32);
                 }
             }
@@ -418,21 +507,6 @@ namespace UtilityBelt.Tools {
 
                 if (Globals.Settings.DungeonMaps.Enabled) {
                     CreateHud();
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
-            try {
-                if (!Globals.Settings.DungeonMaps.Enabled) return;
-
-                if (e.New.ObjectClass == ObjectClass.Portal) {
-                    var currentLandblock = DungeonCache.Get(Globals.Core.Actions.Landcell);
-
-                    if (currentLandblock != null && e.New.Name != "Gateway") {
-                        currentLandblock.AddPortal(e.New);
-                    }
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -500,7 +574,6 @@ namespace UtilityBelt.Tools {
 
                 hud.Clear();
                 hud.Fill(Color.Transparent);
-
                 hud.BeginRender();
 
                 try {
@@ -508,7 +581,7 @@ namespace UtilityBelt.Tools {
                     hud.DrawImage(drawBitmap, new Rectangle(0, 0, hud.Region.Width, hud.Region.Height));
 
                     DrawCompass(hud);
-                    DrawPortalLabels(hud);
+                    DrawMarkerLabels(hud);
                     DrawMapDebug(hud);
                 }
                 catch (Exception ex) { Logger.LogException(ex); }
@@ -536,32 +609,81 @@ namespace UtilityBelt.Tools {
             }
         }
 
-        private void DrawPortalLabels(Hud hud) {
-            if (!Globals.Settings.DungeonMaps.Display.PortalLabels.Enabled) return;
+        private void DrawMarkerLabels(Hud hud) {
+            // too zoomed out to draw marker labels?
+            if (scale < 1.4) return;
 
-            // draw portal labels, the portal icons are drawn on the map itself
-            // we only draw portal labels if the portal is on the same zLevel as us
-            // todo: only draw portal labels within the window
-            var zLayer = (int)Math.Round(Globals.Core.Actions.LocationZ / 6) * 6;
-            if (currentBlock.zPortals.ContainsKey(zLayer)) {
-                hud.BeginText("mono", 12, Decal.Adapter.Wrappers.FontWeight.Normal, false);
-                foreach (var portal in currentBlock.zPortals[zLayer]) {
-                    var x = ((portal.X - Globals.Core.Actions.LocationX)) * scale;
-                    var y = (((Globals.Core.Actions.LocationY - portal.Y)) * scale);
+            try {
+                var brush = new SolidBrush(Color.Orange);
+                hud.BeginText("Terminal", 10, Decal.Adapter.Wrappers.FontWeight.Normal, false);
+
+                markerCount = 0;
+
+                foreach (var wo in Globals.Core.WorldFilter.GetLandscape()) {
+                    if (!ShouldDrawLabel(wo)) continue;
+
+                    var objPos = wo.Offset();
+                    var obj = PhysicsObject.FromId(wo.Id);
+                    if (obj != null) {
+                        objPos = new Vector3Object(obj.Position.X, obj.Position.Y, obj.Position.Z);
+                        obj = null;
+                    }
+
+                    // clamp objects to the floor
+                    var objZ = Math.Round(objPos.Z / 6) * 6;
+
+                    // dont draw if its not on the same floor as us
+                    if (Math.Abs(objZ - Globals.Core.Actions.LocationZ) > 5) continue;
+
+                    var x = (objPos.X - Globals.Core.Actions.LocationX) * scale;
+                    var y = (Globals.Core.Actions.LocationY - objPos.Y) * scale;
 
                     if (!isFollowingCharacter) {
-                        x = (portal.X - dragOffsetX) * scale;
-                        y = (-dragOffsetY - portal.Y) * scale;
+                        x = (objPos.X - dragOffsetX) * scale;
+                        y = (-dragOffsetY - objPos.Y) * scale;
+                    }
+
+                    var name = wo.Name;
+
+                    if (wo.ObjectClass == ObjectClass.Portal) {
+                        name = name.Replace("Portal to ", "").Replace(" Portal", "");
                     }
 
                     var rpoint = Util.RotatePoint(new Point((int)x, (int)y), new Point(0, 0), rotation + 180);
-                    var rect = new Rectangle(rpoint.X + (hud.Region.Width / 2), rpoint.Y + (hud.Region.Height / 2), 200, 12);
-                    var labelColor = Globals.Settings.DungeonMaps.Display.PortalLabels.Color;
+                    var textWidth = name.Length * 6;
+                    var rect = new Rectangle(rpoint.X - (textWidth/2) + (hud.Region.Width / 2), rpoint.Y - 18 + (hud.Region.Height / 2), textWidth, 12);
+                    var labelColor = Globals.Settings.DungeonMaps.Display.Markers.GetLabelColor(wo);
 
-                    hud.WriteText(portal.Name, labelColor, Decal.Adapter.Wrappers.WriteTextFormats.SingleLine, rect);
+                    // inside map window?
+                    if (rect.X < -(Dungeon.CELL_SIZE * scale) || rect.X > hud.Region.Width + (Dungeon.CELL_SIZE * scale)) {
+                        continue;
+                    }
+                    if (rect.Y < -(Dungeon.CELL_SIZE * scale) || rect.Y > hud.Region.Height + (Dungeon.CELL_SIZE * scale)) {
+                        continue;
+                    }
+
+                    hud.WriteText(name, labelColor, Decal.Adapter.Wrappers.WriteTextFormats.SingleLine, rect);
+                    markerCount++;
                 }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+            finally {
                 hud.EndText();
             }
+        }
+
+        private bool ShouldDrawLabel(WorldObject wo) {
+            // make sure the client knows about this object
+            if (!Globals.Core.Actions.IsValidObject(wo.Id)) return false;
+
+            // make sure its close enough
+            if (Globals.Core.WorldFilter.Distance(wo.Id, Globals.Core.CharacterFilter.Id) * 240 > 300) return false;
+
+            if (!Globals.Settings.DungeonMaps.Display.Markers.ShouldDraw(wo)) return false;
+
+            if (!Globals.Settings.DungeonMaps.Display.Markers.ShouldShowlabel(wo)) return false;
+
+            return true;
         }
 
         private void DrawMapDebug(Hud hud) {
@@ -569,7 +691,23 @@ namespace UtilityBelt.Tools {
             if (Globals.Settings.Plugin.Debug) {
                 hud.BeginText("mono", 14, Decal.Adapter.Wrappers.FontWeight.Heavy, false);
                 var cells = currentBlock.GetCurrentCells();
-                var offset = 0;
+                var offset = 15;
+
+                if (currentBlock != null) {
+                    var stats = $"Tiles: {currentBlock.drawCount:D3} Markers: {markerCount:D3} Map: {lastDrawMs:D3}ms Hud: {lastHudMs:D3}ms";
+                    var rect = new Rectangle(0, 0, hud.Region.Width, 15);
+
+                    using (var bmp = new Bitmap(hud.Region.Width, 15)) {
+                        var bgColor = Color.FromArgb(150, 0, 0, 0);
+                        bmp.MakeTransparent();
+
+                        using (var gfx = Graphics.FromImage(bmp)) {
+                            gfx.FillRectangle(new SolidBrush(bgColor), 0, 0, bmp.Width, bmp.Height);
+                            hud.DrawImage(bmp, rect);
+                            hud.WriteText(stats, Color.White, Decal.Adapter.Wrappers.WriteTextFormats.SingleLine, rect);
+                        }
+                    }
+                }
 
                 foreach (var cell in cells) {
                     var message = string.Format("cell: {0}, env: {1}, r: {2}, pos: {3},{4},{5}",
@@ -580,9 +718,9 @@ namespace UtilityBelt.Tools {
                         cell.Y,
                         cell.Z);
                     var color = Math.Abs(cell.Z - Globals.Core.Actions.LocationZ) < 2 ? Color.LightGreen : Color.White;
-                    var rect = new Rectangle(0, offset, hud.Region.Width, offset + 15);
+                    var rect2 = new Rectangle(0, offset, hud.Region.Width, offset + 15);
 
-                    hud.WriteText(message, color, Decal.Adapter.Wrappers.WriteTextFormats.SingleLine, rect);
+                    hud.WriteText(message, color, Decal.Adapter.Wrappers.WriteTextFormats.SingleLine, rect2);
                     offset += 15;
                 }
                 hud.EndText();
@@ -591,15 +729,20 @@ namespace UtilityBelt.Tools {
         #endregion
 
         public bool NeedsDraw() {
-            var _needsDraw = needsDraw;
-            needsDraw = false;
-
             if (!Globals.Settings.DungeonMaps.Enabled) return false;
 
             if (Globals.Settings.DungeonMaps.DrawWhenClosed == false && Globals.MapView.view.Visible == false) {
                 hud.Clear();
                 return false;
             }
+
+            // now that we are drawing stuff that can move (mobs/players)
+            // we need to draw all the time.. 
+            // todo: re-enable this if not drawing markers that can move
+
+            /*
+            var _needsDraw = needsDraw;
+            needsDraw = false;
             
             if (lastHeading != Globals.Core.Actions.Heading) {
                 lastHeading = Globals.Core.Actions.Heading;
@@ -612,6 +755,9 @@ namespace UtilityBelt.Tools {
             }
 
             return _needsDraw;
+            */
+
+            return true;
         }
 
         public void Think() {
@@ -651,11 +797,9 @@ namespace UtilityBelt.Tools {
                     var watch2 = System.Diagnostics.Stopwatch.StartNew();
                     UpdateHud();
                     watch2.Stop();
-                    if (counter % 60 == 0) {
-                        counter = 0;
-                        Logger.Debug(string.Format("DungeonMaps: draw: {0}ms update: {1}ms (drew {2} tiles)", watch.ElapsedMilliseconds, watch2.ElapsedMilliseconds, currentBlock.drawCount));
-                    }
-                    ++counter;
+
+                    lastDrawMs = watch.ElapsedMilliseconds;
+                    lastHudMs = watch2.ElapsedMilliseconds;
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -671,10 +815,10 @@ namespace UtilityBelt.Tools {
             if (!disposed) {
                 if (disposing) {
                     Globals.Core.RegionChange3D -= Core_RegionChange3D;
-                    Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
                     Globals.MapView.view["DungeonMapsRenderContainer"].MouseEvent -= DungeonMaps_MouseEvent;
                     Globals.MapView.view.Resize -= View_Resize;
                     Globals.MapView.view.Moved -= View_Moved;
+
                     uTank2.PluginCore.PC.NavRouteChanged -= PC_NavRouteChanged;
                     uTank2.PluginCore.PC.NavWaypointChanged -= PC_NavWaypointChanged;
 

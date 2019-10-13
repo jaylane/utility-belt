@@ -14,6 +14,7 @@
 - Added `/ub vendor {buyall,sellall,clearbuy,clearsell}` commands
 - Added `/ub vendor open[p] {vendorname,vendorid,vendorhex}` command, that pauses vTank navigation, and retries opening the vendor if it fails
 - `/ub [faceDirection] [s]jump[wzxc] [msToHoldDown]` now pauses vTank navigation, and retries jumps when the server does not respond.
+- Dungeon Maps can now show markers / labels for *everything*
 
 ## 0.0.8 (2019-9-28) [UtilityBeltInstaller-0.0.8.exe](/uploads/f1b2c542a7630438732e2553dec3a725/UtilityBeltInstaller-0.0.8.exe)
 - Added experimental option to show embedded nav routes

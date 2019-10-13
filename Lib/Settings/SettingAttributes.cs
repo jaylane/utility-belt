@@ -39,4 +39,31 @@ namespace UtilityBelt.Lib.Settings {
             Enabled = enabled;
         }
     }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    class DefaultUseIconAttribute : Attribute {
+        public bool UseIcon { get; set; }
+
+        public DefaultUseIconAttribute(bool useIcon) {
+            UseIcon = useIcon;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    class DefaultSizeAttribute : Attribute {
+        public int Size { get; set; }
+
+        public DefaultSizeAttribute(int size) {
+            Size = size;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    class DefaultShowLabelAttribute : Attribute {
+        public bool Enabled { get; set; }
+
+        public DefaultShowLabelAttribute(bool enabled) {
+            Enabled = enabled;
+        }
+    }
 }
