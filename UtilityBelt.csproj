@@ -98,6 +98,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Lib\Constants\ObjectFlags.cs" />
+    <Compile Include="Lib\Constants\PhysicsState.cs" />
     <Compile Include="Lib\Constants\UseFlags.cs" />
     <Compile Include="Lib\DungeonMaps\IconCache.cs" />
     <Compile Include="Lib\PhysicsObject.cs" />

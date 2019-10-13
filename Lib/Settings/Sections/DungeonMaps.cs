@@ -406,50 +406,12 @@ namespace UtilityBelt.Lib.Settings.Sections {
                     return "Containers";
 
                 default:
-                    // attempting to find items that can be picked up / used by the player
-                    // (i am now 99% sure this is wrong and only picking up items that can be used by themselves,
-                    // which does not include things like spell components.  I think there are a few items
-                    // in the Object.Misc category that will not be shown, even though we want them to...)
-                    if ((wo.Values(LongValueKey.Unknown10, 0) & (int)UseFlag.SourceUnusable) == 0) {
+                    // draw anything not "stuck" as an item
+                    if ((wo.Values(LongValueKey.Behavior, 0) & (int)ObjectFlag.Stuck) == 0) {
                         return "Items";
                     }
 
-                    // this is kind of a fallback to find items that can be picked up until we have a better solution
-                    switch (wo.ObjectClass) {
-                        case ObjectClass.Armor:
-                        case ObjectClass.BaseAlchemy:
-                        case ObjectClass.BaseCooking:
-                        case ObjectClass.BaseFletching:
-                        case ObjectClass.Book:
-                        case ObjectClass.Bundle:
-                        case ObjectClass.Clothing:
-                        case ObjectClass.Container:
-                        case ObjectClass.CraftedAlchemy:
-                        case ObjectClass.CraftedCooking:
-                        case ObjectClass.CraftedFletching:
-                        case ObjectClass.Food:
-                        case ObjectClass.Gem:
-                        case ObjectClass.HealingKit:
-                        case ObjectClass.Jewelry:
-                        case ObjectClass.Journal:
-                        case ObjectClass.Key:
-                        case ObjectClass.Lockpick:
-                        case ObjectClass.ManaStone:
-                        case ObjectClass.MeleeWeapon:
-                        case ObjectClass.MissileWeapon:
-                        case ObjectClass.Money:
-                        case ObjectClass.Plant:
-                        case ObjectClass.Salvage:
-                        case ObjectClass.Scroll:
-                        case ObjectClass.SpellComponent:
-                        case ObjectClass.TradeNote:
-                        case ObjectClass.Ust:
-                        case ObjectClass.WandStaffOrb:
-                            return "Items";
-
-                        default:
-                            return "EverythingElse";
-                    }
+                    return "EverythingElse";
             }
         }
     }

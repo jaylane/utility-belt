@@ -261,22 +261,16 @@ namespace UtilityBelt.Tools {
             Util.WriteToChat($"Id = {wo.Id} (0x{wo.Id.ToString("X8")})");
             Util.WriteToChat($"Name = {wo.Name}");
             Util.WriteToChat($"ActiveSpellCount = {wo.ActiveSpellCount}");
-            Util.WriteToChat($"Behavior = {wo.Behavior}");
             Util.WriteToChat($"Category = {wo.Category}");
-            Util.WriteToChat($"Container = {wo.Container}");
             Util.WriteToChat($"Coordinates = {wo.Coordinates()}");
             Util.WriteToChat($"GameDataFlags1 = {wo.GameDataFlags1}");
             Util.WriteToChat($"HasIdData = {wo.HasIdData}");
-            Util.WriteToChat($"Icon = {wo.Icon} (0x{(0x06000000 + wo.Icon).ToString("X8")})");
             Util.WriteToChat($"LastIdTime = {wo.LastIdTime}");
             Util.WriteToChat($"ObjectClass = {wo.ObjectClass} ({(int)wo.ObjectClass})");
             Util.WriteToChat($"Offset = {wo.Offset()}");
             Util.WriteToChat($"Orientation = {wo.Orientation()}");
-            Util.WriteToChat($"PhysicsDataFlags = {wo.PhysicsDataFlags}");
-            //PrintFlags(wo.PhysicsDataFlags, );
             Util.WriteToChat($"RawCoordinates = {wo.RawCoordinates()}");
             Util.WriteToChat($"SpellCount = {wo.SpellCount}");
-            Util.WriteToChat($"Type = {wo.Type}");
 
             Util.WriteToChat("String Values:");
             foreach (var sk in wo.StringKeys) {
@@ -285,7 +279,45 @@ namespace UtilityBelt.Tools {
 
             Util.WriteToChat("Long Values:");
             foreach (var sk in wo.LongKeys) {
-                Util.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)}");
+                switch ((LongValueKey)sk) {
+                    case LongValueKey.Behavior:
+                        Util.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)}");
+                        foreach (ObjectFlag v in Enum.GetValues(typeof(ObjectFlag))) {
+                            if ((wo.Values(LongValueKey.DescriptionFormat) & (int)v) != 0) {
+                                Util.WriteToChat($"    Has Flag: {v.ToString()}");
+                            }
+                        }
+                        break;
+
+                    case LongValueKey.Unknown10:
+                        Util.WriteToChat($"  UseablityFlags({sk}) = {wo.Values((LongValueKey)sk)}");
+                        foreach (UseFlag v in Enum.GetValues(typeof(UseFlag))) {
+                            if ((wo.Values(LongValueKey.Flags) & (int)v) != 0) {
+                                Util.WriteToChat($"    Has Flag: {v.ToString()}");
+                            }
+                        }
+                        break;
+
+                    case LongValueKey.PhysicsDataFlags:
+                        foreach (PhysicsState v in Enum.GetValues(typeof(PhysicsState))) {
+                            if ((wo.PhysicsDataFlags & (int)v) != 0) {
+                                Util.WriteToChat($"    Has Flag: {v.ToString()}");
+                            }
+                        }
+                        break;
+
+                    case LongValueKey.Landblock:
+                        Util.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)} ({wo.Values((LongValueKey)sk).ToString("X8")})");
+                        break;
+
+                    case LongValueKey.Icon:
+                        Util.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)} (0x{(0x06000000 + wo.Values((LongValueKey)sk)).ToString("X8")})");
+                        break;
+
+                    default:
+                        Util.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)}");
+                        break;
+                }
             }
 
             Util.WriteToChat("Bool Values:");
