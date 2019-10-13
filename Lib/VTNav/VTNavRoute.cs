@@ -213,7 +213,7 @@ namespace UtilityBelt.Lib.VTNav {
 
         public void Draw() {
             if (NavType == eNavType.Target && Globals.Settings.VisualNav.Display.FollowArrow.Enabled) {
-                if (TargetId != 0) {
+                if (TargetId != 0 && TargetId != Globals.Core.CharacterFilter.Id) {
                     var wo = Globals.Core.WorldFilter[TargetId];
 
                     if (wo != null) {
