@@ -39,7 +39,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
 
                 return bmp;
             }
-            catch (Exception ex) { }
+            catch { }
 
             return null;
         }

@@ -34,7 +34,6 @@ namespace UtilityBelt.Tools {
         private Rectangle hudRect;
         internal Bitmap drawBitmap = null;
         private Bitmap compassBitmap = null;
-        private int drawCounter = 0;
         private float scale = 1;
         private int rawScale = 12;
         private int currentLandBlock = 0;
@@ -49,8 +48,6 @@ namespace UtilityBelt.Tools {
         private int rotation = 0;
         private Dungeon currentBlock = null;
         private Vector3Object lastPosition = new Vector3Object(0, 0, 0);
-        private double lastHeading = 0;
-        private bool needsDraw = true;
         private int markerCount = 0;
 
         const int COL_ENABLED = 0;
@@ -129,9 +126,6 @@ namespace UtilityBelt.Tools {
                     Globals.Settings.DungeonMaps.MapZoom = scale;
                 };
 
-                uTank2.PluginCore.PC.NavRouteChanged += PC_NavRouteChanged;
-                uTank2.PluginCore.PC.NavWaypointChanged += PC_NavWaypointChanged;
-
                 PopulateSettings();
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -142,14 +136,6 @@ namespace UtilityBelt.Tools {
             UIDungeonMapsDrawWhenClosed.Checked = Globals.Settings.DungeonMaps.DrawWhenClosed;
             UIDungeonMapsShowVisitedTiles.Checked = Globals.Settings.DungeonMaps.ShowVisitedTiles;
             UIDungeonMapsOpacity.Position = Globals.Settings.DungeonMaps.Opacity;
-        }
-
-        private void PC_NavWaypointChanged() {
-            needsDraw = true;
-        }
-
-        private void PC_NavRouteChanged() {
-            needsDraw = true;
         }
 
         #region UI Event Handlers
@@ -185,7 +171,6 @@ namespace UtilityBelt.Tools {
         private void UIDungeonMapsOpacity_Changed(int min, int max, int pos) {
             if (pos != Globals.Settings.DungeonMaps.Opacity) {
                 Globals.Settings.DungeonMaps.Opacity = pos;
-                needsDraw = true;
             }
         }
 
@@ -193,7 +178,6 @@ namespace UtilityBelt.Tools {
             try {
                 RemoveHud();
                 CreateHud();
-                needsDraw = true;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -204,7 +188,6 @@ namespace UtilityBelt.Tools {
 
                 RemoveHud();
                 CreateHud();
-                needsDraw = true;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -221,7 +204,6 @@ namespace UtilityBelt.Tools {
 
                             if (zoomSaveTimer.Enabled) zoomSaveTimer.Stop();
                             zoomSaveTimer.Start();
-                            needsDraw = true;
                         }
                         break;
 
@@ -238,12 +220,10 @@ namespace UtilityBelt.Tools {
 
                         isPanning = true;
                         isFollowingCharacter = false;
-                        needsDraw = true;
                         break;
 
                     case ControlMouseEventArgs.MouseEventType.MouseUp:
                         isPanning = false;
-                        needsDraw = true;
                         break;
 
                     case ControlMouseEventArgs.MouseEventType.MouseMove:
@@ -254,7 +234,6 @@ namespace UtilityBelt.Tools {
 
                             dragOffsetX = np.X;
                             dragOffsetY = np.Y;
-                            needsDraw = true;
                         }
                         break;
                 }
@@ -276,7 +255,6 @@ namespace UtilityBelt.Tools {
                 switch (col) {
                     case COL_ENABLED:
                         option.Enabled = ((HudCheckBox)clickedRow[COL_ENABLED]).Checked;
-                        needsDraw = true;
                         break;
 
                     case COL_ICON:
@@ -290,7 +268,6 @@ namespace UtilityBelt.Tools {
                             SetDisplayColor(name, originalColor);
                             Globals.Settings.EnableSaving();
                             picker.Dispose();
-                            needsDraw = true;
                         };
 
                         picker.RaiseColorPickerSaveEvent += (s, e) => {
@@ -300,12 +277,10 @@ namespace UtilityBelt.Tools {
                             SetDisplayColor(name, e.Color.ToArgb());
                             PopulateSettings();
                             picker.Dispose();
-                            needsDraw = true;
                         };
 
                         picker.RaiseColorPickerChangeEvent += (s, e) => {
                             SetDisplayColor(name, e.Color.ToArgb());
-                            needsDraw = true;
                         };
 
                         picker.view.VisibleChanged += (s, e) => {
@@ -315,7 +290,6 @@ namespace UtilityBelt.Tools {
                             if (!picker.view.Visible) {
                                 picker.Dispose();
                             }
-                            needsDraw = true;
                         };
                         
                         break;
@@ -338,7 +312,6 @@ namespace UtilityBelt.Tools {
                 switch (col) {
                     case COL_ENABLED:
                         option.Enabled = ((HudCheckBox)clickedRow[COL_ENABLED]).Checked;
-                        needsDraw = true;
                         break;
 
                     case COL_ICON:
@@ -352,7 +325,6 @@ namespace UtilityBelt.Tools {
                             option.RestoreFrom(originalOptions);
                             Globals.Settings.EnableSaving();
                             markerOptionsView.Dispose();
-                            needsDraw = true;
                         };
 
                         markerOptionsView.RaiseSaveEvent += (s, e) => {
@@ -362,11 +334,9 @@ namespace UtilityBelt.Tools {
                             option.RestoreFrom(newOptions);
                             PopulateSettings();
                             markerOptionsView.Dispose();
-                            needsDraw = true;
                         };
 
                         markerOptionsView.RaiseChangeEvent += (s, e) => {
-                            needsDraw = true;
                         };
 
                         markerOptionsView.view.VisibleChanged += (s, e) => {
@@ -375,7 +345,6 @@ namespace UtilityBelt.Tools {
                                 Globals.Settings.EnableSaving();
                                 markerOptionsView.Dispose();
                             }
-                            needsDraw = true;
                         };
 
                         break;
@@ -492,7 +461,6 @@ namespace UtilityBelt.Tools {
 
         private void ClearTileCache() {
             TileCache.Clear();
-            needsDraw = true;
         }
 
         private void ClearVisitedTiles() {
@@ -736,27 +704,6 @@ namespace UtilityBelt.Tools {
                 return false;
             }
 
-            // now that we are drawing stuff that can move (mobs/players)
-            // we need to draw all the time.. 
-            // todo: re-enable this if not drawing markers that can move
-
-            /*
-            var _needsDraw = needsDraw;
-            needsDraw = false;
-            
-            if (lastHeading != Globals.Core.Actions.Heading) {
-                lastHeading = Globals.Core.Actions.Heading;
-                _needsDraw = true;
-            }
-
-            if ((Globals.Core.Actions.LocationX != lastPosition.X || Globals.Core.Actions.LocationY != lastPosition.Y || Globals.Core.Actions.LocationZ != lastPosition.Z)) {
-                lastPosition = new Vector3Object(Globals.Core.Actions.LocationX, Globals.Core.Actions.LocationY, Globals.Core.Actions.LocationZ);
-                _needsDraw = true;
-            }
-
-            return _needsDraw;
-            */
-
             return true;
         }
 
@@ -818,9 +765,6 @@ namespace UtilityBelt.Tools {
                     Globals.MapView.view["DungeonMapsRenderContainer"].MouseEvent -= DungeonMaps_MouseEvent;
                     Globals.MapView.view.Resize -= View_Resize;
                     Globals.MapView.view.Moved -= View_Moved;
-
-                    uTank2.PluginCore.PC.NavRouteChanged -= PC_NavRouteChanged;
-                    uTank2.PluginCore.PC.NavWaypointChanged -= PC_NavWaypointChanged;
 
                     ClearTileCache();
                     ClearHud();
