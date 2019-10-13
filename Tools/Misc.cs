@@ -99,6 +99,7 @@ namespace UtilityBelt.Tools {
             Util.WriteToChat("UtilityBelt Commands: \n" +
                 "   /ub - Lists the version number\n" +
                 "   /ub help - you are here.\n" +
+                "   /ub opt {get,set,list} [option_name] [value] - get/set config options\n" +
                 "   /ub testblock <int> <duration> - test Decision_Lock parameters (potentially dangerous)\n" +
                 "   /ub vendor {buyall,sellall,clearbuy,clearsell}\n" +
                 "   /ub vendor open[p] {vendorname,vendorid,vendorhex}\n" +
