@@ -1,12 +1,14 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
 namespace UtilityBelt.Lib.Settings {
     public class ColorToggleOption : SectionBase {
         private bool enabled;
+        [DefaultValue(true)]
         public bool Enabled {
             get { return enabled; }
             set {
@@ -17,6 +19,7 @@ namespace UtilityBelt.Lib.Settings {
         }
         
         private int color;
+        [DefaultValue(-1)]
         public int Color {
             get { return color; }
             set {

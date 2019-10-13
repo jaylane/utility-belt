@@ -14,6 +14,7 @@ using System.Reflection;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Constants;
 using Decal.Filters;
+using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     public class OptionResult {
@@ -340,17 +341,20 @@ namespace UtilityBelt.Tools {
 
         T Cast<T>(object obj, T type) { return (T)obj; }
 
-        private Regex optionRe = new Regex(@"^(?<option>[^\s]+)\s?(?<value>.*)", RegexOptions.IgnoreCase);
+        private Regex optionRe = new Regex(@"^((get|set) )?(?<option>[^\s]+)\s?(?<value>.*)", RegexOptions.IgnoreCase);
         private void UB_opt(string args) {
             try {
+                if (args.ToLower().Trim() == "list") {
+                    ListOptions(Globals.Settings, "");
+                    return;
+                }
+
                 if (!optionRe.IsMatch(args.Trim())) return;
 
                 var match = optionRe.Match(args.Trim());
                 var option = GetOptionProperty(match.Groups["option"].Value);
                 string name = match.Groups["option"].Value;
                 string newValue = match.Groups["value"].Value;
-
-                if (name.StartsWith("set ")) name.Replace("set ", "");
 
                 if (option == null || option.Object == null) {
                     Util.WriteToChat("Invalid option: " + name);
@@ -365,10 +369,28 @@ namespace UtilityBelt.Tools {
                         option.Property.SetValue(option.Parent, Convert.ChangeType(newValue, option.Property.PropertyType), null);
                         Util.WriteToChat($"Set {name} = {option.Property.GetValue(option.Parent, null)}");
                     }
-                    catch (Exception ex) { Logger.LogException(ex); }
+                    catch (Exception ex) { Util.WriteToChat(ex.Message); }
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void ListOptions(object obj, string history) {
+            obj = obj ?? Globals.Settings;
+
+            var props = obj.GetType().GetProperties();
+
+            foreach (var prop in props) {
+                var summaryAttributes = prop.GetCustomAttributes(typeof(SummaryAttribute), true);
+                var defaultValueAttributes = prop.GetCustomAttributes(typeof(DefaultValueAttribute), true);
+
+                if (defaultValueAttributes.Length > 0) {
+                    Util.WriteToChat($"{history}{prop.Name}");
+                }
+                else if (summaryAttributes.Length > 0) {
+                    ListOptions(prop.GetValue(obj, null), $"{history}{prop.Name}.");
+                }
+            }
         }
 
         private OptionResult GetOptionProperty(string key) {
