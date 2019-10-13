@@ -282,7 +282,7 @@ namespace UtilityBelt.Tools {
                 switch ((LongValueKey)sk) {
                     case LongValueKey.Behavior:
                         Util.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)}");
-                        foreach (ObjectFlag v in Enum.GetValues(typeof(ObjectFlag))) {
+                        foreach (BehaviorFlag v in Enum.GetValues(typeof(BehaviorFlag))) {
                             if ((wo.Values(LongValueKey.DescriptionFormat) & (int)v) != 0) {
                                 Util.WriteToChat($"    Has Flag: {v.ToString()}");
                             }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 namespace UtilityBelt.Lib.Constants {
-    public enum ObjectFlag {
+    public enum BehaviorFlag {
         None = 0x00000000,
         Openable = 0x00000001,
         Inscribable = 0x00000002,

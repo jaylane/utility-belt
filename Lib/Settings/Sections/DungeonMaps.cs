@@ -407,7 +407,7 @@ namespace UtilityBelt.Lib.Settings.Sections {
 
                 default:
                     // draw anything not "stuck" as an item
-                    if ((wo.Values(LongValueKey.Behavior, 0) & (int)ObjectFlag.Stuck) == 0) {
+                    if ((wo.Values(LongValueKey.Behavior, 0) & (int)BehaviorFlag.Stuck) == 0) {
                         return "Items";
                     }
 
