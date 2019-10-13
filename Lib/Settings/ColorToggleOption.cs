@@ -38,5 +38,8 @@ namespace UtilityBelt.Lib.Settings {
         new public string ToString() {
             return $"Enabled:{Enabled} Color:{Color} DefaultColor:{Color}";
         }
+        public bool Equals(MarkerToggleOption obj) {
+            return ToString() == obj.ToString();
+        }
     }
 }

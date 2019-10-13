@@ -10,7 +10,8 @@ using Newtonsoft.Json.Linq;
 
 namespace UtilityBelt.Lib.Settings {
     public abstract class DisplaySectionBase : SectionBase {
-        private Dictionary<string, ColorToggleOption> toggleOptions = new Dictionary<string, ColorToggleOption>();
+        private Dictionary<string, ColorToggleOption> colorToggleOptions = new Dictionary<string, ColorToggleOption>();
+        private Dictionary<string, MarkerToggleOption> markerToggleOptions = new Dictionary<string, MarkerToggleOption>();
 
         public DisplaySectionBase(SectionBase parent) : base(parent) {
             InitProperties();
@@ -36,40 +37,101 @@ namespace UtilityBelt.Lib.Settings {
             try {
                 var prop = GetType().GetProperty(propName);
 
-                if (prop == null) return new ColorToggleOption(this, false, 0);
-
-                if (toggleOptions.ContainsKey(prop.Name)) {
-                    return toggleOptions[prop.Name];
+                if (prop.PropertyType == typeof(ColorToggleOption)) {
+                    return GetColorToggleOption(prop);
                 }
-
-                // no value has been set, so make a new ColorToggleOption instance
-                if (!toggleOptions.ContainsKey(prop.Name)) {
-                    var defaultEnabled = false;
-                    var defaultColor = System.Drawing.Color.White.ToArgb();
-
-                    var defaultEnabledAttr = prop.GetCustomAttributes(typeof(DefaultEnabledAttribute), true);
-                    if (defaultEnabledAttr.Length == 1) {
-                        defaultEnabled = ((DefaultEnabledAttribute)defaultEnabledAttr[0]).Enabled;
-                    }
-
-                    var defaultColorAttr = prop.GetCustomAttributes(typeof(DefaultColorAttribute), true);
-                    if (defaultColorAttr.Length == 1) {
-                        defaultColor = ((DefaultColorAttribute)defaultColorAttr[0]).Color;
-                    }
-
-                    var toggleOption = new ColorToggleOption(this, defaultEnabled, defaultColor);
-                    toggleOption.Name = prop.Name;
-                    Logger.Debug($"Setting name to {prop.Name} for {propName}");
-                    toggleOptions.Add(prop.Name, toggleOption);
-
-                    return toggleOption;
+                else if (prop.PropertyType == typeof(MarkerToggleOption)) {
+                    return GetMarkerToggleOption(prop);
                 }
-
-                return null;
+                else {
+                    return null;
+                }
             }
             catch (Exception ex) { Logger.LogException(ex); }
 
-            return new ColorToggleOption(this, false, 0);
+            return null;
+        }
+
+        private MarkerToggleOption GetMarkerToggleOption(PropertyInfo prop) {
+            if (prop == null) return null;
+
+            if (markerToggleOptions.ContainsKey(prop.Name)) {
+                return markerToggleOptions[prop.Name];
+            }
+
+            // no value has been set, so make a new ColorToggleOption instance
+            if (!markerToggleOptions.ContainsKey(prop.Name)) {
+                var defaultEnabled = false;
+                var defaultColor = System.Drawing.Color.White.ToArgb();
+                var defaultShowLabel = false;
+                var defaultUseIcon = true;
+                var defaultSize = 4;
+
+                var defaultEnabledAttr = prop.GetCustomAttributes(typeof(DefaultEnabledAttribute), true);
+                if (defaultEnabledAttr.Length == 1) {
+                    defaultEnabled = ((DefaultEnabledAttribute)defaultEnabledAttr[0]).Enabled;
+                }
+
+                var defaultColorAttr = prop.GetCustomAttributes(typeof(DefaultColorAttribute), true);
+                if (defaultColorAttr.Length == 1) {
+                    defaultColor = ((DefaultColorAttribute)defaultColorAttr[0]).Color;
+                }
+
+                var defaultShowLabelAttr = prop.GetCustomAttributes(typeof(DefaultShowLabelAttribute), true);
+                if (defaultShowLabelAttr.Length == 1) {
+                    defaultShowLabel = ((DefaultShowLabelAttribute)defaultShowLabelAttr[0]).Enabled;
+                }
+
+                var defaultUseIconAttr = prop.GetCustomAttributes(typeof(DefaultUseIconAttribute), true);
+                if (defaultUseIconAttr.Length == 1) {
+                    defaultUseIcon = ((DefaultUseIconAttribute)defaultUseIconAttr[0]).UseIcon;
+                }
+
+                var defaultSizeAttr = prop.GetCustomAttributes(typeof(DefaultSizeAttribute), true);
+                if (defaultSizeAttr.Length == 1) {
+                    defaultSize = ((DefaultSizeAttribute)defaultSizeAttr[0]).Size;
+                }
+
+                var toggleOption = new MarkerToggleOption(this, defaultEnabled, defaultUseIcon, defaultShowLabel, defaultColor, defaultSize);
+                toggleOption.Name = prop.Name;
+                markerToggleOptions.Add(prop.Name, toggleOption);
+
+                return toggleOption;
+            }
+
+            return null;
+        }
+
+        private ColorToggleOption GetColorToggleOption(PropertyInfo prop) {
+            if (prop == null) return null;
+
+            if (colorToggleOptions.ContainsKey(prop.Name)) {
+                return colorToggleOptions[prop.Name];
+            }
+
+            // no value has been set, so make a new ColorToggleOption instance
+            if (!colorToggleOptions.ContainsKey(prop.Name)) {
+                var defaultEnabled = false;
+                var defaultColor = System.Drawing.Color.White.ToArgb();
+
+                var defaultEnabledAttr = prop.GetCustomAttributes(typeof(DefaultEnabledAttribute), true);
+                if (defaultEnabledAttr.Length == 1) {
+                    defaultEnabled = ((DefaultEnabledAttribute)defaultEnabledAttr[0]).Enabled;
+                }
+
+                var defaultColorAttr = prop.GetCustomAttributes(typeof(DefaultColorAttribute), true);
+                if (defaultColorAttr.Length == 1) {
+                    defaultColor = ((DefaultColorAttribute)defaultColorAttr[0]).Color;
+                }
+
+                var toggleOption = new ColorToggleOption(this, defaultEnabled, defaultColor);
+                toggleOption.Name = prop.Name;
+                colorToggleOptions.Add(prop.Name, toggleOption);
+
+                return toggleOption;
+            }
+
+            return null;
         }
 
         protected void UpdateSetting(string propName, ColorToggleOption value) {
@@ -77,13 +139,32 @@ namespace UtilityBelt.Lib.Settings {
                 var prop = GetType().GetProperty(propName);
 
                 if (prop != null) {
-                    if (toggleOptions.ContainsKey(propName)) {
+                    if (colorToggleOptions.ContainsKey(propName)) {
                         // todo isEqual
-                        if (toggleOptions[prop.Name].Enabled == value.Enabled && toggleOptions[prop.Name].Color == value.Color) return;
-                        toggleOptions[propName] = value;
+                        if (colorToggleOptions[prop.Name].Equals(value)) return;
+                        colorToggleOptions[propName] = value;
                     }
                     else {
-                        toggleOptions.Add(propName, value);
+                        colorToggleOptions.Add(propName, value);
+                    }
+
+                    OnPropertyChanged(propName);
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        protected void UpdateSetting(string propName, MarkerToggleOption value) {
+            try {
+                var prop = GetType().GetProperty(propName);
+
+                if (prop != null) {
+                    if (markerToggleOptions.ContainsKey(propName)) {
+                        if (markerToggleOptions[prop.Name].Equals(value)) return;
+                        markerToggleOptions[propName] = value;
+                    }
+                    else {
+                        markerToggleOptions.Add(propName, value);
                     }
 
                     OnPropertyChanged(propName);

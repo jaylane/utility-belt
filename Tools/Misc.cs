@@ -11,6 +11,9 @@ using VirindiViewService.Controls;
 using System.Text.RegularExpressions;
 using System.ComponentModel;
 using System.Reflection;
+using UtilityBelt.Lib;
+using UtilityBelt.Lib.Constants;
+using Decal.Filters;
 
 namespace UtilityBelt.Tools {
     public class OptionResult {
@@ -62,6 +65,18 @@ namespace UtilityBelt.Tools {
                             break;
                         case "opt":
                             UB_opt(match.Groups["params"].Value);
+                            break;
+                        case "pos":
+                            UB_pos(match.Groups["params"].Value);
+                            break;
+                        case "door":
+                            UB_door(match.Groups["params"].Value);
+                            break;
+                        case "useflags":
+                            UB_useflags(match.Groups["params"].Value);
+                            break;
+                        case "propertydump":
+                            UB_propertydump(match.Groups["params"].Value);
                             break;
                     }
                     // Util.WriteToChat("UB called with command <" + match.Groups["command"].Value + ">, params <" + match.Groups["params"].Value+">");
@@ -154,6 +169,140 @@ namespace UtilityBelt.Tools {
                     }
                     Util.WriteToChat("Pretty sure " + parameter[1] + " is not near me");
                     break;
+            }
+        }
+
+        private void UB_pos(string value) {
+            var selected = Globals.Core.Actions.CurrentSelection;
+
+            if (selected == 0 || !Globals.Core.Actions.IsValidObject(selected)) {
+                Util.WriteToChat("pos: No object selected");
+                return;
+            }
+
+            var wo = Globals.Core.WorldFilter[selected];
+
+            if (wo == null) {
+                Util.WriteToChat("pos: null object selected");
+                return;
+            }
+
+            var phys = PhysicsObject.FromId(selected);
+
+            Util.WriteToChat($"Offset: {wo.Offset()}");
+            Util.WriteToChat($"Coords: {wo.Coordinates()}");
+            Util.WriteToChat($"RawCoords: {wo.RawCoordinates()}"); //same as offset?
+            Util.WriteToChat($"Phys lb: {phys.Landblock.ToString("X8")}");
+            Util.WriteToChat($"Phys pos: x:{phys.Position.X} y:{phys.Position.Y} z:{phys.Position.Z}");
+            Util.WriteToChat($"Phys heading: x:{phys.Heading.X} y:{phys.Position.Y} z:{phys.Position.Z}");
+        }
+
+        private void UB_door(string value) {
+            var selected = Globals.Core.Actions.CurrentSelection;
+
+            if (selected == 0 || !Globals.Core.Actions.IsValidObject(selected)) {
+                Util.WriteToChat("door: No object selected");
+                return;
+            }
+
+            var wo = Globals.Core.WorldFilter[selected];
+
+            if (wo == null) {
+                Util.WriteToChat("door: null object selected");
+                return;
+            }
+
+            Util.WriteToChat($"Door is {(wo.Values(BoolValueKey.Open, false) ? "open" : "closed")}");
+        }
+
+        private void UB_useflags(string value) {
+            var selected = Globals.Core.Actions.CurrentSelection;
+
+            if (selected == 0 || !Globals.Core.Actions.IsValidObject(selected)) {
+                Util.WriteToChat("useflags: No object selected");
+                return;
+            }
+
+            var wo = Globals.Core.WorldFilter[selected];
+
+            if (wo == null) {
+                Util.WriteToChat("useflags: null object selected");
+                return;
+            }
+
+            var itemUseabilityFlags = wo.Values(LongValueKey.Unknown10, 0);
+
+            Util.WriteToChat($"UseFlags for {wo.Name} ({itemUseabilityFlags})");
+
+            foreach (UseFlag v in Enum.GetValues(typeof(UseFlag))) {
+                if ((itemUseabilityFlags & (int)v) != 0) {
+                    Util.WriteToChat($"Has UseFlag: {v.ToString()}");
+                }
+            }
+        }
+
+        private void UB_propertydump(string value) {
+            var selected = Globals.Core.Actions.CurrentSelection;
+
+            if (selected == 0 || !Globals.Core.Actions.IsValidObject(selected)) {
+                Util.WriteToChat("propertydump: No object selected");
+                return;
+            }
+
+            var wo = Globals.Core.WorldFilter[selected];
+
+            if (wo == null) {
+                Util.WriteToChat("propertydump: null object selected");
+                return;
+            }
+
+            Util.WriteToChat($"Property Dump for {wo.Name}");
+
+            Util.WriteToChat($"Id = {wo.Id} (0x{wo.Id.ToString("X8")})");
+            Util.WriteToChat($"Name = {wo.Name}");
+            Util.WriteToChat($"ActiveSpellCount = {wo.ActiveSpellCount}");
+            Util.WriteToChat($"Behavior = {wo.Behavior}");
+            Util.WriteToChat($"Category = {wo.Category}");
+            Util.WriteToChat($"Container = {wo.Container}");
+            Util.WriteToChat($"Coordinates = {wo.Coordinates()}");
+            Util.WriteToChat($"GameDataFlags1 = {wo.GameDataFlags1}");
+            Util.WriteToChat($"HasIdData = {wo.HasIdData}");
+            Util.WriteToChat($"Icon = {wo.Icon} (0x{(0x06000000 + wo.Icon).ToString("X8")})");
+            Util.WriteToChat($"LastIdTime = {wo.LastIdTime}");
+            Util.WriteToChat($"ObjectClass = {wo.ObjectClass} ({(int)wo.ObjectClass})");
+            Util.WriteToChat($"Offset = {wo.Offset()}");
+            Util.WriteToChat($"Orientation = {wo.Orientation()}");
+            Util.WriteToChat($"PhysicsDataFlags = {wo.PhysicsDataFlags}");
+            //PrintFlags(wo.PhysicsDataFlags, );
+            Util.WriteToChat($"RawCoordinates = {wo.RawCoordinates()}");
+            Util.WriteToChat($"SpellCount = {wo.SpellCount}");
+            Util.WriteToChat($"Type = {wo.Type}");
+
+            Util.WriteToChat("String Values:");
+            foreach (var sk in wo.StringKeys) {
+                Util.WriteToChat($"  {(StringValueKey)sk}({sk}) = {wo.Values((StringValueKey)sk)}");
+            }
+
+            Util.WriteToChat("Long Values:");
+            foreach (var sk in wo.LongKeys) {
+                Util.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)}");
+            }
+
+            Util.WriteToChat("Bool Values:");
+            foreach (var sk in wo.BoolKeys) {
+                Util.WriteToChat($"  {(BoolValueKey)sk}({sk}) = {wo.Values((BoolValueKey)sk)}");
+            }
+
+            Util.WriteToChat("Double Values:");
+            foreach (var sk in wo.DoubleKeys) {
+                Util.WriteToChat($"  {(DoubleValueKey)sk}({sk}) = {wo.Values((DoubleValueKey)sk)}");
+            }
+
+            Util.WriteToChat("Spells:");
+            FileService service = Globals.Core.Filter<FileService>();
+            for (var i = 0; i < wo.SpellCount; i++) {
+                var spell = service.SpellTable.GetById(wo.Spell(i));
+                Util.WriteToChat($"  {spell.Name} ({wo.Spell(i)})");
             }
         }
 

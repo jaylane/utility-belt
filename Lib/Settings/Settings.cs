@@ -201,47 +201,6 @@ namespace UtilityBelt.Lib.Settings {
                             AutoVendor.Speed = ParseOldNode(node, "Speed", AutoVendor.Speed);
                             break;
 
-                        case "DungeonMaps":
-                            DungeonMaps.Enabled = ParseOldNode(node, "Enabled", DungeonMaps.Enabled);
-                            DungeonMaps.DrawWhenClosed = ParseOldNode(node, "DrawWhenClosed ", DungeonMaps.DrawWhenClosed);
-                            DungeonMaps.ShowVisitedTiles = ParseOldNode(node, "ShowVisitedTiles", DungeonMaps.ShowVisitedTiles);
-                            DungeonMaps.ShowCompass = ParseOldNode(node, "ShowCompass", DungeonMaps.ShowCompass);
-                            DungeonMaps.MapWindowX = ParseOldNode(node, "MapWindowX", DungeonMaps.MapWindowX);
-                            DungeonMaps.MapWindowY = ParseOldNode(node, "MapWindowY", DungeonMaps.MapWindowY);
-                            DungeonMaps.MapWindowWidth = ParseOldNode(node, "MapWindowWidth", DungeonMaps.MapWindowWidth);
-                            DungeonMaps.MapWindowHeight = ParseOldNode(node, "MapWindowHeight", DungeonMaps.MapWindowHeight);
-                            DungeonMaps.Opacity = ParseOldNode(node, "Opacity", DungeonMaps.Opacity);
-                            DungeonMaps.MapZoom = ParseOldNode(node, "MapZoom", DungeonMaps.MapZoom);
-                            
-                            DungeonMaps.Display.Walls.Color = ParseOldNode(node, "WallColor", DungeonMaps.Display.Walls.Color);
-                            DungeonMaps.Display.InnerWalls.Color = ParseOldNode(node, "InnerWallColor", DungeonMaps.Display.InnerWalls.Color);
-                            DungeonMaps.Display.RampedWalls.Color = ParseOldNode(node, "RampedWallColor", DungeonMaps.Display.RampedWalls.Color);
-                            DungeonMaps.Display.Stairs.Color = ParseOldNode(node, "StairsColor", DungeonMaps.Display.Stairs.Color);
-                            DungeonMaps.Display.Floors.Color = ParseOldNode(node, "FloorColor", DungeonMaps.Display.Floors.Color);
-                            DungeonMaps.Display.Portals.Color = ParseOldNode(node, "PortalsColor", DungeonMaps.Display.Portals.Color);
-                            DungeonMaps.Display.PortalLabels.Color = ParseOldNode(node, "PortalsLabelColor", DungeonMaps.Display.PortalLabels.Color);
-                            DungeonMaps.Display.Player.Color = ParseOldNode(node, "PlayerColor", DungeonMaps.Display.Player.Color);
-                            DungeonMaps.Display.PlayerLabel.Color = ParseOldNode(node, "PlayerLabelColor", DungeonMaps.Display.PlayerLabel.Color);
-                            DungeonMaps.Display.OtherPlayers.Color = ParseOldNode(node, "OtherPlayersColor", DungeonMaps.Display.OtherPlayers.Color);
-                            DungeonMaps.Display.OtherPlayerLabels.Color = ParseOldNode(node, "OtherPlayersLabelColor", DungeonMaps.Display.OtherPlayerLabels.Color);
-                            DungeonMaps.Display.VisualNavStickyPoint.Color = ParseOldNode(node, "VisualNavStickyPointColor", DungeonMaps.Display.VisualNavStickyPoint.Color);
-                            DungeonMaps.Display.VisualNavLines.Color = ParseOldNode(node, "VisualNavLineColor", DungeonMaps.Display.VisualNavLines.Color);
-
-                            DungeonMaps.Display.Walls.Enabled = ParseOldNode(node, "ShowWall", DungeonMaps.Display.Walls.Enabled);
-                            DungeonMaps.Display.InnerWalls.Enabled = ParseOldNode(node, "ShowInnerWall", DungeonMaps.Display.InnerWalls.Enabled);
-                            DungeonMaps.Display.RampedWalls.Enabled = ParseOldNode(node, "ShowRampedWall", DungeonMaps.Display.RampedWalls.Enabled);
-                            DungeonMaps.Display.Stairs.Enabled = ParseOldNode(node, "ShowStairs", DungeonMaps.Display.Stairs.Enabled);
-                            DungeonMaps.Display.Floors.Enabled = ParseOldNode(node, "ShowFloor", DungeonMaps.Display.Floors.Enabled);
-                            DungeonMaps.Display.Portals.Enabled = ParseOldNode(node, "ShowPortals", DungeonMaps.Display.Portals.Enabled);
-                            DungeonMaps.Display.PortalLabels.Enabled = ParseOldNode(node, "ShowPortalsLabel", DungeonMaps.Display.PortalLabels.Enabled);
-                            DungeonMaps.Display.Player.Enabled = ParseOldNode(node, "ShowPlayer", DungeonMaps.Display.Player.Enabled);
-                            DungeonMaps.Display.PlayerLabel.Enabled = ParseOldNode(node, "ShowPlayerLabel", DungeonMaps.Display.PlayerLabel.Enabled);
-                            DungeonMaps.Display.OtherPlayers.Enabled = ParseOldNode(node, "ShowOtherPlayers", DungeonMaps.Display.OtherPlayers.Enabled);
-                            DungeonMaps.Display.OtherPlayerLabels.Enabled = ParseOldNode(node, "ShowOtherPlayersLabel", DungeonMaps.Display.OtherPlayerLabels.Enabled);
-                            DungeonMaps.Display.VisualNavStickyPoint.Enabled = ParseOldNode(node, "ShowVisualNavStickyPoint", DungeonMaps.Display.VisualNavStickyPoint.Enabled);
-                            DungeonMaps.Display.VisualNavLines.Enabled = ParseOldNode(node, "ShowVisualNavLine", DungeonMaps.Display.VisualNavLines.Enabled);
-                            break;
-
                         case "InventoryManager":
                             InventoryManager.AutoCram = ParseOldNode(node, "AutoCram", InventoryManager.AutoCram);
                             InventoryManager.AutoStack = ParseOldNode(node, "AutoStack", InventoryManager.AutoStack);

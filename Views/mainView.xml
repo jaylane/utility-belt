@@ -53,11 +53,19 @@
             <control progid="DecalControls.PushButton" name="DungeonMapsClearTileCache" left="8" top="190" width="110" height="20" text="Clear Tile Cache"/>
           </control>
         </page>
-        <page label="Display">
+        <page label="Map Display">
           <control progid="DecalControls.List" name="DungeonMapsSettingsList" left="0" top="0" width="400" height="200">
             <column progid="DecalControls.CheckColumn" name="DungeonMapsSettingsListEnabled"/>
             <column progid="DecalControls.IconColumn" name="DungeonMapsSettingsListColor" fixedwidth="30" />
             <column progid="DecalControls.TextColumn" name="DungeonMapsSettingsListSetting" />
+          </control>
+        </page>
+        <page label="Marker Display">
+          <control progid="DecalControls.List" name="DungeonMapsMarkersList" left="0" top="0" width="400" height="200">
+            <column progid="DecalControls.CheckColumn" name="DungeonMapsMarkersListEnabled"/>
+            <column progid="DecalControls.IconColumn" name="DungeonMapsMarkersListColor" fixedwidth="30" />
+            <column progid="DecalControls.TextColumn" name="DungeonMapsMarkersListSettingName" />
+            <column progid="DecalControls.TextColumn" name="DungeonMapsMarkersListSettingValue" />
           </control>
         </page>
       </control>

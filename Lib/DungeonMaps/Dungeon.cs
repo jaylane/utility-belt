@@ -163,6 +163,11 @@ namespace UtilityBelt.Lib.DungeonMaps {
                     continue;
                 }
 
+                // floors more than four levels above your char are not drawn
+                if (Globals.Core.Actions.LocationZ - zLayer > 24) {
+                    continue;
+                }
+
                 foreach (var cell in zLayers[zLayer]) {
                     // make sure this cell is in view on the map window
                     if (!CellIsInView(cell, r, centerX, centerY, scale)) continue;
@@ -243,14 +248,11 @@ namespace UtilityBelt.Lib.DungeonMaps {
                     drawGfx.Restore(gs1);
                 }
 
-                // portal dots
-                DrawPortalDots(drawGfx, zLayer);
-
                 // nav lines
                 DrawNavLines(drawGfx, zLayer);
-            }
 
-            DrawPlayerMarker(drawGfx);
+                DrawMarkers(drawGfx, zLayer, rotation);
+            }
 
             drawGfx.TranslateTransform(-mapDrawOffsetX, -mapDrawOffsetY);
             drawGfx.ScaleTransform(1 / scale, 1 / scale);
@@ -263,28 +265,133 @@ namespace UtilityBelt.Lib.DungeonMaps {
             return drawBitmap;
         }
 
-        private void DrawPortalDots(Graphics drawGfx, int zLayer) {
-            if (!Globals.Settings.DungeonMaps.Display.Portals.Enabled) return;
+        private void DrawMarkers(Graphics drawGfx, int zLayer, int rotation) {
+            foreach (var wo in Globals.Core.WorldFilter.GetLandscape()) {
+                if (!ShouldDrawMarker(wo)) continue;
 
-            var opacity = Math.Max(Math.Min(1 - (Math.Abs(Globals.Core.Actions.LocationZ - zLayer) / 6) * 0.4F, 1), 0) * 255;
-            portalBrush.Color = Color.FromArgb(Globals.Settings.DungeonMaps.Display.Portals.Color);
-
-            // draw portal markers
-            if (zPortals.ContainsKey(zLayer)) {
-                foreach (var portal in zPortals[zLayer]) {
-                    drawGfx.FillEllipse(portalBrush, -(float)(portal.X + 1), (float)(portal.Y - 1), 2F, 2F);
+                var objPos = wo.Offset();
+                var obj = PhysicsObject.FromId(wo.Id);
+                if (obj != null) {
+                    objPos = new Vector3Object(obj.Position.X, obj.Position.Y, obj.Position.Z);
+                    obj = null;
                 }
+
+                // clamp objects to the floor
+                var objZ = Math.Round(objPos.Z / 6) * 6;
+
+                // only draw stuff on the current zlayer
+                if (Math.Abs(objZ - zLayer) > 5) continue;
+
+                DrawObjectClassMarker(wo, drawGfx, -(float)objPos.X, (float)objPos.Y, (float)objZ, rotation);
             }
         }
 
-        private void DrawPlayerMarker(Graphics drawGfx) {
-            if (!Globals.Settings.DungeonMaps.Display.Player.Enabled) return;
+        private bool ShouldDrawMarker(WorldObject wo) {
+            // make sure the client knows about this object
+            if (!Globals.Core.Actions.IsValidObject(wo.Id)) return false;
+
+            // too far?
+            if (Globals.Core.WorldFilter.Distance(wo.Id, Globals.Core.CharacterFilter.Id) * 240 > 300) return false;
+
+            return Globals.Settings.DungeonMaps.Display.Markers.ShouldDraw(wo);
+        }
+
+        private void DrawObjectClassMarker(WorldObject wo, Graphics gfx, float x, float y, float z, int rotation) {
+            try {
+                var brush = new SolidBrush(Color.FromArgb(wo.Values((LongValueKey)95, Color.Pink.ToArgb())));
+
+                ImageAttributes attributes = new ImageAttributes();
+                ColorMatrix matrix = null;
+
+                // floors directly above your character
+                if (Globals.Core.Actions.LocationZ - z < -3) {
+                    float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - z) / 6) * 0.5F;
+                    brush.Color = Color.FromArgb((int)(b * 255), brush.Color.R, brush.Color.G, brush.Color.B);
+                    matrix = new ColorMatrix(new float[][]{
+                            new float[] {1, 0, 0, 0, 0},
+                            new float[] {0, 1, 0, 0, 0},
+                            new float[] {0, 0, 1, 0, 0},
+                            new float[] {0, 0, 0, b, 0},
+                            new float[] {0, 0, 0, 0, 1},
+                        });
+                }
+                // current floor
+                else if (Math.Abs(Globals.Core.Actions.LocationZ - z) < 3) {
+
+                }
+                // floors below
+                else {
+                    float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - z) / 6) * 0.4F;
+                    var ca = (int)Math.Max(Math.Min((int)(b * 255), 255), 0);
+                    brush.Color = Color.FromArgb(ca, brush.Color.R, brush.Color.G, brush.Color.B);
+                    matrix = new ColorMatrix(new float[][]{
+                            new float[] {b, 0, 0, 0, 0},
+                            new float[] {0, b, 0, 0, 0},
+                            new float[] {0, 0, b, 0, 0},
+                            new float[] {0, 0, 0, 1, 0},
+                            new float[] {0, 0, 0, 0, 1},
+                        });
+                }
+
+                if (matrix != null) {
+                    attributes.SetColorMatrix(matrix);
+                }
+
+                var color = Color.FromArgb(Globals.Settings.DungeonMaps.Display.Markers.GetMarkerColor(wo));
+                var size = Globals.Settings.DungeonMaps.Display.Markers.GetSize(wo);
+                var useIcon = Globals.Settings.DungeonMaps.Display.Markers.ShouldUseIcon(wo);
+                var a = (int)Math.Min(Math.Max(color.A * (float)((float)brush.Color.A / 255f), 0), 255);
+
+                brush.Color = Color.FromArgb(a, color.R, color.G, color.B);
+
+                if (wo.ObjectClass == ObjectClass.Door && !useIcon) {
+                    var onYAxis = Math.Abs(wo.Orientation().W) > 0.6 && Math.Abs(wo.Orientation().W) < 0.8;
+                    if (onYAxis) {
+                        gfx.FillRectangle(brush, x - 0.2f, y - 1.5f, 0.4f, 3);
+                    }
+                    else {
+                        gfx.FillRectangle(brush, x - 1.5f, y - 0.2f, 3, 0.4f);
+                    }
+                    return;
+                }
+                else if (useIcon) {
+                    var icon = IconCache.Get(wo.Icon);
+                    // translate to keep the icon always facing up relative to the map window
+                    gfx.TranslateTransform(x, y);
+                    gfx.RotateTransform(-rotation);
+                    gfx.DrawImage(icon, new Rectangle(-(size/2), -(size /2), size, size), 0, 0, 32, 32, GraphicsUnit.Pixel, attributes);
+                    gfx.RotateTransform(rotation);
+                    gfx.TranslateTransform(-x, -y);
+                }
+                else {
+                    gfx.FillEllipse(brush, x - (size / 2), y - (size / 2), size, size);
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void DrawPlayerMarker(Graphics gfx, int rotation) {
+            if (!Globals.Settings.DungeonMaps.Display.Markers.You.Enabled) return;
 
             var playerXOffset = -(float)Globals.Core.Actions.LocationX;
             var playerYOffset = (float)Globals.Core.Actions.LocationY;
+            var size = Globals.Settings.DungeonMaps.Display.Markers.You.Size;
 
-            playerBrush.Color = Color.FromArgb(Globals.Settings.DungeonMaps.Display.Player.Color);
-            drawGfx.FillEllipse(playerBrush, playerXOffset - 1, playerYOffset - 1, 2f, 2f);
+            if (Globals.Settings.DungeonMaps.Display.Markers.You.UseIcon) {
+                var icon = IconCache.Get(Globals.Core.WorldFilter[Globals.Core.CharacterFilter.Id].Icon);
+                var rect = new RectangleF(-(size / 2), -(size / 2), size, size);
+
+                // keep player icon always facing up relative to the map window
+                gfx.TranslateTransform(playerXOffset, playerYOffset);
+                gfx.RotateTransform(-rotation);
+                gfx.DrawImage(icon, rect, new RectangleF(0, 0, 32, 32), GraphicsUnit.Pixel);
+                gfx.RotateTransform(rotation);
+                gfx.TranslateTransform(-playerXOffset, -playerYOffset);
+            }
+            else {
+                playerBrush.Color = Color.FromArgb(Globals.Settings.DungeonMaps.Display.Markers.You.Color);
+                gfx.FillEllipse(playerBrush, playerXOffset - (size / 2), playerYOffset - (size / 2), size, size);
+            }
         }
 
         private bool CellIsInView(DungeonCell cell, Rectangle window, float centerX, float centerY, float scale) {
@@ -307,6 +414,9 @@ namespace UtilityBelt.Lib.DungeonMaps {
 
         public void DrawPointRoute(Graphics drawGfx, int zLayer, VTNav.VTNavRoute route) {
             var allPoints = route.points.Where((p) => p.Type == VTNav.eWaypointType.Point).ToArray();
+
+            // todo: follow routes
+            if (route.NavType == VTNav.eNavType.Target) return;
 
             // sticky point
             if (allPoints.Length == 1 && route.NavType == VTNav.eNavType.Circular) {
@@ -338,6 +448,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
                     var prevOffset = Geometry.LandblockOffsetFromCoordinates(LandBlockId, (float)prev.EW, (float)prev.NS);
 
                     // we pump these up a bit so they get drawn preferentially on a higher layer
+                    // todo: this is still broken on ramps, some nav lines get drawn under the ramp tile
                     var prevZ = (prev.Z * 240) + 3f;
                     var pointZ = (point.Z * 240) + 3f;
 
@@ -373,20 +484,6 @@ namespace UtilityBelt.Lib.DungeonMaps {
             }
 
             return cells;
-        }
-
-        public void AddPortal(WorldObject portalObject) {
-            if (portalIds.Contains(portalObject.Id)) return;
-
-            var portal = new Portal(portalObject);
-            var portalZ = (int)Math.Floor(portal.Z / 6) * 6;
-
-            if (!zPortals.Keys.Contains(portalZ)) {
-                zPortals.Add(portalZ, new List<Portal>());
-            }
-
-            portalIds.Add(portal.Id);
-            zPortals[portalZ].Add(portal);
         }
     }
 }
