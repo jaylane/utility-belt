@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows.Forms;
 using UtilityBelt.Lib;
 using VirindiViewService;
+using VirindiViewService.Controls;
 using VirindiViewService.XMLParsers;
 
 namespace UtilityBelt.Views {
@@ -12,6 +13,10 @@ namespace UtilityBelt.Views {
 
         private ViewProperties properties;
         private ControlGroup controls;
+
+        private HudCheckBox PluginDebug;
+        private HudCheckBox PluginCheckForUpdates;
+        private HudButton DoUpdateCheck;
 
         private bool disposed;
 
@@ -41,8 +46,46 @@ namespace UtilityBelt.Views {
                     if (timer.Enabled) timer.Stop();
                     timer.Start();
                 };
+
+                PluginDebug = (HudCheckBox)view["PluginDebug"];
+                PluginCheckForUpdates = (HudCheckBox)view["PluginCheckForUpdates"];
+                DoUpdateCheck = (HudButton)view["DoUpdateCheck"];
+
+                DoUpdateCheck.Hit += DoUpdateCheck_Hit;
+
+                PluginDebug.Change += PluginDebug_Change;
+                PluginCheckForUpdates.Change += PluginCheckForUpdates_Change;
+
+                UpdateUI();
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void PluginCheckForUpdates_Change(object sender, EventArgs e) {
+            try {
+                Globals.Settings.Plugin.CheckForUpdates = PluginCheckForUpdates.Checked;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void PluginDebug_Change(object sender, EventArgs e) {
+            try {
+                Globals.Settings.Plugin.Debug = PluginDebug.Checked;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void DoUpdateCheck_Hit(object sender, EventArgs e) {
+            try {
+                Util.WriteToChat("Checking for update");
+                UpdateChecker.CheckForUpdate();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void UpdateUI() {
+            PluginDebug.Checked = Globals.Settings.Plugin.Debug;
+            PluginCheckForUpdates.Checked = Globals.Settings.Plugin.CheckForUpdates;
         }
 
         public ACImage GetIcon() {

@@ -7,7 +7,6 @@
           <control progid="DecalControls.FixedLayout" clipped="">
             <control progid="DecalControls.Checkbox" name="AutoSalvageThink" left="8" top="8" width="250" height="16" text="Think to yourself when finished"/>
             <control progid="DecalControls.Checkbox" name="AutoSalvageOnlyFromMainPack" left="8" top="32" width="250" height="16" text="Only salvage items in your main pack"/>
-            <control progid="DecalControls.Checkbox" name="AutoSalvageDebug" left="8" top="56" width="250" height="16" text="Show Debug Messages"/>
             <control progid="DecalControls.PushButton" name="AutoSalvageStart" left="8" top="184" width="110" height="20" text="Start"/>
 
           </control>
@@ -20,7 +19,6 @@
             <control progid="DecalControls.Checkbox" name="AutoVendorShowMerchantInfo" left="8" top="56" width="250" height="16" text="Show merchant info on approach"/>
             <control progid="DecalControls.Checkbox" name="AutoVendorOnlyFromMainPack" left="8" top="80" width="250" height="16" text="Only vendor items in your main pack"/>
             <control progid="DecalControls.Checkbox" name="AutoVendorThink" left="8" top="104" width="208" height="16" text="Think to yourself when finished"/>
-            <control progid="DecalControls.Checkbox" name="AutoVendorDebug" left="8" top="128" width="208" height="16" text="Show Debug Messages"/>
 
             <control progid="DecalControls.Slider" name="AutoVendorSpeed" left="8" top="160" width="208" height="16" minimum="0" maximum="22" textcolor="0" vertical="0"/>
             <control progid="DecalControls.StaticText" name="AutoVendorSpeedLabel" left="8" top="144" width="208" height="16" justify="Center" text="Delay (ms)"/>
@@ -32,7 +30,6 @@
           <control progid="DecalControls.FixedLayout" clipped="">
             <control progid="DecalControls.Checkbox" name="InventoryManagerAutoCram" left="8" top="8" width="400" height="16" text="Automatically cram items into side packs (while vendoring)"/>
             <control progid="DecalControls.Checkbox" name="InventoryManagerAutoStack" left="8" top="32" width="400" height="16" text="Automatically combine stacked items (while vendoring)"/>
-            <control progid="DecalControls.Checkbox" name="InventoryManagerDebug" left="8" top="56" width="184" height="16" text="Show Debug Messages"/>
             <control progid="DecalControls.PushButton" name="InventoryManagerTest" left="8" top="184" width="110" height="20" text="AutoStack"/>
           </control>
 
@@ -48,7 +45,6 @@
             <control progid="DecalControls.Checkbox" name="DungeonMapsDrawWhenClosed" left="8" top="32" width="208" height="16" text="Draw maps when window is closed"/>
             <control progid="DecalControls.Slider" name="DungeonMapsOpacity" left="8" top="152" width="208" height="16" minimum="0" maximum="20" textcolor="0" vertical="0"/>
             <control progid="DecalControls.StaticText" name="DungeonMapsOpacityLabel" left="8" top="136" width="200" height="16" justify="Center" text="Map Opacity"/>
-            <control progid="DecalControls.Checkbox" name="DungeonMapsDebug" left="8" top="56" width="208" height="16" text="Show Debug Messages"/>
             <control progid="DecalControls.Checkbox" name="DungeonMapsShowVisitedTiles" left="8" top="80" width="208" height="16" text="Show visited tiles"/>
             <control progid="DecalControls.PushButton" name="DungeonMapsClearTileCache" left="8" top="190" width="110" height="20" text="Clear Tile Cache"/>
           </control>
@@ -70,6 +66,8 @@
         </page>
       </control>
     </page>
+    <!-- this is disabled until it works on ace as well (esecially since char settings are fixed on gdle) -->
+    <!--
     <page label="EmuConfig">
       <control progid="DecalControls.FixedLayout" clipped="">
         <control progid="DecalControls.List" name="EmuConfigList" left="0" top="0" width="490" height="250">
@@ -79,6 +77,7 @@
       </control>
 
     </page>
+    -->
     <page label="QuestTracker">
       <control progid="DecalControls.FixedLayout" clipped="" height="270">
         <control progid="DecalControls.StaticText" name="QuestsListFilterLabel" left="1" top="4" width="45" height="16" text="Search:"/>
@@ -140,6 +139,13 @@
 
       </control>
 
+    </page>
+    <page label="Settings">
+      <control progid="DecalControls.FixedLayout" clipped="">
+        <control progid="DecalControls.Checkbox" name="PluginDebug" left="8" top="8" width="250" height="16" text="Show Debug Messages"/>
+        <control progid="DecalControls.Checkbox" name="PluginCheckForUpdates" left="8" top="26" width="250" height="16" text="Check for updates on login"/>
+        <control progid="DecalControls.PushButton" name="DoUpdateCheck" left="8" top="190" width="130" height="20" text="Check for Update"/>
+      </control>
     </page>
   </control>
 

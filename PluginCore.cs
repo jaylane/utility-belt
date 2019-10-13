@@ -17,7 +17,7 @@ namespace UtilityBelt
 	[FriendlyName("UtilityBelt")]
 	public class PluginCore : PluginBase {
         private AutoSalvage autoSalvage;
-        private EmuConfig emuConfig;
+        //private EmuConfig emuConfig;
         private QuestTracker questTracker;
         private Jumper jumper;
         private Misc misc;
@@ -66,7 +66,7 @@ namespace UtilityBelt
                 Globals.VisualVTankRoutes = new VisualVTankRoutes();
 
                 autoSalvage = new AutoSalvage();
-                emuConfig = new EmuConfig();
+                //emuConfig = new EmuConfig();
                 questTracker = new QuestTracker();
                 misc = new Misc();
                 jumper = new Jumper();
@@ -77,9 +77,10 @@ namespace UtilityBelt
 
                 Globals.Core.RenderFrame += Core_RenderFrame;
 
-                UpdateChecker.CheckForUpdate();
 
-                //Globals.Settings.ShouldSave = true;
+                if (Globals.Settings.Plugin.CheckForUpdates) {
+                    UpdateChecker.CheckForUpdate();
+                }
             }
 			catch (Exception ex) { Logger.LogException(ex); }
 		}
@@ -109,7 +110,7 @@ namespace UtilityBelt
 
                 if (autoSalvage != null) autoSalvage.Dispose();
                 if (Globals.DungeonMaps != null) Globals.DungeonMaps.Dispose();
-                if (emuConfig != null) emuConfig.Dispose();
+                //if (emuConfig != null) emuConfig.Dispose();
                 if (questTracker != null) questTracker.Dispose();
                 if (misc != null) misc.Dispose();
                 if (jumper != null) jumper.Dispose();
