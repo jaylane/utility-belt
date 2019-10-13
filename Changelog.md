@@ -1,4 +1,4 @@
-## 0.0.9
+## 0.0.9 [UtilityBeltInstaller-0.0.9.exe](/uploads/f0ba230502e0e62969724d36f6a3d8ed/UtilityBeltInstaller-0.0.9.exe)
 - Add support to VisualNav for follow type navs
 - Default autovendor autostack while vendoring to true
 - Added `/ub count item <regexMatch>` command (thanks Schneebly)
