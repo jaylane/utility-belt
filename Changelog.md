@@ -1,3 +1,6 @@
+## 0.0.10 (2019-10-13) [UtilityBeltInstaller-0.0.10.exe](/uploads/0e26748b43ba78352b2c047f0cc0061a/UtilityBeltInstaller-0.0.10.exe)
+- Customary remove debug spam release
+
 ## 0.0.9 (2019-10-13) [UtilityBeltInstaller-0.0.9.exe](/uploads/f0ba230502e0e62969724d36f6a3d8ed/UtilityBeltInstaller-0.0.9.exe)
 - Add support to VisualNav for follow type navs
 - Default autovendor autostack while vendoring to true

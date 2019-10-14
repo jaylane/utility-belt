@@ -38,8 +38,6 @@ namespace UtilityBelt.Lib.DungeonMaps {
         public Dungeon(int landCell) {
             LandBlockId = landCell >> 16 << 16;
 
-            Util.WriteToChat(LandBlockId.ToString("X8"));
-
             LoadCells();
 
             dungeonWidth = (int)(Math.Abs(maxX) + Math.Abs(minX) + CELL_SIZE);

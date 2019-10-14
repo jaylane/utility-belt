@@ -62,9 +62,6 @@ namespace UtilityBelt.Lib {
                         foreach (var tag in tags) {
                             try {
                                 Version releaseVersion = new Version(tag.tag_name.Replace("release-", ""));
-
-                                Util.WriteToChat(releaseVersion.ToString());
-
                                 if (releaseVersion.CompareTo(version) >= 1) {
                                     var lines = new List<string>(tag.description.Split('\r'));
                                     lines.RemoveAt(0);
