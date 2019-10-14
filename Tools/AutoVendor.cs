@@ -667,15 +667,11 @@ namespace UtilityBelt.Tools {
                 if (wo1.ObjectClass == ObjectClass.TradeNote && wo2.ObjectClass != ObjectClass.TradeNote) return 1;
                 if (wo1.ObjectClass != ObjectClass.TradeNote && wo2.ObjectClass == ObjectClass.TradeNote) return -1;
 
-                // then cheapest first
-                if (GetVendorBuyPrice(wo2) > GetVendorBuyPrice(wo2)) return 1;
-                if (GetVendorBuyPrice(wo1) < GetVendorBuyPrice(wo2)) return -1;
+                var buyPrice1 = GetVendorBuyPrice(wo1) * wo1.Values(LongValueKey.StackCount, 1);
+                var buyPrice2 = GetVendorBuyPrice(wo2) * wo2.Values(LongValueKey.StackCount, 1);
 
-                // then smallest stack size
-                if (wo1.Values(LongValueKey.StackCount, 1) > wo2.Values(LongValueKey.StackCount, 1)) return 1;
-                if (wo1.Values(LongValueKey.StackCount, 1) < wo2.Values(LongValueKey.StackCount, 1)) return -1;
-
-                return 0;
+                // cheapest first
+                return buyPrice1.CompareTo(buyPrice2);
             });
 
             return sellObjects;
@@ -686,6 +682,9 @@ namespace UtilityBelt.Tools {
 
             // skip 0 value
             if (wo.Values(LongValueKey.Value, 0) <= 0) return false;
+
+            // sellable?
+            if (wo.Values(BoolValueKey.CanBeSold, true) == false) return false;
 
             // bail if we are only selling from main pack and this isnt in there
             if (Globals.Settings.AutoVendor.OnlyFromMainPack == true && wo.Container != Globals.Core.CharacterFilter.Id) {
