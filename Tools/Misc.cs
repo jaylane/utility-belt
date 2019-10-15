@@ -34,8 +34,6 @@ namespace UtilityBelt.Tools {
         private int vendorOpening = 0;
         private static WorldObject vendor = null;
 
-        private const int VENDOR_OPEN_TIMEOUT = 5000;
-
         private bool disposed = false;
 
         public Misc() {
@@ -103,6 +101,8 @@ namespace UtilityBelt.Tools {
                 "   /ub testblock <int> <duration> - test Decision_Lock parameters (potentially dangerous)\n" +
                 "   /ub vendor {buyall,sellall,clearbuy,clearsell}\n" +
                 "   /ub vendor open[p] {vendorname,vendorid,vendorhex}\n" +
+                "   /ub vendor openclosest - attempts to open the closest vendor\n" +
+                "   /ub vendor opencancel - quietly cancels the last /ub vendor open* command\n" +
                 "TODO: Add rest of commands");
         }
         public void UB_testBlock(string theRest) {
@@ -125,15 +125,17 @@ namespace UtilityBelt.Tools {
             char[] stringSplit = { ' ' };
             string[] parameter = parameters.Split(stringSplit, 2);
             if (parameter.Length == 0) {
-                Util.WriteToChat("Usage: /ub vendor {open[p] {vendorname,vendorid,vendorhex},buyall,sellall,clearbuy,clearsell}");
+                Util.WriteToChat("Usage: /ub vendor {open[p] {vendorname,vendorid,vendorhex},openclosest,opencancel,buyall,sellall,clearbuy,clearsell}");
                 return;
             }
             switch (parameter[0])
             {
+                case "buy":
                 case "buyall":
                     CoreManager.Current.Actions.VendorBuyAll();
                     break;
 
+                case "sell":
                 case "sellall":
                     CoreManager.Current.Actions.VendorSellAll();
                     break;
@@ -148,30 +150,50 @@ namespace UtilityBelt.Tools {
 
                 case "open":
                     if (parameter.Length != 2) {
-                        Util.WriteToChat("Usage: /ub vendor open {vendorname,vendorid}");
+                        Util.WriteToChat("Usage: /ub vendor open[p] {vendorname,vendorid}");
                         return;
                     }
-                    vendor = FindName(parameter[1], false);
-                    if (vendor != null) {
-                        OpenVendor();
-                        break;
-                    }
-                    Util.WriteToChat("Pretty sure " + parameter[1] + " is not near me");
+                    UB_vendor_open(parameter[1], false);
                     break;
 
                 case "openp":
                     if (parameter.Length != 2) {
-                        Util.WriteToChat("Usage: /ub vendor open {vendorname,vendorid}");
+                        Util.WriteToChat("Usage: /ub vendor open[p] {vendorname,vendorid}");
                         return;
                     }
-                    vendor = FindName(parameter[1], true);
-                    if (vendor != null) {
-                        OpenVendor();
-                        break;
-                    }
-                    Util.WriteToChat("Pretty sure " + parameter[1] + " is not near me");
+                    UB_vendor_open(parameter[1], false);
+                    break;
+                case "openclosest":
+                    UB_vendor_open(null, false);
+                    break;
+                case "opencancel":
+                    Globals.Core.Actions.FaceHeading(Globals.Core.Actions.Heading, true);
+                    vendor = null;
+                    vendorOpening = 0;
+                    VTankControl.Nav_UnBlock();
                     break;
             }
+        }
+
+        private void UB_vendor_open(string vendorname, bool partial) {
+            if (vendorname == null) {
+                double lastDistance = double.MaxValue;
+                double thisDistance;
+                foreach (WorldObject thisOne in Globals.Core.WorldFilter.GetByObjectClass(ObjectClass.Vendor)) {
+                    thisDistance = Globals.Core.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, thisOne.Id);
+                    if (vendor == null || lastDistance > thisDistance) {
+                        vendor = thisOne;
+                        lastDistance = thisDistance;
+                    }
+                }
+            } else {
+                vendor = FindName(vendorname, partial);
+            }
+            if (vendor != null) {
+                OpenVendor();
+                return;
+            }
+            Util.ThinkOrWrite("AutoVendor failed to open vendor", Globals.Settings.AutoVendor.Think);
         }
 
         private void UB_pos(string value) {
@@ -429,12 +451,12 @@ namespace UtilityBelt.Tools {
         }
 
         private void OpenVendor() {
-            VTankControl.Nav_Block(500 + VENDOR_OPEN_TIMEOUT, false);
+            VTankControl.Nav_Block(500 + Globals.Settings.AutoVendor.TriesTime, false);
             vendorOpening = 1;
 
-            vendorTimestamp = DateTime.UtcNow - TimeSpan.FromMilliseconds(VENDOR_OPEN_TIMEOUT - 250); // fudge timestamp so next think hits in 500ms
+            vendorTimestamp = DateTime.UtcNow - TimeSpan.FromMilliseconds(Globals.Settings.AutoVendor.TriesTime - 250); // fudge timestamp so next think hits in 500ms
             Globals.Core.Actions.SetAutorun(false);
-            // Util.WriteToChat("Attempting to open vendor " + vendor.Name);
+            Logger.Debug("Attempting to open vendor " + vendor.Name);
 
         }
 
@@ -478,16 +500,19 @@ namespace UtilityBelt.Tools {
 
         public void Think() {
             try {
-                if (vendorOpening > 0 && DateTime.UtcNow - vendorTimestamp > TimeSpan.FromMilliseconds(VENDOR_OPEN_TIMEOUT)) {
-                    if (vendorOpening > 1)
-                        Util.WriteToChat("Vendor Open Timed out, trying again");
-                    if (vendorOpening < 4) {
-                        VTankControl.Nav_Block(500 + VENDOR_OPEN_TIMEOUT, false);
+                if (vendorOpening > 0 && DateTime.UtcNow - vendorTimestamp > TimeSpan.FromMilliseconds(Globals.Settings.AutoVendor.TriesTime)) {
+
+                    if (vendorOpening <= Globals.Settings.AutoVendor.Tries) {
+                        if (vendorOpening > 1)
+                            Logger.Debug("Vendor Open Timed out, trying again");
+
+                        VTankControl.Nav_Block(500 + Globals.Settings.AutoVendor.TriesTime, false);
                         vendorOpening++;
                         vendorTimestamp = DateTime.UtcNow;
                         CoreManager.Current.Actions.UseItem(vendor.Id, 0);
                     } else {
-                        Util.WriteToChat("Unable to open vendor "+vendor.Name);
+                        Globals.Core.Actions.FaceHeading(Globals.Core.Actions.Heading, true); // Cancel the previous useitem call (don't ask)
+                        Util.ThinkOrWrite("AutoVendor failed to open vendor", Globals.Settings.AutoVendor.Think);
                         vendor = null;
                         vendorOpening = 0;
                         VTankControl.Nav_UnBlock();
@@ -497,9 +522,8 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
         private void WorldFilter_ApproachVendor(object sender, ApproachVendorEventArgs e) {
-            if (vendorOpening > 0 && e.Vendor.MerchantId == vendor.Id)
-            {
-                // Util.WriteToChat("vendor " + vendor.Name + " opened successfully");
+            if (vendorOpening > 0 && e.Vendor.MerchantId == vendor.Id) {
+                Logger.Debug("vendor " + vendor.Name + " opened successfully");
                 vendor = null;
                 vendorOpening = 0;
                 // VTankControl.Nav_UnBlock(); Let it bleed over into AutoVendor; odds are there's a reason this vendor was opened, and letting vtank run off prolly isn't it.

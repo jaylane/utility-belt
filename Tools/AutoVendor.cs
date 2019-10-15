@@ -37,6 +37,8 @@ namespace UtilityBelt.Tools {
         HudCheckBox UIAutoVendorOnlyFromMainPack { get; set; }
         HudHSlider UIAutoVendorSpeed { get; set; }
         HudStaticText UIAutoVendorSpeedText { get; set; }
+        HudHSlider UIAutoVendorTries { get; set; }
+        HudStaticText UIAutoVendorTriesText { get; set; }
 
         public AutoVendor() {
             try {
@@ -45,6 +47,7 @@ namespace UtilityBelt.Tools {
                 Directory.CreateDirectory(Path.Combine(Util.GetServerDirectory(), "autovendor"));
 
                 UIAutoVendorSpeedText = Globals.MainView.view != null ? (HudStaticText)Globals.MainView.view["AutoVendorSpeedText"] : new HudStaticText();
+                UIAutoVendorTriesText = Globals.MainView.view != null ? (HudStaticText)Globals.MainView.view["AutoVendorTriesText"] : new HudStaticText();
 
                 UIAutoVendorEnable = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoVendorEnabled"] : new HudCheckBox();
                 UIAutoVendorEnable.Change += UIAutoVendorEnable_Change;
@@ -64,6 +67,9 @@ namespace UtilityBelt.Tools {
                 UIAutoVendorSpeed = Globals.MainView.view != null ? (HudHSlider)Globals.MainView.view["AutoVendorSpeed"] : new HudHSlider();
                 UIAutoVendorSpeed.Changed += UIAutoVendorSpeed_Changed;
 
+                UIAutoVendorTries = Globals.MainView.view != null ? (HudHSlider)Globals.MainView.view["AutoVendorTries"] : new HudHSlider();
+                UIAutoVendorTries.Changed += UIAutoVendorTries_Changed;
+
                 Globals.Core.WorldFilter.ApproachVendor += WorldFilter_ApproachVendor;
                 Globals.Core.CommandLineText += Current_CommandLineText;
                 Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
@@ -82,6 +88,8 @@ namespace UtilityBelt.Tools {
             UIAutoVendorThink.Checked = Globals.Settings.AutoVendor.Think;
             UIAutoVendorOnlyFromMainPack.Checked = Globals.Settings.AutoVendor.OnlyFromMainPack;
             UIAutoVendorSpeed.Position = (Globals.Settings.AutoVendor.Speed / 100) - 3;
+            UIAutoVendorTries.Position = Globals.Settings.AutoVendor.Tries - 1;
+            UIAutoVendorTriesText.Text = Globals.Settings.AutoVendor.Tries.ToString();
         }
 
         private void UIAutoVendorEnable_Change(object sender, EventArgs e) {
@@ -109,6 +117,13 @@ namespace UtilityBelt.Tools {
             if (v != Globals.Settings.AutoVendor.Speed) {
                 Globals.Settings.AutoVendor.Speed = v;
                 UIAutoVendorSpeedText.Text = v.ToString();
+            }
+        }
+        private void UIAutoVendorTries_Changed(int min, int max, int pos) {
+            pos++;
+            if (pos != Globals.Settings.AutoVendor.Tries) {
+                Globals.Settings.AutoVendor.Tries = pos;
+                UIAutoVendorTriesText.Text = pos.ToString();
             }
         }
 
