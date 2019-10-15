@@ -50,6 +50,20 @@ namespace UtilityBelt.Lib.Settings.Sections {
             set { UpdateSetting("Speed", value); }
         }
 
+        [Summary("Attempts to open vendor on /ub vendor open[p]")]
+        [DefaultValue(4)]
+        public int Tries {
+            get { return (int)GetSetting("Tries"); }
+            set { UpdateSetting("Tries", value); }
+        }
+
+        [Summary("Tine between open vendor attempts (in milliseconds)")]
+        [DefaultValue(5000)]
+        public int TriesTime {
+            get { return (int)GetSetting("TriesTime"); }
+            set { UpdateSetting("TriesTime", value); }
+        }
+
         public AutoVendor(SectionBase parent) : base(parent) {
             Name = "AutoVendor";
         }
