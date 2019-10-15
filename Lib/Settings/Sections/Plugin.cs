@@ -36,6 +36,26 @@ namespace UtilityBelt.Lib.Settings.Sections {
             set { UpdateSetting("WindowPositionY", value); }
         }
 
+        [Summary("Think to yourself when portal use success/fail")]
+        [DefaultValue(false)]
+        public bool portalThink {
+            get { return (bool)GetSetting("portalThink"); }
+            set { UpdateSetting("portalThink", value); }
+        }
+
+        [Summary("Timeout to retry portal use")]
+        [DefaultValue(5000)]
+        public int portalTimeout {
+            get { return (int)GetSetting("portalTimeout"); }
+            set { UpdateSetting("portalTimeout", value); }
+        }
+        [Summary("Attempts to retry using a portal")]
+        [DefaultValue(3)]
+        public int portalAttempts {
+            get { return (int)GetSetting("portalAttempts"); }
+            set { UpdateSetting("portalAttempts", value); }
+        }
+
         public Plugin(SectionBase parent) : base(parent) {
             Name = "Plugin";
         }
