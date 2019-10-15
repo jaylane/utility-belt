@@ -4,6 +4,7 @@ using Decal.Adapter.Wrappers;
 using Decal.Filters;
 using UtilityBelt.MagTools.Shared;
 using System.Text.RegularExpressions;
+using VirindiViewService.Controls;
 
 namespace UtilityBelt.Tools {
     class Jumper : IDisposable {
@@ -26,10 +27,65 @@ namespace UtilityBelt.Tools {
         private bool waitingForJump = false;
         private int jumpTries = 0;
 
+        HudCheckBox UIJumperPauseNav { get; set; }
+        HudCheckBox UIJumperThinkComplete { get; set; }
+        HudCheckBox UIJumperThinkFail { get; set; }
+        HudHSlider UIJumperAttempts { get; set; }
+        HudStaticText UIJumperAttemptsText { get; set; }
+
+
         public Jumper() {
+            try {
+
+                UIJumperAttemptsText = Globals.MainView.view != null ? (HudStaticText)Globals.MainView.view["JumperAttemptsText"] : new HudStaticText();
+
+                UIJumperPauseNav = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["JumperPauseNav"] : new HudCheckBox();
+                UIJumperPauseNav.Change += UIJumperPauseNav_Change;
+
+                UIJumperThinkComplete = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["JumperThinkComplete"] : new HudCheckBox();
+                UIJumperThinkComplete.Change += UIJumperThinkComplete_Change;
+
+                UIJumperThinkFail = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["JumperThinkFail"] : new HudCheckBox();
+                UIJumperThinkFail.Change += UIJumperThinkFail_Change;
+
+                UIJumperAttempts = Globals.MainView.view != null ? (HudHSlider)Globals.MainView.view["JumperAttempts"] : new HudHSlider();
+                UIJumperAttempts.Changed += UIJumperAttempts_Changed;
+
+
             Globals.Core.CommandLineText += Current_CommandLineText;
             Globals.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
+
+                UpdateUI();
+            } catch (Exception ex) { Logger.LogException(ex); }
         }
+
+        private void UpdateUI() {
+            UIJumperPauseNav.Checked = Globals.Settings.Jumper.PauseNav;
+            UIJumperAttemptsText.Text = Globals.Settings.Jumper.Attempts.ToString();
+            UIJumperThinkComplete.Checked = Globals.Settings.Jumper.ThinkComplete;
+            UIJumperThinkFail.Checked = Globals.Settings.Jumper.ThinkFail;
+            UIJumperAttempts.Position = Globals.Settings.Jumper.Attempts;
+        }
+
+        private void UIJumperPauseNav_Change(object sender, EventArgs e) {
+            Globals.Settings.Jumper.PauseNav = UIJumperPauseNav.Checked;
+        }
+
+        private void UIJumperThinkComplete_Change(object sender, EventArgs e) {
+            Globals.Settings.Jumper.ThinkComplete = UIJumperThinkComplete.Checked;
+        }
+
+        private void UIJumperThinkFail_Change(object sender, EventArgs e) {
+            Globals.Settings.Jumper.ThinkFail = UIJumperThinkFail.Checked;
+        }
+
+        private void UIJumperAttempts_Changed(int min, int max, int pos) {
+            if (pos != Globals.Settings.Jumper.Attempts) {
+                Globals.Settings.Jumper.Attempts = pos;
+                UIJumperAttemptsText.Text = pos.ToString();
+            }
+        }
+
 
         public void Think() {
             if (isTurning && DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(100)) {
@@ -42,7 +98,7 @@ namespace UtilityBelt.Tools {
             //abort turning if takes longer than 3 seconds
             if (isTurning && DateTime.UtcNow - turningSeconds >= TimeSpan.FromSeconds(3)) {
                 isTurning = false;
-                Util.WriteToChat("Turning failed");
+                Util.ThinkOrWrite("Turning failed", Globals.Settings.Jumper.ThinkFail);
             }
             //Do the jump thing
             if (needToJump && !isTurning) {
@@ -50,7 +106,8 @@ namespace UtilityBelt.Tools {
                 enableNavTimer = TimeSpan.FromMilliseconds(msToHoldDown + 1000);
                 //Util.WriteToChat("Jumper enableNavTimer: "+enableNavTimer);
 
-                VTankControl.Nav_Block(15000, false);
+                if (Globals.Settings.Jumper.PauseNav)
+                    VTankControl.Nav_Block(15000, Globals.Settings.Plugin.Debug);
                 PostMessageTools.SendSpace(msToHoldDown, addShift, addW, addZ, addX, addC);
                 waitingForJump = true;
                 
@@ -59,15 +116,18 @@ namespace UtilityBelt.Tools {
             //Set vtank nav setting back to original state after jump/turn complete
             if (waitingForJump && DateTime.UtcNow - navSettingTimer >= enableNavTimer)
             {
-                if (jumpTries < 3) {
+                if (jumpTries < Globals.Settings.Jumper.Attempts) {
                     navSettingTimer = DateTime.UtcNow;
-                    Util.WriteToChat("Timeout waiting for jump, trying again...");
-                    VTankControl.Nav_Block(15000, false);
+                    Logger.Debug("Timeout waiting for jump, trying again...");
+                    if (Globals.Settings.Jumper.PauseNav)
+                        VTankControl.Nav_Block(15000, Globals.Settings.Plugin.Debug);
                     jumpTries++;
                     PostMessageTools.SendSpace(msToHoldDown, addShift, addW, addZ, addX, addC);
                 } else {
-                    Util.WriteToChat("You have failed to jump too many times.");
-                    VTankControl.Nav_UnBlock();
+                    Util.ThinkOrWrite("You have failed to jump too many times.", Globals.Settings.Jumper.ThinkFail);
+
+                    if (Globals.Settings.Jumper.PauseNav)
+                        VTankControl.Nav_UnBlock();
                     waitingForJump = false;
                     //clear settings
                     addShift = addW = addZ = addX = addC = false;
@@ -80,7 +140,10 @@ namespace UtilityBelt.Tools {
             try {
                 if (waitingForJump && e.Message.Type == 0xF74E && (int)e.Message["object"] == CoreManager.Current.CharacterFilter.Id) {
                     // Util.WriteToChat(string.Format("You Jumped. height: {0}", e.Message["height"]));
-                    VTankControl.Nav_UnBlock();
+                    if (Globals.Settings.Jumper.ThinkComplete)
+                        Util.Think("Jumper Success");
+                    if (Globals.Settings.Jumper.PauseNav)
+                        VTankControl.Nav_UnBlock();
                     waitingForJump = false;
                     //clear settings
                     addShift = addW = addZ = addX = addC = false;
@@ -104,7 +167,7 @@ namespace UtilityBelt.Tools {
                     needToTurn = true;
                     turningSeconds = DateTime.UtcNow;
                     CoreManager.Current.Actions.FaceHeading(targetDirection, true);
-                    Util.WriteToChat("Jumper Debug: Turning to " + targetDirection);
+                    Logger.Debug("Jumper: Turning to " + targetDirection);
                     return;
                 }
 

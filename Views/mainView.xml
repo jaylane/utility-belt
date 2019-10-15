@@ -34,6 +34,17 @@
           </control>
 
         </page>
+        <page label="Jumper">
+          <control progid="DecalControls.FixedLayout" clipped="">
+            <control progid="DecalControls.Checkbox" name="JumperPauseNav" left="8" top="8" width="184" height="16" text="Pause Nav during execution"/>
+            <control progid="DecalControls.Checkbox" name="JumperThinkComplete" left="8" top="32" width="208" height="16" text="Think to yourself when finished"/>
+            <control progid="DecalControls.Checkbox" name="JumperThinkFail" left="8" top="56" width="250" height="16" text="Think to yourself if jump fails"/>
+            <control progid="DecalControls.Slider" name="JumperAttempts"          left="8"   top="110" width="208" height="16" minimum="0" maximum="30" textcolor="0" vertical="0"/>
+            <control progid="DecalControls.StaticText" name="JumperAttemptsLabel" left="8"   top="94" width="208" height="16" justify="Center" text="Jump Attempts"/>
+            <control progid="DecalControls.StaticText" name="JumperAttemptsText"  left="224"  top="110"  width="40" height="16" text="0"/>
+          </control>
+
+        </page>
       </control>
 
     </page>
