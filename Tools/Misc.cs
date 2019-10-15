@@ -34,12 +34,20 @@ namespace UtilityBelt.Tools {
         private int vendorOpening = 0;
         private static WorldObject vendor = null;
 
+        private DateTime portalTimestamp = DateTime.MinValue;
+        private int portalAttempts = 0;
+        private static WorldObject portal = null;
+        //yes, I know I'm repeating myself. each objectclass has different catches; and combining them would just be a maze of if's
+
+        private const int VENDOR_OPEN_TIMEOUT = 5000;
+
         private bool disposed = false;
 
         public Misc() {
             try {
                 Globals.Core.CommandLineText += Current_CommandLineText;
                 Globals.Core.WorldFilter.ApproachVendor += WorldFilter_ApproachVendor;
+                Globals.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -61,6 +69,15 @@ namespace UtilityBelt.Tools {
                             break;
                         case "vendor":
                             UB_vendor(match.Groups["params"].Value);
+                            break;
+                        case "portal":
+                            UB_portal(match.Groups["params"].Value, false);
+                            break;
+                        case "portalp":
+                            UB_portal(match.Groups["params"].Value, true);
+                            break;
+                        case "closestportal":
+                            UB_portal(null, false);
                             break;
                         case "opt":
                             UB_opt(match.Groups["params"].Value);
@@ -99,6 +116,8 @@ namespace UtilityBelt.Tools {
                 "   /ub help - you are here.\n" +
                 "   /ub opt {get,set,list} [option_name] [value] - get/set config options\n" +
                 "   /ub testblock <int> <duration> - test Decision_Lock parameters (potentially dangerous)\n" +
+                "   /ub portal[p] <portalname> - use the named portal\n" +
+                "   /ub closestportal - use the closest portal\n" +
                 "   /ub vendor {buyall,sellall,clearbuy,clearsell}\n" +
                 "   /ub vendor open[p] {vendorname,vendorid,vendorhex}\n" +
                 "   /ub vendor openclosest - attempts to open the closest vendor\n" +
@@ -174,6 +193,28 @@ namespace UtilityBelt.Tools {
                     break;
             }
         }
+        public void UB_portal(string portalName, bool partial) {
+            if (portalName == null) {
+                double lastDistance = double.MaxValue;
+                double thisDistance;
+                foreach (WorldObject thisOne in Globals.Core.WorldFilter.GetByObjectClass(ObjectClass.Portal)) {
+                    thisDistance = Globals.Core.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, thisOne.Id);
+                    if (portal == null || lastDistance > thisDistance) {
+                        portal = thisOne;
+                        lastDistance = thisDistance;
+                    }
+                }
+            } else {
+                portal = FindName(portalName, partial);
+            }
+            if (portal != null) {
+                UsePortal();
+                return;
+            }
+            Util.ThinkOrWrite("Could not find a portal", Globals.Settings.Plugin.portalThink);
+
+        }
+
 
         private void UB_vendor_open(string vendorname, bool partial) {
             if (vendorname == null) {
@@ -459,6 +500,14 @@ namespace UtilityBelt.Tools {
             Logger.Debug("Attempting to open vendor " + vendor.Name);
 
         }
+        private void UsePortal() {
+            VTankControl.Nav_Block(500 + Globals.Settings.Plugin.portalTimeout, false);
+            portalAttempts = 1;
+
+            portalTimestamp = DateTime.UtcNow - TimeSpan.FromMilliseconds(Globals.Settings.Plugin.portalTimeout - 250); // fudge timestamp so next think hits in 500ms
+            Globals.Core.Actions.SetAutorun(false);
+            Logger.Debug("Attempting to use portal " + portal.Name);
+        }
 
         //Do not use this in a loop, it gets an F for eFFiciency.
         private WorldObject FindName(string searchname, bool partial) {
@@ -518,6 +567,25 @@ namespace UtilityBelt.Tools {
                         VTankControl.Nav_UnBlock();
                     }
                 }
+                if (portalAttempts > 0 && DateTime.UtcNow - portalTimestamp > TimeSpan.FromMilliseconds(Globals.Settings.Plugin.portalTimeout)) {
+
+                    if (portalAttempts <= Globals.Settings.Plugin.portalAttempts) {
+                        if (portalAttempts > 1)
+                            Logger.Debug("Use Portal Timed out, trying again");
+
+                        VTankControl.Nav_Block(500 + Globals.Settings.Plugin.portalTimeout, false);
+                        portalAttempts++;
+                        portalTimestamp = DateTime.UtcNow;
+                        CoreManager.Current.Actions.UseItem(portal.Id, 0);
+                    } else {
+                        Util.WriteToChat("Unable to use portal " + portal.Name);
+                        Globals.Core.Actions.FaceHeading(Globals.Core.Actions.Heading, true); // Cancel the previous useitem call (don't ask)
+                        Util.ThinkOrWrite("failed to use portal", Globals.Settings.Plugin.portalThink);
+                        portal = null;
+                        portalAttempts = 0;
+                        VTankControl.Nav_UnBlock();
+                    }
+                }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -529,6 +597,18 @@ namespace UtilityBelt.Tools {
                 // VTankControl.Nav_UnBlock(); Let it bleed over into AutoVendor; odds are there's a reason this vendor was opened, and letting vtank run off prolly isn't it.
             }
         }
+
+        private void EchoFilter_ServerDispatch(object sender, NetworkMessageEventArgs e) {
+            try {
+                if (portalAttempts > 0 && e.Message.Type == 0xF74B && (int)e.Message["object"] == CoreManager.Current.CharacterFilter.Id && (short)e.Message["portalType"] == 17424) { //17424 is the magic sauce for entering a portal. 1032 is the magic sauce for exiting a portal.
+                    Logger.Debug("portal used successfully");
+                    portal = null;
+                    portalAttempts = 0;
+                    VTankControl.Nav_UnBlock();
+                }
+            } catch (Exception ex) { Logger.LogException(ex); }
+        }
+
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -539,6 +619,7 @@ namespace UtilityBelt.Tools {
                 if (disposing) {
                     Globals.Core.CommandLineText -= Current_CommandLineText;
                     Globals.Core.WorldFilter.ApproachVendor -= WorldFilter_ApproachVendor;
+                    Globals.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
                 }
                 disposed = true;
             }
