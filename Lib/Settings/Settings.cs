@@ -80,6 +80,10 @@ namespace UtilityBelt.Lib.Settings {
         [JsonProperty]
         [Summary("VisualNav Settings")]
         public Sections.VisualNav VisualNav { get; set; }
+
+        [JsonProperty]
+        [Summary("Jumper Settings")]
+        public Sections.Jumper Jumper { get; set; }
         #endregion
 
         public Settings() {
@@ -90,6 +94,7 @@ namespace UtilityBelt.Lib.Settings {
                 SetupSection(DungeonMaps = new Sections.DungeonMaps(null));
                 SetupSection(InventoryManager = new Sections.InventoryManager(null));
                 SetupSection(VisualNav = new Sections.VisualNav(null));
+                SetupSection(Jumper = new Sections.Jumper(null));
 
                 Load();
 

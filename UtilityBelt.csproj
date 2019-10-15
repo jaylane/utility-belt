@@ -108,6 +108,7 @@
     <Compile Include="Lib\Settings\DisplaySectionBase.cs" />
     <Compile Include="Lib\Settings\MarkerToggleOption.cs" />
     <Compile Include="Lib\Settings\Sections\AutoVendor.cs" />
+    <Compile Include="Lib\Settings\Sections\Jumper.cs" />
     <Compile Include="Lib\Settings\Sections\DungeonMaps.cs" />
     <Compile Include="Lib\Settings\Sections\InventoryManager.cs" />
     <Compile Include="Lib\Settings\Sections\Plugin.cs" />
