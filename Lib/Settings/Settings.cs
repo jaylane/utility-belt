@@ -70,6 +70,10 @@ namespace UtilityBelt.Lib.Settings {
         public Sections.AutoVendor AutoVendor { get; set; }
 
         [JsonProperty]
+        [Summary("AutoTrade Settings")]
+        public Sections.AutoTrade AutoTrade { get; set; }
+
+        [JsonProperty]
         [Summary("DungeonMaps Settings")]
         public Sections.DungeonMaps DungeonMaps { get; set; }
 
@@ -91,6 +95,7 @@ namespace UtilityBelt.Lib.Settings {
                 SetupSection(Plugin = new Sections.Plugin(null));
                 SetupSection(AutoSalvage = new Sections.AutoSalvage(null));
                 SetupSection(AutoVendor = new Sections.AutoVendor(null));
+                SetupSection(AutoTrade = new Sections.AutoTrade(null));
                 SetupSection(DungeonMaps = new Sections.DungeonMaps(null));
                 SetupSection(InventoryManager = new Sections.InventoryManager(null));
                 SetupSection(VisualNav = new Sections.VisualNav(null));

@@ -18,7 +18,7 @@
             <control progid="DecalControls.Checkbox" name="AutoVendorTestMode" left="8" top="32" width="208" height="16" text="Test Mode"/>
             <control progid="DecalControls.Checkbox" name="AutoVendorShowMerchantInfo" left="8" top="56" width="250" height="16" text="Show merchant info on approach"/>
             <control progid="DecalControls.Checkbox" name="AutoVendorOnlyFromMainPack" left="8" top="80" width="250" height="16" text="Only vendor items in your main pack"/>
-            <control progid="DecalControls.Checkbox" name="AutoVendorThink" left="8" top="104" width="208" height="16" text="Think to yourself when finished"/>
+            <control progid="DecalControls.Checkbox" name="AutoVendorThink" left="8" top="104" width="250" height="16" text="Think to yourself when finished"/>
 
             <control progid="DecalControls.StaticText" name="AutoVendorSpeedLabel" left="8" top="144" width="208" height="16" justify="Center" text="Action Delay (ms)"/>
             <control progid="DecalControls.Slider" name="AutoVendorSpeed"          left="8" top="160" width="208" height="16" minimum="0" maximum="22" textcolor="0" vertical="0"/>
@@ -29,6 +29,15 @@
             <control progid="DecalControls.StaticText" name="AutoVendorTriesText"  left="224" top="200" width="40" height="16" text="0"/>
           </control>
 
+        </page>
+        <page label="AutoTrade">
+          <control progid="DecalControls.FixedLayout" clipped="">
+            <control progid="DecalControls.Checkbox" name="AutoTradeEnabled" left="8" top="8" width="184" height="16" text="Enable AutoTrade" />
+            <control progid="DecalControls.Checkbox" name="AutoTradeTestMode" left="8" top="32" width="208" height="16" text="Test Mode"/>
+            <control progid="DecalControls.Checkbox" name="AutoTradeAutoAccept" left="8" top="56" width="184" height="16" text="Auto-Accept trade" />
+            <control progid="DecalControls.Checkbox" name="AutoTradeOnlyFromMainPack" left="8" top="80" width="250" height="16" text="Only trade items in your main pack"/>
+            <control progid="DecalControls.Checkbox" name="AutoTradeThink" left="8" top="104" width="250" height="16" text="Think to yourself when finished"/>
+          </control>
         </page>
         <page label="InventoryManager">
           <control progid="DecalControls.FixedLayout" clipped="">

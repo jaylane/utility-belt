@@ -17,6 +17,8 @@ namespace UtilityBelt
 	[FriendlyName("UtilityBelt")]
 	public class PluginCore : PluginBase {
         private AutoSalvage autoSalvage;
+        private AutoTrade autoTrade;
+
         //private EmuConfig emuConfig;
         private QuestTracker questTracker;
         private Jumper jumper;
@@ -66,6 +68,7 @@ namespace UtilityBelt
                 Globals.VisualVTankRoutes = new VisualVTankRoutes();
 
                 autoSalvage = new AutoSalvage();
+                autoTrade = new AutoTrade();
                 //emuConfig = new EmuConfig();
                 questTracker = new QuestTracker();
                 misc = new Misc();
@@ -90,6 +93,7 @@ namespace UtilityBelt
                 if (vTankFellowHeals != null) vTankFellowHeals.Think();
                 if (autoSalvage != null) autoSalvage.Think();
                 if (Globals.AutoVendor != null) Globals.AutoVendor.Think();
+                if (autoTrade != null) autoTrade.Think();
                 if (itemGiver != null) itemGiver.Think();
                 if (misc != null) misc.Think();
                 if (Globals.DungeonMaps != null) Globals.DungeonMaps.Think();
@@ -109,6 +113,7 @@ namespace UtilityBelt
                 Globals.Core.RenderFrame -= Core_RenderFrame;
 
                 if (autoSalvage != null) autoSalvage.Dispose();
+                if (autoTrade != null) autoTrade.Dispose();
                 if (Globals.DungeonMaps != null) Globals.DungeonMaps.Dispose();
                 //if (emuConfig != null) emuConfig.Dispose();
                 if (questTracker != null) questTracker.Dispose();
