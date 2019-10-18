@@ -39,8 +39,6 @@ namespace UtilityBelt.Tools {
         private static WorldObject portal = null;
         //yes, I know I'm repeating myself. each objectclass has different catches; and combining them would just be a maze of if's
 
-        private const int VENDOR_OPEN_TIMEOUT = 5000;
-
         private bool disposed = false;
 
         public Misc() {
@@ -180,7 +178,7 @@ namespace UtilityBelt.Tools {
                         Util.WriteToChat("Usage: /ub vendor open[p] {vendorname,vendorid}");
                         return;
                     }
-                    UB_vendor_open(parameter[1], false);
+                    UB_vendor_open(parameter[1], true);
                     break;
                 case "openclosest":
                     UB_vendor_open(null, false);

@@ -64,7 +64,7 @@ namespace UtilityBelt.Tools {
             UIJumperAttemptsText.Text = Globals.Settings.Jumper.Attempts.ToString();
             UIJumperThinkComplete.Checked = Globals.Settings.Jumper.ThinkComplete;
             UIJumperThinkFail.Checked = Globals.Settings.Jumper.ThinkFail;
-            UIJumperAttempts.Position = Globals.Settings.Jumper.Attempts;
+            UIJumperAttempts.Position = Globals.Settings.Jumper.Attempts-1;
         }
 
         private void UIJumperPauseNav_Change(object sender, EventArgs e) {
@@ -80,6 +80,7 @@ namespace UtilityBelt.Tools {
         }
 
         private void UIJumperAttempts_Changed(int min, int max, int pos) {
+            pos++;
             if (pos != Globals.Settings.Jumper.Attempts) {
                 Globals.Settings.Jumper.Attempts = pos;
                 UIJumperAttemptsText.Text = pos.ToString();
@@ -114,14 +115,13 @@ namespace UtilityBelt.Tools {
                 navSettingTimer = DateTime.UtcNow;
             }
             //Set vtank nav setting back to original state after jump/turn complete
-            if (waitingForJump && DateTime.UtcNow - navSettingTimer >= enableNavTimer)
-            {
+            if (waitingForJump && DateTime.UtcNow - navSettingTimer >= enableNavTimer) {
+                jumpTries++;
                 if (jumpTries < Globals.Settings.Jumper.Attempts) {
                     navSettingTimer = DateTime.UtcNow;
                     Logger.Debug("Timeout waiting for jump, trying again...");
                     if (Globals.Settings.Jumper.PauseNav)
                         VTankControl.Nav_Block(15000, Globals.Settings.Plugin.Debug);
-                    jumpTries++;
                     PostMessageTools.SendSpace(msToHoldDown, addShift, addW, addZ, addX, addC);
                 } else {
                     Util.ThinkOrWrite("You have failed to jump too many times.", Globals.Settings.Jumper.ThinkFail);
