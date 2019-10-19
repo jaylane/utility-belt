@@ -19,6 +19,7 @@ namespace UtilityBelt.Tools
         private bool running = false;
         private bool doAccept = false;
         private int pendingAddCount = 0;
+        private Dictionary<string, int> keepUpToCounts = new Dictionary<string, int>();
 
         HudCheckBox UIAutoTradeEnable { get; set; }
         HudCheckBox UIAutoTradeTestMode { get; set; }
@@ -153,6 +154,7 @@ namespace UtilityBelt.Tools
             running = true;
             doAccept = false;
             pendingAddCount = 0;
+            keepUpToCounts.Clear();
 
             var hasLootCore = false;
             if (lootProfile == null)
@@ -224,7 +226,7 @@ namespace UtilityBelt.Tools
                         doAccept = false;
                         if (traderId != 0 && Globals.Settings.AutoTrade.AutoAccept)
                         {
-                            Util.WriteToChat("Accepting trade");
+                            Logger.Debug("Accepting trade");
                             Globals.Core.Actions.TradeAccept();
                         }
 
@@ -288,6 +290,7 @@ namespace UtilityBelt.Tools
             VTankControl.Item_UnBlock();
 
             running = false;
+            keepUpToCounts.Clear();
         }
 
         private void DoTestMode()
@@ -306,7 +309,7 @@ namespace UtilityBelt.Tools
 
         private IEnumerable<KeyValuePair<int, uTank2.LootPlugins.LootAction>> GetTradeItems()
         {
-            foreach (var item in itemsToId)
+            foreach (var item in itemsToId.OrderBy(i => Globals.Core.WorldFilter[i].Values(LongValueKey.StackCount)))
             {
                 if (!ItemIsSafeToGetRidOf(item))
                     continue;
@@ -317,7 +320,7 @@ namespace UtilityBelt.Tools
 
                 var result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
 
-                if (result.IsKeep)
+                if (result.IsKeep || result.IsKeepUpTo)
                     yield return new KeyValuePair<int, uTank2.LootPlugins.LootAction>(item, result);
             }
         }
@@ -339,6 +342,84 @@ namespace UtilityBelt.Tools
             {
                 foreach (var item in GetTradeItems())
                 {
+                    Logger.Debug($"Trade Item: {Util.GetObjectName(item.Key)}");
+
+                    if (item.Value.IsKeepUpTo)
+                    {
+                        if (!keepUpToCounts.ContainsKey(item.Value.RuleName))
+                            keepUpToCounts.Add(item.Value.RuleName, 0);
+
+                        var stackCount = Globals.Core.WorldFilter[item.Key].Values(LongValueKey.StackCount, 1);
+                        if (item.Value.Data1 < 0)
+                        {
+                            if (keepUpToCounts[item.Value.RuleName] < Math.Abs(item.Value.Data1))
+                            {
+                                Logger.Debug($"Need to keep: {Math.Abs(item.Value.Data1) - keepUpToCounts[item.Value.RuleName]}");
+                                if (stackCount > Math.Abs(item.Value.Data1) - keepUpToCounts[item.Value.RuleName])
+                                {
+                                    int splitCount = stackCount - (Math.Abs(item.Value.Data1) - keepUpToCounts[item.Value.RuleName]);
+                                    EventHandler<CreateObjectEventArgs> splitHandler = null;
+                                    splitHandler = (sender, e) =>
+                                    {
+                                        Logger.Debug($"Adding to trade window: {Util.GetObjectName(e.New.Id)}");
+                                        Globals.Core.Actions.TradeAdd(e.New.Id);
+                                        pendingAddCount++;
+                                        Globals.Core.WorldFilter.CreateObject -= splitHandler;
+                                    };
+
+                                    Globals.Core.Actions.SelectItem(item.Key);
+                                    Globals.Core.Actions.SelectedStackCount = splitCount;
+                                    Globals.Core.WorldFilter.CreateObject += splitHandler;
+                                    keepUpToCounts[item.Value.RuleName] += Math.Abs(item.Value.Data1) - keepUpToCounts[item.Value.RuleName];
+                                    Globals.Core.Actions.MoveItem(item.Key, Globals.Core.CharacterFilter.Id, 0, false);
+
+                                    Logger.Debug(string.Format("AutoTrade Splitting {0}. old: {1} new: {2}", Util.GetObjectName(item.Key),
+                                        stackCount,
+                                        splitCount));
+                                }
+                                else
+                                {
+                                    Logger.Debug($"Keeping: {Util.GetObjectName(item.Key)} ({stackCount})");
+                                    keepUpToCounts[item.Value.RuleName] += stackCount;
+                                }
+
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            if (keepUpToCounts[item.Value.RuleName] > item.Value.Data1)
+                                continue;
+
+                            if (stackCount > item.Value.Data1 - keepUpToCounts[item.Value.RuleName])
+                            {
+                                int neededCount = item.Value.Data1 - keepUpToCounts[item.Value.RuleName];
+                                EventHandler<CreateObjectEventArgs> splitHandler = null;
+                                splitHandler = (sender, e) =>
+                                {
+                                    Globals.Core.Actions.TradeAdd(e.New.Id);
+                                    pendingAddCount++;
+                                    Globals.Core.WorldFilter.CreateObject -= splitHandler;
+                                };
+
+                                Globals.Core.Actions.SelectItem(item.Key);
+                                Globals.Core.Actions.SelectedStackCount = neededCount;
+                                Globals.Core.WorldFilter.CreateObject += splitHandler;
+                                keepUpToCounts[item.Value.RuleName] += neededCount;
+                                Globals.Core.Actions.MoveItem(item.Key, Globals.Core.CharacterFilter.Id, 0, false);
+
+                                Logger.Debug(string.Format("AutoTrade Splitting {0}. old: {1} new: {2}", Util.GetObjectName(item.Key),
+                                    stackCount,
+                                    item.Value.Data1 - keepUpToCounts[item.Value.RuleName]));
+
+                                continue;
+                            }
+                        }
+
+                        keepUpToCounts[item.Value.RuleName] += stackCount;
+                    }
+
+                    Logger.Debug($"Adding to trade: {Util.GetObjectName(item.Key)}");
                     Globals.Core.Actions.TradeAdd(item.Key);
                     pendingAddCount++;
                 }
