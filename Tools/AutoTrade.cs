@@ -361,10 +361,14 @@ namespace UtilityBelt.Tools
                                     EventHandler<CreateObjectEventArgs> splitHandler = null;
                                     splitHandler = (sender, e) =>
                                     {
-                                        Logger.Debug($"Adding to trade window: {Util.GetObjectName(e.New.Id)}");
-                                        Globals.Core.Actions.TradeAdd(e.New.Id);
-                                        pendingAddCount++;
-                                        Globals.Core.WorldFilter.CreateObject -= splitHandler;
+                                        if (e.New.Name == Globals.Core.WorldFilter[item.Key].Name &&
+                                            e.New.Values(LongValueKey.StackCount, 1) == splitCount)
+                                        {
+                                            Logger.Debug($"Adding to trade window: {Util.GetObjectName(e.New.Id)}");
+                                            Globals.Core.Actions.TradeAdd(e.New.Id);
+                                            pendingAddCount++;
+                                            Globals.Core.WorldFilter.CreateObject -= splitHandler;
+                                        }
                                     };
 
                                     Globals.Core.Actions.SelectItem(item.Key);
@@ -399,9 +403,13 @@ namespace UtilityBelt.Tools
                                 EventHandler<CreateObjectEventArgs> splitHandler = null;
                                 splitHandler = (sender, e) =>
                                 {
-                                    Globals.Core.Actions.TradeAdd(e.New.Id);
-                                    pendingAddCount++;
-                                    Globals.Core.WorldFilter.CreateObject -= splitHandler;
+                                    if (e.New.Name == Globals.Core.WorldFilter[item.Key].Name &&
+                                        e.New.Values(LongValueKey.StackCount, 1) == neededCount)
+                                    {
+                                        Globals.Core.Actions.TradeAdd(e.New.Id);
+                                        pendingAddCount++;
+                                        Globals.Core.WorldFilter.CreateObject -= splitHandler;
+                                    }
                                 };
 
                                 Globals.Core.Actions.SelectItem(item.Key);
