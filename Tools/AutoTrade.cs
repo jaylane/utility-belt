@@ -388,8 +388,10 @@ namespace UtilityBelt.Tools
                         }
                         else
                         {
-                            if (keepUpToCounts[item.Value.RuleName] > item.Value.Data1)
+                            if (keepUpToCounts[item.Value.RuleName] >= item.Value.Data1)
+                            {
                                 continue;
+                            }
 
                             if (stackCount > item.Value.Data1 - keepUpToCounts[item.Value.RuleName])
                             {
