@@ -179,7 +179,7 @@ namespace UtilityBelt.Tools
             if (!File.Exists(profilePath))
             {
                 Util.WriteToChat("No auto trade profile exists: " + profilePath);
-                Stop();
+                Stop(false);
                 return;
             }
 
@@ -272,15 +272,18 @@ namespace UtilityBelt.Tools
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void Stop()
+        private void Stop(bool profileLoaded = true)
         {
-            if (Globals.Settings.AutoTrade.Think == true)
+            if (profileLoaded)
             {
-                Util.Think("AutoTrade finished: " + traderName);
-            }
-            else
-            {
-                Util.WriteToChat("AutoTrade finished: " + traderName);
+                if (Globals.Settings.AutoTrade.Think == true)
+                {
+                    Util.Think("AutoTrade finished: " + traderName);
+                }
+                else
+                {
+                    Util.WriteToChat("AutoTrade finished: " + traderName);
+                }
             }
 
             if (lootProfile != null) ((VTClassic.LootCore)lootProfile).UnloadProfile();
