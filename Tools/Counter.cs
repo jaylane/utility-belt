@@ -76,6 +76,7 @@ namespace UtilityBelt.Tools {
                         Regex searchRegex = new Regex(item, RegexOptions.IgnoreCase);
                         if (doDebug) Util.ThinkOrWrite("Regex String: " + searchRegex);
                         int stackCount = 0;
+                        int totalCount = 0;
                         foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetInventory()) {
                             string itemName = Util.GetObjectName(wo.Id);
                             if (searchRegex.IsMatch(itemName)) {
@@ -83,10 +84,12 @@ namespace UtilityBelt.Tools {
                                 stackCount = wo.Values(LongValueKey.StackCount, 1);
                                 if (!itemList.ContainsKey(itemName)) {
                                     itemList[itemName] = stackCount;
+                                    totalCount += stackCount;
                                     if (doDebug) Util.ThinkOrWrite("Count In Progress: " + itemName + " - " + stackCount);
                                 }
                                 else if (itemList[itemName] > 0) {
                                     itemList[itemName] += stackCount;
+                                    totalCount += stackCount;
                                     if (doDebug) Util.ThinkOrWrite("Count In Progress: " + itemName + " - " + stackCount);
                                 }
                                 else {
@@ -100,6 +103,9 @@ namespace UtilityBelt.Tools {
                         foreach (KeyValuePair<string, int> entry in itemList) {
                             Util.ThinkOrWrite("Item Count: " + entry.Key + " - " + entry.Value.ToString(), doThink);
                         }
+
+                        Util.ThinkOrWrite("Total Item Count: " + totalCount.ToString(), doThink);
+
                         itemList.Clear();
                         doThink = false;
                         doDebug = false;
