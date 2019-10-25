@@ -43,13 +43,6 @@ namespace UtilityBelt.Lib.Settings.Sections {
             set { UpdateSetting("OnlyFromMainPack", value); }
         }
 
-        [Summary("Delay between vendor actions (in milliseconds)")]
-        [DefaultValue(500)]
-        public int Speed {
-            get { return (int)GetSetting("Speed"); }
-            set { UpdateSetting("Speed", value); }
-        }
-
         [Summary("Attempts to open vendor on /ub vendor open[p]")]
         [DefaultValue(4)]
         public int Tries {

@@ -22,8 +22,8 @@ namespace UtilityBelt {
             try {
                 if (Globals.Settings != null && Globals.Settings.Plugin.Debug) {
                     Globals.Host.Actions.AddChatText("[UB] " + message, 5);
-                    Util.WriteToDebugLog(message);
                 }
+                Util.WriteToDebugLog(message);
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

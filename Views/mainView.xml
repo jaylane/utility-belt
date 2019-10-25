@@ -20,13 +20,9 @@
             <control progid="DecalControls.Checkbox" name="AutoVendorOnlyFromMainPack" left="8" top="80" width="250" height="16" text="Only vendor items in your main pack"/>
             <control progid="DecalControls.Checkbox" name="AutoVendorThink" left="8" top="104" width="250" height="16" text="Think to yourself when finished"/>
 
-            <control progid="DecalControls.StaticText" name="AutoVendorSpeedLabel" left="8" top="144" width="208" height="16" justify="Center" text="Action Delay (ms)"/>
-            <control progid="DecalControls.Slider" name="AutoVendorSpeed"          left="8" top="160" width="208" height="16" minimum="0" maximum="22" textcolor="0" vertical="0"/>
-            <control progid="DecalControls.StaticText" name="AutoVendorSpeedText"  left="224" top="160" width="40" height="16" text="0"/>
-            
-            <control progid="DecalControls.StaticText" name="AutoVendorTriesLabel" left="8" top="184" width="208" height="16" justify="Center" text="Open Vendor Attempts"/>
-            <control progid="DecalControls.Slider" name="AutoVendorTries"          left="8" top="200" width="208" height="16" maximum="29" textcolor="0" vertical="0"/>
-            <control progid="DecalControls.StaticText" name="AutoVendorTriesText"  left="224" top="200" width="40" height="16" text="0"/>
+            <control progid="DecalControls.StaticText" name="AutoVendorTriesLabel" left="8" top="144" width="208" height="16" justify="Center" text="Open Vendor Attempts"/>
+            <control progid="DecalControls.Slider" name="AutoVendorTries"          left="8" top="160" width="208" height="16" maximum="29" textcolor="0" vertical="0"/>
+            <control progid="DecalControls.StaticText" name="AutoVendorTriesText"  left="224" top="160" width="40" height="16" text="0"/>
           </control>
 
         </page>
