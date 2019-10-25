@@ -8,6 +8,7 @@ namespace UtilityBelt.Lib.VendorCache {
     public class VendorItem {
         public ObjectClass ObjectClass = ObjectClass.Unknown;
         public int Id = 0;
+        public int Type = 0;
         public int Value = 0;
         public string Name = "Unknown";
         public int StackMax = 0;
@@ -15,6 +16,7 @@ namespace UtilityBelt.Lib.VendorCache {
 
         public VendorItem(WorldObject item) {
             Id = item.Id;
+            Type = item.Type;
             Value = item.Values(LongValueKey.Value, 0);
             Name = item.Name;
             StackMax = item.Values(LongValueKey.StackMax, 1);

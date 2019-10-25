@@ -124,12 +124,14 @@ namespace UtilityBelt.Tools {
         }
 
         public void Pause() {
-            Logger.Debug("InventoryManager Paused");
+            if (!isPaused && (Globals.Settings.InventoryManager.AutoCram || Globals.Settings.InventoryManager.AutoStack))
+                Logger.Debug("InventoryManager Paused");
             isPaused = true;
         }
 
         public void Resume() {
-            Logger.Debug("InventoryManager Resumed");
+            if (isPaused && (Globals.Settings.InventoryManager.AutoCram || Globals.Settings.InventoryManager.AutoStack))
+                Logger.Debug("InventoryManager Resumed");
             isPaused = false;
         }
 

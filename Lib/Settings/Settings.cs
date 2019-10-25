@@ -211,7 +211,6 @@ namespace UtilityBelt.Lib.Settings {
                             AutoVendor.TestMode = ParseOldNode(node, "TestMode", AutoVendor.TestMode);
                             AutoVendor.ShowMerchantInfo = ParseOldNode(node, "ShowMerchantInfo", AutoVendor.ShowMerchantInfo);
                             AutoVendor.OnlyFromMainPack = ParseOldNode(node, "OnlyFromMainPack", AutoVendor.OnlyFromMainPack);
-                            AutoVendor.Speed = ParseOldNode(node, "Speed", AutoVendor.Speed);
                             break;
 
                         case "InventoryManager":
