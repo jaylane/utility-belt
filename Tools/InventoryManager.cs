@@ -5,6 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using VirindiViewService.Controls;
+using System.IO;
+using System.Text.RegularExpressions;
+using VTClassic;
+using uTank2.LootPlugins;
 
 namespace UtilityBelt.Tools {
     public class InventoryManager : IDisposable {
@@ -22,12 +26,23 @@ namespace UtilityBelt.Tools {
         private Dictionary<int, DateTime> blacklistedItems = new Dictionary<int, DateTime>();
         private Dictionary<int,DateTime> blacklistedContainers = new Dictionary<int, DateTime>();
 
+        private static readonly List<int> giveObjects = new List<int>(), idItems = new List<int>();
+        private static DateTime lastIdSpam = DateTime.MinValue, startGive;
+        private static bool igRunning = false, idComplete, givePartialItem, isRegex = false;
+        private static int currentItem, retryCount, destinationId, failedItems, totalFailures, maxGive, itemsGiven;
+        private LootCore lootProfile = null;
+        private static string targetPlayer = "", utlProfile = "", profilePath = "";
+        private static readonly Dictionary<string, int> givenItemsCount = new Dictionary<string, int>();
+
         HudCheckBox UIInventoryManagerAutoCram { get; set; }
         HudCheckBox UIInventoryManagerAutoStack { get; set; }
         HudButton UIInventoryManagerTest { get; set; }
 
         // TODO: support AutoPack profiles when cramming
         public InventoryManager() {
+            profilePath = Path.Combine(Util.GetPluginDirectory(), "itemgiver");
+            Directory.CreateDirectory(profilePath);
+
             Globals.Core.CommandLineText += Current_CommandLineText;
             Globals.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
             Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
@@ -61,6 +76,8 @@ namespace UtilityBelt.Tools {
             Globals.Settings.InventoryManager.AutoStack = UIInventoryManagerAutoStack.Checked;
         }
 
+        private static readonly Regex giveRegex = new Regex(@"^\/ub give(?<flags>[pPr]*) ?(?<giveCount>\d+)? (?<itemName>.+) to (?<targetPlayer>.+)");
+        private static readonly Regex igRegex = new Regex(@"^\/ub ig(?<partial>p)? ?(?<utlProfile>.+) to (?<targetPlayer>.+)");
         private void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
             try {
                 if (e.Text.StartsWith("/ub autoinventory")) {
@@ -71,8 +88,34 @@ namespace UtilityBelt.Tools {
 
                     return;
                 }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+                
+                if (!e.Text.StartsWith("/ub ig") && !e.Text.StartsWith("/ub give"))
+                    return;
+                e.Eat = true;
+                Match giveMatch = giveRegex.Match(e.Text);
+                Match igMatch = igRegex.Match(e.Text);
+
+                if (giveMatch.Success) {
+                    StartGive(giveMatch);
+                } else if (igMatch.Success) {
+                    StartIG(igMatch);
+                } else if (e.Text.EndsWith(" stop") || e.Text.EndsWith(" abort") || e.Text.EndsWith(" quit")) {
+                    IGStop();
+                    return;
+                } else if (e.Text.StartsWith("/ub ig")) {
+                    Util.WriteToChat("Usage: /ub ig stop\n" +
+                                     "       /ub ig[p] <profile[.utl]> to <character|selected>\n" +
+                                     "       p: use partial name match for character");
+                } else if (e.Text.StartsWith("/ub give")) {
+                    Util.WriteToChat("Usage: /ub give stop\n" +
+                                     "       /ub give[[Pr]p] [count] <itemName> to <character|selected>\n" +
+                                     "       P: use partial name match for itemName\n" +
+                                     "       r: use regex inplace of itemName\n" +
+                                     "       p: use partial name match for character\n" +
+                                     "       count: if omitted, or less than 1, gives all items that match");
+                }
+
+            } catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void WorldFilter_ChangeObject(object sender, ChangeObjectEventArgs e) {
@@ -158,7 +201,7 @@ namespace UtilityBelt.Tools {
             Logger.Debug("InventoryManager::AutoCram started");
 
             foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
-                if (excludeMoney && (wo.Values(LongValueKey.Type, 0) == 273/* pyreals */ || wo.ObjectClass == ObjectClass.TradeNote)) continue;
+                if (excludeMoney && (wo.Values(LongValueKey.Type, 0) == 273/* pyreals */ || wo.ObjectClass == Decal.Adapter.Wrappers.ObjectClass.TradeNote)) continue;
                 if (excludeList != null && excludeList.Contains(wo.Id)) continue;
                 if (blacklistedItems.ContainsKey(wo.Id)) continue;
 
@@ -192,10 +235,10 @@ namespace UtilityBelt.Tools {
             if (wo == null) return false;
 
             // skip packs
-            if (wo.ObjectClass == ObjectClass.Container) return false;
+            if (wo.ObjectClass == Decal.Adapter.Wrappers.ObjectClass.Container) return false;
 
             // skip foci
-            if (wo.ObjectClass == ObjectClass.Foci) return false;
+            if (wo.ObjectClass == Decal.Adapter.Wrappers.ObjectClass.Foci) return false;
 
             // skip equipped
             if (wo.Values(LongValueKey.EquippedSlots, 0) > 0) return false;
@@ -220,13 +263,66 @@ namespace UtilityBelt.Tools {
 
                 Stop();
             }
+
+            if (!igRunning)
+                return;
+            try {
+                if (VTankControl.navBlockedUntil < DateTime.UtcNow + TimeSpan.FromSeconds(1)) { //if itemgiver is running, and nav block has less than a second remaining, refresh it
+                    VTankControl.Nav_Block(30000, Globals.Settings.Plugin.Debug);
+                    VTankControl.Item_Block(30000, false);
+                }
+
+                if (idItems.Count > 0 && DateTime.Now - lastIdSpam > TimeSpan.FromSeconds(10)) {
+                    lastIdSpam = DateTime.Now;
+                    Logger.Debug("Items remaining to ID: " + idItems.Count());
+                }
+
+                if (CoreManager.Current.Actions.BusyState == 0) {
+                    if (Globals.Core.WorldFilter[destinationId] == null) {
+                        Logger.Debug($"ItemGiver {targetPlayer} vanished!");
+                        IGStop();
+                        return;
+                    }
+                    if (!idComplete)
+                        GetIGItems();
+
+                    itemsGiven+= giveObjects.RemoveAll(x => (Globals.Core.WorldFilter[x] == null) || (Globals.Core.WorldFilter[x].Container == -1));
+
+                    foreach (int item in giveObjects) {
+                        if (item != currentItem)
+                            retryCount = 0;
+                        currentItem = item;
+
+                        retryCount++;
+                        totalFailures++;
+                        Globals.Core.Actions.GiveItem(item, destinationId);
+                        if (retryCount > Globals.Settings.InventoryManager.IGBusyCount) {
+                            giveObjects.Remove(item);
+                            Logger.Debug($"unable to give {Util.GetObjectName(item)}");
+                            failedItems++;
+                        }
+
+                        if (failedItems > Globals.Settings.InventoryManager.IGFailure) IGStop();
+
+                        return;
+                    }
+
+                    if (giveObjects.Count == 0 && idItems.Count == 0) {
+                        IGStop();
+                    }
+                }
+            } catch (Exception ex) { Logger.LogException(ex); }
+
+
+
+
         }
 
         public bool TryCramItem(WorldObject stackThis) {
             // try to cram in side pack
             foreach (var container in Globals.Core.WorldFilter.GetInventory()) {
                 int slot = container.Values(LongValueKey.Slot, -1);
-                if (container.ObjectClass == ObjectClass.Container && slot >= 0 && !blacklistedContainers.ContainsKey(container.Id)) {
+                if (container.ObjectClass == Decal.Adapter.Wrappers.ObjectClass.Container && slot >= 0 && !blacklistedContainers.ContainsKey(container.Id)) {
                     int freePackSpace = Util.GetFreePackSpace(container);
 
                     if (freePackSpace <= 0) continue;
@@ -257,7 +353,7 @@ namespace UtilityBelt.Tools {
 
             // try to stack in side pack
             foreach (var container in Globals.Core.WorldFilter.GetInventory()) {
-                if (container.ObjectClass == ObjectClass.Container && container.Values(LongValueKey.Slot, -1) >= 0) {
+                if (container.ObjectClass == Decal.Adapter.Wrappers.ObjectClass.Container && container.Values(LongValueKey.Slot, -1) >= 0) {
                     if (blacklistedContainers.ContainsKey(container.Id)) continue;
 
                     foreach (var wo in Globals.Core.WorldFilter.GetByContainer(container.Id)) {
@@ -326,12 +422,241 @@ namespace UtilityBelt.Tools {
 
             return false;
         }
+        private void StartGive(Match giveMatch) {
+            if (igRunning) {
+                Util.WriteToChat("ItemGiver is already running.  Please wait until it completes or use /ub give stop to quit previous session");
+                return;
+            }
+            VTankControl.Nav_Block(1000, false); // quick block to keep vtank from truckin' off before the profile loads, but short enough to not matter if it errors out and doesn't unlock
+            targetPlayer = giveMatch.Groups["targetPlayer"].Value;
+            destinationId = FindPlayerID(targetPlayer, (giveMatch.Groups["flags"].Value.Contains("p") ? true : false));
+
+            if (destinationId == Globals.Core.CharacterFilter.Id) {
+                Util.WriteToChat("ItemGiver: You can't give to yourself");
+                return;
+            }
+            if (destinationId == -1) {
+                Util.WriteToChat($"ItemGiver: player {targetPlayer} not found");
+                return;
+            }
+
+            var playerDistance = Globals.Core.WorldFilter.Distance(Globals.Core.CharacterFilter.Id, destinationId) * 240;
+            if (playerDistance > 5d) {
+                Util.WriteToChat($"ItemGiver: {targetPlayer} is {playerDistance:n2} meters away");
+                return;
+            }
+            isRegex = (giveMatch.Groups["flags"].Value.Contains("r") ? true : false);
+            givePartialItem = (giveMatch.Groups["flags"].Value.Contains("P") ? true : false);
+            int.TryParse(giveMatch.Groups["giveCount"].Value, out maxGive);
+            if (maxGive < 1)
+                maxGive = int.MaxValue;
+
+            if (isRegex)
+                utlProfile = giveMatch.Groups["itemName"].Value; //NOT a profile name. just re-purposing this.
+            else
+                utlProfile = giveMatch.Groups["itemName"].Value.ToLower(); //NOT a profile name. just re-purposing this.
+
+
+            Logger.Debug($"ItemGiver GIVE {(maxGive == int.MaxValue ? "∞" : maxGive.ToString())} {(givePartialItem ? "(partial)" : "")}{utlProfile} to {Globals.Core.WorldFilter[destinationId].Name}");
+            VTankControl.Nav_Block(30000, Globals.Settings.Plugin.Debug);
+            VTankControl.Item_Block(30000, false);
+            idComplete = true;
+            GetGiveItems();
+
+
+            startGive = DateTime.Now;
+            igRunning = true;
+
+
+        }
+        private void StartIG(Match igMatch) {
+            if (igRunning) {
+                Util.WriteToChat("ItemGiver is already running.  Please wait until it completes or use /ub ig stop to quit previous session");
+                return;
+            }
+            VTankControl.Nav_Block(1000, false); // quick block to keep vtank from truckin' off before the profile loads, but short enough to not matter if it errors out and doesn't unlock
+            targetPlayer = igMatch.Groups["targetPlayer"].Value;
+            destinationId = FindPlayerID(targetPlayer, (igMatch.Groups["partial"].Value.Equals("p") ? true : false));
+            if (destinationId == Globals.Core.CharacterFilter.Id) {
+                Util.WriteToChat("You can't give to yourself");
+                return;
+            }
+            if (destinationId == -1) {
+                Util.WriteToChat($"ItemGiver player {targetPlayer} not found");
+                return;
+            }
+
+            var playerDistance = Globals.Core.WorldFilter.Distance(Globals.Core.CharacterFilter.Id, destinationId) * 240;
+            if (5d < playerDistance) {
+                Util.WriteToChat($"ItemGiver {targetPlayer} is {playerDistance:n2} meters away");
+                return;
+            }
+
+            utlProfile = igMatch.Groups["utlProfile"].Value;
+
+            if (!File.Exists(Path.Combine(profilePath, utlProfile))) {
+                if (File.Exists(Path.Combine(profilePath, utlProfile + ".utl"))) {
+                    utlProfile += ".utl";
+                } else {
+                    Util.WriteToChat($"Profile does not exist: {utlProfile} ({profilePath})");
+                    return;
+                }
+            }
+
+            if (lootProfile == null) {
+                var hasLootCore = false;
+                try {
+                    lootProfile = new LootCore();
+                    hasLootCore = true;
+                } catch (Exception ex) { Logger.LogException(ex); }
+
+                if (!hasLootCore) {
+                    Util.WriteToChat("Unable to load VTClassic, something went wrong.");
+                    return;
+                }
+            }
+
+            lootProfile.LoadProfile(Path.Combine(profilePath, utlProfile), false);
+
+            VTankControl.Nav_Block(30000, Globals.Settings.Plugin.Debug);
+            VTankControl.Item_Block(30000, false);
+            idComplete = false;
+            GetIGItems();
+
+            startGive = DateTime.Now;
+            igRunning = true;
+        }
+
+        int FindPlayerID(string name, bool partial) {
+            name = name.ToLower();
+            foreach (WorldObject wo in Globals.Core.WorldFilter.GetLandscape()) {
+                if (
+                    (wo.ObjectClass == Decal.Adapter.Wrappers.ObjectClass.Player &&
+                    wo.Name.Equals(name, StringComparison.OrdinalIgnoreCase)) || (
+                    partial && wo.Name.ToLower().Contains(name)
+                )) {
+                    return wo.Id;
+                }
+            }
+            if (name.Equals("selected") &&
+                Globals.Core.Actions.CurrentSelection > 0 &&
+                Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection] != null &&
+                Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection].ObjectClass == Decal.Adapter.Wrappers.ObjectClass.Player
+            ) {
+                return Globals.Core.Actions.CurrentSelection;
+            }
+            return -1;
+        }
+        private void IGStop() {
+            if (!igRunning) {
+                Util.WriteToChat("ItemGiver is not running.");
+                return;
+            }
+
+            Util.ThinkOrWrite($"ItemGiver finished: {utlProfile} to {targetPlayer}. took {Util.GetFriendlyTimeDifference(DateTime.Now - startGive)} to give {itemsGiven} item(s). {totalFailures - itemsGiven}", Globals.Settings.InventoryManager.IGThink);
+            VTankControl.Nav_UnBlock();
+            VTankControl.Item_UnBlock();
+
+            itemsGiven = totalFailures = failedItems = 0;
+            igRunning = isRegex = false;
+            lootProfile = null;
+            givenItemsCount.Clear();
+            giveObjects.Clear();
+        }
+
+
+        private void GetGiveItems() {
+            try {
+                Regex itemre = new Regex(utlProfile);
+                foreach (WorldObject item in Globals.Core.WorldFilter.GetInventory()) {
+
+                    if (giveObjects.Count >= maxGive)
+                        break;
+
+                    // Util.WriteToChat($"Processing 0x{item.Id:X8} {item.Name}");
+
+                    if (item.Values(LongValueKey.EquippedSlots, 0) > 0 || item.Values(LongValueKey.Slot, -1) == -1) // If the item is equipped or wielded, don't process it.
+                        continue;
+
+                    if (item.Container == -1) // Silly GDLE.... sigh.
+                        continue;
+                    if (isRegex) {
+                        if (!itemre.IsMatch(Util.GetObjectName(item.Id)))
+                            continue;
+                    } else if (givePartialItem) {
+                        if (!Util.GetObjectName(item.Id).ToLower().Contains(utlProfile))
+                            continue;
+                    } else if (!Util.GetObjectName(item.Id).ToLower().Equals(utlProfile))
+                        continue;
+
+                    // Util.WriteToChat($"       Adding {item.Name}");
+                    giveObjects.Add(item.Id);
+                }
+            } catch (Exception ex) { Logger.LogException(ex); }
+        }
+        private void GetIGItems() {
+            try {
+                foreach (WorldObject item in Globals.Core.WorldFilter.GetInventory()) {
+                    if (giveObjects.Contains(item.Id)) // already in the list
+                        continue;
+
+                    if (item.Values(LongValueKey.EquippedSlots, 0) > 0 || item.Values(LongValueKey.Slot, -1) == -1) // If the item is equipped or wielded, don't process it.
+                        continue;
+
+                    if (item.Container == -1) // Silly GDLE.... sigh.
+                        continue;
+
+                    GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item.Id);
+                    if (itemInfo == null) // This happens all the time for aetheria that has been converted
+                        continue;
+
+                    if (!item.HasIdData && lootProfile.DoesPotentialItemNeedID(itemInfo)) {
+                        if (!idItems.Contains(item.Id)) {
+                            Globals.Core.Actions.RequestId(item.Id);
+                            idItems.Add(item.Id);
+                        }
+                        continue;
+                    }
+
+                    if (!item.HasIdData) {
+                        if (lootProfile.DoesPotentialItemNeedID(itemInfo)) {
+                            if (!idItems.Contains(item.Id)) {
+                                Globals.Core.Actions.RequestId(item.Id);
+                                idItems.Add(item.Id);
+                            }
+                            continue;
+                        }
+                    } else if (idItems.Contains(item.Id))
+                        idItems.Remove(item.Id);
+
+
+                    LootAction result = lootProfile.GetLootDecision(itemInfo);
+                    if (!result.IsKeep && !result.IsKeepUpTo) {
+                        continue;
+                    }
+
+                    if (result.IsKeepUpTo) {
+                        if (!givenItemsCount.ContainsKey(result.RuleName)) {
+                            givenItemsCount[result.RuleName] = 1;
+                            // Util.WriteToChat("Rule: " + result.RuleName + " ----------- Keep Count: " + result.Data1);
+                        } else if (givenItemsCount[result.RuleName] > 0 && givenItemsCount[result.RuleName] < result.Data1) {
+                            givenItemsCount[result.RuleName]++;
+                        } else {
+                            continue;
+                        }
+                    }
+
+                    giveObjects.Add(item.Id);
+                }
+                if (idItems.Count == 0)
+                    idComplete = true;
+            } catch (Exception ex) { Logger.LogException(ex); }
+        }
 
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
         protected virtual void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {

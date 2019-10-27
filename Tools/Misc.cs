@@ -120,6 +120,8 @@ namespace UtilityBelt.Tools {
                 "   /ub vendor open[p] {vendorname,vendorid,vendorhex}\n" +
                 "   /ub vendor openclosest - attempts to open the closest vendor\n" +
                 "   /ub vendor opencancel - quietly cancels the last /ub vendor open* command\n" +
+                "   /ub give[Prp] [count] <itemName> to <character|selected>\n" + // private static readonly Regex giveRegex = new Regex(@"^\/ub give(?<flags>[pP]*) ?(?<giveCount>\d+)? (?<itemName>.+) to (?<targetPlayer>.+)");
+                "   /ub ig[p] <profile[.utl]> to <character|selected>\n" + //private static readonly Regex igRegex = new Regex(@"^\/ub ig(?<partial>p)? ?(?<utlProfile>.+) to (?<targetPlayer>.+)");
                 "TODO: Add rest of commands");
         }
         public void UB_testBlock(string theRest) {

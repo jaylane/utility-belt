@@ -392,6 +392,8 @@ namespace UtilityBelt
             if (difference.Minutes > 0) output += difference.Minutes.ToString() + "m ";
             if (difference.Seconds > 0) output += difference.Seconds.ToString() + "s ";
 
+            if (output.Length == 0)
+                return "0s";
             return output.Trim();
         }
 

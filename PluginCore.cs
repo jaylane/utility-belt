@@ -24,7 +24,6 @@ namespace UtilityBelt
         private Jumper jumper;
         private Misc misc;
         private Counter counter;
-        private ItemGiver itemGiver;
         private VTankFellowHeals vTankFellowHeals;
         private ChatNameClickHandler chatNameClickHandler;
 
@@ -74,7 +73,6 @@ namespace UtilityBelt
                 misc = new Misc();
                 jumper = new Jumper();
                 counter = new Counter();
-                itemGiver = new ItemGiver();
                 vTankFellowHeals = new VTankFellowHeals();
                 chatNameClickHandler = new ChatNameClickHandler();
 
@@ -94,7 +92,6 @@ namespace UtilityBelt
                 if (autoSalvage != null) autoSalvage.Think();
                 if (Globals.AutoVendor != null) Globals.AutoVendor.Think();
                 if (autoTrade != null) autoTrade.Think();
-                if (itemGiver != null) itemGiver.Think();
                 if (misc != null) misc.Think();
                 if (Globals.DungeonMaps != null) Globals.DungeonMaps.Think();
                 if (jumper != null) jumper.Think();
@@ -120,7 +117,6 @@ namespace UtilityBelt
                 if (misc != null) misc.Dispose();
                 if (jumper != null) jumper.Dispose();
                 if (counter != null) counter.Dispose();
-                if (itemGiver != null) itemGiver.Dispose();
                 if (Globals.VisualVTankRoutes != null) Globals.VisualVTankRoutes.Dispose();
                 if (vTankFellowHeals != null) vTankFellowHeals.Dispose();
                 if (chatNameClickHandler != null) chatNameClickHandler.Dispose();
