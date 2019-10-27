@@ -57,6 +57,8 @@ namespace UtilityBelt.Tools {
             UIInventoryManagerAutoStack.Change += UIInventoryManagerAutoStack_Change;
 
             Globals.Settings.InventoryManager.PropertyChanged += (s, e) => { UpdateUI(); };
+
+            UpdateUI();
         }
 
         private void UpdateUI() {
