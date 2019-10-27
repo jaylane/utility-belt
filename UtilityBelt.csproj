@@ -159,7 +159,6 @@
     <Compile Include="Tools\EmuConfig.cs" />
     <Compile Include="Tools\InventoryManager.cs" />
     <Compile Include="Tools\DungeonMaps.cs" />
-    <Compile Include="Tools\ItemGiver.cs" />
     <Compile Include="Tools\Jumper.cs" />
     <Compile Include="Tools\Misc.cs" />
     <Compile Include="Tools\QuestTracker.cs" />

@@ -22,6 +22,24 @@ namespace UtilityBelt.Lib.Settings.Sections {
             set { UpdateSetting("AutoStack", value); }
         }
 
+        [Summary("Think to yourself when ItemGiver Finishes")]
+        [DefaultValue(false)]
+        public bool IGThink {
+            get { return (bool)GetSetting("IGThink"); }
+            set { UpdateSetting("IGThink", value); }
+        }
+        [Summary("Item Failure Count to fail ItemGiver")]
+        [DefaultValue(3)]
+        public int IGFailure {
+            get { return (int)GetSetting("IGFailure"); }
+            set { UpdateSetting("IGFailure", value); }
+        }
+        [Summary("Busy Count to fail ItemGiver give")]
+        [DefaultValue(10)]
+        public int IGBusyCount {
+            get { return (int)GetSetting("IGBusyCount"); }
+            set { UpdateSetting("IGBusyCount", value); }
+        }
         public InventoryManager(SectionBase parent) : base(parent) {
             Name = "InventoryManager";
         }
