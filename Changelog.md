@@ -1,4 +1,4 @@
-## 0.0.11 
+## 0.0.11 (2019-10-27) [UtilityBeltInstaller-0.0.11.exe](/uploads/eeffc7b5a32903ec241d894fbcc7e9af/UtilityBeltInstaller-0.0.11.exe)
 - All new event-based autovendor code! (thanks Yonneh)
 - Added AutoAddToTrade (thanks Cosmic Jester)
 - Added `VTank.ShareVitals` option to enable/disable vtank vital sharing
