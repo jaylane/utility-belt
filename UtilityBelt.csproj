@@ -115,6 +115,7 @@
     <Compile Include="Lib\Settings\Sections\InventoryManager.cs" />
     <Compile Include="Lib\Settings\Sections\Plugin.cs" />
     <Compile Include="Lib\Settings\Sections\VisualNav.cs" />
+    <Compile Include="Lib\Settings\Sections\VTank.cs" />
     <Compile Include="Lib\Settings\SettingAttributes.cs" />
     <Compile Include="Lib\Settings\Sections\AutoSalvage.cs" />
     <Compile Include="Lib\Settings\SectionBase.cs" />
