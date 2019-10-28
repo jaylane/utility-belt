@@ -16,6 +16,7 @@ namespace UtilityBelt.Tools {
         private DateTime lastThought = DateTime.MinValue;
         private DateTime lastEvent = DateTime.MinValue;
         private DateTime vendorOpened = DateTime.MinValue;
+        private DateTime bailTimer = DateTime.MinValue;
 
         private bool disposed;
         private bool isRunning = false;
@@ -147,6 +148,7 @@ namespace UtilityBelt.Tools {
                 lastEvent = DateTime.MinValue;
             else
                 lastEvent = DateTime.UtcNow;
+            bailTimer = DateTime.Now;
         }
         private void EchoFilter_ClientDispatch(object sender, NetworkMessageEventArgs e) {
             if (!isRunning) return;
@@ -367,6 +369,7 @@ namespace UtilityBelt.Tools {
 
             Globals.InventoryManager.Pause();
 
+            bailTimer = DateTime.Now;
             isRunning = true;
             needsToBuy = needsToSell = false;
             lastThought = DateTime.UtcNow;
@@ -447,6 +450,10 @@ namespace UtilityBelt.Tools {
                         else
                             Stop();
                     }
+                }
+                if (DateTime.Now - bailTimer > TimeSpan.FromSeconds(10)) {
+                    Util.WriteToChat("AutoVendor bail, Timeout expired");
+                    Stop();
                 }
             } catch (Exception ex) { Logger.LogException(ex); }
         }

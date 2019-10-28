@@ -27,7 +27,7 @@ namespace UtilityBelt.Tools {
         private Dictionary<int,DateTime> blacklistedContainers = new Dictionary<int, DateTime>();
 
         private static readonly List<int> giveObjects = new List<int>(), idItems = new List<int>();
-        private static DateTime lastIdSpam = DateTime.MinValue, startGive;
+        private static DateTime lastIdSpam = DateTime.MinValue, bailTimer = DateTime.MinValue, startGive;
         private static bool igRunning = false, idComplete, givePartialItem, isRegex = false;
         private static int currentItem, retryCount, destinationId, failedItems, totalFailures, maxGive, itemsGiven;
         private LootCore lootProfile = null;
@@ -279,7 +279,7 @@ namespace UtilityBelt.Tools {
                     Logger.Debug("Items remaining to ID: " + idItems.Count());
                 }
 
-                if (CoreManager.Current.Actions.BusyState == 0) {
+                if (Globals.Core.Actions.BusyState == 0) {
                     if (Globals.Core.WorldFilter[destinationId] == null) {
                         Logger.Debug($"ItemGiver {targetPlayer} vanished!");
                         IGStop();
@@ -291,8 +291,10 @@ namespace UtilityBelt.Tools {
                     itemsGiven+= giveObjects.RemoveAll(x => (Globals.Core.WorldFilter[x] == null) || (Globals.Core.WorldFilter[x].Container == -1));
 
                     foreach (int item in giveObjects) {
-                        if (item != currentItem)
+                        if (item != currentItem) {
                             retryCount = 0;
+                            bailTimer = DateTime.Now;
+                        }
                         currentItem = item;
 
                         retryCount++;
@@ -312,6 +314,10 @@ namespace UtilityBelt.Tools {
                     if (giveObjects.Count == 0 && idItems.Count == 0) {
                         IGStop();
                     }
+                }
+                if (DateTime.Now - bailTimer > TimeSpan.FromSeconds(10)) {
+                    Util.WriteToChat("ItemGiver bail, Timeout expired");
+                    IGStop();
                 }
             } catch (Exception ex) { Logger.LogException(ex); }
 
@@ -467,6 +473,7 @@ namespace UtilityBelt.Tools {
 
 
             startGive = DateTime.Now;
+            bailTimer = DateTime.Now;
             igRunning = true;
 
 
@@ -526,6 +533,7 @@ namespace UtilityBelt.Tools {
             GetIGItems();
 
             startGive = DateTime.Now;
+            bailTimer = DateTime.Now;
             igRunning = true;
         }
 
