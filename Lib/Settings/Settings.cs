@@ -88,6 +88,10 @@ namespace UtilityBelt.Lib.Settings {
         [JsonProperty]
         [Summary("Jumper Settings")]
         public Sections.Jumper Jumper { get; set; }
+
+        [JsonProperty]
+        [Summary("VTank Integration Settings")]
+        public Sections.VTank VTank { get; set; }
         #endregion
 
         public Settings() {
@@ -100,6 +104,7 @@ namespace UtilityBelt.Lib.Settings {
                 SetupSection(InventoryManager = new Sections.InventoryManager(null));
                 SetupSection(VisualNav = new Sections.VisualNav(null));
                 SetupSection(Jumper = new Sections.Jumper(null));
+                SetupSection(VTank = new Sections.VTank(null));
 
                 Load();
 

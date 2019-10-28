@@ -53,7 +53,7 @@ namespace UtilityBelt.Tools {
         }
 
         public void UpdateMySharedVitals() {
-            if (!HasVTank()) return;
+            if (!HasVTank() || !Globals.Settings.VTank.VitalSharing) return;
 
             UBPlayerUpdate playerUpdate = GetMyPlayerUpdate();
 
@@ -133,6 +133,8 @@ namespace UtilityBelt.Tools {
 
         public void Think() {
             if (DateTime.UtcNow - lastUpdate > TimeSpan.FromMilliseconds(UPDATE_INTERVAL)) {
+                if (!HasVTank() || !Globals.Settings.VTank.VitalSharing) return;
+
                 UpdateMySharedVitals();
             }
         }

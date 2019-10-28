@@ -1,3 +1,13 @@
+## 0.0.11 
+- All new event-based autovendor code! (thanks Yonneh)
+- Added AutoAddToTrade (thanks Cosmic Jester)
+- Added `VTank.ShareVitals` option to enable/disable vtank vital sharing
+- Fixed bug where InventoryManager settings were not displaying properly in the ui.
+- Added `/ub closestportal with nav` blocking and retries (thanks Yonneh)
+- Added `/ub portal[p] <portal name>` with nav blocking and retries (thanks Yonneh)
+- `/ub count` now shows cumulative item count (thanks Cosmic Jester)
+- Added /ig give[P(partial item name),r(regex)][p(partial character)] [count] <itemname> to <character> to give item(s) by name (thanks Yonneh)
+
 ## 0.0.10 (2019-10-13) [UtilityBeltInstaller-0.0.10.exe](/uploads/0e26748b43ba78352b2c047f0cc0061a/UtilityBeltInstaller-0.0.10.exe)
 - Customary remove debug spam release
 
