@@ -119,18 +119,18 @@ namespace UtilityBelt.Tools {
 
         private void Reset_pendingBuy() {
             if (pendingBuy.Count > 0) {
-                Logger.Debug("ERR: pendingBuy reset while it still contained " + pendingBuy.Count + " items!");
+                Logger.Debug($"ERR: pendingBuy reset while it still contained {pendingBuy.Count:n0} items!");
                 foreach (KeyValuePair<int, int> fff in pendingBuy) {
-                    Logger.Debug(string.Format("    Type 0x{0:X8} x{1:n0}", fff.Key, fff.Value));
+                    Logger.Debug($"    Type 0x{fff.Key:X8} x{fff.Value:n0}");
                 }
             }
             pendingBuy.Clear();
         }
         private void Reset_pendingSell() {
             if (pendingSell.Count > 0) {
-                Logger.Debug("ERR: pendingSell reset while it still contained " + pendingSell.Count + " items!");
+                Logger.Debug($"ERR: pendingSell reset while it still contained {pendingSell.Count:n0} items!");
                 foreach (int i in pendingSell) {
-                    Logger.Debug(string.Format("    Item 0x{0:X8}", i));
+                    Logger.Debug($"    Item 0x{i:X8} {(Globals.Core.WorldFilter[i] == null?"Error":Globals.Core.WorldFilter[i].Name)}");
                 }
             }
             pendingSell.Clear();
@@ -249,8 +249,7 @@ namespace UtilityBelt.Tools {
                     vendorSellRate = e.Vendor.SellRate;
                     vendorBuyRate = e.Vendor.BuyRate;
                     vendorOpened = DateTime.UtcNow;
-                    var vendorInfo = string.Format("{0}[0x{4:X8}]: BuyRate: {1}% SellRate: {2}% MaxValue: {3:n0}",
-                            Globals.Core.WorldFilter[e.Vendor.MerchantId].Name, e.Vendor.BuyRate * 100, e.Vendor.SellRate * 100, e.Vendor.MaxValue, e.Vendor.MerchantId);
+                    var vendorInfo = $"{Globals.Core.WorldFilter[e.Vendor.MerchantId].Name}[0x{e.Vendor.MerchantId:X8}]: BuyRate: {e.Vendor.BuyRate * 100:n0}% SellRate: {e.Vendor.SellRate * 100:n0}% MaxValue: {e.Vendor.MaxValue:n0}";
                     if (Globals.Settings.AutoVendor.ShowMerchantInfo)
                         Util.WriteToChat(vendorInfo);
                     else
@@ -406,7 +405,7 @@ namespace UtilityBelt.Tools {
                 return;
 
             try {
-                if (DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(250)) {
+                if (Globals.Core.Actions.BusyState == 0 && DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(250)) {
                     lastThought = DateTime.UtcNow;
 
                     //if autovendor is running, and nav block has less than a second plus thinkInterval remaining, refresh it
@@ -434,7 +433,7 @@ namespace UtilityBelt.Tools {
 
                     if (DateTime.UtcNow - lastEvent >= TimeSpan.FromMilliseconds(15000)) {
                         if (lastEvent != DateTime.MinValue) // minvalue was not set, so it expired naturally:
-                            Logger.Debug(string.Format("Event Timeout. Pyreals: {0:n0}, Sell List: {1:n0}, Buy List: {2:n0}", expectedPyreals,pendingSell.Count(), pendingBuy.Count()));
+                            Logger.Debug($"Event Timeout. Pyreals: {expectedPyreals:n0}, Sell List: {pendingSell.Count():n0}, Buy List: {pendingBuy.Count():n0}");
                         if (HasVendorOpen()) {
                             if (needsToBuy) {
                                 needsToBuy = false;
@@ -451,7 +450,7 @@ namespace UtilityBelt.Tools {
                             Stop();
                     }
                 }
-                if (DateTime.Now - bailTimer > TimeSpan.FromSeconds(10)) {
+                if (DateTime.Now - bailTimer > TimeSpan.FromSeconds(60)) {
                     Util.WriteToChat("AutoVendor bail, Timeout expired");
                     Stop();
                 }
@@ -462,11 +461,6 @@ namespace UtilityBelt.Tools {
             try {
                 List<BuyItem> buyItems = GetBuyItems();
                 List<WorldObject> sellItems = GetSellItems();
-
-                //Logger.Debug(string.Format("AutoVendor Wants Buy: {0}: ({1}, Sell: {2}: {3} ({4})",
-                //        buyItems.Count, buyItems.Count > 0 ? buyItems[0].Item.Name : "null",
-                //        sellItems.Count, sellItems.Count > 0 ? Util.GetObjectName(sellItems[0].Id) : "null",
-                //        (sellItems.Count > 0 ? sellItems[0].Values(LongValueKey.StackCount).ToString() : "0")));
 
                 Globals.Core.Actions.VendorClearBuyList();
                 Reset_pendingBuy();
@@ -483,7 +477,7 @@ namespace UtilityBelt.Tools {
                 foreach (var buyItem in buyItems.OrderBy(o => o.Item.Value).ToList()) {
                     var vendorPrice = GetVendorSellPrice(buyItem.Item);
                     if (vendorPrice == 0) {
-                        Util.ThinkOrWrite(string.Format("AutoVendor Fatal - No vendor price found while adding {0:n}x {1}[0x{2:X8}] Value: {3:n}", buyItem.Amount, buyItem.Item.Name, buyItem.Item.Id, vendorPrice), Globals.Settings.AutoVendor.Think);
+                        Util.ThinkOrWrite($"AutoVendor Fatal - No vendor price found while adding {buyItem.Amount:n0}x {buyItem.Item.Name}[0x{buyItem.Item.Id:X8}] Value: {vendorPrice:n}", Globals.Settings.AutoVendor.Think);
                         Stop();
                         return;
                     }
@@ -509,7 +503,7 @@ namespace UtilityBelt.Tools {
 
                         if (totalBuyCount > 1)
                             buyAdded.Append(",");
-                        buyAdded.Append(string.Format("{0} {1}", buyCount, buyItem.Item.Name));
+                        buyAdded.Append($"{buyCount} {buyItem.Item.Name}");
 
                         if (buyItem.Amount > buyCount)
                             break;
@@ -518,7 +512,7 @@ namespace UtilityBelt.Tools {
                 }
 
                 if (totalBuyCount > 0) {
-                    Logger.Debug(string.Format("{0} - {1}/{2}", buyAdded.ToString(), totalBuyPyreals, pyrealCount));
+                    Logger.Debug($"{buyAdded.ToString()} - {totalBuyPyreals}/{pyrealCount}");
                     needsToBuy = true;
                     expectedPyreals = -totalBuyPyreals;
                     return;
@@ -537,18 +531,19 @@ namespace UtilityBelt.Tools {
                     var item = sellItems[sellItemCount];
                     var value = GetVendorBuyPrice(item);
                     var stackSize = item.Values(LongValueKey.StackCount, 1);
-                    var stackCount = 0;
+                    bool nestedBreak = false;
 
                     // dont sell notes if we are trying to buy notes...
                     if (((nextBuyItem != null && nextBuyItem.ObjectClass == ObjectClass.TradeNote) || nextBuyItem == null) && item.ObjectClass == ObjectClass.TradeNote) {
-                        Logger.Debug(string.Format("AutoVendor bail: buyItem: {0} sellItem: {1}", nextBuyItem == null ? "null" : nextBuyItem.Name, Util.GetObjectName(item.Id)));
+                        Logger.Debug($"AutoVendor bail: buyItem: {(nextBuyItem == null ? "null" : nextBuyItem.Name)} sellItem: {Util.GetObjectName(item.Id)}");
                         break;
                     }
 
                     // if we are selling notes to buy something, sell the minimum amount
                     if (nextBuyItem != null && item.ObjectClass == ObjectClass.TradeNote) {
-                        if (!PyrealsWillFitInMainPack((int)GetVendorBuyPrice(item))) {
-                            Util.ThinkOrWrite("AutoVendor Fatal - No inventory room to sell " + Util.GetObjectName(item.Id), Globals.Settings.AutoVendor.Think);
+                        if (sellItemCount > 0) break; // if we already have items to sell, sell those first
+                        if (!PyrealsWillFitInMainPack(value)) {
+                            Util.ThinkOrWrite($"AutoVendor Fatal - No inventory room to sell {Util.GetObjectName(item.Id)}", Globals.Settings.AutoVendor.Think);
                             Stop();
                             return;
                         }
@@ -556,43 +551,39 @@ namespace UtilityBelt.Tools {
                         // see if we already have a single stack of this item
                         foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
                             if (wo.Name == item.Name && wo.Values(LongValueKey.StackCount, 0) == 1) {
-                                Logger.Debug("AutoVendor Selling single " + wo.Name + " so we can afford to buy: " + nextBuyItem.Name);
+                                Logger.Debug($"AutoVendor Selling single {Util.GetObjectName(wo.Id)} so we can afford to buy: " + nextBuyItem.Name);
+                                needsToSell = true;
+                                if (sellItemCount > 0)
+                                    sellAdded.Append(", ");
+                                sellAdded.Append(Util.GetObjectName(wo.Id));
                                 pendingSell.Add(wo.Id);
                                 Globals.Core.Actions.VendorAddSellList(wo.Id);
-                                needsToSell = true;
-                                return;
+                                totalSellValue += (int)(value);
+                                sellItemCount++;
+                                nestedBreak = true;
+                                break;
                             }
                         }
-
+                        if (nestedBreak) break;
                         Globals.Core.Actions.SelectItem(item.Id);
                         Globals.Core.Actions.SelectedStackCount = 1;
                         Globals.Core.Actions.MoveItem(item.Id, Globals.Core.CharacterFilter.Id, 0, false);
-                        Logger.Debug(string.Format("AutoVendor Splitting {0}. old: {1} new: {2}", Util.GetObjectName(item.Id), item.Values(LongValueKey.StackCount), 1));
+                        Logger.Debug($"AutoVendor Splitting {Util.GetObjectName(item.Id)}. old: {item.Values(LongValueKey.StackCount)} new: 1");
                         return;
                     }
 
                     // cant sell the whole stack? split it into what we can sell
-                    if (stackSize > 1 && !PyrealsWillFitInMainPack(totalSellValue + (int)(value * stackSize + 0.1))) {
-                        // if we already have items to sell, sell those first
-                        if (sellItemCount > 0) break;
-
-                        while (stackCount <= stackSize) {
-                            // we include an extra PYREAL_STACK_SIZE because we know we are going to split this item
-                            if (!PyrealsWillFitInMainPack(PYREAL_STACK_SIZE + totalSellValue + (int)(value * stackCount + 0.1))) {
+                    if (!PyrealsWillFitInMainPack(totalSellValue + (int)(value * stackSize + 0.1))) {
+                        if (sellItemCount < 1) {
+                            // the whole stack won't fit, and there is nothing else in the sell list.
+                            if (item.Values(LongValueKey.StackCount, 1) > 1) { // good news- this is a stack. try lobbing one off, and running again!
                                 Globals.Core.Actions.SelectItem(item.Id);
-                                Globals.Core.Actions.SelectedStackCount = stackCount > 1 ? stackCount - 1 : 1;
+                                Globals.Core.Actions.SelectedStackCount = 1;
                                 Globals.Core.Actions.MoveItem(item.Id, Globals.Core.CharacterFilter.Id, 0, false);
-                                Logger.Debug(string.Format("AutoVendor Splitting {0}. old: {1} new: {2}", Util.GetObjectName(item.Id), item.Values(LongValueKey.StackCount), stackCount));
+                                Logger.Debug($"AutoVendor Splitting {Util.GetObjectName(item.Id)}. old: {item.Values(LongValueKey.StackCount)} new: 1");
                                 return;
                             }
-                            ++stackCount;
-                        }
-                    } else
-                        stackCount = item.Values(LongValueKey.StackCount, 1);
-
-                    if (!PyrealsWillFitInMainPack(totalSellValue + (int)(value * stackCount + 0.1))) {
-                        if (sellItemCount < 1) {
-                            Util.ThinkOrWrite("AutoVendor Fatal - No inventory room to sell " + Util.GetObjectName(item.Id), Globals.Settings.AutoVendor.Think);
+                            Util.ThinkOrWrite($"AutoVendor Fatal - No inventory room to sell {Util.GetObjectName(item.Id)}", Globals.Settings.AutoVendor.Think);
                             Stop();
                             return;
                         }
@@ -606,7 +597,7 @@ namespace UtilityBelt.Tools {
                     pendingSell.Add(item.Id);
                     Globals.Core.Actions.VendorAddSellList(item.Id);
 
-                    totalSellValue += (int)(value * stackCount);
+                    totalSellValue += (int)(value * stackSize);
                     ++sellItemCount;
                 }
 
@@ -702,7 +693,7 @@ namespace UtilityBelt.Tools {
                 if (itemInfo == null) continue;
                 uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
                 if (result.IsKeepUpTo || result.IsKeep) {
-                    Util.WriteToChat(string.Format("  {0} * {1} - {2}", bi.Item.Name, bi.Amount == int.MaxValue ? "∞" : bi.Amount.ToString(), result.RuleName));
+                    Util.WriteToChat($"  {bi.Item.Name} * {(bi.Amount == int.MaxValue ? "∞" : bi.Amount.ToString())} - {result.RuleName}");
                 }
             }
 
@@ -712,7 +703,7 @@ namespace UtilityBelt.Tools {
                 if (itemInfo == null) continue;
                 uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
                 if (result.IsSell) {
-                    Util.WriteToChat(string.Format("  {0} - {1}", Util.GetObjectName(wo.Id), result.RuleName));
+                    Util.WriteToChat($"  {Util.GetObjectName(wo.Id)} - {result.RuleName}");
                 }
             }
         }
