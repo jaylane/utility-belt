@@ -6,7 +6,7 @@
 !define ASSEMBLY "UtilityBelt.dll"
 !define CLASSNAME "UtilityBelt.PluginCore"
 
-!define BUILDPATH ".\..\bin\x86\Release"
+!define BUILDPATH ".\..\bin"
 
 ; Main Install settings
 ; compressor goes first
