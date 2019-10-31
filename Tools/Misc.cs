@@ -46,6 +46,9 @@ namespace UtilityBelt.Tools {
                 Globals.Core.CommandLineText += Current_CommandLineText;
                 Globals.Core.WorldFilter.ApproachVendor += WorldFilter_ApproachVendor;
                 Globals.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
+                Globals.Core.CharacterFilter.Logoff += CharacterFilter_Logoff;
+                if (VTankControl.vTankInstance != null && VTankControl.vTankInstance.GetNavProfile().Equals("UBFollow"))
+                    VTankControl.vTankInstance.LoadNavProfile(null);
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -76,6 +79,12 @@ namespace UtilityBelt.Tools {
                             break;
                         case "closestportal":
                             UB_portal(null, false);
+                            break;
+                        case "follow":
+                            UB_follow(match.Groups["params"].Value, false);
+                            break;
+                        case "followp":
+                            UB_follow(match.Groups["params"].Value, true);
                             break;
                         case "opt":
                             UB_opt(match.Groups["params"].Value);
@@ -122,6 +131,7 @@ namespace UtilityBelt.Tools {
                 "   /ub vendor opencancel - quietly cancels the last /ub vendor open* command\n" +
                 "   /ub give[Prp] [count] <itemName> to <character|selected>\n" + // private static readonly Regex giveRegex = new Regex(@"^\/ub give(?<flags>[pP]*) ?(?<giveCount>\d+)? (?<itemName>.+) to (?<targetPlayer>.+)");
                 "   /ub ig[p] <profile[.utl]> to <character|selected>\n" + //private static readonly Regex igRegex = new Regex(@"^\/ub ig(?<partial>p)? ?(?<utlProfile>.+) to (?<targetPlayer>.+)");
+                "   /ub follow[p] [character|selected] - follows the named character, selected, or closest\n" +
                 "TODO: Add rest of commands");
         }
         public void UB_testBlock(string theRest) {
@@ -186,7 +196,7 @@ namespace UtilityBelt.Tools {
                     UB_vendor_open(null, false);
                     break;
                 case "opencancel":
-                    Globals.Core.Actions.FaceHeading(Globals.Core.Actions.Heading, true);
+                    Globals.Core.Actions.FaceHeading(Globals.Core.Actions.Heading - 1, true);
                     vendor = null;
                     vendorOpening = 0;
                     VTankControl.Nav_UnBlock();
@@ -194,27 +204,39 @@ namespace UtilityBelt.Tools {
             }
         }
         public void UB_portal(string portalName, bool partial) {
-            if (portalName == null) {
-                double lastDistance = double.MaxValue;
-                double thisDistance;
-                foreach (WorldObject thisOne in Globals.Core.WorldFilter.GetByObjectClass(ObjectClass.Portal)) {
-                    thisDistance = Globals.Core.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, thisOne.Id);
-                    if (portal == null || lastDistance > thisDistance) {
-                        portal = thisOne;
-                        lastDistance = thisDistance;
-                    }
-                }
-            } else {
-                portal = FindName(portalName, partial);
-            }
+            portal = FindName(portalName, partial, ObjectClass.Portal);
             if (portal != null) {
                 UsePortal();
                 return;
             }
             Util.ThinkOrWrite("Could not find a portal", Globals.Settings.Plugin.portalThink);
+        }
+        public void UB_follow(string characterName, bool partial) {
+            WorldObject followChar = FindName((characterName.Length == 0?null:characterName), partial, ObjectClass.Player);
+            if (followChar != null) {
+                FollowChar(followChar.Id);
+                return;
+            }
+            Util.WriteToChat($"Could not find {(characterName==null?"closest player":$"player {characterName}")}");
+        }
+        private void FollowChar(int id) {
+            if (Globals.Core.WorldFilter[id] == null) {
+                Util.WriteToChat($"Character 0x{id:X8} does not exist");
+                return;
+            }
+            if (VTankControl.vTankInstance == null) {
+                Util.WriteToChat("Could not connect to VTank");
+                return;
+            }
+            try {
+                Util.WriteToChat($"Following {Globals.Core.WorldFilter[id].Name}[0x{id:X8}]");
+                VTankControl.vTankInstance.LoadNavProfile("UBFollow");
+                VTankControl.vTankInstance.NavSetFollowTarget(id, "");
+                if (!(bool)VTankControl.vTankInstance.GetSetting("EnableNav"))
+                    VTankControl.vTankInstance.SetSetting("EnableNav", true);
+            } catch { }
 
         }
-
 
         private void UB_vendor_open(string vendorname, bool partial) {
             if (vendorname == null) {
@@ -510,10 +532,33 @@ namespace UtilityBelt.Tools {
         }
 
         //Do not use this in a loop, it gets an F for eFFiciency.
-        private WorldObject FindName(string searchname, bool partial) {
-            //try int id first
+        public WorldObject FindName(string searchname, bool partial, ObjectClass ?oc = null) {
+            //if searchname is null, find closest (oc required)
+            if (searchname == null) {
+                if (oc == null) {
+                    Util.WriteToChat("Fatal error: name and object class were null!");
+                    return null;
+                }
+                WorldObject found = null;
+                double lastDistance = double.MaxValue;
+                double thisDistance;
+                foreach (WorldObject thisOne in Globals.Core.WorldFilter.GetByObjectClass((ObjectClass)oc)) {
+                    thisDistance = Globals.Core.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, thisOne.Id);
+                    if (thisOne.Id != Globals.Core.CharacterFilter.Id && (found == null || lastDistance > thisDistance)) {
+                        found = thisOne;
+                        lastDistance = thisDistance;
+                    }
+                }
+                if (found != null) {
+                    return found;
+                } else {
+                    return null; // special case- nothing below will match a null name.
+                }
+            }
+
+            //try int id
             if (int.TryParse(searchname, out int id)) {
-                if (Globals.Core.WorldFilter[id] != null) {
+                if (Globals.Core.WorldFilter[id] != null && (oc == null || Globals.Core.WorldFilter[id].ObjectClass == oc)) {
                     // Util.WriteToChat("Found by id");
                     return Globals.Core.WorldFilter[id];
                 }
@@ -521,28 +566,23 @@ namespace UtilityBelt.Tools {
             //try hex...
             try {
                 int intValue = Convert.ToInt32(searchname, 16);
-                if (Globals.Core.WorldFilter[intValue] != null) {
+                if (Globals.Core.WorldFilter[intValue] != null && (oc == null || Globals.Core.WorldFilter[intValue].ObjectClass == oc)) {
                     // Util.WriteToChat("Found vendor by hex");
                     return Globals.Core.WorldFilter[intValue];
                 }
             }
             catch { }
-            //try exact name...
-            WorldObjectCollection temp = Globals.Core.WorldFilter.GetByName(searchname);
-            if (temp.Count > 0)
-            {
-                // Util.WriteToChat("Found vendor by exact name");
-                return temp.First();
+            //try "selected"
+            if (searchname.Equals("selected") && Globals.Core.Actions.CurrentSelection != 0 && Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection] != null && (oc == null || Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection].ObjectClass == oc)) {
+                return Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection];
             }
-            if (!partial)
-                return null;
             //try slow search...
             foreach (WorldObject thisOne in CoreManager.Current.WorldFilter.GetLandscape()) {
-                if (thisOne.Name.Contains(searchname))
-                {
-                    // Util.WriteToChat("Found by slow search");
+                string thisLowerName = thisOne.Name.ToLower();
+                if (partial && thisLowerName.Contains(searchname) && (oc == null || thisOne.ObjectClass == oc))
                     return thisOne;
-                }
+                else if (thisLowerName.Equals(searchname) && (oc == null || thisOne.ObjectClass == oc))
+                    return thisOne;
             }
             return null;
         }
@@ -560,7 +600,7 @@ namespace UtilityBelt.Tools {
                         vendorTimestamp = DateTime.UtcNow;
                         CoreManager.Current.Actions.UseItem(vendor.Id, 0);
                     } else {
-                        Globals.Core.Actions.FaceHeading(Globals.Core.Actions.Heading, true); // Cancel the previous useitem call (don't ask)
+                        Globals.Core.Actions.FaceHeading(Globals.Core.Actions.Heading - 1, true); // Cancel the previous useitem call (don't ask)
                         Util.ThinkOrWrite("AutoVendor failed to open vendor", Globals.Settings.AutoVendor.Think);
                         vendor = null;
                         vendorOpening = 0;
@@ -579,7 +619,7 @@ namespace UtilityBelt.Tools {
                         CoreManager.Current.Actions.UseItem(portal.Id, 0);
                     } else {
                         Util.WriteToChat("Unable to use portal " + portal.Name);
-                        Globals.Core.Actions.FaceHeading(Globals.Core.Actions.Heading, true); // Cancel the previous useitem call (don't ask)
+                        Globals.Core.Actions.FaceHeading(Globals.Core.Actions.Heading - 1, true); // Cancel the previous useitem call (don't ask)
                         Util.ThinkOrWrite("failed to use portal", Globals.Settings.Plugin.portalThink);
                         portal = null;
                         portalAttempts = 0;
@@ -608,7 +648,10 @@ namespace UtilityBelt.Tools {
                 }
             } catch (Exception ex) { Logger.LogException(ex); }
         }
-
+        private void CharacterFilter_Logoff(object sender, LogoffEventArgs e) {
+            if (e.Type == LogoffEventType.Requested && VTankControl.vTankInstance != null && VTankControl.vTankInstance.GetNavProfile().Equals("UBFollow"))
+                VTankControl.vTankInstance.LoadNavProfile(null);
+        }
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -620,6 +663,7 @@ namespace UtilityBelt.Tools {
                     Globals.Core.CommandLineText -= Current_CommandLineText;
                     Globals.Core.WorldFilter.ApproachVendor -= WorldFilter_ApproachVendor;
                     Globals.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
+                    Globals.Core.CharacterFilter.Logoff -= CharacterFilter_Logoff;
                 }
                 disposed = true;
             }
