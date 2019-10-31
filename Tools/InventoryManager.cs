@@ -29,7 +29,7 @@ namespace UtilityBelt.Tools {
         private static readonly List<int> giveObjects = new List<int>(), idItems = new List<int>();
         private static DateTime lastIdSpam = DateTime.MinValue, bailTimer = DateTime.MinValue, startGive;
         private static bool igRunning = false, idComplete, givePartialItem, isRegex = false;
-        private static int currentItem, retryCount, destinationId, failedItems, totalFailures, maxGive, itemsGiven;
+        private static int currentItem, retryCount, destinationId, failedItems, totalFailures, maxGive, itemsGiven, lastIdCount;
         private LootCore lootProfile = null;
         private static string targetPlayer = "", utlProfile = "", profilePath = "";
         private static readonly Dictionary<string, int> givenItemsCount = new Dictionary<string, int>();
@@ -276,7 +276,12 @@ namespace UtilityBelt.Tools {
 
                 if (idItems.Count > 0 && DateTime.Now - lastIdSpam > TimeSpan.FromSeconds(10)) {
                     lastIdSpam = DateTime.Now;
-                    Logger.Debug("Items remaining to ID: " + idItems.Count());
+                    var thisIdCount = idItems.Count();
+                    Logger.Debug("Items remaining to ID: " + thisIdCount);
+                    if (lastIdCount != thisIdCount) { // if count has changed, reset bail timer
+                        lastIdCount = thisIdCount;
+                        bailTimer = DateTime.UtcNow;
+                    }
                 }
 
                 if (Globals.Core.Actions.BusyState == 0) {
@@ -471,7 +476,7 @@ namespace UtilityBelt.Tools {
             idComplete = true;
             GetGiveItems();
 
-
+            lastIdCount = int.MaxValue;
             startGive = DateTime.Now;
             bailTimer = DateTime.Now;
             igRunning = true;
@@ -530,6 +535,7 @@ namespace UtilityBelt.Tools {
             VTankControl.Nav_Block(30000, Globals.Settings.Plugin.Debug);
             VTankControl.Item_Block(30000, false);
             idComplete = false;
+            lastIdCount = int.MaxValue;
             GetIGItems();
 
             startGive = DateTime.Now;
