@@ -29,6 +29,7 @@ namespace UtilityBelt.Tools {
         private float vendorBuyRate = 1;
         private bool waitingForIds = false;
         private DateTime lastIdSpam = DateTime.MinValue;
+        private int lastIdCount;
         private readonly List<int> itemsToId = new List<int>();
 
         private int expectedPyreals = 0;
@@ -372,6 +373,7 @@ namespace UtilityBelt.Tools {
             isRunning = true;
             needsToBuy = needsToSell = false;
             lastThought = DateTime.UtcNow;
+            lastIdCount = int.MaxValue;
             VTankControl.Item_Block(30000, false);
             VTankControl.Nav_Block(30000, Globals.Settings.Plugin.Debug);
             Globals.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
@@ -418,7 +420,12 @@ namespace UtilityBelt.Tools {
                         if (Globals.Assessor.NeedsInventoryData(itemsToId)) {
                             if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15)) {
                                 lastIdSpam = DateTime.UtcNow;
-                                Logger.Debug(string.Format("AutoVendor waiting to id {0} items, this will take approximately {0} seconds.", Globals.Assessor.GetNeededIdCount(itemsToId)));
+                                var thisIdCount = Globals.Assessor.GetNeededIdCount(itemsToId);
+                                Logger.Debug(string.Format("AutoVendor waiting to id {0} items, this will take approximately {0} seconds.", thisIdCount));
+                                if (lastIdCount != thisIdCount) { // if count has changed, reset bail timer
+                                    lastIdCount = thisIdCount;
+                                    bailTimer = DateTime.UtcNow;
+                                }
                             }
                             return;
                         } else
