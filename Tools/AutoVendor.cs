@@ -117,7 +117,7 @@ namespace UtilityBelt.Tools {
                 UIAutoVendorTriesText.Text = pos.ToString();
             }
         }
-
+        public readonly Dictionary<int, string> ShopItemListTypes = new Dictionary<int, string> { { 0x00000001, "Weapons" }, { 0x00000002, "Armor" }, { 0x00000004, "Clothing" }, { 0x00000008, "Jewelry" }, { 0x00000010, "Miscellaneous" }, { 0x00000020, "Food" }, { 0x00000080, "Miscellaneous" }, { 0x00000100, "Weapons" }, { 0x00000200, "Containers" }, { 0x00000400, "Miscellaneous" }, { 0x00000800, "Gems" }, { 0x00001000, "Spell Components" }, { 0x00002000, "Books, Paper" }, { 0x00004000, "Keys, Tools" }, { 0x00008000, "Magic Items" }, { 0x00040000, "Trade Notes" }, { 0x00080000, "Mana Stones" }, { 0x00100000, "Services" }, { 0x00400000, "Cooking Items" }, { 0x00800000, "Alchemical Items" }, { 0x01000000, "Fletching Items" }, { 0x04000000, "Alchemical Items" }, { 0x08000000, "Fletching Items" }, { 0x20000000, "Keys, Tools" } };
         private void Reset_pendingBuy() {
             if (pendingBuy.Count > 0) {
                 Logger.Debug($"ERR: pendingBuy reset while it still contained {pendingBuy.Count:n0} items!");
@@ -700,21 +700,27 @@ namespace UtilityBelt.Tools {
                 if (itemInfo == null) continue;
                 uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
                 if (result.IsKeepUpTo || result.IsKeep) {
-                    Util.WriteToChat($"  {bi.Item.Name} * {(bi.Amount == int.MaxValue ? "∞" : bi.Amount.ToString())} - {result.RuleName}");
+                    string mc = (ShopItemListTypes.ContainsKey(bi.Item.Category) ? ShopItemListTypes[bi.Item.Category] : $"Unknown Category 0x{bi.Item.Category:X8}");
+                    Util.WriteToChat($"  {mc} -> {bi.Item.Name} * {(bi.Amount == int.MaxValue ? "∞" : bi.Amount.ToString())} - {result.RuleName}");
                 }
             }
+            pendingBuy.Clear();
 
             Util.WriteToChat("Sell Items:");
-            foreach (WorldObject wo in GetSellItems()) {
+            List<WorldObject> sellObjects = GetSellItems();
+            sellObjects.Sort(delegate (WorldObject wo1, WorldObject wo2) { return Util.GetOverallSlot(wo1) - Util.GetOverallSlot(wo2); });
+            foreach (WorldObject wo in sellObjects) {
                 uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(wo.Id);
                 if (itemInfo == null) continue;
                 uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
                 if (result.IsSell) {
-                    Util.WriteToChat($"  {Util.GetObjectName(wo.Id)} - {result.RuleName}");
+                    Util.WriteToChat($"  {Util.GetItemLocation(wo.Id)}: <Tell:IIDString:{Util.GetChatId()}:select|{wo.Id}>{Util.GetObjectName(wo.Id)}</Tell> - {result.RuleName}");
                 }
             }
+            pendingSell.Clear();
+            expectedPyreals = 0;
+            lastEvent = DateTime.MinValue;
         }
-
         public bool HasVendorOpen() {
             try {
                 if (Globals.Core.Actions.VendorId != 0) return true;

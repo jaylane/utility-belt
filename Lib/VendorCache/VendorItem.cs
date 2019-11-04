@@ -13,6 +13,7 @@ namespace UtilityBelt.Lib.VendorCache {
         public string Name = "Unknown";
         public int StackMax = 0;
         public int StackCount = 0;
+        public int Category = 0;
 
         public VendorItem(WorldObject item) {
             Id = item.Id;
@@ -22,6 +23,7 @@ namespace UtilityBelt.Lib.VendorCache {
             StackMax = item.Values(LongValueKey.StackMax, 1);
             StackCount = item.Values(LongValueKey.StackCount, 1);
             ObjectClass = item.ObjectClass;
+            Category = item.Category;
         }
     }
 }
