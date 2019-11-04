@@ -101,6 +101,9 @@ namespace UtilityBelt.Tools {
                         case "propertydump":
                             UB_propertydump(match.Groups["params"].Value);
                             break;
+                        case "vitae":
+                            UB_vitae();
+                            break;
                     }
                     // Util.WriteToChat("UB called with command <" + match.Groups["command"].Value + ">, params <" + match.Groups["params"].Value+">");
 
@@ -300,6 +303,10 @@ namespace UtilityBelt.Tools {
             }
 
             Util.WriteToChat($"Door is {(wo.Values(BoolValueKey.Open, false) ? "open" : "closed")}");
+        }
+
+        private void UB_vitae() {
+            Util.Think($"My vitae is {Globals.Core.CharacterFilter.Vitae}%");
         }
 
         private void UB_useflags(string value) {
