@@ -11,21 +11,11 @@ using VirindiViewService;
 using VirindiViewService.XMLParsers;
 
 namespace UtilityBelt.Views {
-    public class MapView : IDisposable {
-        public readonly VirindiViewService.HudView view;
-
-        private ViewProperties properties;
-        private ControlGroup controls;
-
-        private bool disposed;
-
+    public class MapView : BaseView {
         public MapView() {
             try {
-                new Decal3XMLParser().ParseFromResource("UtilityBelt.Views.MapView.xml", out properties, out controls);
-                properties.Icon = GetIcon();
-
-                view = new VirindiViewService.HudView(properties, controls);
-
+                CreateFromXMLResource("UtilityBelt.Views.MapView.xml");
+                view.Icon = GetIcon();
                 view.UserResizeable = true;
 
                 view.Location = new Point(
@@ -58,33 +48,8 @@ namespace UtilityBelt.Views {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        public ACImage GetIcon() {
-            ACImage acImage = null;
-
-            try {
-                using (Stream manifestResourceStream = typeof(MainView).Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.dungeonmaps.png")) {
-                    if (manifestResourceStream != null) {
-                        using (Bitmap bitmap = new Bitmap(manifestResourceStream))
-                            acImage = new ACImage(bitmap);
-                    }
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-            return acImage;
-        }
-
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing) {
-            if (!disposed) {
-                if (disposing) {
-                    if (view != null) view.Dispose();
-                }
-                disposed = true;
-            }
+        protected override ACImage GetIcon() {
+            return GetIcon("UtilityBelt.Resources.icons.dungeonmaps.png");
         }
     }
 }

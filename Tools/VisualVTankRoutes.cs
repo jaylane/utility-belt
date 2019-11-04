@@ -264,7 +264,11 @@ namespace UtilityBelt.Tools {
         }
 
         private void UpdateCurrentWaypoint() {
-            if (Globals.Settings.VisualNav.Display.CurrentWaypoint.Enabled && currentRoute.NavType != eNavType.Target) {
+            var routeFinished = VTankControl.vTankInstance.NavCurrent > VTankControl.vTankInstance.NavNumPoints - 1;
+            var isWaypointRoute = currentRoute.NavType != eNavType.Target;
+            var isEnabled = Globals.Settings.VisualNav.Display.CurrentWaypoint.Enabled;
+
+            if (!isEnabled && isWaypointRoute && !routeFinished) {
                 var current = VTankControl.vTankInstance.NavGetPoint(VTankControl.vTankInstance.NavCurrent);
 
                 if (currentNavShape == null) {
@@ -283,8 +287,10 @@ namespace UtilityBelt.Tools {
                     return;
                 }
             }
-            
-            currentNavShape.Visible = false;
+
+            if (currentNavShape != null) {
+                currentNavShape.Visible = false;
+            }
         }
 
         private void WatchRouteFiles() {

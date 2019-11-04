@@ -8,11 +8,7 @@ using VirindiViewService.Controls;
 using VirindiViewService.XMLParsers;
 
 namespace UtilityBelt.Views {
-    public class MainView : IDisposable {
-        public readonly VirindiViewService.HudView view;
-
-        private ViewProperties properties;
-        private ControlGroup controls;
+    public class MainView : BaseView {
 
         private HudCheckBox PluginDebug;
         private HudCheckBox PluginCheckForUpdates;
@@ -22,12 +18,7 @@ namespace UtilityBelt.Views {
 
         public MainView() {
             try {
-                new Decal3XMLParser().ParseFromResource("UtilityBelt.Views.MainView.xml", out properties, out controls);
-
-                properties.Icon = GetIcon();
-                properties.Title = string.Format("{0} - v{1}", Globals.PluginName, Util.GetVersion());
-
-                view = new VirindiViewService.HudView(properties, controls);
+                CreateFromXMLResource("UtilityBelt.Views.MainView.xml");
 
                 view.Location = new Point(
                     Globals.Settings.Plugin.WindowPositionX,
@@ -88,19 +79,8 @@ namespace UtilityBelt.Views {
             PluginCheckForUpdates.Checked = Globals.Settings.Plugin.CheckForUpdates;
         }
 
-        public ACImage GetIcon() {
-            ACImage acImage = null;
-
-            try {
-                using (Stream manifestResourceStream = typeof(MainView).Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.utilitybelt.png")) {
-                    if (manifestResourceStream != null) {
-                        using (Bitmap bitmap = new Bitmap(manifestResourceStream))
-                            acImage = new ACImage(bitmap);
-                    }
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-            return acImage;
+        protected override ACImage GetIcon() {
+            return GetIcon("UtilityBelt.Resources.icons.utilitybelt.png");
         }
 
         public void Dispose() {
