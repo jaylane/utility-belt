@@ -85,13 +85,15 @@ namespace UtilityBelt.Lib.Quests {
         public static void LoadQuestLookupXML() {
             try {
                 string filePath = Path.Combine(Util.GetResourcesDirectory(), "quests.xml");
-
-                if (!File.Exists(filePath)) {
-                    Util.WriteToChat("Unable to find quest flag names lookup file: " + filePath);
-                    return;
+                Stream fileStream = null;
+                if (File.Exists(filePath)) {
+                    fileStream = new FileStream(filePath, FileMode.Open);
+                }
+                else {
+                    fileStream = typeof(QuestFlag).Assembly.GetManifestResourceStream($"UtilityBelt.Resources.quests.xml");
                 }
 
-                using (XmlReader reader = XmlReader.Create(filePath)) {
+                using (XmlReader reader = XmlReader.Create(fileStream)) {
                     while (reader.Read()) {
                         if (reader.IsStartElement() && reader.Name != "root") {
                             var questTag = reader.Name.ToLower();
@@ -103,6 +105,8 @@ namespace UtilityBelt.Lib.Quests {
                         }
                     }
                 }
+
+                fileStream.Dispose();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
