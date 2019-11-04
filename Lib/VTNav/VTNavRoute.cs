@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using UtilityBelt.Lib.VTNav.Waypoints;
+using UtilityBelt.Tools;
 
 namespace UtilityBelt.Lib.VTNav {
 
@@ -225,8 +226,12 @@ namespace UtilityBelt.Lib.VTNav {
                 }
             }
             else {
-                foreach (var point in points) {
-                    point.Draw();
+                for (var i=0; i < points.Count; i++) {
+                    if (NavType == eNavType.Once && i < (points.Count - VTankControl.vTankInstance.NavNumPoints)) {
+                        continue;
+                    }
+
+                    points[i].Draw();
                 }
             }
         }
