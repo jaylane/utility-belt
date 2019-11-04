@@ -212,6 +212,14 @@ namespace UtilityBelt.Tools {
                 UsePortal();
                 return;
             }
+            
+            // some portals are npcs ("Cavern" in Glenden Wood)
+            portal = FindName(portalName, partial, ObjectClass.Npc);
+            if (portal != null) {
+                UsePortal();
+                return;
+            }
+
             Util.ThinkOrWrite("Could not find a portal", Globals.Settings.Plugin.portalThink);
         }
         public void UB_follow(string characterName, bool partial) {
