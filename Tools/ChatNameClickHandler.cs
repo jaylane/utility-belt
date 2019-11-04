@@ -21,6 +21,13 @@ namespace UtilityBelt.Tools {
                         case "openurl":
                             System.Diagnostics.Process.Start(args);
                             break;
+                        case "select":
+                            int.TryParse(args, out int id);
+                            if (id != 0 && Globals.Core.WorldFilter[id] != null) {
+                                Globals.Core.Actions.SelectItem(id);
+                            }
+                            break;
+
                     }
                 }
             }

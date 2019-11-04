@@ -184,6 +184,31 @@ namespace UtilityBelt
             return packSlots;
         }
 
+        public static int GetOverallSlot(WorldObject wo) { //Just for sorting for now. TODO: math real numbers, based on actual pack slots
+            if (wo.Container == Globals.Core.CharacterFilter.Id)
+                return wo.Values(LongValueKey.Slot, 0);
+            if (wo.Container == 0 || Globals.Core.WorldFilter[wo.Container] == null)
+                return int.MaxValue;
+            return wo.Values(LongValueKey.Slot, 0) + 1000 + (100 * Globals.Core.WorldFilter[wo.Container].Values(LongValueKey.Slot, 0));
+        }
+        public static string GetItemLocation(int id) {
+            if (id == 0 || Globals.Core.WorldFilter[id] == null)
+                return "Does Not Exist";
+            WorldObject wo = Globals.Core.WorldFilter[id];
+            if (wo.Container == 0)
+                return wo.Coordinates().ToString();
+            string location = "";
+            if (wo.Container == Globals.Core.CharacterFilter.Id)
+                return $"Main Pack";
+            wo = Globals.Core.WorldFilter[wo.Container];
+            if (wo != null && wo.Container != 0) {
+                location = $"{wo.Name} #{1 + wo.Values(LongValueKey.Slot, 0)} => {location}";
+                wo = Globals.Core.WorldFilter[wo.Container];
+            }
+            if (wo != null && wo.Id != Globals.Core.CharacterFilter.Id)
+                location = $"{wo.Name}[{wo.Coordinates().ToString()}] => {location}";
+            return location.Substring(0, location.Length - 4);
+        }
         internal static string GetVTankProfilesDirectory() {
             var defaultPath = @"C:\Games\VirindiPlugins\VirindiTank\";
             try {
