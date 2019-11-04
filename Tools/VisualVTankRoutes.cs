@@ -24,6 +24,7 @@ namespace UtilityBelt.Tools {
         private DateTime lastNavChange = DateTime.MinValue;
 
         private List<D3DObj> shapes = new List<D3DObj>();
+        private D3DObj currentNavShape = null;
 
         HudList VisualNavSettingsList { get; set; }
         HudCheckBox VisualNavSaveNoneRoutes { get; set; }
@@ -55,12 +56,13 @@ namespace UtilityBelt.Tools {
             profilesWatcher.EnableRaisingEvents = true;
 
             Globals.Settings.VisualNav.Display.PropertyChanged += (s, e) => { needsDraw = true; };
-
             DrawCurrentRoute();
 
             uTank2.PluginCore.PC.NavRouteChanged += PC_NavRouteChanged;
+            uTank2.PluginCore.PC.NavWaypointChanged += PC_NavWaypointChanged;
 
             Globals.Settings.VisualNav.PropertyChanged += (s, e) => { UpdateUI(); };
+            Globals.Settings.VisualNav.Display.CurrentWaypoint.PropertyChanged += (s, e) => { UpdateCurrentWaypoint(); };
 
             UpdateUI();
         }
@@ -88,6 +90,19 @@ namespace UtilityBelt.Tools {
                 // the route has changed, and we are on our custon [None].nav, so we force a redraw
                 if (vTank.GetNavProfile().StartsWith(VTNavRoute.NoneNavName)) {
                     needsDraw = true;
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void PC_NavWaypointChanged() {
+            try {
+                if (currentRoute != null && currentRoute.NavType == eNavType.Once) {
+                    forceUpdate = true;
+                    DrawCurrentRoute();
+                }
+                else {
+                    UpdateCurrentWaypoint();
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -136,7 +151,7 @@ namespace UtilityBelt.Tools {
             try {
                 HudList.HudListRowAccessor clickedRow = VisualNavSettingsList[row];
                 var name = ((HudStaticText)clickedRow[COL_NAME]).Text;
-                var option = Globals.Settings.DungeonMaps.Display.GetPropValue<ColorToggleOption>(name);
+                var option = Globals.Settings.VisualNav.Display.GetPropValue<ColorToggleOption>(name);
 
                 if (option == null) {
                     Util.WriteToChat("Bad option clicked: " + name);
@@ -236,6 +251,8 @@ namespace UtilityBelt.Tools {
 
             currentRoute.Draw();
 
+            UpdateCurrentWaypoint();
+
             if (navFileWatcher != null) {
                 navFileWatcher.EnableRaisingEvents = false;
                 navFileWatcher.Dispose();
@@ -244,6 +261,30 @@ namespace UtilityBelt.Tools {
             if (!vTank.GetNavProfile().StartsWith(VTNavRoute.NoneNavName)) {
                 WatchRouteFiles();
             }
+        }
+
+        private void UpdateCurrentWaypoint() {
+            if (Globals.Settings.VisualNav.Display.CurrentWaypoint.Enabled && currentRoute.NavType != eNavType.Target) {
+                var current = VTankControl.vTankInstance.NavGetPoint(VTankControl.vTankInstance.NavCurrent);
+
+                if (currentNavShape == null) {
+                    currentNavShape = Globals.Core.D3DService.MarkCoordsWithShape(0f, 0f, 0f, D3DShape.Ring, Color.Red.ToArgb());
+                }
+
+                // this is dumb, i cant get it to convert straight to a float
+                var navCloseStopRangeStr = VTankControl.vTankInstance.GetSetting("NavCloseStopRange").ToString();
+
+                if (float.TryParse(navCloseStopRangeStr, out float navCloseStopRange)) {
+                    currentNavShape.Visible = true;
+                    currentNavShape.ScaleX = (float)navCloseStopRange * 240f;
+                    currentNavShape.ScaleY = (float)navCloseStopRange * 240f;
+                    currentNavShape.Anchor((float)current.loc.y, (float)current.loc.x, (float)(current.loc.z * 240f) + Globals.Settings.VisualNav.LineOffset);
+                    currentNavShape.Color = Globals.Settings.VisualNav.Display.CurrentWaypoint.Color;
+                    return;
+                }
+            }
+            
+            currentNavShape.Visible = false;
         }
 
         private void WatchRouteFiles() {
@@ -292,11 +333,13 @@ namespace UtilityBelt.Tools {
                     Globals.Core.CommandLineText -= Core_CommandLineText;
                     Globals.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
                     uTank2.PluginCore.PC.NavRouteChanged -= PC_NavRouteChanged;
+                    uTank2.PluginCore.PC.NavWaypointChanged -= PC_NavWaypointChanged;
 
                     if (profilesWatcher != null) profilesWatcher.Dispose();
                     if (navFileWatcher != null) navFileWatcher.Dispose();
 
                     if (currentRoute != null) currentRoute.Dispose();
+                    if (currentNavShape != null) currentNavShape.Dispose();
                 }
                 disposed = true;
             }

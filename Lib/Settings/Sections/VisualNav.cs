@@ -40,6 +40,7 @@ namespace UtilityBelt.Lib.Settings.Sections {
         public List<string> ValidSettings = new List<string>() {
                 "Lines",
                 "ChatText",
+                "CurrentWaypoint",
                 "JumpText",
                 "JumpArrow",
                 "OpenVendor",
@@ -128,6 +129,14 @@ namespace UtilityBelt.Lib.Settings.Sections {
         public ColorToggleOption FollowArrow {
             get { return (ColorToggleOption)GetSetting("FollowArrow"); }
             private set { UpdateSetting("FollowArrow", value); }
+        }
+
+        [Summary("Current waypoint ring")]
+        [DefaultEnabled(true)]
+        [DefaultColor(-7722014)]
+        public ColorToggleOption CurrentWaypoint {
+            get { return (ColorToggleOption)GetSetting("CurrentWaypoint"); }
+            private set { UpdateSetting("CurrentWaypoint", value); }
         }
 
         public VisualNavDisplayOptions(SectionBase parent) : base(parent) {
