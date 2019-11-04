@@ -1,13 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
-namespace UtilityBelt.Lib.Settings {
+namespace UtilityBelt.Lib.Settings
+{
     public abstract class SectionBase : INotifyPropertyChanged {
         public event PropertyChangedEventHandler PropertyChanged;
 
