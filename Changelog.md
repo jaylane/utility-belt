@@ -1,3 +1,10 @@
+## 0.0.12 (2019-11-03) [UtilityBeltInstaller-0.0.12.exe](/uploads/6de18c1fe018bcd48e0620d25070db29/UtilityBeltInstaller-0.0.12.exe)
+- Added `/ub vitae` command to check current vitae %
+- Added Chat Logger (thanks Cosmic Jester)
+- Added `/ub follow[p] [character|selected]` - follows the named character, selected, or closest (thanks Yonneh)
+- Fixed autovendor bailing early when waiting on id requests (thanks Yonneh)
+- Fixed splitting stacks when those stacks were already added to a vendor (thanks Yonneh)
+
 ## 0.0.11 (2019-10-27) [UtilityBeltInstaller-0.0.11.exe](/uploads/eeffc7b5a32903ec241d894fbcc7e9af/UtilityBeltInstaller-0.0.11.exe)
 - All new event-based autovendor code! (thanks Yonneh)
 - Added AutoAddToTrade (thanks Cosmic Jester)

@@ -12,7 +12,7 @@ UtilityBelt is a multipurpose decal plugin. Currently it has the following "modu
 
 
 ## Installation
-Download and run the installer: [UtilityBeltInstaller-0.0.11.exe](/uploads/eeffc7b5a32903ec241d894fbcc7e9af/UtilityBeltInstaller-0.0.11.exe)
+Download and run the installer: [UtilityBeltInstaller-0.0.12.exe](/uploads/6de18c1fe018bcd48e0620d25070db29/UtilityBeltInstaller-0.0.12.exe)
 
 ## Usage
 Check the [wiki](https://gitlab.com/trevis/utilitybelt/wikis/home) 
