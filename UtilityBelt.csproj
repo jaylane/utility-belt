@@ -139,6 +139,7 @@
     <Compile Include="Tools\VTankControl.cs" />
     <Compile Include="Tools\VTankFellowHeals.cs" />
     <Compile Include="Lib\Util.cs" />
+    <Compile Include="Views\BaseView.cs" />
     <Compile Include="Views\ColorPicker.cs" />
     <Compile Include="Views\MapView.cs" />
     <Compile Include="Views\MainView.cs" />
