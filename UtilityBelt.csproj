@@ -15,7 +15,7 @@
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>TRACE;VVS_REFERENCED</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -62,8 +62,12 @@
     <Reference Include="VTClassic">
       <HintPath>C:\Games\VirindiPlugins\VirindiTankClassicLooter\VTClassic.dll</HintPath>
     </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Lib\ChatLog\ChatLog.cs" />
+    <Compile Include="Lib\ChatLog\ChatLogWriter.cs" />
+    <Compile Include="Lib\ChatLog\ChatMessageType.cs" />
     <Compile Include="Lib\Constants\BehaviorFlags.cs" />
     <Compile Include="Lib\Constants\PhysicsState.cs" />
     <Compile Include="Lib\Constants\UseFlags.cs" />
@@ -75,6 +79,7 @@
     <Compile Include="Lib\Settings\MarkerToggleOption.cs" />
     <Compile Include="Lib\Settings\Sections\AutoTrade.cs" />
     <Compile Include="Lib\Settings\Sections\AutoVendor.cs" />
+    <Compile Include="Lib\Settings\Sections\ChatLogger.cs" />
     <Compile Include="Lib\Settings\Sections\Jumper.cs" />
     <Compile Include="Lib\Settings\Sections\DungeonMaps.cs" />
     <Compile Include="Lib\Settings\Sections\InventoryManager.cs" />
@@ -120,6 +125,7 @@
     <Compile Include="Tools\AutoSalvage.cs" />
     <Compile Include="Tools\AutoTrade.cs" />
     <Compile Include="Tools\AutoVendor.cs" />
+    <Compile Include="Tools\ChatLogger.cs" />
     <Compile Include="Tools\ChatNameClickHandler.cs" />
     <Compile Include="Tools\Counter.cs" />
     <Compile Include="Tools\EmuConfig.cs" />

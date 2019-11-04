@@ -26,6 +26,7 @@ namespace UtilityBelt
         private Counter counter;
         private VTankFellowHeals vTankFellowHeals;
         private ChatNameClickHandler chatNameClickHandler;
+        private ChatLogger chatLogger;
 
         /// <summary>
         /// This is called when the plugin is started up. This happens only once.
@@ -75,6 +76,7 @@ namespace UtilityBelt
                 counter = new Counter();
                 vTankFellowHeals = new VTankFellowHeals();
                 chatNameClickHandler = new ChatNameClickHandler();
+                chatLogger = new ChatLogger();
 
                 Globals.Core.RenderFrame += Core_RenderFrame;
 
@@ -125,6 +127,7 @@ namespace UtilityBelt
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();
                 if (Globals.MapView != null) Globals.MapView.Dispose();
                 if (Globals.MainView != null) Globals.MainView.Dispose();
+                if (chatLogger != null) chatLogger.Dispose();
             }
 			catch (Exception ex) { Logger.LogException(ex); }
 		}

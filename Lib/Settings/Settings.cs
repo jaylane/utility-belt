@@ -1,13 +1,10 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Xml;
 
-namespace UtilityBelt.Lib.Settings {
+namespace UtilityBelt.Lib.Settings
+{
     [JsonObject(MemberSerialization.OptIn)]
     public class Settings {
         private string pluginStorageDirectory;
@@ -92,6 +89,10 @@ namespace UtilityBelt.Lib.Settings {
         [JsonProperty]
         [Summary("VTank Integration Settings")]
         public Sections.VTank VTank { get; set; }
+
+        [JsonProperty]
+        [Summary("Chat Logger Settings")]
+        public Sections.ChatLogger ChatLogger { get; set; }
         #endregion
 
         public Settings() {
@@ -105,6 +106,7 @@ namespace UtilityBelt.Lib.Settings {
                 SetupSection(VisualNav = new Sections.VisualNav(null));
                 SetupSection(Jumper = new Sections.Jumper(null));
                 SetupSection(VTank = new Sections.VTank(null));
+                SetupSection(ChatLogger = new Sections.ChatLogger(null));
 
                 Load();
 
