@@ -579,6 +579,9 @@ namespace UtilityBelt.Tools {
                 }
             }
             catch { }
+
+            searchname = searchname.ToLower();
+
             //try "selected"
             if (searchname.Equals("selected") && Globals.Core.Actions.CurrentSelection != 0 && Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection] != null && (oc == null || Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection].ObjectClass == oc)) {
                 return Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection];
