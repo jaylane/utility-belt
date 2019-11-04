@@ -13,13 +13,14 @@ namespace UtilityBelt.Lib.DungeonMaps {
         public static Bitmap Get(ushort environmentId) {
             if (cache.ContainsKey(environmentId)) return cache[environmentId];
 
-            Bitmap image;
+            Bitmap image = null;
             string bitmapFile = Path.Combine(Util.GetTilePath(), environmentId + @".bmp");
             
             ColorMap[] colorMap = GetColorMap();
             ImageAttributes attr = new ImageAttributes();
             attr.SetRemapTable(colorMap);
 
+            // attempt to load from file first, then fall back to embedded.
             if (File.Exists(bitmapFile)) {
                 using (Bitmap bmp = new Bitmap(bitmapFile)) {
                     bmp.MakeTransparent(Color.White);
@@ -32,7 +33,19 @@ namespace UtilityBelt.Lib.DungeonMaps {
                 }
             }
             else {
-                image = null;
+                using (Stream manifestResourceStream = typeof(TileCache).Assembly.GetManifestResourceStream($"UtilityBelt.Resources.tiles.{environmentId}.bmp")) {
+                    if (manifestResourceStream != null) {
+                        using (Bitmap bitmap = new Bitmap(manifestResourceStream)) {
+                            bitmap.MakeTransparent(Color.White);
+                            image = new Bitmap(bitmap.Width, bitmap.Height);
+                            Rectangle rect = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
+                            using (Graphics g = Graphics.FromImage(image)) {
+                                g.DrawImage(bitmap, rect, 0, 0, rect.Width, rect.Height, GraphicsUnit.Pixel, attr);
+                                g.Save();
+                            }
+                        }
+                    }
+                }
             }
 
             cache.Add(environmentId, image);
