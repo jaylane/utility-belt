@@ -28,7 +28,7 @@ namespace UtilityBelt.Tools {
 
         private static readonly List<int> giveObjects = new List<int>(), idItems = new List<int>();
         private static DateTime lastIdSpam = DateTime.MinValue, bailTimer = DateTime.MinValue, startGive;
-        private static bool igRunning = false, idComplete, givePartialItem, isRegex = false;
+        private static bool igRunning = false, givePartialItem, isRegex = false;
         private static int currentItem, retryCount, destinationId, failedItems, totalFailures, maxGive, itemsGiven, lastIdCount;
         private LootCore lootProfile = null;
         private static string targetPlayer = "", utlProfile = "", profilePath = "";
@@ -274,10 +274,10 @@ namespace UtilityBelt.Tools {
                     VTankControl.Item_Block(30000, false);
                 }
 
-                if (idItems.Count > 0 && DateTime.Now - lastIdSpam > TimeSpan.FromSeconds(10)) {
-                    lastIdSpam = DateTime.Now;
-                    var thisIdCount = idItems.Count();
-                    Util.WriteToChat("Items remaining to ID: " + thisIdCount);
+                if (idItems.Count > 0 && DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(10)) {
+                    lastIdSpam = DateTime.UtcNow;
+                    var thisIdCount = idItems.Count;
+                    Util.WriteToChat(string.Format("ItemGiver waiting to id {0} items, this will take approximately {0} seconds.", thisIdCount));
                     if (lastIdCount != thisIdCount) { // if count has changed, reset bail timer
                         lastIdCount = thisIdCount;
                         bailTimer = DateTime.UtcNow;
@@ -290,7 +290,7 @@ namespace UtilityBelt.Tools {
                         IGStop();
                         return;
                     }
-                    if (!idComplete)
+                    if (idItems.Count > 0)
                         GetIGItems();
 
                     itemsGiven+= giveObjects.RemoveAll(x => (Globals.Core.WorldFilter[x] == null) || (Globals.Core.WorldFilter[x].Container == -1));
@@ -298,7 +298,7 @@ namespace UtilityBelt.Tools {
                     foreach (int item in giveObjects) {
                         if (item != currentItem) {
                             retryCount = 0;
-                            bailTimer = DateTime.Now;
+                            bailTimer = DateTime.UtcNow;
                         }
                         currentItem = item;
 
@@ -320,7 +320,7 @@ namespace UtilityBelt.Tools {
                         IGStop();
                     }
                 }
-                if (DateTime.Now - bailTimer > TimeSpan.FromSeconds(10)) {
+                if (DateTime.UtcNow - bailTimer > TimeSpan.FromSeconds(10)) {
                     Util.WriteToChat("ItemGiver bail, Timeout expired");
                     IGStop();
                 }
@@ -475,12 +475,10 @@ namespace UtilityBelt.Tools {
             Logger.Debug($"ItemGiver GIVE {(maxGive == int.MaxValue ? "∞" : maxGive.ToString())} {(givePartialItem ? "(partial)" : "")}{utlProfile} to {Globals.Core.WorldFilter[destinationId].Name}");
             VTankControl.Nav_Block(30000, Globals.Settings.Plugin.Debug);
             VTankControl.Item_Block(30000, false);
-            idComplete = true;
             GetGiveItems();
 
             lastIdCount = int.MaxValue;
-            startGive = DateTime.Now;
-            bailTimer = DateTime.Now;
+            startGive = bailTimer = DateTime.UtcNow;
             igRunning = true;
 
 
@@ -540,12 +538,10 @@ namespace UtilityBelt.Tools {
 
             VTankControl.Nav_Block(30000, Globals.Settings.Plugin.Debug);
             VTankControl.Item_Block(30000, false);
-            idComplete = false;
             lastIdCount = int.MaxValue;
             GetIGItems();
 
-            startGive = DateTime.Now;
-            bailTimer = DateTime.Now;
+            startGive = bailTimer = DateTime.UtcNow;
             igRunning = true;
         }
 
@@ -555,7 +551,7 @@ namespace UtilityBelt.Tools {
                 return;
             }
 
-            Util.ThinkOrWrite($"ItemGiver finished: {utlProfile} to {targetPlayer}. took {Util.GetFriendlyTimeDifference(DateTime.Now - startGive)} to give {itemsGiven} item(s). {totalFailures - itemsGiven}", Globals.Settings.InventoryManager.IGThink);
+            Util.ThinkOrWrite($"ItemGiver finished: {utlProfile} to {targetPlayer}. took {Util.GetFriendlyTimeDifference(DateTime.UtcNow - startGive)} to give {itemsGiven} item(s). {totalFailures - itemsGiven}", Globals.Settings.InventoryManager.IGThink);
             VTankControl.Nav_UnBlock();
             VTankControl.Item_UnBlock();
 
@@ -564,6 +560,7 @@ namespace UtilityBelt.Tools {
             lootProfile = null;
             givenItemsCount.Clear();
             giveObjects.Clear();
+            idItems.Clear();
         }
 
 
@@ -640,18 +637,15 @@ namespace UtilityBelt.Tools {
                     if (result.IsKeepUpTo) {
                         if (!givenItemsCount.ContainsKey(result.RuleName)) {
                             givenItemsCount[result.RuleName] = 1;
-                            // Util.WriteToChat("Rule: " + result.RuleName + " ----------- Keep Count: " + result.Data1);
-                        } else if (givenItemsCount[result.RuleName] > 0 && givenItemsCount[result.RuleName] < result.Data1) {
+                        } else if (givenItemsCount[result.RuleName] < result.Data1) {
                             givenItemsCount[result.RuleName]++;
                         } else {
                             continue;
                         }
                     }
-
                     giveObjects.Add(item.Id);
                 }
-                if (idItems.Count == 0)
-                    idComplete = true;
+                idItems.RemoveAll(x => (Globals.Core.WorldFilter[x] == null) || (Globals.Core.WorldFilter[x].Container == -1)); // Remove items from IDQueue that no longer exist
             } catch (Exception ex) { Logger.LogException(ex); }
         }
 
