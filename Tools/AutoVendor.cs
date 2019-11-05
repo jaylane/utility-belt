@@ -149,7 +149,7 @@ namespace UtilityBelt.Tools {
                 lastEvent = DateTime.MinValue;
             else
                 lastEvent = DateTime.UtcNow;
-            bailTimer = DateTime.Now;
+            bailTimer = DateTime.UtcNow;
         }
         private void EchoFilter_ClientDispatch(object sender, NetworkMessageEventArgs e) {
             if (!isRunning) return;
@@ -369,10 +369,9 @@ namespace UtilityBelt.Tools {
 
             Globals.InventoryManager.Pause();
 
-            bailTimer = DateTime.Now;
             isRunning = true;
             needsToBuy = needsToSell = false;
-            lastThought = DateTime.UtcNow;
+            lastThought = bailTimer = DateTime.UtcNow;
             lastIdCount = int.MaxValue;
             VTankControl.Item_Block(30000, false);
             VTankControl.Nav_Block(30000, Globals.Settings.Plugin.Debug);
@@ -421,7 +420,7 @@ namespace UtilityBelt.Tools {
                             if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15)) {
                                 lastIdSpam = DateTime.UtcNow;
                                 var thisIdCount = Globals.Assessor.GetNeededIdCount(itemsToId);
-                                Logger.Debug(string.Format("AutoVendor waiting to id {0} items, this will take approximately {0} seconds.", thisIdCount));
+                                Util.WriteToChat(string.Format("AutoVendor waiting to id {0} items, this will take approximately {0} seconds.", thisIdCount));
                                 if (lastIdCount != thisIdCount) { // if count has changed, reset bail timer
                                     lastIdCount = thisIdCount;
                                     bailTimer = DateTime.UtcNow;
@@ -457,7 +456,7 @@ namespace UtilityBelt.Tools {
                             Stop();
                     }
                 }
-                if (DateTime.Now - bailTimer > TimeSpan.FromSeconds(60)) {
+                if (DateTime.UtcNow - bailTimer > TimeSpan.FromSeconds(60)) {
                     Util.WriteToChat("AutoVendor bail, Timeout expired");
                     Stop();
                 }

@@ -29,8 +29,8 @@ namespace UtilityBelt.Tools {
 
         public void Think() {
             try {
-                if (DateTime.Now - lastScanUpdate > TimeSpan.FromSeconds(10) && isRunning) {
-                    lastScanUpdate = DateTime.Now;
+                if (DateTime.UtcNow - lastScanUpdate > TimeSpan.FromSeconds(10) && isRunning) {
+                    lastScanUpdate = DateTime.UtcNow;
                     matchedWOList = CountItems();
                     Util.WriteToChat("Items remaining to ID: " + idItems.Count());
                     if (idItems.Count == 0 && isRunning) {
@@ -141,7 +141,7 @@ namespace UtilityBelt.Tools {
                         }
                         ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
                         isRunning = true;
-                        lastScanUpdate = DateTime.Now;
+                        lastScanUpdate = DateTime.UtcNow;
                         matchedWOList = CountItems();
                     }
                     else if (e.Text.Contains("player ")) {
