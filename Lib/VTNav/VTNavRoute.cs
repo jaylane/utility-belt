@@ -219,9 +219,17 @@ namespace UtilityBelt.Lib.VTNav {
         private void PC_NavWaypointChanged() {
             try {
                 if (NavType == eNavType.Once && points.Count > VTankControl.vTankInstance.NavNumPoints) {
+                    var pointsDeleted = 0;
                     while (points.Count > 0 && points.Count > VTankControl.vTankInstance.NavNumPoints) {
                         points[0].Dispose();
                         points.RemoveAt(0);
+                        pointsDeleted++;
+                    }
+
+                    if (pointsDeleted > 0) {
+                        for (var i = 0; i < points.Count; i++) {
+                            points[i].index = i;
+                        }
                     }
                 }
 
