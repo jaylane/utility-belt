@@ -22,7 +22,6 @@ namespace UtilityBelt
         //private EmuConfig emuConfig;
         private QuestTracker questTracker;
         private Jumper jumper;
-        private Misc misc;
         private Counter counter;
         private VTankFellowHeals vTankFellowHeals;
         private ChatNameClickHandler chatNameClickHandler;
@@ -87,7 +86,7 @@ namespace UtilityBelt
                 autoTrade = new AutoTrade();
                 //emuConfig = new EmuConfig();
                 questTracker = new QuestTracker();
-                misc = new Misc();
+                Globals.Misc = new Misc();
                 jumper = new Jumper();
                 counter = new Counter();
                 vTankFellowHeals = new VTankFellowHeals();
@@ -110,7 +109,7 @@ namespace UtilityBelt
                 if (autoSalvage != null) autoSalvage.Think();
                 if (Globals.AutoVendor != null) Globals.AutoVendor.Think();
                 if (autoTrade != null) autoTrade.Think();
-                if (misc != null) misc.Think();
+                if (Globals.Misc != null) Globals.Misc.Think();
                 if (Globals.DungeonMaps != null) Globals.DungeonMaps.Think();
                 if (jumper != null) jumper.Think();
                 if (counter != null) counter.Think();
@@ -133,7 +132,7 @@ namespace UtilityBelt
                 if (Globals.DungeonMaps != null) Globals.DungeonMaps.Dispose();
                 //if (emuConfig != null) emuConfig.Dispose();
                 if (questTracker != null) questTracker.Dispose();
-                if (misc != null) misc.Dispose();
+                if (Globals.Misc != null) Globals.Misc.Dispose();
                 if (jumper != null) jumper.Dispose();
                 if (counter != null) counter.Dispose();
                 if (Globals.VisualVTankRoutes != null) Globals.VisualVTankRoutes.Dispose();

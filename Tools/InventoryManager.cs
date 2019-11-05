@@ -277,7 +277,7 @@ namespace UtilityBelt.Tools {
                 if (idItems.Count > 0 && DateTime.Now - lastIdSpam > TimeSpan.FromSeconds(10)) {
                     lastIdSpam = DateTime.Now;
                     var thisIdCount = idItems.Count();
-                    Logger.Debug("Items remaining to ID: " + thisIdCount);
+                    Util.WriteToChat("Items remaining to ID: " + thisIdCount);
                     if (lastIdCount != thisIdCount) { // if count has changed, reset bail timer
                         lastIdCount = thisIdCount;
                         bailTimer = DateTime.UtcNow;
@@ -442,19 +442,21 @@ namespace UtilityBelt.Tools {
             }
             VTankControl.Nav_Block(1000, false); // quick block to keep vtank from truckin' off before the profile loads, but short enough to not matter if it errors out and doesn't unlock
             targetPlayer = giveMatch.Groups["targetPlayer"].Value;
-            destinationId = FindPlayerID(targetPlayer, (giveMatch.Groups["flags"].Value.Contains("p") ? true : false));
+            var destination = Globals.Misc.FindName(targetPlayer, (giveMatch.Groups["flags"].Value.Contains("p") ? true : false), Decal.Adapter.Wrappers.ObjectClass.Player);
+
+            if (destination == null) {
+                Util.WriteToChat($"ItemGiver: player {targetPlayer} not found");
+                return;
+            }
+            destinationId = destination.Id;
 
             if (destinationId == Globals.Core.CharacterFilter.Id) {
                 Util.WriteToChat("ItemGiver: You can't give to yourself");
                 return;
             }
-            if (destinationId == -1) {
-                Util.WriteToChat($"ItemGiver: player {targetPlayer} not found");
-                return;
-            }
 
             var playerDistance = Globals.Core.WorldFilter.Distance(Globals.Core.CharacterFilter.Id, destinationId) * 240;
-            if (playerDistance > 5d) {
+            if (playerDistance > Globals.Settings.InventoryManager.IGRange) {
                 Util.WriteToChat($"ItemGiver: {targetPlayer} is {playerDistance:n2} meters away");
                 return;
             }
@@ -490,18 +492,22 @@ namespace UtilityBelt.Tools {
             }
             VTankControl.Nav_Block(1000, false); // quick block to keep vtank from truckin' off before the profile loads, but short enough to not matter if it errors out and doesn't unlock
             targetPlayer = igMatch.Groups["targetPlayer"].Value;
-            destinationId = FindPlayerID(targetPlayer, (igMatch.Groups["partial"].Value.Equals("p") ? true : false));
+
+            var destination = Globals.Misc.FindName(targetPlayer, (igMatch.Groups["partial"].Value.Equals("p") ? true : false), Decal.Adapter.Wrappers.ObjectClass.Player);
+
+            if (destination == null) {
+                Util.WriteToChat($"ItemGiver: player {targetPlayer} not found");
+                return;
+            }
+            destinationId = destination.Id;
+
             if (destinationId == Globals.Core.CharacterFilter.Id) {
                 Util.WriteToChat("You can't give to yourself");
                 return;
             }
-            if (destinationId == -1) {
-                Util.WriteToChat($"ItemGiver player {targetPlayer} not found");
-                return;
-            }
 
             var playerDistance = Globals.Core.WorldFilter.Distance(Globals.Core.CharacterFilter.Id, destinationId) * 240;
-            if (5d < playerDistance) {
+            if (playerDistance > Globals.Settings.InventoryManager.IGRange) {
                 Util.WriteToChat($"ItemGiver {targetPlayer} is {playerDistance:n2} meters away");
                 return;
             }
@@ -543,26 +549,6 @@ namespace UtilityBelt.Tools {
             igRunning = true;
         }
 
-        int FindPlayerID(string name, bool partial) {
-            name = name.ToLower();
-            foreach (WorldObject wo in Globals.Core.WorldFilter.GetLandscape()) {
-                if (
-                    (wo.ObjectClass == Decal.Adapter.Wrappers.ObjectClass.Player &&
-                    wo.Name.Equals(name, StringComparison.OrdinalIgnoreCase)) || (
-                    partial && wo.Name.ToLower().Contains(name)
-                )) {
-                    return wo.Id;
-                }
-            }
-            if (name.Equals("selected") &&
-                Globals.Core.Actions.CurrentSelection > 0 &&
-                Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection] != null &&
-                Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection].ObjectClass == Decal.Adapter.Wrappers.ObjectClass.Player
-            ) {
-                return Globals.Core.Actions.CurrentSelection;
-            }
-            return -1;
-        }
         private void IGStop() {
             if (!igRunning) {
                 Util.WriteToChat("ItemGiver is not running.");

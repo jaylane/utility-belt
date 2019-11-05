@@ -40,6 +40,12 @@ namespace UtilityBelt.Lib.Settings.Sections {
             get { return (int)GetSetting("IGBusyCount"); }
             set { UpdateSetting("IGBusyCount", value); }
         }
+        [Summary("Maximum Range for ItemGiver commands")]
+        [DefaultValue(15)]
+        public double IGRange {
+            get { return (int)GetSetting("IGRange"); }
+            set { UpdateSetting("IGRange", value); }
+        }
         public InventoryManager(SectionBase parent) : base(parent) {
             Name = "InventoryManager";
         }
