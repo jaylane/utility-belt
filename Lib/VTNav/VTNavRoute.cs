@@ -23,9 +23,13 @@ namespace UtilityBelt.Lib.VTNav {
         public List<VTNPoint> points = new List<VTNPoint>();
         public Dictionary<string, double> offsets = new Dictionary<string, double>();
         public List<D3DObj> shapes = new List<D3DObj>();
+        private D3DObj currentNavShape = null;
 
         public VTNavRoute(string navPath) {
             NavPath = navPath;
+
+            uTank2.PluginCore.PC.NavWaypointChanged += PC_NavWaypointChanged;
+            Globals.Settings.VisualNav.Display.CurrentWaypoint.PropertyChanged += (s, e) => { UpdateCurrentWaypoint(); };
         }
 
         public void AddOffset(double ns, double ew, double offset) {
@@ -212,6 +216,50 @@ namespace UtilityBelt.Lib.VTNav {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
+        private void PC_NavWaypointChanged() {
+            try {
+                if (NavType == eNavType.Once && points.Count > VTankControl.vTankInstance.NavNumPoints) {
+                    while (points.Count > 0 && points.Count > VTankControl.vTankInstance.NavNumPoints) {
+                        points[0].Dispose();
+                        points.RemoveAt(0);
+                    }
+                }
+
+                UpdateCurrentWaypoint();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void UpdateCurrentWaypoint() {
+            var routeFinished = VTankControl.vTankInstance.NavCurrent > VTankControl.vTankInstance.NavNumPoints - 1;
+            var isWaypointRoute = NavType != eNavType.Target;
+            var isEnabled = Globals.Settings.VisualNav.Display.CurrentWaypoint.Enabled;
+
+            if (isEnabled && isWaypointRoute && !routeFinished) {
+                var current = VTankControl.vTankInstance.NavGetPoint(VTankControl.vTankInstance.NavCurrent);
+
+                if (currentNavShape == null) {
+                    currentNavShape = Globals.Core.D3DService.MarkCoordsWithShape(0f, 0f, 0f, D3DShape.Ring, Color.Red.ToArgb());
+                }
+
+                // this is dumb, i cant get it to convert straight to a float
+                var navCloseStopRangeStr = VTankControl.vTankInstance.GetSetting("NavCloseStopRange").ToString();
+
+                if (float.TryParse(navCloseStopRangeStr, out float navCloseStopRange)) {
+                    currentNavShape.Visible = true;
+                    currentNavShape.ScaleX = (float)navCloseStopRange * 240f;
+                    currentNavShape.ScaleY = (float)navCloseStopRange * 240f;
+                    currentNavShape.Anchor((float)current.loc.y, (float)current.loc.x, (float)(current.loc.z * 240f) + Globals.Settings.VisualNav.LineOffset);
+                    currentNavShape.Color = Globals.Settings.VisualNav.Display.CurrentWaypoint.Color;
+                    return;
+                }
+            }
+
+            if (currentNavShape != null) {
+                currentNavShape.Visible = false;
+            }
+        }
+
         public void Draw() {
             if (NavType == eNavType.Target && Globals.Settings.VisualNav.Display.FollowArrow.Enabled) {
                 if (TargetId != 0 && TargetId != Globals.Core.CharacterFilter.Id) {
@@ -227,13 +275,11 @@ namespace UtilityBelt.Lib.VTNav {
             }
             else {
                 for (var i=0; i < points.Count; i++) {
-                    if (NavType == eNavType.Once && i < (points.Count - VTankControl.vTankInstance.NavNumPoints)) {
-                        continue;
-                    }
-
                     points[i].Draw();
                 }
             }
+
+            UpdateCurrentWaypoint();
         }
 
         public static bool IsPretendNoneNav() {
@@ -279,6 +325,7 @@ namespace UtilityBelt.Lib.VTNav {
             if (!disposed) {
                 Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
                 Globals.Core.WorldFilter.ReleaseObject -= WorldFilter_ReleaseObject;
+                uTank2.PluginCore.PC.NavWaypointChanged -= PC_NavWaypointChanged;
 
                 foreach (var shape in shapes) {
                     try {
@@ -293,6 +340,14 @@ namespace UtilityBelt.Lib.VTNav {
                 }
 
                 shapes.Clear();
+
+                if (currentNavShape != null) {
+                    try {
+                        currentNavShape.Visible = false;
+                        currentNavShape.Dispose();
+                    }
+                    catch { }
+                }
 
                 foreach (var point in points) {
                     point.Dispose();

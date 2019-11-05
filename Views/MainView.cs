@@ -82,19 +82,5 @@ namespace UtilityBelt.Views {
         protected override ACImage GetIcon() {
             return GetIcon("UtilityBelt.Resources.icons.utilitybelt.png");
         }
-
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing) {
-            if (!disposed) {
-                if (disposing) {
-                    if (view != null) view.Dispose();
-                }
-                disposed = true;
-            }
-        }
     }
 }
