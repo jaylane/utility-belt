@@ -28,11 +28,18 @@
         </page>
         <page label="AutoTrade">
           <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.Checkbox" name="AutoTradeEnabled" left="8" top="8" width="184" height="16" text="Enable AutoTrade" />
-            <control progid="DecalControls.Checkbox" name="AutoTradeTestMode" left="8" top="32" width="208" height="16" text="Test Mode"/>
-            <control progid="DecalControls.Checkbox" name="AutoTradeAutoAccept" left="8" top="56" width="184" height="16" text="Auto-Accept trade" />
-            <control progid="DecalControls.Checkbox" name="AutoTradeOnlyFromMainPack" left="8" top="80" width="250" height="16" text="Only trade items in your main pack"/>
-            <control progid="DecalControls.Checkbox" name="AutoTradeThink" left="8" top="104" width="250" height="16" text="Think to yourself when finished"/>
+            <control progid="DecalControls.Checkbox" name="AutoTradeEnabled" left="4" top="4" width="192" height="16" text="Enable AutoTrade" />
+            <control progid="DecalControls.Checkbox" name="AutoTradeTestMode" left="204" top="4" width="192" height="16" text="Test Mode"/>
+            <control progid="DecalControls.Checkbox" name="AutoTradeAutoAccept" left="4" top="24" width="192" height="16" text="Auto-Accept trade" />
+            <control progid="DecalControls.Checkbox" name="AutoTradeOnlyFromMainPack" left="4" top="44" width="250" height="16" text="Only trade items in your main pack"/>
+            <control progid="DecalControls.Checkbox" name="AutoTradeThink" left="4" top="64" width="250" height="16" text="Think to yourself when finished"/>
+            <control progid="DecalControls.StaticText" name="AutoTradeAcceptChars" left="4" top="84" width="120" height="16" text="Auto-Accept From:"/>
+            <control progid="DecalControls.Edit" name="AutoTradeAcceptNewChar" left="124" top="84" width="218" height="16"/>
+            <control progid="DecalControls.PushButton" name="AutoTradeAcceptAddNewChar" left="346" top="84" width="50" height="16" text="Add"/>
+            <control progid="DecalControls.List" name="AutoTradeAcceptCharList" left="4" top="104" width="392" height="100">
+              <column progid="DecalControls.IconColumn" name="AutoTradeAcceptCharListRemove" />
+              <column progid="DecalControls.TextColumn" name="AutoTradeAcceptCharListCharName" />
+            </control>
           </control>
         </page>
         <page label="InventoryManager">

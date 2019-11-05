@@ -128,6 +128,13 @@ namespace UtilityBelt.Tools
         {
             if (col == 0)
             {
+                if (editingRow.HasValue && row == editingRow.Value)
+                {
+                    editingRow = null;
+                    UIChatLogMessageFilter.Text = "";
+                    UIChatLogRuleAddButton.Text = "Add Rule";
+                }
+
                 Globals.Settings.ChatLogger.Rules.RemoveAt(row);
             }
             else if (col == 1)

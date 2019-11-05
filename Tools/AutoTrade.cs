@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using VirindiViewService.Controls;
 
 namespace UtilityBelt.Tools
@@ -20,12 +21,16 @@ namespace UtilityBelt.Tools
         private bool doAccept = false;
         private int pendingAddCount = 0;
         private Dictionary<string, int> keepUpToCounts = new Dictionary<string, int>();
+        private int? editingRow = null;
 
         HudCheckBox UIAutoTradeEnable { get; set; }
         HudCheckBox UIAutoTradeTestMode { get; set; }
         HudCheckBox UIAutoTradeThink { get; set; }
         HudCheckBox UIAutoTradeOnlyFromMainPack { get; set; }
         HudCheckBox UIAutoTradeAutoAccept { get; set; }
+        HudTextBox UIAutoTradeAcceptNewChar { get; set; }
+        HudButton UIAutoTradeAcceptAddNewChar { get; set; }
+        HudList UIAutoTradeAcceptCharList { get; set; }
 
         public AutoTrade()
         {
@@ -50,17 +55,87 @@ namespace UtilityBelt.Tools
                 UIAutoTradeAutoAccept = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoTradeAutoAccept"] : new HudCheckBox();
                 UIAutoTradeAutoAccept.Change += UIAutoTradeAutoAccept_Change;
 
+                UIAutoTradeAcceptNewChar = Globals.MainView.view != null ? (HudTextBox)Globals.MainView.view["AutoTradeAcceptNewChar"] : new HudTextBox();
+
+                UIAutoTradeAcceptAddNewChar = Globals.MainView.view != null ? (HudButton)Globals.MainView.view["AutoTradeAcceptAddNewChar"] : new HudButton();
+                UIAutoTradeAcceptAddNewChar.Hit += UIAutoTradeAcceptAddNewChar_Hit;
+
+                UIAutoTradeAcceptCharList = Globals.MainView.view != null ? (HudList)Globals.MainView.view["AutoTradeAcceptCharList"] : new HudList();
+                UIAutoTradeAcceptCharList.Click += UIAutoTradeAcceptCharList_Click;
+
                 Globals.Core.WorldFilter.EnterTrade += WorldFilter_EnterTrade;
                 Globals.Core.WorldFilter.EndTrade += WorldFilter_EndTrade;
                 Globals.Core.WorldFilter.AddTradeItem += WorldFilter_AddTradeItem;
                 Globals.Core.WorldFilter.FailToAddTradeItem += WorldFilter_FailToAddTradeItem;
+                Globals.Core.WorldFilter.AcceptTrade += WorldFilter_AcceptTrade;
                 Globals.Core.CommandLineText += Core_CommandLineText;
 
-                Globals.Settings.AutoSalvage.PropertyChanged += (s, e) => UpdateUI();
-
+                Globals.Settings.AutoTrade.PropertyChanged += (s, e) => UpdateUI();
+                
                 UpdateUI();
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void UIAutoTradeAcceptCharList_Click(object sender, int row, int col)
+        {
+            if (col == 0)
+            {
+                if (editingRow.HasValue && row == editingRow.Value)
+                {
+                    editingRow = null;
+                    UIAutoTradeAcceptNewChar.Text = "";
+                    UIAutoTradeAcceptAddNewChar.Text = "Add";
+                }
+
+                Globals.Settings.AutoTrade.AutoAcceptChars.RemoveAt(row);
+            }
+            else
+            {
+                editingRow = row;
+                UIAutoTradeAcceptNewChar.Text = Globals.Settings.AutoTrade.AutoAcceptChars[row];
+                ((HudStaticText)UIAutoTradeAcceptCharList[row][1]).TextColor = System.Drawing.Color.Red;
+                UIAutoTradeAcceptAddNewChar.Text = "Save";
+            }
+        }
+
+        private void UIAutoTradeAcceptAddNewChar_Hit(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(UIAutoTradeAcceptNewChar.Text))
+            {
+                if (editingRow.HasValue)
+                {
+                    Globals.Settings.AutoTrade.AutoAcceptChars[editingRow.Value] = UIAutoTradeAcceptNewChar.Text;
+                    ((HudStaticText)UIAutoTradeAcceptCharList[editingRow.Value][1]).TextColor = System.Drawing.Color.White;
+                    UIAutoTradeAcceptAddNewChar.Text = "Add";
+                    editingRow = null;
+                }
+                else
+                {
+                    Globals.Settings.AutoTrade.AutoAcceptChars.Add(UIAutoTradeAcceptNewChar.Text);
+                }
+
+                UIAutoTradeAcceptNewChar.Text = "";
+            }
+        }
+
+        private void WorldFilter_AcceptTrade(object sender, AcceptTradeEventArgs e)
+        {
+            if (e.TargetId == Globals.Core.CharacterFilter.Id)
+                return;
+
+            var target = Globals.Core.WorldFilter[e.TargetId];
+
+            if (target == null)
+                return;
+
+            Logger.Debug($"Checking {target.Name} against {Globals.Settings.AutoTrade.AutoAcceptChars.Count} accepted chars.");
+            if (Globals.Settings.AutoTrade.AutoAcceptChars.Any(c => Regex.IsMatch(target.Name, c, RegexOptions.IgnoreCase)))
+            {
+                Logger.Debug("Accepting trade...");
+                Globals.Core.Actions.TradeAccept();
+                Util.ThinkOrWrite("Trade accepted: " + target.Name, Globals.Settings.AutoTrade.Think);
+            }
         }
 
         private void WorldFilter_FailToAddTradeItem(object sender, FailToAddTradeItemEventArgs e)
@@ -114,6 +189,14 @@ namespace UtilityBelt.Tools
             UIAutoTradeThink.Checked = Globals.Settings.AutoTrade.Think;
             UIAutoTradeOnlyFromMainPack.Checked = Globals.Settings.AutoTrade.OnlyFromMainPack;
             UIAutoTradeAutoAccept.Checked = Globals.Settings.AutoTrade.AutoAccept;
+
+            UIAutoTradeAcceptCharList.ClearRows();
+            foreach (var ch in Globals.Settings.AutoTrade.AutoAcceptChars)
+            {
+                var row = UIAutoTradeAcceptCharList.AddRow();
+                ((HudPictureBox)row[0]).Image = 0x60011F8;
+                ((HudStaticText)row[1]).Text = ch;
+            }
         }
 
         private void Core_CommandLineText(object sender, Decal.Adapter.ChatParserInterceptEventArgs e)
@@ -276,14 +359,7 @@ namespace UtilityBelt.Tools
         {
             if (profileLoaded)
             {
-                if (Globals.Settings.AutoTrade.Think == true)
-                {
-                    Util.Think("AutoTrade finished: " + traderName);
-                }
-                else
-                {
-                    Util.WriteToChat("AutoTrade finished: " + traderName);
-                }
+                Util.ThinkOrWrite("AutoTrade finished: " + traderName, Globals.Settings.AutoTrade.Think);
             }
 
             if (lootProfile != null) ((VTClassic.LootCore)lootProfile).UnloadProfile();
