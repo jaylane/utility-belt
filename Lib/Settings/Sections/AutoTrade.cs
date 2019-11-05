@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace UtilityBelt.Lib.Settings.Sections
 {
@@ -45,9 +46,19 @@ namespace UtilityBelt.Lib.Settings.Sections
             set { UpdateSetting("AutoAccept", value); }
         }
 
+        [Summary("List of characters to auto-accept trade from")]
+        [DefaultValue(null)]
+        public ObservableCollection<string> AutoAcceptChars { get; set; } = new ObservableCollection<string>();
+
         public AutoTrade(SectionBase parent) : base(parent)
         {
             Name = "AutoTrade";
+            AutoAcceptChars.CollectionChanged += AutoAcceptChars_CollectionChanged;
+        }
+
+        private void AutoAcceptChars_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(AutoAcceptChars));
         }
     }
 }
