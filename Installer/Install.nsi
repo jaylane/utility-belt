@@ -53,15 +53,6 @@ Section "" CoreSection
 	File "${BUILDPATH}\${ASSEMBLY}"
 	File "${BUILDPATH}\${APPNAME}.pdb"
 
-	File "${BUILDPATH}\SharedMemory.dll"
-	File "${BUILDPATH}\Newtonsoft.Json.dll"
-	
-	SetOutPath "$INSTDIR\Resources\"
-	File "${BUILDPATH}\Resources\quests.xml"
-
-	SetOutPath "$INSTDIR\Resources\tiles"
-	File "${BUILDPATH}\Resources\tiles\*.bmp"
-
 SectionEnd
 
 Section -FinishSection
@@ -82,6 +73,15 @@ Section -FinishSection
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString" "$INSTDIR\uninstall.exe"
 	WriteUninstaller "$INSTDIR\uninstall.exe"
 	;MessageBox MB_OK "Done"
+
+	
+	;Clean up old installer resources
+	Delete "$INSTDIR\SharedMemory.dll"
+	Delete "$INSTDIR\Newtonsoft.Json.dll"
+	Delete "$INSTDIR\\Resources\tiles\*.bmp"
+	RMDir "$INSTDIR\Resources\tiles\"
+	Delete "$INSTDIR\Resources\quests.xml"
+	RMDir "$INSTDIR\Resources\"
 
 SectionEnd
 
