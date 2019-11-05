@@ -27,9 +27,11 @@
   <ItemGroup>
     <Reference Include="Decal.Adapter">
       <HintPath>C:\Program Files (x86)\Decal 3.0\Decal.Adapter.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Decal.FileService">
       <HintPath>C:\Program Files (x86)\Decal 3.0\Decal.FileService.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Decal.Interop.D3DService, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65">
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -39,28 +41,29 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>packages\Newtonsoft.Json.12.0.2\lib\net35\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="SharedMemory, Version=2.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\SharedMemory.2.1.1\lib\net35\SharedMemory.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.Linq" />
-    <Reference Include="System.Data.SQLite, Version=1.0.111.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Dependencies\System.Data.SQLite.dll</HintPath>
-    </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="utank2-i">
       <HintPath>C:\Games\VirindiPlugins\VirindiTank\utank2-i.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="VirindiViewService">
       <HintPath>C:\Games\VirindiPlugins\VirindiViewService\VirindiViewService.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="VTClassic">
       <HintPath>C:\Games\VirindiPlugins\VirindiTankClassicLooter\VTClassic.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
@@ -121,6 +124,11 @@
     <Compile Include="Lib\MagTools\Shared\User32.cs" />
     <Compile Include="PluginCore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Tools\Assessor.cs" />
     <Compile Include="Tools\AutoSalvage.cs" />
     <Compile Include="Tools\AutoTrade.cs" />
@@ -151,6 +159,10 @@
     <Compile Include="Views\MarkerOptions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\MainView.xml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -159,11 +171,7 @@
     <EmbeddedResource Include="Resources\icons\utilitybelt.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="Changelog.md" />
-    <None Include="Dependencies\System.Data.SQLite.dll.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Installer\Install.nsi" />
     <None Include="Lib\MagTools\license.md" />
     <None Include="packages.config" />
@@ -178,6 +186,7 @@
       <WrapperTool>primary</WrapperTool>
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
+      <Private>False</Private>
     </COMReference>
     <COMReference Include="Decal">
       <Guid>{FF7F5F6D-34E0-4B6F-B3BB-8141DE2EF732}</Guid>
@@ -187,6 +196,7 @@
       <WrapperTool>primary</WrapperTool>
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
+      <Private>False</Private>
     </COMReference>
     <COMReference Include="DecalFilters">
       <Guid>{DA16DAA9-7F16-45D9-A59F-8C45A7F2ACB1}</Guid>
@@ -196,6 +206,7 @@
       <WrapperTool>primary</WrapperTool>
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
+      <Private>False</Private>
     </COMReference>
     <COMReference Include="DecalNet">
       <Guid>{572B87C4-93BD-46B3-A291-CD58181D25DC}</Guid>
@@ -205,6 +216,7 @@
       <WrapperTool>primary</WrapperTool>
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
+      <Private>False</Private>
     </COMReference>
     <COMReference Include="DecalPlugins">
       <Guid>{3559E08B-827E-4DFE-9D33-3567246849CC}</Guid>
@@ -214,6 +226,7 @@
       <WrapperTool>primary</WrapperTool>
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
+      <Private>False</Private>
     </COMReference>
   </ItemGroup>
   <ItemGroup>
@@ -224,1858 +237,628 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\MarkerOptions.xml" />
-    <None Include="Dependencies\System.Data.SQLite.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <EmbeddedResource Include="Resources\icons\compass.png" />
-    <EmbeddedResource Include="Resources\quests.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1003.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\101.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1010.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1012.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1013.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1016.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1025.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1026.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1029.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\103.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\105.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1052.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1053.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1054.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1055.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1059.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1060.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1061.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1078.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1079.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\108.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1095.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1096.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1097.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1102.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1103.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1111.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1112.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1115.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1116.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\112.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1122.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1123.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1124.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1125.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1126.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1128.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1129.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1131.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1132.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1133.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1134.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1135.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1136.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1143.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1144.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1146.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1147.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1148.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1149.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1151.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1152.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1153.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1154.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1155.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1156.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1157.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1159.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\116.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1160.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1161.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1162.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1164.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1165.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1166.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1168.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1169.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1171.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1172.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1173.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1174.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1176.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1177.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\118.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1181.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1182.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1183.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1187.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1191.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1198.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\12.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1214.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1215.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1216.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1217.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1219.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\122.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1220.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1221.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1222.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1223.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1224.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1225.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1229.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1230.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1231.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1232.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1233.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1234.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1235.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1236.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1237.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1238.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1239.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1240.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1243.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1244.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1248.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1249.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\125.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1253.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1254.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1255.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1256.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1259.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1260.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1261.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1263.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1267.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1268.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1269.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1270.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1271.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1272.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1273.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1274.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1277.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\128.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1286.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1289.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1292.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1293.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1294.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\130.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1302.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1304.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1305.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1306.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1307.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1308.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1310.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1311.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1312.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1320.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1322.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1324.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1326.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1328.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1329.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1338.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1339.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1340.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1341.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1342.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1343.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1344.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1345.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1347.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1348.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1351.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1353.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\136.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1367.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1377.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1378.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\138.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1381.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1383.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1398.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1399.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1401.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1404.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1407.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1410.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1411.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1412.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1413.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1414.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1415.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1416.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1417.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1418.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1419.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1420.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1421.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1422.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1423.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1424.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1425.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1426.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1427.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1428.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1430.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1431.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1432.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1433.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1434.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1435.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1437.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1438.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1446.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1447.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1448.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1449.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1450.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1451.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1452.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1453.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1454.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1455.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1456.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1457.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1458.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1459.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1460.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1461.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1462.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1463.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1464.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1465.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1466.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1468.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1469.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1470.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1471.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1472.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1473.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1474.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\148.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1481.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1482.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1486.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\150.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1512.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1513.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1514.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1515.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\152.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1520.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1523.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1525.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1526.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1527.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1528.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1529.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1530.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1531.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1532.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1533.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1534.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1535.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1536.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1537.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1538.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1539.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\154.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1540.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1541.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1542.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1543.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1544.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1545.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1546.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1547.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1548.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1549.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1550.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1553.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1554.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1555.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1556.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1557.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1558.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1559.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\156.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1560.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1563.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1564.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1565.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1566.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1569.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1570.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1571.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1574.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1575.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1576.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1577.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\158.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1582.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1583.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1584.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1586.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1587.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1588.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1589.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1590.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\1591.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\161.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\163.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\165.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\166.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\169.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\171.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\174.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\175.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\178.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\179.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\185.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\186.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\189.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\19.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\190.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\191.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\193.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\195.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\198.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\2.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\200.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\203.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\207.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\209.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\212.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\213.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\216.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\218.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\220.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\222.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\224.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\226.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\230.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\232.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\234.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\236.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\238.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\240.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\253.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\254.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\255.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\256.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\257.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\258.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\259.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\260.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\261.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\263.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\264.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\266.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\268.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\270.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\272.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\273.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\275.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\277.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\279.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\282.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\283.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\284.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\293.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\294.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\296.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\297.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\298.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\325.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\326.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\327.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\328.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\329.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\330.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\331.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\333.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\334.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\335.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\337.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\339.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\340.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\366.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\368.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\369.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\383.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\385.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\387.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\400.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\401.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\402.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\403.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\404.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\405.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\406.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\407.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\409.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\411.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\413.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\415.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\417.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\419.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\429.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\431.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\433.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\435.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\437.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\439.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\441.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\443.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\445.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\447.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\449.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\451.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\453.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\455.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\457.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\465.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\467.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\469.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\471.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\473.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\475.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\477.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\479.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\480.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\481.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\482.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\483.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\484.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\485.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\486.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\487.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\492.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\493.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\494.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\495.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\496.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\497.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\498.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\499.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\500.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\501.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\502.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\503.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\504.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\505.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\506.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\507.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\508.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\509.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\510.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\511.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\512.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\513.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\519.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\521.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\523.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\527.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\529.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\531.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\532.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\533.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\541.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\543.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\545.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\547.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\549.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\551.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\553.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\555.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\556.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\557.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\558.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\559.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\561.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\564.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\565.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\571.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\576.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\579.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\58.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\581.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\583.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\585.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\587.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\589.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\591.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\595.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\597.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\599.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\603.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\605.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\607.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\609.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\611.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\613.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\615.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\617.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\619.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\622.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\624.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\627.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\628.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\630.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\635.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\640.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\643.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\645.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\648.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\649.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\650.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\651.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\656.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\657.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\658.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\660.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\661.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\663.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\671.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\672.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\675.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\676.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\677.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\678.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\679.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\68.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\680.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\681.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\682.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\683.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\684.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\70.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\716.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\72.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\735.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\737.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\738.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\739.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\74.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\740.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\741.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\742.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\745.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\746.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\748.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\751.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\752.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\754.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\76.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\760.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\761.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\762.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\763.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\772.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\773.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\775.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\78.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\795.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\81.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\819.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\82.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\829.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\83.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\84.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\840.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\845.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\846.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\847.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\853.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\86.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\866.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\867.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\868.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\869.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\87.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\870.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\871.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\872.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\873.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\874.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\88.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\89.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\900.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\92.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\932.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\933.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\934.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\935.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\936.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\937.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\938.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\939.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\94.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\940.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\941.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\945.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\946.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\947.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\948.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\95.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\951.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\952.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\953.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\959.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\96.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\961.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\963.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\97.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\975.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\979.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\980.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\982.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\990.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\991.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\993.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\994.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\995.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\996.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\997.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\tiles\998.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\quests.xml" />
+    <EmbeddedResource Include="Resources\tiles\1003.bmp" />
+    <EmbeddedResource Include="Resources\tiles\101.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1010.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1012.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1013.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1016.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1025.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1026.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1029.bmp" />
+    <EmbeddedResource Include="Resources\tiles\103.bmp" />
+    <EmbeddedResource Include="Resources\tiles\105.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1052.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1053.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1054.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1055.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1059.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1060.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1061.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1078.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1079.bmp" />
+    <EmbeddedResource Include="Resources\tiles\108.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1095.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1096.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1097.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1102.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1103.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1111.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1112.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1115.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1116.bmp" />
+    <EmbeddedResource Include="Resources\tiles\112.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1122.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1123.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1124.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1125.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1126.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1128.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1129.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1131.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1132.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1133.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1134.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1135.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1136.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1143.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1144.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1146.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1147.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1148.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1149.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1151.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1152.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1153.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1154.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1155.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1156.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1157.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1159.bmp" />
+    <EmbeddedResource Include="Resources\tiles\116.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1160.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1161.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1162.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1164.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1165.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1166.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1168.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1169.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1171.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1172.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1173.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1174.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1176.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1177.bmp" />
+    <EmbeddedResource Include="Resources\tiles\118.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1181.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1182.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1183.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1187.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1191.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1198.bmp" />
+    <EmbeddedResource Include="Resources\tiles\12.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1214.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1215.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1216.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1217.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1219.bmp" />
+    <EmbeddedResource Include="Resources\tiles\122.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1220.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1221.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1222.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1223.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1224.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1225.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1229.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1230.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1231.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1232.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1233.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1234.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1235.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1236.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1237.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1238.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1239.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1240.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1243.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1244.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1248.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1249.bmp" />
+    <EmbeddedResource Include="Resources\tiles\125.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1253.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1254.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1255.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1256.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1259.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1260.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1261.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1263.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1267.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1268.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1269.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1270.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1271.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1272.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1273.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1274.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1277.bmp" />
+    <EmbeddedResource Include="Resources\tiles\128.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1286.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1289.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1292.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1293.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1294.bmp" />
+    <EmbeddedResource Include="Resources\tiles\130.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1302.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1304.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1305.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1306.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1307.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1308.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1310.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1311.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1312.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1320.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1322.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1324.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1326.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1328.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1329.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1338.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1339.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1340.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1341.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1342.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1343.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1344.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1345.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1347.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1348.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1351.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1353.bmp" />
+    <EmbeddedResource Include="Resources\tiles\136.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1367.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1377.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1378.bmp" />
+    <EmbeddedResource Include="Resources\tiles\138.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1381.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1383.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1398.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1399.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1401.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1404.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1407.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1410.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1411.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1412.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1413.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1414.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1415.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1416.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1417.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1418.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1419.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1420.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1421.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1422.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1423.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1424.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1425.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1426.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1427.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1428.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1430.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1431.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1432.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1433.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1434.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1435.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1437.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1438.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1446.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1447.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1448.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1449.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1450.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1451.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1452.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1453.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1454.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1455.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1456.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1457.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1458.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1459.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1460.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1461.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1462.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1463.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1464.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1465.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1466.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1468.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1469.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1470.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1471.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1472.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1473.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1474.bmp" />
+    <EmbeddedResource Include="Resources\tiles\148.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1481.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1482.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1486.bmp" />
+    <EmbeddedResource Include="Resources\tiles\150.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1512.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1513.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1514.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1515.bmp" />
+    <EmbeddedResource Include="Resources\tiles\152.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1520.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1523.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1525.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1526.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1527.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1528.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1529.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1530.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1531.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1532.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1533.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1534.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1535.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1536.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1537.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1538.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1539.bmp" />
+    <EmbeddedResource Include="Resources\tiles\154.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1540.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1541.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1542.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1543.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1544.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1545.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1546.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1547.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1548.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1549.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1550.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1553.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1554.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1555.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1556.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1557.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1558.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1559.bmp" />
+    <EmbeddedResource Include="Resources\tiles\156.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1560.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1563.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1564.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1565.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1566.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1569.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1570.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1571.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1574.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1575.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1576.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1577.bmp" />
+    <EmbeddedResource Include="Resources\tiles\158.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1582.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1583.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1584.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1586.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1587.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1588.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1589.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1590.bmp" />
+    <EmbeddedResource Include="Resources\tiles\1591.bmp" />
+    <EmbeddedResource Include="Resources\tiles\161.bmp" />
+    <EmbeddedResource Include="Resources\tiles\163.bmp" />
+    <EmbeddedResource Include="Resources\tiles\165.bmp" />
+    <EmbeddedResource Include="Resources\tiles\166.bmp" />
+    <EmbeddedResource Include="Resources\tiles\169.bmp" />
+    <EmbeddedResource Include="Resources\tiles\171.bmp" />
+    <EmbeddedResource Include="Resources\tiles\174.bmp" />
+    <EmbeddedResource Include="Resources\tiles\175.bmp" />
+    <EmbeddedResource Include="Resources\tiles\178.bmp" />
+    <EmbeddedResource Include="Resources\tiles\179.bmp" />
+    <EmbeddedResource Include="Resources\tiles\185.bmp" />
+    <EmbeddedResource Include="Resources\tiles\186.bmp" />
+    <EmbeddedResource Include="Resources\tiles\189.bmp" />
+    <EmbeddedResource Include="Resources\tiles\19.bmp" />
+    <EmbeddedResource Include="Resources\tiles\190.bmp" />
+    <EmbeddedResource Include="Resources\tiles\191.bmp" />
+    <EmbeddedResource Include="Resources\tiles\193.bmp" />
+    <EmbeddedResource Include="Resources\tiles\195.bmp" />
+    <EmbeddedResource Include="Resources\tiles\198.bmp" />
+    <EmbeddedResource Include="Resources\tiles\2.bmp" />
+    <EmbeddedResource Include="Resources\tiles\200.bmp" />
+    <EmbeddedResource Include="Resources\tiles\203.bmp" />
+    <EmbeddedResource Include="Resources\tiles\207.bmp" />
+    <EmbeddedResource Include="Resources\tiles\209.bmp" />
+    <EmbeddedResource Include="Resources\tiles\212.bmp" />
+    <EmbeddedResource Include="Resources\tiles\213.bmp" />
+    <EmbeddedResource Include="Resources\tiles\216.bmp" />
+    <EmbeddedResource Include="Resources\tiles\218.bmp" />
+    <EmbeddedResource Include="Resources\tiles\220.bmp" />
+    <EmbeddedResource Include="Resources\tiles\222.bmp" />
+    <EmbeddedResource Include="Resources\tiles\224.bmp" />
+    <EmbeddedResource Include="Resources\tiles\226.bmp" />
+    <EmbeddedResource Include="Resources\tiles\230.bmp" />
+    <EmbeddedResource Include="Resources\tiles\232.bmp" />
+    <EmbeddedResource Include="Resources\tiles\234.bmp" />
+    <EmbeddedResource Include="Resources\tiles\236.bmp" />
+    <EmbeddedResource Include="Resources\tiles\238.bmp" />
+    <EmbeddedResource Include="Resources\tiles\240.bmp" />
+    <EmbeddedResource Include="Resources\tiles\253.bmp" />
+    <EmbeddedResource Include="Resources\tiles\254.bmp" />
+    <EmbeddedResource Include="Resources\tiles\255.bmp" />
+    <EmbeddedResource Include="Resources\tiles\256.bmp" />
+    <EmbeddedResource Include="Resources\tiles\257.bmp" />
+    <EmbeddedResource Include="Resources\tiles\258.bmp" />
+    <EmbeddedResource Include="Resources\tiles\259.bmp" />
+    <EmbeddedResource Include="Resources\tiles\260.bmp" />
+    <EmbeddedResource Include="Resources\tiles\261.bmp" />
+    <EmbeddedResource Include="Resources\tiles\263.bmp" />
+    <EmbeddedResource Include="Resources\tiles\264.bmp" />
+    <EmbeddedResource Include="Resources\tiles\266.bmp" />
+    <EmbeddedResource Include="Resources\tiles\268.bmp" />
+    <EmbeddedResource Include="Resources\tiles\270.bmp" />
+    <EmbeddedResource Include="Resources\tiles\272.bmp" />
+    <EmbeddedResource Include="Resources\tiles\273.bmp" />
+    <EmbeddedResource Include="Resources\tiles\275.bmp" />
+    <EmbeddedResource Include="Resources\tiles\277.bmp" />
+    <EmbeddedResource Include="Resources\tiles\279.bmp" />
+    <EmbeddedResource Include="Resources\tiles\282.bmp" />
+    <EmbeddedResource Include="Resources\tiles\283.bmp" />
+    <EmbeddedResource Include="Resources\tiles\284.bmp" />
+    <EmbeddedResource Include="Resources\tiles\293.bmp" />
+    <EmbeddedResource Include="Resources\tiles\294.bmp" />
+    <EmbeddedResource Include="Resources\tiles\296.bmp" />
+    <EmbeddedResource Include="Resources\tiles\297.bmp" />
+    <EmbeddedResource Include="Resources\tiles\298.bmp" />
+    <EmbeddedResource Include="Resources\tiles\325.bmp" />
+    <EmbeddedResource Include="Resources\tiles\326.bmp" />
+    <EmbeddedResource Include="Resources\tiles\327.bmp" />
+    <EmbeddedResource Include="Resources\tiles\328.bmp" />
+    <EmbeddedResource Include="Resources\tiles\329.bmp" />
+    <EmbeddedResource Include="Resources\tiles\330.bmp" />
+    <EmbeddedResource Include="Resources\tiles\331.bmp" />
+    <EmbeddedResource Include="Resources\tiles\333.bmp" />
+    <EmbeddedResource Include="Resources\tiles\334.bmp" />
+    <EmbeddedResource Include="Resources\tiles\335.bmp" />
+    <EmbeddedResource Include="Resources\tiles\337.bmp" />
+    <EmbeddedResource Include="Resources\tiles\339.bmp" />
+    <EmbeddedResource Include="Resources\tiles\340.bmp" />
+    <EmbeddedResource Include="Resources\tiles\366.bmp" />
+    <EmbeddedResource Include="Resources\tiles\368.bmp" />
+    <EmbeddedResource Include="Resources\tiles\369.bmp" />
+    <EmbeddedResource Include="Resources\tiles\383.bmp" />
+    <EmbeddedResource Include="Resources\tiles\385.bmp" />
+    <EmbeddedResource Include="Resources\tiles\387.bmp" />
+    <EmbeddedResource Include="Resources\tiles\400.bmp" />
+    <EmbeddedResource Include="Resources\tiles\401.bmp" />
+    <EmbeddedResource Include="Resources\tiles\402.bmp" />
+    <EmbeddedResource Include="Resources\tiles\403.bmp" />
+    <EmbeddedResource Include="Resources\tiles\404.bmp" />
+    <EmbeddedResource Include="Resources\tiles\405.bmp" />
+    <EmbeddedResource Include="Resources\tiles\406.bmp" />
+    <EmbeddedResource Include="Resources\tiles\407.bmp" />
+    <EmbeddedResource Include="Resources\tiles\409.bmp" />
+    <EmbeddedResource Include="Resources\tiles\411.bmp" />
+    <EmbeddedResource Include="Resources\tiles\413.bmp" />
+    <EmbeddedResource Include="Resources\tiles\415.bmp" />
+    <EmbeddedResource Include="Resources\tiles\417.bmp" />
+    <EmbeddedResource Include="Resources\tiles\419.bmp" />
+    <EmbeddedResource Include="Resources\tiles\429.bmp" />
+    <EmbeddedResource Include="Resources\tiles\431.bmp" />
+    <EmbeddedResource Include="Resources\tiles\433.bmp" />
+    <EmbeddedResource Include="Resources\tiles\435.bmp" />
+    <EmbeddedResource Include="Resources\tiles\437.bmp" />
+    <EmbeddedResource Include="Resources\tiles\439.bmp" />
+    <EmbeddedResource Include="Resources\tiles\441.bmp" />
+    <EmbeddedResource Include="Resources\tiles\443.bmp" />
+    <EmbeddedResource Include="Resources\tiles\445.bmp" />
+    <EmbeddedResource Include="Resources\tiles\447.bmp" />
+    <EmbeddedResource Include="Resources\tiles\449.bmp" />
+    <EmbeddedResource Include="Resources\tiles\451.bmp" />
+    <EmbeddedResource Include="Resources\tiles\453.bmp" />
+    <EmbeddedResource Include="Resources\tiles\455.bmp" />
+    <EmbeddedResource Include="Resources\tiles\457.bmp" />
+    <EmbeddedResource Include="Resources\tiles\465.bmp" />
+    <EmbeddedResource Include="Resources\tiles\467.bmp" />
+    <EmbeddedResource Include="Resources\tiles\469.bmp" />
+    <EmbeddedResource Include="Resources\tiles\471.bmp" />
+    <EmbeddedResource Include="Resources\tiles\473.bmp" />
+    <EmbeddedResource Include="Resources\tiles\475.bmp" />
+    <EmbeddedResource Include="Resources\tiles\477.bmp" />
+    <EmbeddedResource Include="Resources\tiles\479.bmp" />
+    <EmbeddedResource Include="Resources\tiles\480.bmp" />
+    <EmbeddedResource Include="Resources\tiles\481.bmp" />
+    <EmbeddedResource Include="Resources\tiles\482.bmp" />
+    <EmbeddedResource Include="Resources\tiles\483.bmp" />
+    <EmbeddedResource Include="Resources\tiles\484.bmp" />
+    <EmbeddedResource Include="Resources\tiles\485.bmp" />
+    <EmbeddedResource Include="Resources\tiles\486.bmp" />
+    <EmbeddedResource Include="Resources\tiles\487.bmp" />
+    <EmbeddedResource Include="Resources\tiles\492.bmp" />
+    <EmbeddedResource Include="Resources\tiles\493.bmp" />
+    <EmbeddedResource Include="Resources\tiles\494.bmp" />
+    <EmbeddedResource Include="Resources\tiles\495.bmp" />
+    <EmbeddedResource Include="Resources\tiles\496.bmp" />
+    <EmbeddedResource Include="Resources\tiles\497.bmp" />
+    <EmbeddedResource Include="Resources\tiles\498.bmp" />
+    <EmbeddedResource Include="Resources\tiles\499.bmp" />
+    <EmbeddedResource Include="Resources\tiles\500.bmp" />
+    <EmbeddedResource Include="Resources\tiles\501.bmp" />
+    <EmbeddedResource Include="Resources\tiles\502.bmp" />
+    <EmbeddedResource Include="Resources\tiles\503.bmp" />
+    <EmbeddedResource Include="Resources\tiles\504.bmp" />
+    <EmbeddedResource Include="Resources\tiles\505.bmp" />
+    <EmbeddedResource Include="Resources\tiles\506.bmp" />
+    <EmbeddedResource Include="Resources\tiles\507.bmp" />
+    <EmbeddedResource Include="Resources\tiles\508.bmp" />
+    <EmbeddedResource Include="Resources\tiles\509.bmp" />
+    <EmbeddedResource Include="Resources\tiles\510.bmp" />
+    <EmbeddedResource Include="Resources\tiles\511.bmp" />
+    <EmbeddedResource Include="Resources\tiles\512.bmp" />
+    <EmbeddedResource Include="Resources\tiles\513.bmp" />
+    <EmbeddedResource Include="Resources\tiles\519.bmp" />
+    <EmbeddedResource Include="Resources\tiles\521.bmp" />
+    <EmbeddedResource Include="Resources\tiles\523.bmp" />
+    <EmbeddedResource Include="Resources\tiles\527.bmp" />
+    <EmbeddedResource Include="Resources\tiles\529.bmp" />
+    <EmbeddedResource Include="Resources\tiles\531.bmp" />
+    <EmbeddedResource Include="Resources\tiles\532.bmp" />
+    <EmbeddedResource Include="Resources\tiles\533.bmp" />
+    <EmbeddedResource Include="Resources\tiles\541.bmp" />
+    <EmbeddedResource Include="Resources\tiles\543.bmp" />
+    <EmbeddedResource Include="Resources\tiles\545.bmp" />
+    <EmbeddedResource Include="Resources\tiles\547.bmp" />
+    <EmbeddedResource Include="Resources\tiles\549.bmp" />
+    <EmbeddedResource Include="Resources\tiles\551.bmp" />
+    <EmbeddedResource Include="Resources\tiles\553.bmp" />
+    <EmbeddedResource Include="Resources\tiles\555.bmp" />
+    <EmbeddedResource Include="Resources\tiles\556.bmp" />
+    <EmbeddedResource Include="Resources\tiles\557.bmp" />
+    <EmbeddedResource Include="Resources\tiles\558.bmp" />
+    <EmbeddedResource Include="Resources\tiles\559.bmp" />
+    <EmbeddedResource Include="Resources\tiles\561.bmp" />
+    <EmbeddedResource Include="Resources\tiles\564.bmp" />
+    <EmbeddedResource Include="Resources\tiles\565.bmp" />
+    <EmbeddedResource Include="Resources\tiles\571.bmp" />
+    <EmbeddedResource Include="Resources\tiles\576.bmp" />
+    <EmbeddedResource Include="Resources\tiles\579.bmp" />
+    <EmbeddedResource Include="Resources\tiles\58.bmp" />
+    <EmbeddedResource Include="Resources\tiles\581.bmp" />
+    <EmbeddedResource Include="Resources\tiles\583.bmp" />
+    <EmbeddedResource Include="Resources\tiles\585.bmp" />
+    <EmbeddedResource Include="Resources\tiles\587.bmp" />
+    <EmbeddedResource Include="Resources\tiles\589.bmp" />
+    <EmbeddedResource Include="Resources\tiles\591.bmp" />
+    <EmbeddedResource Include="Resources\tiles\595.bmp" />
+    <EmbeddedResource Include="Resources\tiles\597.bmp" />
+    <EmbeddedResource Include="Resources\tiles\599.bmp" />
+    <EmbeddedResource Include="Resources\tiles\603.bmp" />
+    <EmbeddedResource Include="Resources\tiles\605.bmp" />
+    <EmbeddedResource Include="Resources\tiles\607.bmp" />
+    <EmbeddedResource Include="Resources\tiles\609.bmp" />
+    <EmbeddedResource Include="Resources\tiles\611.bmp" />
+    <EmbeddedResource Include="Resources\tiles\613.bmp" />
+    <EmbeddedResource Include="Resources\tiles\615.bmp" />
+    <EmbeddedResource Include="Resources\tiles\617.bmp" />
+    <EmbeddedResource Include="Resources\tiles\619.bmp" />
+    <EmbeddedResource Include="Resources\tiles\622.bmp" />
+    <EmbeddedResource Include="Resources\tiles\624.bmp" />
+    <EmbeddedResource Include="Resources\tiles\627.bmp" />
+    <EmbeddedResource Include="Resources\tiles\628.bmp" />
+    <EmbeddedResource Include="Resources\tiles\630.bmp" />
+    <EmbeddedResource Include="Resources\tiles\635.bmp" />
+    <EmbeddedResource Include="Resources\tiles\640.bmp" />
+    <EmbeddedResource Include="Resources\tiles\643.bmp" />
+    <EmbeddedResource Include="Resources\tiles\645.bmp" />
+    <EmbeddedResource Include="Resources\tiles\648.bmp" />
+    <EmbeddedResource Include="Resources\tiles\649.bmp" />
+    <EmbeddedResource Include="Resources\tiles\650.bmp" />
+    <EmbeddedResource Include="Resources\tiles\651.bmp" />
+    <EmbeddedResource Include="Resources\tiles\656.bmp" />
+    <EmbeddedResource Include="Resources\tiles\657.bmp" />
+    <EmbeddedResource Include="Resources\tiles\658.bmp" />
+    <EmbeddedResource Include="Resources\tiles\660.bmp" />
+    <EmbeddedResource Include="Resources\tiles\661.bmp" />
+    <EmbeddedResource Include="Resources\tiles\663.bmp" />
+    <EmbeddedResource Include="Resources\tiles\671.bmp" />
+    <EmbeddedResource Include="Resources\tiles\672.bmp" />
+    <EmbeddedResource Include="Resources\tiles\675.bmp" />
+    <EmbeddedResource Include="Resources\tiles\676.bmp" />
+    <EmbeddedResource Include="Resources\tiles\677.bmp" />
+    <EmbeddedResource Include="Resources\tiles\678.bmp" />
+    <EmbeddedResource Include="Resources\tiles\679.bmp" />
+    <EmbeddedResource Include="Resources\tiles\68.bmp" />
+    <EmbeddedResource Include="Resources\tiles\680.bmp" />
+    <EmbeddedResource Include="Resources\tiles\681.bmp" />
+    <EmbeddedResource Include="Resources\tiles\682.bmp" />
+    <EmbeddedResource Include="Resources\tiles\683.bmp" />
+    <EmbeddedResource Include="Resources\tiles\684.bmp" />
+    <EmbeddedResource Include="Resources\tiles\70.bmp" />
+    <EmbeddedResource Include="Resources\tiles\716.bmp" />
+    <EmbeddedResource Include="Resources\tiles\72.bmp" />
+    <EmbeddedResource Include="Resources\tiles\735.bmp" />
+    <EmbeddedResource Include="Resources\tiles\737.bmp" />
+    <EmbeddedResource Include="Resources\tiles\738.bmp" />
+    <EmbeddedResource Include="Resources\tiles\739.bmp" />
+    <EmbeddedResource Include="Resources\tiles\74.bmp" />
+    <EmbeddedResource Include="Resources\tiles\740.bmp" />
+    <EmbeddedResource Include="Resources\tiles\741.bmp" />
+    <EmbeddedResource Include="Resources\tiles\742.bmp" />
+    <EmbeddedResource Include="Resources\tiles\745.bmp" />
+    <EmbeddedResource Include="Resources\tiles\746.bmp" />
+    <EmbeddedResource Include="Resources\tiles\748.bmp" />
+    <EmbeddedResource Include="Resources\tiles\751.bmp" />
+    <EmbeddedResource Include="Resources\tiles\752.bmp" />
+    <EmbeddedResource Include="Resources\tiles\754.bmp" />
+    <EmbeddedResource Include="Resources\tiles\76.bmp" />
+    <EmbeddedResource Include="Resources\tiles\760.bmp" />
+    <EmbeddedResource Include="Resources\tiles\761.bmp" />
+    <EmbeddedResource Include="Resources\tiles\762.bmp" />
+    <EmbeddedResource Include="Resources\tiles\763.bmp" />
+    <EmbeddedResource Include="Resources\tiles\772.bmp" />
+    <EmbeddedResource Include="Resources\tiles\773.bmp" />
+    <EmbeddedResource Include="Resources\tiles\775.bmp" />
+    <EmbeddedResource Include="Resources\tiles\78.bmp" />
+    <EmbeddedResource Include="Resources\tiles\795.bmp" />
+    <EmbeddedResource Include="Resources\tiles\81.bmp" />
+    <EmbeddedResource Include="Resources\tiles\819.bmp" />
+    <EmbeddedResource Include="Resources\tiles\82.bmp" />
+    <EmbeddedResource Include="Resources\tiles\829.bmp" />
+    <EmbeddedResource Include="Resources\tiles\83.bmp" />
+    <EmbeddedResource Include="Resources\tiles\84.bmp" />
+    <EmbeddedResource Include="Resources\tiles\840.bmp" />
+    <EmbeddedResource Include="Resources\tiles\845.bmp" />
+    <EmbeddedResource Include="Resources\tiles\846.bmp" />
+    <EmbeddedResource Include="Resources\tiles\847.bmp" />
+    <EmbeddedResource Include="Resources\tiles\853.bmp" />
+    <EmbeddedResource Include="Resources\tiles\86.bmp" />
+    <EmbeddedResource Include="Resources\tiles\866.bmp" />
+    <EmbeddedResource Include="Resources\tiles\867.bmp" />
+    <EmbeddedResource Include="Resources\tiles\868.bmp" />
+    <EmbeddedResource Include="Resources\tiles\869.bmp" />
+    <EmbeddedResource Include="Resources\tiles\87.bmp" />
+    <EmbeddedResource Include="Resources\tiles\870.bmp" />
+    <EmbeddedResource Include="Resources\tiles\871.bmp" />
+    <EmbeddedResource Include="Resources\tiles\872.bmp" />
+    <EmbeddedResource Include="Resources\tiles\873.bmp" />
+    <EmbeddedResource Include="Resources\tiles\874.bmp" />
+    <EmbeddedResource Include="Resources\tiles\88.bmp" />
+    <EmbeddedResource Include="Resources\tiles\89.bmp" />
+    <EmbeddedResource Include="Resources\tiles\900.bmp" />
+    <EmbeddedResource Include="Resources\tiles\92.bmp" />
+    <EmbeddedResource Include="Resources\tiles\932.bmp" />
+    <EmbeddedResource Include="Resources\tiles\933.bmp" />
+    <EmbeddedResource Include="Resources\tiles\934.bmp" />
+    <EmbeddedResource Include="Resources\tiles\935.bmp" />
+    <EmbeddedResource Include="Resources\tiles\936.bmp" />
+    <EmbeddedResource Include="Resources\tiles\937.bmp" />
+    <EmbeddedResource Include="Resources\tiles\938.bmp" />
+    <EmbeddedResource Include="Resources\tiles\939.bmp" />
+    <EmbeddedResource Include="Resources\tiles\94.bmp" />
+    <EmbeddedResource Include="Resources\tiles\940.bmp" />
+    <EmbeddedResource Include="Resources\tiles\941.bmp" />
+    <EmbeddedResource Include="Resources\tiles\945.bmp" />
+    <EmbeddedResource Include="Resources\tiles\946.bmp" />
+    <EmbeddedResource Include="Resources\tiles\947.bmp" />
+    <EmbeddedResource Include="Resources\tiles\948.bmp" />
+    <EmbeddedResource Include="Resources\tiles\95.bmp" />
+    <EmbeddedResource Include="Resources\tiles\951.bmp" />
+    <EmbeddedResource Include="Resources\tiles\952.bmp" />
+    <EmbeddedResource Include="Resources\tiles\953.bmp" />
+    <EmbeddedResource Include="Resources\tiles\959.bmp" />
+    <EmbeddedResource Include="Resources\tiles\96.bmp" />
+    <EmbeddedResource Include="Resources\tiles\961.bmp" />
+    <EmbeddedResource Include="Resources\tiles\963.bmp" />
+    <EmbeddedResource Include="Resources\tiles\97.bmp" />
+    <EmbeddedResource Include="Resources\tiles\975.bmp" />
+    <EmbeddedResource Include="Resources\tiles\979.bmp" />
+    <EmbeddedResource Include="Resources\tiles\980.bmp" />
+    <EmbeddedResource Include="Resources\tiles\982.bmp" />
+    <EmbeddedResource Include="Resources\tiles\990.bmp" />
+    <EmbeddedResource Include="Resources\tiles\991.bmp" />
+    <EmbeddedResource Include="Resources\tiles\993.bmp" />
+    <EmbeddedResource Include="Resources\tiles\994.bmp" />
+    <EmbeddedResource Include="Resources\tiles\995.bmp" />
+    <EmbeddedResource Include="Resources\tiles\996.bmp" />
+    <EmbeddedResource Include="Resources\tiles\997.bmp" />
+    <EmbeddedResource Include="Resources\tiles\998.bmp" />
     <EmbeddedResource Include="Views\ColorPicker.xml" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages\SharedMemory.2.1.1\lib\net35\SharedMemory.dll" />
+    <None Include="packages\Newtonsoft.Json.12.0.2\lib\net35\Newtonsoft.Json.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

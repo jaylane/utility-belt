@@ -33,15 +33,31 @@ namespace UtilityBelt
         /// </summary>
         protected override void Startup() {
 			try {
-				Globals.Init("UtilityBelt", Host, Core);
+                AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+
+                Globals.Init("UtilityBelt", Host, Core);
             }
 			catch (Exception ex) { Logger.LogException(ex); }
-		}
+        }
 
-		/// <summary>
-		/// This is called when the plugin is shut down. This happens only once.
-		/// </summary>
-		protected override void Shutdown() {
+        System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
+            string dllName = args.Name.Contains(",") ? args.Name.Substring(0, args.Name.IndexOf(',')) : args.Name.Replace(".dll", "");
+
+            dllName = dllName.Replace(".", "_");
+
+            if (dllName.EndsWith("_resources")) return null;
+
+            System.Resources.ResourceManager rm = new System.Resources.ResourceManager(GetType().Namespace + ".Properties.Resources", System.Reflection.Assembly.GetExecutingAssembly());
+
+            byte[] bytes = (byte[])rm.GetObject(dllName);
+
+            return System.Reflection.Assembly.Load(bytes);
+        }
+
+        /// <summary>
+        /// This is called when the plugin is shut down. This happens only once.
+        /// </summary>
+        protected override void Shutdown() {
 			try {
 
 			}
@@ -110,6 +126,7 @@ namespace UtilityBelt
 		{
 			try {
                 Globals.Core.RenderFrame -= Core_RenderFrame;
+                AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(CurrentDomain_AssemblyResolve);
 
                 if (autoSalvage != null) autoSalvage.Dispose();
                 if (autoTrade != null) autoTrade.Dispose();
