@@ -78,7 +78,7 @@ namespace UtilityBelt.Tools {
                             UB_portal(match.Groups["params"].Value, true);
                             break;
                         case "closestportal":
-                            UB_portal(null, false);
+                            UB_portal("", true);
                             break;
                         case "follow":
                             UB_follow(match.Groups["params"].Value, false);
@@ -129,8 +129,7 @@ namespace UtilityBelt.Tools {
                 "   /ub portal[p] <portalname> - use the named portal\n" +
                 "   /ub closestportal - use the closest portal\n" +
                 "   /ub vendor {buyall,sellall,clearbuy,clearsell}\n" +
-                "   /ub vendor open[p] {vendorname,vendorid,vendorhex}\n" +
-                "   /ub vendor openclosest - attempts to open the closest vendor\n" +
+                "   /ub vendor open[p] [vendorname,vendorid,vendorhex]\n" +
                 "   /ub vendor opencancel - quietly cancels the last /ub vendor open* command\n" +
                 "   /ub give[Prp] [count] <itemName> to <character|selected>\n" + // private static readonly Regex giveRegex = new Regex(@"^\/ub give(?<flags>[pP]*) ?(?<giveCount>\d+)? (?<itemName>.+) to (?<targetPlayer>.+)");
                 "   /ub ig[p] <profile[.utl]> to <character|selected>\n" + //private static readonly Regex igRegex = new Regex(@"^\/ub ig(?<partial>p)? ?(?<utlProfile>.+) to (?<targetPlayer>.+)");
@@ -157,7 +156,7 @@ namespace UtilityBelt.Tools {
             char[] stringSplit = { ' ' };
             string[] parameter = parameters.Split(stringSplit, 2);
             if (parameter.Length == 0) {
-                Util.WriteToChat("Usage: /ub vendor {open[p] {vendorname,vendorid,vendorhex},openclosest,opencancel,buyall,sellall,clearbuy,clearsell}");
+                Util.WriteToChat("Usage: /ub vendor {open[p] [vendorname,vendorid,vendorhex],opencancel,buyall,sellall,clearbuy,clearsell}");
                 return;
             }
             switch (parameter[0])
@@ -181,22 +180,17 @@ namespace UtilityBelt.Tools {
                     break;
 
                 case "open":
-                    if (parameter.Length != 2) {
-                        Util.WriteToChat("Usage: /ub vendor open[p] {vendorname,vendorid}");
-                        return;
-                    }
-                    UB_vendor_open(parameter[1], false);
+                    if (parameter.Length != 2)
+                        UB_vendor_open("", true);
+                    else
+                        UB_vendor_open(parameter[1], false);
                     break;
 
                 case "openp":
-                    if (parameter.Length != 2) {
-                        Util.WriteToChat("Usage: /ub vendor open[p] {vendorname,vendorid}");
-                        return;
-                    }
-                    UB_vendor_open(parameter[1], true);
-                    break;
-                case "openclosest":
-                    UB_vendor_open(null, false);
+                    if (parameter.Length != 2)
+                        UB_vendor_open("", true);
+                    else
+                        UB_vendor_open(parameter[1], true);
                     break;
                 case "opencancel":
                     Globals.Core.Actions.FaceHeading(Globals.Core.Actions.Heading - 1, true);
@@ -207,23 +201,16 @@ namespace UtilityBelt.Tools {
             }
         }
         public void UB_portal(string portalName, bool partial) {
-            portal = FindName(portalName, partial, ObjectClass.Portal);
+            portal = FindName(portalName, partial, new ObjectClass[] { ObjectClass.Portal, ObjectClass.Npc });
             if (portal != null) {
                 UsePortal();
                 return;
             }
             
-            // some portals are npcs ("Cavern" in Glenden Wood)
-            portal = FindName(portalName, partial, ObjectClass.Npc);
-            if (portal != null) {
-                UsePortal();
-                return;
-            }
-
             Util.ThinkOrWrite("Could not find a portal", Globals.Settings.Plugin.portalThink);
         }
         public void UB_follow(string characterName, bool partial) {
-            WorldObject followChar = FindName((characterName.Length == 0?null:characterName), partial, ObjectClass.Player);
+            WorldObject followChar = FindName(characterName, partial, new ObjectClass[] { ObjectClass.Player });
             if (followChar != null) {
                 FollowChar(followChar.Id);
                 return;
@@ -250,19 +237,7 @@ namespace UtilityBelt.Tools {
         }
 
         private void UB_vendor_open(string vendorname, bool partial) {
-            if (vendorname == null) {
-                double lastDistance = double.MaxValue;
-                double thisDistance;
-                foreach (WorldObject thisOne in Globals.Core.WorldFilter.GetByObjectClass(ObjectClass.Vendor)) {
-                    thisDistance = Globals.Core.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, thisOne.Id);
-                    if (vendor == null || lastDistance > thisDistance) {
-                        vendor = thisOne;
-                        lastDistance = thisDistance;
-                    }
-                }
-            } else {
-                vendor = FindName(vendorname, partial);
-            }
+            vendor = FindName(vendorname, partial, new ObjectClass[]{ ObjectClass.Vendor});
             if (vendor != null) {
                 OpenVendor();
                 return;
@@ -547,33 +522,11 @@ namespace UtilityBelt.Tools {
         }
 
         //Do not use this in a loop, it gets an F for eFFiciency.
-        public WorldObject FindName(string searchname, bool partial, ObjectClass ?oc = null) {
-            //if searchname is null, find closest (oc required)
-            if (searchname == null) {
-                if (oc == null) {
-                    Util.WriteToChat("Fatal error: name and object class were null!");
-                    return null;
-                }
-                WorldObject found = null;
-                double lastDistance = double.MaxValue;
-                double thisDistance;
-                foreach (WorldObject thisOne in Globals.Core.WorldFilter.GetByObjectClass((ObjectClass)oc)) {
-                    thisDistance = Globals.Core.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, thisOne.Id);
-                    if (thisOne.Id != Globals.Core.CharacterFilter.Id && (found == null || lastDistance > thisDistance)) {
-                        found = thisOne;
-                        lastDistance = thisDistance;
-                    }
-                }
-                if (found != null) {
-                    return found;
-                } else {
-                    return null; // special case- nothing below will match a null name.
-                }
-            }
+        public WorldObject FindName(string searchname, bool partial, ObjectClass[] oc) {
 
             //try int id
             if (int.TryParse(searchname, out int id)) {
-                if (Globals.Core.WorldFilter[id] != null && (oc == null || Globals.Core.WorldFilter[id].ObjectClass == oc)) {
+                if (Globals.Core.WorldFilter[id] != null && CheckObjectClassArray(Globals.Core.WorldFilter[id].ObjectClass, oc)) {
                     // Util.WriteToChat("Found by id");
                     return Globals.Core.WorldFilter[id];
                 }
@@ -581,7 +534,7 @@ namespace UtilityBelt.Tools {
             //try hex...
             try {
                 int intValue = Convert.ToInt32(searchname, 16);
-                if (Globals.Core.WorldFilter[intValue] != null && (oc == null || Globals.Core.WorldFilter[intValue].ObjectClass == oc)) {
+                if (Globals.Core.WorldFilter[intValue] != null && CheckObjectClassArray(Globals.Core.WorldFilter[intValue].ObjectClass,oc)) {
                     // Util.WriteToChat("Found vendor by hex");
                     return Globals.Core.WorldFilter[intValue];
                 }
@@ -591,20 +544,36 @@ namespace UtilityBelt.Tools {
             searchname = searchname.ToLower();
 
             //try "selected"
-            if (searchname.Equals("selected") && Globals.Core.Actions.CurrentSelection != 0 && Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection] != null && (oc == null || Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection].ObjectClass == oc)) {
+            if (searchname.Equals("selected") && Globals.Core.Actions.CurrentSelection != 0 && Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection] != null && CheckObjectClassArray(Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection].ObjectClass,oc)) {
                 return Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection];
             }
             //try slow search...
-            foreach (WorldObject thisOne in CoreManager.Current.WorldFilter.GetLandscape()) {
-                string thisLowerName = thisOne.Name.ToLower();
-                if (partial && thisLowerName.Contains(searchname) && (oc == null || thisOne.ObjectClass == oc))
-                    return thisOne;
-                else if (thisLowerName.Equals(searchname) && (oc == null || thisOne.ObjectClass == oc))
-                    return thisOne;
-            }
-            return null;
-        }
+            WorldObject found = null;
 
+            double lastDistance = double.MaxValue;
+            double thisDistance;
+            foreach (WorldObject thisOne in CoreManager.Current.WorldFilter.GetLandscape()) {
+                if (!CheckObjectClassArray(thisOne.ObjectClass, oc)) continue;
+                thisDistance = Globals.Core.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, thisOne.Id);
+                if (thisOne.Id != Globals.Core.CharacterFilter.Id && (found == null || lastDistance > thisDistance)) {
+                    string thisLowerName = thisOne.Name.ToLower();
+                    if (partial && thisLowerName.Contains(searchname) && CheckObjectClassArray(thisOne.ObjectClass, oc)) {
+                        found = thisOne;
+                        lastDistance = thisDistance;
+                    } else if (thisLowerName.Equals(searchname) && CheckObjectClassArray(thisOne.ObjectClass, oc)) {
+                        found = thisOne;
+                        lastDistance = thisDistance;
+                    }
+                }
+            }
+            return found;
+        }
+        private bool CheckObjectClassArray(ObjectClass needle, ObjectClass[] haystack) {
+            if (haystack.Length == 0) return true;
+            foreach (ObjectClass o in haystack)
+                if (needle == o) return true;
+            return false;
+        }
         public void Think() {
             try {
                 if (vendorOpening > 0 && DateTime.UtcNow - vendorTimestamp > TimeSpan.FromMilliseconds(Globals.Settings.AutoVendor.TriesTime)) {
