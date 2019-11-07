@@ -39,6 +39,8 @@ namespace UtilityBelt.Lib.DungeonMaps {
             LandBlockId = landCell >> 16 << 16;
             LandCellId = landCell;
 
+            if (!IsDungeon()) return;
+
             LoadCells();
 
             dungeonWidth = (int)(Math.Abs(maxX) + Math.Abs(minX) + CELL_SIZE);

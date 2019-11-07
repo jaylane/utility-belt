@@ -21,19 +21,13 @@ using VirindiViewService.Controls;
 
 namespace UtilityBelt.Tools {
     public class DungeonMaps : IDisposable {
-        private const int THINK_INTERVAL = 100;
-        private int DRAW_INTERVAL = 45;
-        private SolidBrush TEXT_BRUSH = new SolidBrush(Color.White);
-        private SolidBrush TEXT_BRUSH_GREEN = new SolidBrush(Color.LightGreen);
-        private const float QUALITY = 1F;
-        private Font DEFAULT_FONT = new Font("Mono", 8);
-        private Font PORTAL_FONT = new Font("Mono", 3);
+        private const int DRAW_INTERVAL = 45;
         private DateTime lastDrawTime = DateTime.UtcNow;
         private bool disposed = false;
         private Hud hud = null;
         private Rectangle hudRect;
         internal Bitmap drawBitmap = null;
-        private Bitmap compassBitmap = null;
+        readonly private Bitmap compassBitmap = null;
         private float scale = 1;
         private int rawScale = 12;
         private int currentLandBlock = 0;
@@ -47,16 +41,17 @@ namespace UtilityBelt.Tools {
         private int dragStartY = 0;
         private int rotation = 0;
         private Dungeon currentBlock = null;
-        private Vector3Object lastPosition = new Vector3Object(0, 0, 0);
         private int markerCount = 0;
 
         const int COL_ENABLED = 0;
         const int COL_ICON = 1;
         const int COL_NAME = 2;
 
-        System.Windows.Forms.Timer zoomSaveTimer;
+        readonly System.Windows.Forms.Timer zoomSaveTimer;
         private long lastDrawMs = 0;
         private long lastHudMs = 0;
+        private ColorPicker picker;
+        private MarkerOptions markerOptionsView;
 
         HudCheckBox UIDungeonMapsEnabled { get; set; }
         HudCheckBox UIDungeonMapsDrawWhenClosed { get; set; }
@@ -119,8 +114,9 @@ namespace UtilityBelt.Tools {
 
                 Toggle();
 
-                zoomSaveTimer = new System.Windows.Forms.Timer();
-                zoomSaveTimer.Interval = 2000; // save the window position 2 seconds after it has stopped moving
+                zoomSaveTimer = new System.Windows.Forms.Timer {
+                    Interval = 2000 // save the window position 2 seconds after it has stopped moving
+                };
                 zoomSaveTimer.Tick += (s, e) => {
                     zoomSaveTimer.Stop();
                     Globals.Settings.DungeonMaps.MapZoom = scale;
@@ -259,7 +255,7 @@ namespace UtilityBelt.Tools {
 
                     case COL_ICON:
                         int originalColor = option.Color;
-                        var picker = new ColorPicker(Globals.MainView, name, Color.FromArgb(originalColor));
+                        picker = new ColorPicker(Globals.MainView, name, Color.FromArgb(originalColor));
 
                         Globals.Settings.DisableSaving();
                         
@@ -268,6 +264,7 @@ namespace UtilityBelt.Tools {
                             SetDisplayColor(name, originalColor);
                             Globals.Settings.EnableSaving();
                             picker.Dispose();
+                            picker = null;
                         };
 
                         picker.RaiseColorPickerSaveEvent += (s, e) => {
@@ -277,6 +274,7 @@ namespace UtilityBelt.Tools {
                             SetDisplayColor(name, e.Color.ToArgb());
                             PopulateSettings();
                             picker.Dispose();
+                            picker = null;
                         };
 
                         picker.RaiseColorPickerChangeEvent += (s, e) => {
@@ -289,6 +287,7 @@ namespace UtilityBelt.Tools {
                             Globals.Settings.EnableSaving();
                             if (!picker.view.Visible) {
                                 picker.Dispose();
+                                picker = null;
                             }
                         };
                         
@@ -319,12 +318,13 @@ namespace UtilityBelt.Tools {
                         Globals.Settings.DisableSaving();
 
                         var originalOptions = option.Clone();
-                        var markerOptionsView = new MarkerOptions(Globals.MainView, option);
+                        markerOptionsView = new MarkerOptions(Globals.MainView, option);
 
                         markerOptionsView.RaiseCancelEvent += (s, e) => {
                             option.RestoreFrom(originalOptions);
                             Globals.Settings.EnableSaving();
                             markerOptionsView.Dispose();
+                            markerOptionsView = null;
                         };
 
                         markerOptionsView.RaiseSaveEvent += (s, e) => {
@@ -334,6 +334,7 @@ namespace UtilityBelt.Tools {
                             option.RestoreFrom(newOptions);
                             PopulateSettings();
                             markerOptionsView.Dispose();
+                            markerOptionsView = null;
                         };
 
                         markerOptionsView.RaiseChangeEvent += (s, e) => {
@@ -344,6 +345,7 @@ namespace UtilityBelt.Tools {
                                 option.RestoreFrom(originalOptions);
                                 Globals.Settings.EnableSaving();
                                 markerOptionsView.Dispose();
+                                markerOptionsView = null;
                             }
                         };
 
@@ -486,9 +488,6 @@ namespace UtilityBelt.Tools {
 
         #region Hud Stuff
         public Rectangle GetHudRect() {
-            var rect = (hudRect != null) ? hudRect : new Rectangle(Globals.MapView.view.Location.X, Globals.MapView.view.Location.Y,
-                    Globals.MapView.view.Width, Globals.MapView.view.Height);
-
             hudRect.Y = Globals.MapView.view.Location.Y + Globals.MapView.view["DungeonMapsRenderContainer"].ClipRegion.Y + 20;
             hudRect.X = Globals.MapView.view.Location.X + Globals.MapView.view["DungeonMapsRenderContainer"].ClipRegion.X;
 
@@ -582,7 +581,6 @@ namespace UtilityBelt.Tools {
             if (scale < 1.4) return;
 
             try {
-                var brush = new SolidBrush(Color.Orange);
                 hud.BeginText("Terminal", 10, Decal.Adapter.Wrappers.FontWeight.Normal, false);
 
                 markerCount = 0;
@@ -775,6 +773,10 @@ namespace UtilityBelt.Tools {
                         hud.Dispose();
                     }
                     if (drawBitmap != null) drawBitmap.Dispose();
+                    if (compassBitmap != null) compassBitmap.Dispose();
+                    if (zoomSaveTimer != null) zoomSaveTimer.Dispose();
+                    if (picker != null) picker.Dispose();
+                    if (markerOptionsView != null) markerOptionsView.Dispose();
                 }
                 disposed = true;
             }
