@@ -714,6 +714,8 @@ namespace UtilityBelt.Tools {
 
                     if (!NeedsDraw()) return;
 
+                    currentBlock = DungeonCache.Get(Globals.Core.Actions.Landcell);
+
                     if (currentLandBlock != Globals.Core.Actions.Landcell >> 16 << 16) {
                         ClearHud();
                         currentLandBlock = Globals.Core.Actions.Landcell >> 16 << 16;
@@ -721,9 +723,8 @@ namespace UtilityBelt.Tools {
                         ClearVisitedTiles();
                     }
 
-                    currentBlock = DungeonCache.Get(Globals.Core.Actions.Landcell);
-
                     if (currentBlock == null) return;
+                    if (!currentBlock.IsDungeon()) return;
 
                     if (!currentBlock.visitedTiles.Contains((uint)(Globals.Core.Actions.Landcell << 16 >> 16))) {
                         currentBlock.visitedTiles.Add((uint)(Globals.Core.Actions.Landcell << 16 >> 16));
