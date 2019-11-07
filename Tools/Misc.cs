@@ -15,6 +15,7 @@ using UtilityBelt.Lib;
 using UtilityBelt.Lib.Constants;
 using Decal.Filters;
 using UtilityBelt.Lib.Settings;
+using System.Timers;
 
 namespace UtilityBelt.Tools {
     public class OptionResult {
@@ -37,7 +38,8 @@ namespace UtilityBelt.Tools {
         private DateTime portalTimestamp = DateTime.MinValue;
         private int portalAttempts = 0;
         private static WorldObject portal = null;
-        //yes, I know I'm repeating myself. each objectclass has different catches; and combining them would just be a maze of if's
+
+        readonly private List<Timer> delayTimers = new List<Timer>();
 
         private bool disposed = false;
 
@@ -90,19 +92,22 @@ namespace UtilityBelt.Tools {
                             UB_opt(match.Groups["params"].Value);
                             break;
                         case "pos":
-                            UB_pos(match.Groups["params"].Value);
+                            UB_pos();
                             break;
                         case "door":
-                            UB_door(match.Groups["params"].Value);
+                            UB_door();
                             break;
                         case "useflags":
-                            UB_useflags(match.Groups["params"].Value);
+                            UB_useflags();
                             break;
                         case "propertydump":
-                            UB_propertydump(match.Groups["params"].Value);
+                            UB_propertydump();
                             break;
                         case "vitae":
                             UB_vitae();
+                            break;
+                        case "delay":
+                            UB_delay(match.Groups["params"].Value);
                             break;
                     }
                     // Util.WriteToChat("UB called with command <" + match.Groups["command"].Value + ">, params <" + match.Groups["params"].Value+">");
@@ -134,6 +139,7 @@ namespace UtilityBelt.Tools {
                 "   /ub give[Prp] [count] <itemName> to <character|selected>\n" + // private static readonly Regex giveRegex = new Regex(@"^\/ub give(?<flags>[pP]*) ?(?<giveCount>\d+)? (?<itemName>.+) to (?<targetPlayer>.+)");
                 "   /ub ig[p] <profile[.utl]> to <character|selected>\n" + //private static readonly Regex igRegex = new Regex(@"^\/ub ig(?<partial>p)? ?(?<utlProfile>.+) to (?<targetPlayer>.+)");
                 "   /ub follow[p] [character|selected] - follows the named character, selected, or closest\n" +
+                "   /ub delay <milliseconds> <command> - runs <command> after <milliseconds delay>\n" +
                 "TODO: Add rest of commands");
         }
         public void UB_testBlock(string theRest) {
@@ -245,7 +251,7 @@ namespace UtilityBelt.Tools {
             Util.ThinkOrWrite("AutoVendor failed to open vendor", Globals.Settings.AutoVendor.Think);
         }
 
-        private void UB_pos(string value) {
+        private void UB_pos() {
             var selected = Globals.Core.Actions.CurrentSelection;
 
             if (selected == 0 || !Globals.Core.Actions.IsValidObject(selected)) {
@@ -270,7 +276,7 @@ namespace UtilityBelt.Tools {
             Util.WriteToChat($"Phys heading: x:{phys.Heading.X} y:{phys.Position.Y} z:{phys.Position.Z}");
         }
 
-        private void UB_door(string value) {
+        private void UB_door() {
             var selected = Globals.Core.Actions.CurrentSelection;
 
             if (selected == 0 || !Globals.Core.Actions.IsValidObject(selected)) {
@@ -292,7 +298,37 @@ namespace UtilityBelt.Tools {
             Util.Think($"My vitae is {Globals.Core.CharacterFilter.Vitae}%");
         }
 
-        private void UB_useflags(string value) {
+        private void UB_delay(string theRest) {
+            string[] rest = theRest.Split(' ');
+            if (string.IsNullOrEmpty(theRest)
+                || rest.Length < 2
+                || !int.TryParse(rest[0], out int delay)
+                || delay <= 0
+            ) {
+                Util.WriteToChat("Usage: /ub delay <milliseconds> <command>");
+                return;
+            }
+
+            var command = string.Join(" ", rest.Skip(1).ToArray());
+
+            Logger.Debug($"Scheduling command `{command}` with delay of {delay}ms");
+
+            Timer timer = new Timer(delay);
+            timer.Elapsed += (s, e) => {
+                Logger.Debug($"Executing command `{command}` (delay was {delay}ms)");
+                Util.DispatchChatToBoxWithPluginIntercept(command);
+                timer.Stop();
+                timer.Dispose();
+                if (delayTimers.Contains(timer)) {
+                    delayTimers.Remove(timer);
+                }
+            };
+            timer.Start();
+
+            delayTimers.Add(timer);
+        }
+
+        private void UB_useflags() {
             var selected = Globals.Core.Actions.CurrentSelection;
 
             if (selected == 0 || !Globals.Core.Actions.IsValidObject(selected)) {
@@ -318,7 +354,7 @@ namespace UtilityBelt.Tools {
             }
         }
 
-        private void UB_propertydump(string value) {
+        private void UB_propertydump() {
             var selected = Globals.Core.Actions.CurrentSelection;
 
             if (selected == 0 || !Globals.Core.Actions.IsValidObject(selected)) {
@@ -415,9 +451,7 @@ namespace UtilityBelt.Tools {
             }
         }
 
-        T Cast<T>(object obj, T type) { return (T)obj; }
-
-        private Regex optionRe = new Regex(@"^((get|set) )?(?<option>[^\s]+)\s?(?<value>.*)", RegexOptions.IgnoreCase);
+        readonly private Regex optionRe = new Regex(@"^((get|set) )?(?<option>[^\s]+)\s?(?<value>.*)", RegexOptions.IgnoreCase);
         private void UB_opt(string args) {
             try {
                 if (args.ToLower().Trim() == "list") {
@@ -651,6 +685,13 @@ namespace UtilityBelt.Tools {
                     Globals.Core.WorldFilter.ApproachVendor -= WorldFilter_ApproachVendor;
                     Globals.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
                     Globals.Core.CharacterFilter.Logoff -= CharacterFilter_Logoff;
+
+                    foreach (var timer in delayTimers) {
+                        if (timer != null) {
+                            timer.Stop();
+                            timer.Dispose();
+                        }
+                    }
                 }
                 disposed = true;
             }
