@@ -14,8 +14,6 @@ namespace UtilityBelt.Views {
         private HudCheckBox PluginCheckForUpdates;
         private HudButton DoUpdateCheck;
 
-        private bool disposed;
-
         public MainView() {
             try {
                 CreateFromXMLResource("UtilityBelt.Views.MainView.xml");

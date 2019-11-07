@@ -26,7 +26,6 @@ namespace UtilityBelt.Lib.DungeonMaps {
         private Dictionary<int, DungeonCell> allCells = new Dictionary<int, DungeonCell>();
         public static List<int> portalIds = new List<int>();
         public Dictionary<int, List<Portal>> zPortals = new Dictionary<int, List<Portal>>();
-        private bool? isDungeon;
         private float minX = 0;
         private float maxX = 0;
         private float minY = 0;
