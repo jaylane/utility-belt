@@ -10,7 +10,7 @@ using System.Text;
 using UtilityBelt.Lib.VTNav.Waypoints;
 
 namespace UtilityBelt.Lib.DungeonMaps {
-    public class Dungeon {
+    public partial class Dungeon {
         private const int PLAYER_SIZE = 4;
         private SolidBrush playerBrush = new SolidBrush(Color.Red);
         private SolidBrush portalBrush = new SolidBrush(Color.Purple);
@@ -19,6 +19,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
         public const int CELL_SIZE = 10;
         public Color TRANSPARENT_COLOR = Color.White;
         public int LandBlockId;
+        public int LandCellId;
         private List<int> checkedCells = new List<int>();
         private List<string> filledCoords = new List<string>();
         public Dictionary<int, List<DungeonCell>> zLayers = new Dictionary<int, List<DungeonCell>>();
@@ -37,6 +38,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
 
         public Dungeon(int landCell) {
             LandBlockId = landCell >> 16 << 16;
+            LandCellId = landCell;
 
             LoadCells();
 
@@ -78,40 +80,6 @@ namespace UtilityBelt.Lib.DungeonMaps {
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        public bool IsDungeon() {
-            if ((uint)(Globals.Core.Actions.Landcell << 16 >> 16) < 0x0100) {
-                return false;
-            }
-
-            if (isDungeon.HasValue) {
-                return isDungeon.Value;
-            }
-
-            bool _hasCells = false;
-            bool _hasOutdoorCells = false;
-
-            if (zLayers.Count > 0) {
-                foreach (var zKey in zLayers.Keys) {
-                    foreach (var cell in zLayers[zKey]) {
-                        // When this value is >= 0x0100 you are inside (either in a building or in a dungeon).
-                        if ((uint)(cell.CellId << 16 >> 16) < 0x0100) {
-                            _hasOutdoorCells = true;
-                            break;
-                        }
-                        else {
-                            _hasCells = true;
-                        }
-                    }
-
-                    if (_hasOutdoorCells) break;
-                }
-            }
-
-            isDungeon = _hasCells && !_hasOutdoorCells;
-
-            return isDungeon.Value;
         }
 
         public int drawCount = 0;

@@ -76,6 +76,7 @@
     <Compile Include="Lib\Constants\UseFlags.cs" />
     <Compile Include="Lib\DoorWatcher.cs" />
     <Compile Include="Lib\DungeonMaps\IconCache.cs" />
+    <Compile Include="Lib\DungeonMaps\IsDungeon.cs" />
     <Compile Include="Lib\PhysicsObject.cs" />
     <Compile Include="Lib\Settings\ColorToggleOption.cs" />
     <Compile Include="Lib\Settings\DisplaySectionBase.cs" />
