@@ -442,7 +442,7 @@ namespace UtilityBelt.Tools {
             }
             VTankControl.Nav_Block(1000, false); // quick block to keep vtank from truckin' off before the profile loads, but short enough to not matter if it errors out and doesn't unlock
             targetPlayer = giveMatch.Groups["targetPlayer"].Value;
-            var destination = Globals.Misc.FindName(targetPlayer, (giveMatch.Groups["flags"].Value.Contains("p") ? true : false), Decal.Adapter.Wrappers.ObjectClass.Player);
+            var destination = Globals.Misc.FindName(targetPlayer, (giveMatch.Groups["flags"].Value.Contains("p") ? true : false), new Decal.Adapter.Wrappers.ObjectClass[] { Decal.Adapter.Wrappers.ObjectClass.Player, Decal.Adapter.Wrappers.ObjectClass.Npc });
 
             if (destination == null) {
                 Util.WriteToChat($"ItemGiver: player {targetPlayer} not found");
@@ -491,7 +491,7 @@ namespace UtilityBelt.Tools {
             VTankControl.Nav_Block(1000, false); // quick block to keep vtank from truckin' off before the profile loads, but short enough to not matter if it errors out and doesn't unlock
             targetPlayer = igMatch.Groups["targetPlayer"].Value;
 
-            var destination = Globals.Misc.FindName(targetPlayer, (igMatch.Groups["partial"].Value.Equals("p") ? true : false), Decal.Adapter.Wrappers.ObjectClass.Player);
+            var destination = Globals.Misc.FindName(targetPlayer, (igMatch.Groups["partial"].Value.Equals("p") ? true : false), new Decal.Adapter.Wrappers.ObjectClass[] { Decal.Adapter.Wrappers.ObjectClass.Player, Decal.Adapter.Wrappers.ObjectClass.Npc });
 
             if (destination == null) {
                 Util.WriteToChat($"ItemGiver: player {targetPlayer} not found");
