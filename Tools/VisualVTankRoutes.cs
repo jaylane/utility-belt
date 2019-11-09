@@ -46,13 +46,14 @@ namespace UtilityBelt.Tools {
             var server = Globals.Core.CharacterFilter.Server;
             var character = Globals.Core.CharacterFilter.Name;
 
-            profilesWatcher = new FileSystemWatcher();
-            profilesWatcher.Path = Util.GetVTankProfilesDirectory();
-            profilesWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
-            profilesWatcher.Filter = $"{server}_{character}.cdf";
-            profilesWatcher.Changed += Profiles_Changed;
-
-            profilesWatcher.EnableRaisingEvents = true;
+            if (File.Exists(Util.GetVTankProfilesDirectory())) {
+                profilesWatcher = new FileSystemWatcher();
+                profilesWatcher.Path = Util.GetVTankProfilesDirectory();
+                profilesWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
+                profilesWatcher.Filter = $"{server}_{character}.cdf";
+                profilesWatcher.Changed += Profiles_Changed;
+                profilesWatcher.EnableRaisingEvents = true;
+            }
 
             Globals.Settings.VisualNav.Display.PropertyChanged += (s, e) => { needsDraw = true; };
             DrawCurrentRoute();
