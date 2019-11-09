@@ -15,6 +15,24 @@ using Microsoft.Win32;
 namespace UtilityBelt
 {
 	public static class Util {
+        private static string pluginDirectory;
+        public static void Init() {
+            System.Configuration.Configuration config = null;
+            System.Configuration.KeyValueConfigurationElement element = null;
+            try {
+                config = System.Configuration.ConfigurationManager.OpenExeConfiguration(Assembly.GetExecutingAssembly().Location);
+                element = config.AppSettings.Settings["PluginDirectory"];
+            } catch { }
+            if (element != null && !string.IsNullOrEmpty(element.Value)) {
+                pluginDirectory = element.Value;
+            } else {
+                pluginDirectory = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins"), Globals.PluginName);
+                try {
+                    config.AppSettings.Settings.Add("PluginDirectory", pluginDirectory);
+                    config.Save();
+                } catch { }
+            }
+        }
         public static string GetVersion() {
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
 
@@ -37,11 +55,7 @@ namespace UtilityBelt
         }
 
         public static string GetPluginDirectory() {
-            return Path.Combine(GetDecalPluginsDirectory(), Globals.PluginName);
-        }
-
-        private static string GetDecalPluginsDirectory() {
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins");
+            return pluginDirectory;
         }
 
         public static string GetServerDirectory() {

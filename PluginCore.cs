@@ -35,6 +35,7 @@ namespace UtilityBelt
                 AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
 
                 Globals.Init("UtilityBelt", Host, Core);
+                Util.Init(); //static classes can not have constructors, but still need to init variables.
             }
 			catch (Exception ex) { Logger.LogException(ex); }
         }
