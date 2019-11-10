@@ -5,7 +5,7 @@ UtilityBelt is a multipurpose decal plugin. Currently it has the following "modu
 - [Counter](https://gitlab.com/trevis/utilitybelt/wikis/Counter) - Counts items based on regex or utl loot profiles.
 - [DungeonMaps](https://gitlab.com/trevis/utilitybelt/wikis/DungeonMaps) - Shows a map of the current dungeon on your screen.
 - [EmuConfig](https://gitlab.com/trevis/utilitybelt/wikis/EmuConfig) - Helper UI for reading/setting client config options on GDLE servers.
-- [ItemGiver](https://gitlab.com/trevis/utilitybelt/wikis/ItemGiver) - Command to give items matching a utl loot profile to a player/npc.
+- [InventoryManager](https://gitlab.com/trevis/utilitybelt/wikis/InventoryManager) - Commands for handing items to other players/npcs.
 - [Jumper](https://gitlab.com/trevis/utilitybelt/wikis/Jumper) - Jump commands
 - [QuestTracker](https://gitlab.com/trevis/utilitybelt/wikis/QuestTracker) - Shows quest timers.
 - [VisualNav](https://gitlab.com/trevis/utilitybelt/wikis/VisualNav) - Shows VTank nav route visually (like vi2 blue lines).
