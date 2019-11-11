@@ -34,14 +34,14 @@ namespace UtilityBelt.Lib.DungeonMaps {
                 return false;
             }
 
-            int dungeonId = (LandCellId >> 16) & 0xFFFF;
+            int dungeonId = (int)((LandCellId >> 16) & 0xFFFF);
             bool isDungeon;
             if (mIsDungeonCache.TryGetValue(dungeonId, out isDungeon)) {
                 return isDungeon;
             }
 
             FileService service = Globals.Core.Filter<FileService>();
-            byte[] dungeonBlock = service.GetCellFile(LandCellId);
+            byte[] dungeonBlock = service.GetCellFile((int)LandCellId);
 
             if (dungeonBlock == null || dungeonBlock.Length < 5) {
                 // This shouldn't happen...

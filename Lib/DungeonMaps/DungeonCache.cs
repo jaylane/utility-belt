@@ -5,11 +5,11 @@ using System.Text;
 
 namespace UtilityBelt.Lib.DungeonMaps {
     public static class DungeonCache {
-        private static Dictionary<int, Dungeon> cache = new Dictionary<int, Dungeon>();
+        private static Dictionary<uint, Dungeon> cache = new Dictionary<uint, Dungeon>();
 
-        public static Dungeon Get(int cellId) {
-            if (cache.ContainsKey(cellId >> 16 << 16)) return cache[cellId >> 16 << 16];
-            if ((uint)(cellId << 16 >> 16) < 0x0100) return null;
+        public static Dungeon Get(uint cellId) {
+            if (cache.ContainsKey(cellId & 0xFFFF0000)) return cache[cellId & 0xFFFF0000];
+            if ((uint)(cellId & 0x0000FFFF) < 0x0100) return null;
 
             var watch = System.Diagnostics.Stopwatch.StartNew();
             var block = new Dungeon(cellId);

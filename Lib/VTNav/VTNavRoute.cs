@@ -21,6 +21,7 @@ namespace UtilityBelt.Lib.VTNav {
         public static string NoneNavName = " [None]";
 
         public List<VTNPoint> points = new List<VTNPoint>();
+        public int NavOffset = 0;
         public Dictionary<string, double> offsets = new Dictionary<string, double>();
         public List<D3DObj> shapes = new List<D3DObj>();
         private D3DObj currentNavShape = null;
@@ -219,16 +220,11 @@ namespace UtilityBelt.Lib.VTNav {
         private void PC_NavWaypointChanged() {
             try {
                 if (NavType == eNavType.Once && points.Count > VTankControl.vTankInstance.NavNumPoints) {
-                    var pointsDeleted = 0;
-                    while (points.Count > 0 && points.Count > VTankControl.vTankInstance.NavNumPoints) {
-                        points[0].Dispose();
-                        points.RemoveAt(0);
-                        pointsDeleted++;
-                    }
-
-                    if (pointsDeleted > 0) {
-                        for (var i = 0; i < points.Count; i++) {
-                            points[i].index = i;
+                    var offset = points.Count - VTankControl.vTankInstance.NavNumPoints;
+                    if (offset != NavOffset) {
+                        NavOffset = offset;
+                        for (var i = 0; i < NavOffset; i++) {
+                            points[i].ClearShapes();
                         }
                     }
                 }
@@ -242,9 +238,11 @@ namespace UtilityBelt.Lib.VTNav {
             var routeFinished = VTankControl.vTankInstance.NavCurrent > VTankControl.vTankInstance.NavNumPoints - 1;
             var isWaypointRoute = NavType != eNavType.Target;
             var isEnabled = Globals.Settings.VisualNav.Display.CurrentWaypoint.Enabled;
+            var isValidPointOffset = NavOffset + VTankControl.vTankInstance.NavCurrent < points.Count;
 
-            if (isEnabled && isWaypointRoute && !routeFinished) {
-                var current = VTankControl.vTankInstance.NavGetPoint(VTankControl.vTankInstance.NavCurrent);
+            if (isEnabled && isWaypointRoute && !routeFinished && isValidPointOffset) {
+
+                var current = points[NavOffset + VTankControl.vTankInstance.NavCurrent];
 
                 if (currentNavShape == null) {
                     currentNavShape = Globals.Core.D3DService.MarkCoordsWithShape(0f, 0f, 0f, D3DShape.Ring, Color.Red.ToArgb());
@@ -257,7 +255,7 @@ namespace UtilityBelt.Lib.VTNav {
                     currentNavShape.Visible = true;
                     currentNavShape.ScaleX = (float)navCloseStopRange * 240f;
                     currentNavShape.ScaleY = (float)navCloseStopRange * 240f;
-                    currentNavShape.Anchor((float)current.loc.y, (float)current.loc.x, (float)(current.loc.z * 240f) + Globals.Settings.VisualNav.LineOffset);
+                    currentNavShape.Anchor((float)current.NS, (float)current.EW, (float)(current.Z * 240f) + Globals.Settings.VisualNav.LineOffset);
                     currentNavShape.Color = Globals.Settings.VisualNav.Display.CurrentWaypoint.Color;
                     return;
                 }
@@ -282,7 +280,7 @@ namespace UtilityBelt.Lib.VTNav {
                 }
             }
             else {
-                for (var i=0; i < points.Count; i++) {
+                for (var i=NavOffset; i < points.Count; i++) {
                     points[i].Draw();
                 }
             }

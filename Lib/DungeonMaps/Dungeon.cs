@@ -18,8 +18,8 @@ namespace UtilityBelt.Lib.DungeonMaps {
 
         public const int CELL_SIZE = 10;
         public Color TRANSPARENT_COLOR = Color.White;
-        public int LandBlockId;
-        public int LandCellId;
+        public uint LandBlockId;
+        public uint LandCellId;
         private List<int> checkedCells = new List<int>();
         private List<string> filledCoords = new List<string>();
         public Dictionary<int, List<DungeonCell>> zLayers = new Dictionary<int, List<DungeonCell>>();
@@ -35,8 +35,8 @@ namespace UtilityBelt.Lib.DungeonMaps {
         public List<uint> visitedTiles = new List<uint>();
         private List<string> drawNavLines = new List<string>();
 
-        public Dungeon(int landCell) {
-            LandBlockId = landCell >> 16 << 16;
+        public Dungeon(uint landCell) {
+            LandBlockId = landCell & 0xFFFF0000;
             LandCellId = landCell;
 
             if (!IsDungeon()) return;
@@ -53,14 +53,14 @@ namespace UtilityBelt.Lib.DungeonMaps {
                 FileService service = Globals.Core.Filter<FileService>();
 
                 try {
-                    cellCount = BitConverter.ToInt32(service.GetCellFile(65534 + LandBlockId), 4);
+                    cellCount = BitConverter.ToInt32(service.GetCellFile((int)(65534 + LandBlockId)), 4);
                 }
                 catch {
                     return;
                 }
 
                 for (uint index = 0; (long)index < (long)cellCount; ++index) {
-                    int num = ((int)index + LandBlockId + 256);
+                    int num = ((int)(index + LandBlockId + 256));
                     var cell = new DungeonCell(num);
                     if (cell.CellId != 0 && !this.filledCoords.Contains(cell.GetCoords())) {
                         this.filledCoords.Add(cell.GetCoords());
@@ -382,13 +382,14 @@ namespace UtilityBelt.Lib.DungeonMaps {
             switch (route.NavType) {
                 case VTNav.eNavType.Circular:
                 case VTNav.eNavType.Linear:
+                case VTNav.eNavType.Once:
                     DrawPointRoute(drawGfx, zLayer, route);
                     break;
             }
         }
 
         public void DrawPointRoute(Graphics drawGfx, int zLayer, VTNav.VTNavRoute route) {
-            var allPoints = route.points.Where((p) => p.Type == VTNav.eWaypointType.Point).ToArray();
+            var allPoints = route.points.Where((p) => (p.Type == VTNav.eWaypointType.Point && p.index >= route.NavOffset)).ToArray();
 
             // todo: follow routes
             if (route.NavType == VTNav.eNavType.Target) return;
@@ -409,8 +410,10 @@ namespace UtilityBelt.Lib.DungeonMaps {
             // circular / once / linear routes.. currently not discriminating
             if (!Globals.Settings.DungeonMaps.Display.VisualNavLines.Enabled) return;
          
-            foreach (var point in route.points) {
+            for (var i = route.NavOffset; i < route.points.Count; i++) {
+                var point = route.points[i];
                 var prev = point.GetPreviousPoint();
+
                 if (prev == null) continue;
 
                 // we use this to make sure we only draw a line once

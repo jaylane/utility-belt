@@ -29,6 +29,10 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
         }
 
         public VTNPoint GetPreviousPoint() {
+            if (index == 0 && route.NavType == eNavType.Once && route.NavOffset > 0) {
+                return route.points[route.NavOffset - 1];
+            }
+
             for (var i = index - 1; i >= 0; i--) {
                 var t = route.points[i].Type;
                 if (t == eWaypointType.Point) {
@@ -145,6 +149,15 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             }
         }
 
+        internal void ClearShapes() {
+            foreach (var shape in shapes) {
+                try { shape.Visible = false; } catch { }
+                shape.Dispose();
+            }
+
+            shapes.Clear();
+        }
+
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -153,10 +166,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
         protected virtual void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
-                    foreach (var shape in shapes) {
-                        try { shape.Visible = false; } catch { }
-                        shape.Dispose();
-                    }
+                    ClearShapes();
                 }
                 disposed = true;
             }
