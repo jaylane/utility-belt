@@ -203,9 +203,10 @@ namespace UtilityBelt.Tools
         {
             try
             {
-                if (e.Text.StartsWith("/ub autotrade "))
+                var match = Regex.Match(e.Text, @"^/ub autotrade(?:\s+(?<param>.*))?$");
+                if (match != null && match.Success)
                 {
-                    var path = e.Text.Replace("/ub autotrade ", "").Trim();
+                    var path = match.Groups["param"].Value.Trim();
                     e.Eat = true;
 
                     Start(traderId, path);
@@ -295,8 +296,6 @@ namespace UtilityBelt.Tools
 
         public void Think()
         {
-            if (!Globals.Settings.AutoTrade.Enabled)
-                return;
             if (!running)
                 return;
 
@@ -357,19 +356,25 @@ namespace UtilityBelt.Tools
 
         private void Stop(bool profileLoaded = true)
         {
-            if (profileLoaded)
+            try
             {
-                Util.ThinkOrWrite("AutoTrade finished: " + traderName, Globals.Settings.AutoTrade.Think);
+                if (profileLoaded)
+                {
+                    Util.ThinkOrWrite("AutoTrade finished: " + traderName, Globals.Settings.AutoTrade.Think);
+                }
+
+                if (lootProfile != null) ((VTClassic.LootCore)lootProfile).UnloadProfile();
+
+                VTankControl.Nav_UnBlock();
+                // restore cram/stack settings
+                VTankControl.Item_UnBlock();
             }
-
-            if (lootProfile != null) ((VTClassic.LootCore)lootProfile).UnloadProfile();
-
-            VTankControl.Nav_UnBlock();
-            // restore cram/stack settings
-            VTankControl.Item_UnBlock();
-
-            running = false;
-            keepUpToCounts.Clear();
+            catch (Exception ex) { Logger.LogException(ex); }
+            finally
+            {
+                running = false;
+                keepUpToCounts.Clear();
+            }
         }
 
         private void DoTestMode()
