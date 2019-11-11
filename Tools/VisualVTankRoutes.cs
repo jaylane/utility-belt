@@ -71,6 +71,7 @@ namespace UtilityBelt.Tools {
 
         private void PC_NavRouteChanged() {
             try {
+                needsDraw = true;
                 if (!Globals.Settings.VisualNav.SaveNoneRoutes) return;
 
                 var routePath = VTNavRoute.GetLoadedNavigationProfile();

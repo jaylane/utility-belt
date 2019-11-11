@@ -48,7 +48,7 @@ namespace UtilityBelt.Views {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        protected override ACImage GetIcon() {
+        internal override ACImage GetIcon() {
             return GetIcon("UtilityBelt.Resources.icons.dungeonmaps.png");
         }
     }

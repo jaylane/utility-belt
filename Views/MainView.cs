@@ -77,7 +77,7 @@ namespace UtilityBelt.Views {
             PluginCheckForUpdates.Checked = Globals.Settings.Plugin.CheckForUpdates;
         }
 
-        protected override ACImage GetIcon() {
+        internal override ACImage GetIcon() {
             return GetIcon("UtilityBelt.Resources.icons.utilitybelt.png");
         }
     }

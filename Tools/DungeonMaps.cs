@@ -25,7 +25,7 @@ namespace UtilityBelt.Tools {
         private DateTime lastDrawTime = DateTime.UtcNow;
         private bool disposed = false;
         private Hud hud = null;
-        private Rectangle hudRect;
+        private Rectangle hudRect = new Rectangle();
         internal Bitmap drawBitmap = null;
         readonly private Bitmap compassBitmap = null;
         private float scale = 1;
@@ -444,6 +444,7 @@ namespace UtilityBelt.Tools {
         private void Toggle() {
             try {
                 var enabled = Globals.Settings.DungeonMaps.Enabled;
+                Globals.MapView.view.Icon = Globals.MapView.GetIcon();
                 Globals.MapView.view.ShowInBar = enabled;
 
                 if (!enabled) {
@@ -712,7 +713,7 @@ namespace UtilityBelt.Tools {
 
                     if (!NeedsDraw()) return;
 
-                    currentBlock = DungeonCache.Get(Globals.Core.Actions.Landcell);
+                    currentBlock = DungeonCache.Get((uint)Globals.Core.Actions.Landcell);
 
                     if (currentLandBlock != Globals.Core.Actions.Landcell >> 16 << 16) {
                         ClearHud();

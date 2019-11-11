@@ -51,7 +51,7 @@ namespace UtilityBelt.Views {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        protected virtual ACImage GetIcon() {
+        internal virtual ACImage GetIcon() {
             return null;
         }
 
@@ -60,10 +60,8 @@ namespace UtilityBelt.Views {
 
             try {
                 using (Stream manifestResourceStream = typeof(MainView).Assembly.GetManifestResourceStream(resourcePath)) {
-                    if (manifestResourceStream != null) {
-                        using (Bitmap bitmap = new Bitmap(manifestResourceStream))
-                            acImage = new ACImage(bitmap);
-                    }
+                   using (Bitmap bitmap = new Bitmap(manifestResourceStream))
+                       acImage = new ACImage(bitmap);
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
