@@ -11,6 +11,8 @@ using System.Linq;
 using System.Net;
 using Decal.Adapter;
 using Microsoft.Win32;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace UtilityBelt
 {
@@ -33,18 +35,21 @@ namespace UtilityBelt
                 } catch { }
             }
         }
-        public static string GetVersion() {
+
+        private static Regex releaseBranchVersion = new Regex(@"^\d+\.\d+.\d+\.release\.");
+        public static string GetVersion(bool includeGitExtras=false) {
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
 
             if (assembly != null) {
-                var parts = assembly.GetName().Version.ToString().Split('.');
-                var version = "0.0.0";
+                var productVersion = FileVersionInfo.GetVersionInfo(assembly.Location).ProductVersion;
 
-                if (parts.Length > 3) {
-                    version = string.Join(".", parts.Take(3).ToArray());
+                // show the short version for release branch builds
+                if (releaseBranchVersion.IsMatch(productVersion)) {
+                    return FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
                 }
-
-                return version;
+                else {
+                    return productVersion;
+                }
             }
 
             return "0.0.0";
