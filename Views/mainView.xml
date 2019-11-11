@@ -28,8 +28,8 @@
         </page>
         <page label="AutoTrade">
           <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.Checkbox" name="AutoTradeEnabled" left="4" top="4" width="192" height="16" text="Enable AutoTrade" />
-            <control progid="DecalControls.Checkbox" name="AutoTradeTestMode" left="204" top="4" width="192" height="16" text="Test Mode"/>
+            <control progid="DecalControls.Checkbox" name="AutoTradeEnabled" left="4" top="4" width="232" height="16" text="Enable AutoTrade on Trade Open" />
+            <control progid="DecalControls.Checkbox" name="AutoTradeTestMode" left="244" top="4" width="152" height="16" text="Test Mode"/>
             <control progid="DecalControls.Checkbox" name="AutoTradeAutoAccept" left="4" top="24" width="192" height="16" text="Auto-Accept trade" />
             <control progid="DecalControls.Checkbox" name="AutoTradeOnlyFromMainPack" left="4" top="44" width="250" height="16" text="Only trade items in your main pack"/>
             <control progid="DecalControls.Checkbox" name="AutoTradeThink" left="4" top="64" width="250" height="16" text="Think to yourself when finished"/>
