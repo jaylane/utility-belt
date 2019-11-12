@@ -45,14 +45,16 @@ namespace UtilityBelt.Tools {
 
             var server = Globals.Core.CharacterFilter.Server;
             var character = Globals.Core.CharacterFilter.Name;
-
-            if (File.Exists(Util.GetVTankProfilesDirectory())) {
+            if (Directory.Exists(Util.GetVTankProfilesDirectory())) {
                 profilesWatcher = new FileSystemWatcher();
                 profilesWatcher.Path = Util.GetVTankProfilesDirectory();
                 profilesWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
                 profilesWatcher.Filter = $"{server}_{character}.cdf";
                 profilesWatcher.Changed += Profiles_Changed;
                 profilesWatcher.EnableRaisingEvents = true;
+            } else {
+                Logger.Debug($"VisualVTankRoutes() Error: {Util.GetVTankProfilesDirectory()} does not exist!");
+                return;
             }
 
             Globals.Settings.VisualNav.Display.PropertyChanged += (s, e) => { needsDraw = true; };
@@ -248,6 +250,10 @@ namespace UtilityBelt.Tools {
         }
 
         private void WatchRouteFiles() {
+            if (!Directory.Exists(Util.GetVTankProfilesDirectory())) {
+                Logger.Debug($"WatchRouteFiles() Error: {Util.GetVTankProfilesDirectory()} does not exist!");
+                return;
+            }
             navFileWatcher = new FileSystemWatcher();
             navFileWatcher.Path = Util.GetVTankProfilesDirectory();
             navFileWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
