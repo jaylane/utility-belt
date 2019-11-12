@@ -29,6 +29,11 @@ namespace UtilityBelt.Tools {
             Property = propertyInfo;
         }
     }
+    public class DataTimer : System.Timers.Timer {
+        public string Data;
+
+        public DataTimer(double interval) : base(interval) { }
+    }
 
     public class Misc : IDisposable {
         private DateTime vendorTimestamp = DateTime.MinValue;
@@ -313,19 +318,26 @@ namespace UtilityBelt.Tools {
 
             Logger.Debug($"Scheduling command `{command}` with delay of {delay}ms");
 
-            Timer timer = new Timer(delay);
-            timer.Elapsed += (s, e) => {
-                Logger.Debug($"Executing command `{command}` (delay was {delay}ms)");
-                Util.DispatchChatToBoxWithPluginIntercept(command);
-                timer.Stop();
-                timer.Dispose();
-                if (delayTimers.Contains(timer)) {
-                    delayTimers.Remove(timer);
-                }
+            Timer timer = new DataTimer(delay) {
+                Data = command,
+                AutoReset = false
             };
+            timer.Elapsed += Delay_Command_Timer_Elapsed;
             timer.Start();
 
             delayTimers.Add(timer);
+        }
+
+        private void Delay_Command_Timer_Elapsed(object sender, ElapsedEventArgs e) {
+            ((DataTimer)sender).Stop();
+            ((DataTimer)sender).Dispose();
+
+            Logger.Debug($"Executing command `{((DataTimer)sender).Data}` (delay was {((DataTimer)sender).Interval}ms)");
+            Util.DispatchChatToBoxWithPluginIntercept(((DataTimer)sender).Data);
+
+            if (delayTimers.Contains(((DataTimer)sender))) {
+                delayTimers.Remove(((DataTimer)sender));
+            }
         }
 
         private void UB_useflags() {
