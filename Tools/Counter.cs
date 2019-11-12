@@ -187,7 +187,7 @@ namespace UtilityBelt.Tools {
                     }
 
                     if (((VTClassic.LootCore)lootProfile).DoesPotentialItemNeedID(itemInfo)) {
-                        CoreManager.Current.Actions.RequestId(item.Id);
+                        Globals.Assessor.Queue(item.Id);
                         if (!idItems.Contains(item)) {
                             idItems.Add(item);
                         }

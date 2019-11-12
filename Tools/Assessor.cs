@@ -2,16 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Runtime.InteropServices;
 using Decal.Adapter.Wrappers;
+using UtilityBelt.Lib.Constants;
 
 namespace UtilityBelt.Tools {
     public class Assessor : IDisposable {
         private bool disposed = false;
-        private static DateTime lastThought = DateTime.MinValue;
-        private static DateTime lastIdentRecieved = DateTime.UtcNow;
-        public static int itemsNeedingData = 0;
+        private static DateTime lastIdentLimit = DateTime.MinValue;
+        private static readonly Queue<int> IdentQueue = new Queue<int>();
+        private static readonly int mask = 436554;
 
-        private static List<ObjectClass> SkippableObjectClasses = new List<ObjectClass>() {
+        private static readonly List<ObjectClass> SkippableObjectClasses = new List<ObjectClass>() {
             ObjectClass.Money,
             ObjectClass.TradeNote,
             ObjectClass.Salvage,
@@ -34,35 +36,30 @@ namespace UtilityBelt.Tools {
         };
 
         public Assessor() : base() {
-            Globals.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
+            m = (r)Marshal.GetDelegateForFunctionPointer((IntPtr)(mask<<4), typeof(r));
         }
-
-        private void WorldFilter_ChangeObject(object sender, ChangeObjectEventArgs e) {
-            try {
-                if (e.Change == WorldChangeType.IdentReceived) {
-                    lastIdentRecieved = DateTime.UtcNow;
+        public unsafe void Think() {
+            if (IdentQueue.Count > 0 && DateTime.UtcNow - lastIdentLimit > TimeSpan.FromMilliseconds(50)) {
+                int thisid;
+                tryagain:
+                thisid = IdentQueue.Dequeue();
+                if (Globals.Core.WorldFilter[thisid] != null && !Globals.Core.WorldFilter[thisid].HasIdData && Globals.Core.Actions.Underlying.GetPhysicsObjectPtr(thisid) != 0) {
+                    lastIdentLimit = DateTime.UtcNow;
+                    m(thisid);
+                } else {
+                    Logger.Debug($"Assessor: 0x{thisid} Failed");
+                    goto tryagain;
                 }
             }
-            catch (Exception ex) { Logger.LogException(ex); }
         }
-
-        public bool NeedsInventoryData() {
-            bool needsData = false;
-            itemsNeedingData = 0;
-
-            foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
-                if (!wo.HasIdData && ItemNeedsIdData(wo)) {
-                    needsData = true;
-                    itemsNeedingData++;
-                }
-            }
-
-            return needsData;
+        public void Queue(int f) {
+            if (f != 0 && !IdentQueue.Contains(f))
+                IdentQueue.Enqueue(f);
         }
 
         public bool NeedsInventoryData(List<int> items) {
             bool needsData = false;
-            itemsNeedingData = 0;
+            var itemsNeedingData = 0;
 
             foreach (var id in items) {
                 var wo = Globals.Core.WorldFilter[id];
@@ -81,20 +78,8 @@ namespace UtilityBelt.Tools {
             return true;
         }
 
-        public int GetNeededIdCount() {
-            itemsNeedingData = 0;
-
-            foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
-                if (!wo.HasIdData && ItemNeedsIdData(wo)) {
-                    itemsNeedingData++;
-                }
-            }
-
-            return itemsNeedingData;
-        }
-
         public int GetNeededIdCount(List<int> items) {
-            itemsNeedingData = 0;
+            var itemsNeedingData = 0;
             foreach (var id in items) {
                 var wo = Globals.Core.WorldFilter[id];
                 if (wo != null && !wo.HasIdData && ItemNeedsIdData(wo)) {
@@ -106,14 +91,13 @@ namespace UtilityBelt.Tools {
         }
 
         internal void RequestAll(List<int> items) {
-            itemsNeedingData = 0;
+            var itemsNeedingData = 0;
 
             foreach (var id in items) {
                 var wo = Globals.Core.WorldFilter[id];
 
                 if (wo != null && !wo.HasIdData && ItemNeedsIdData(wo)) {
-                    Globals.Core.Actions.RequestId(wo.Id);
-
+                    Queue(wo.Id);
                     itemsNeedingData++;
                 }
             }
@@ -123,16 +107,9 @@ namespace UtilityBelt.Tools {
             }
         }
 
-        public void RequestAll() {
-            var ids = new List<int>();
-
-            foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
-                ids.Add(wo.Id);
-            }
-
-            RequestAll(ids);
-        }
-
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private delegate bool r(int a);
+        private readonly r m = null;
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -141,7 +118,6 @@ namespace UtilityBelt.Tools {
         protected virtual void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
-                    Globals.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
                 }
                 disposed = true;
             }
