@@ -115,7 +115,7 @@ namespace UtilityBelt
                 if (jumper != null) jumper.Think();
                 if (counter != null) counter.Think();
                 if (Globals.VisualVTankRoutes != null) Globals.VisualVTankRoutes.Think();
-
+                if (Globals.Assessor != null) Globals.Assessor.Think();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Think();
             }
             catch (Exception ex) { Logger.LogException(ex); }

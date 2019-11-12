@@ -654,7 +654,7 @@ namespace UtilityBelt.Tools {
 
                     if (!item.HasIdData && lootProfile.DoesPotentialItemNeedID(itemInfo)) {
                         if (!idItems.Contains(item.Id)) {
-                            Globals.Core.Actions.RequestId(item.Id);
+                            Globals.Assessor.Queue(item.Id);
                             idItems.Add(item.Id);
                         }
                         continue;
@@ -663,7 +663,7 @@ namespace UtilityBelt.Tools {
                     if (!item.HasIdData) {
                         if (lootProfile.DoesPotentialItemNeedID(itemInfo)) {
                             if (!idItems.Contains(item.Id)) {
-                                Globals.Core.Actions.RequestId(item.Id);
+                                Globals.Assessor.Queue(item.Id);
                                 idItems.Add(item.Id);
                             }
                             continue;
