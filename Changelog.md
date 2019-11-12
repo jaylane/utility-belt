@@ -1,8 +1,17 @@
 ## 0.0.13 (2019-11-11) [UtilityBeltInstaller-0.0.13.exe](/uploads/5502b71f708d32f45f5bef073d3759b7/UtilityBeltInstaller-0.0.13.exe)
-- BugFixes!
 - Added new and improved AutoVendor test mode (thanks Yonneh)
-- Allow autotrade when running from cli even if not explicitly enabled. (thanks Cosmic Jester)
 - Added `/ub delay <milliseconds> <command>` to run <command> after <milliseconds> delay
+- Fixed IDQueue stuckage (no more getting stuck waiting on item id!) (thanks Yonneh)
+- Added VTankLootProfileWatcher - Automatically reloads loot profiles when they change! (thanks Yonneh)
+- Added UtilityBelt.dll.config - Global plugin settings (this file autogenerates next to UtilityBelt.dll) (thanks Yonneh)
+- All plugin resources and dependencies are now embedded in the dll file
+- Fixed DungeonMaps failing to draw in some circumstances
+- Fixed once nav routes now properly update in DungeonMaps as each waypoint is hit
+- Fixed to allow autotrade when running from cli even if not explicitly enabled. (thanks Cosmic Jester)
+- Fixed isDungeon check, DungeonMaps should no longer draw inside dwellings
+- Fixed `/ub portal` now works with portals that are ObjectClass==NPC (thanks Yonneh)
+- Fixed `/ub ig` now works with NPCs again (thanks Yonneh)
+- Fixed issue with bail timers bailing early (thanks Yonneh)
 
 ## 0.0.12 (2019-11-03) [UtilityBeltInstaller-0.0.12.exe](/uploads/6de18c1fe018bcd48e0620d25070db29/UtilityBeltInstaller-0.0.12.exe)
 - Added `/ub vitae` command to check current vitae %
