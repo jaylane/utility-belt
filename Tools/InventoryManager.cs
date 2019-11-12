@@ -24,15 +24,17 @@ namespace UtilityBelt.Tools {
         private int movingObjectId = 0;
         private int tryCount = 0;
         private Dictionary<int, DateTime> blacklistedItems = new Dictionary<int, DateTime>();
-        private Dictionary<int,DateTime> blacklistedContainers = new Dictionary<int, DateTime>();
+        private Dictionary<int, DateTime> blacklistedContainers = new Dictionary<int, DateTime>();
 
         private static readonly List<int> giveObjects = new List<int>(), idItems = new List<int>();
-        private static DateTime lastIdSpam = DateTime.MinValue, bailTimer = DateTime.MinValue, startGive;
+        private static DateTime lastIdSpam = DateTime.MinValue, bailTimer = DateTime.MinValue, startGive, lastProfileChange = DateTime.MinValue;
         private static bool igRunning = false, givePartialItem, isRegex = false;
         private static int currentItem, retryCount, destinationId, failedItems, totalFailures, maxGive, itemsGiven, lastIdCount;
         private LootCore lootProfile = null;
         private static string targetPlayer = "", utlProfile = "", profilePath = "";
         private static readonly Dictionary<string, int> givenItemsCount = new Dictionary<string, int>();
+
+        private static FileSystemWatcher profilesWatcher = null;
 
         HudCheckBox UIInventoryManagerAutoCram { get; set; }
         HudCheckBox UIInventoryManagerAutoStack { get; set; }
@@ -58,6 +60,7 @@ namespace UtilityBelt.Tools {
 
             Globals.Settings.InventoryManager.PropertyChanged += (s, e) => { UpdateUI(); };
 
+            if (Globals.Settings.InventoryManager.WatchLootProfile) WatchLootProfile_Changed(true);
             UpdateUI();
         }
 
@@ -90,7 +93,7 @@ namespace UtilityBelt.Tools {
 
                     return;
                 }
-                
+
                 if (!e.Text.StartsWith("/ub ig") && !e.Text.StartsWith("/ub give"))
                     return;
                 e.Eat = true;
@@ -119,7 +122,47 @@ namespace UtilityBelt.Tools {
 
             } catch (Exception ex) { Logger.LogException(ex); }
         }
+        #region Loot Profile Watcher
 
+        // Handle settings changes while running
+        public static void WatchLootProfile_Changed(bool enabled) {
+            if (VTankControl.vTankInstance == null && enabled) {
+                Util.WriteToChat("Error accessing VTank");
+                Globals.Settings.InventoryManager.WatchLootProfile = false;
+                return;
+            }
+            string profilePath = Util.GetVTankProfilesDirectory();
+            if (!Directory.Exists(profilePath) && enabled) {
+                Logger.Debug($"WatchLootProfile_Changed(true) Error: {profilePath} does not exist!");
+                Globals.Settings.InventoryManager.WatchLootProfile = false;
+                return;
+            }
+            if (enabled) {
+                string loadedProfile = VTankControl.vTankInstance.GetLootProfile();
+                profilesWatcher = new FileSystemWatcher();
+                profilesWatcher.NotifyFilter = NotifyFilters.LastWrite;
+                profilesWatcher.Changed += LootProfile_Changed;
+                profilesWatcher.Filter = loadedProfile;
+                profilesWatcher.Path = profilePath;
+                profilesWatcher.EnableRaisingEvents = true;
+                uTank2.PluginCore.PC.LootProfileChanged += PC_LootProfileChanged;
+                Logger.Debug($"FileSystemWatcher enabled on Path={profilePath},Filter={loadedProfile}");
+            } else {
+                uTank2.PluginCore.PC.LootProfileChanged -= PC_LootProfileChanged;
+                profilesWatcher.Dispose();
+            }
+        }
+
+        private static void PC_LootProfileChanged() {
+            string loadedProfile = VTankControl.vTankInstance.GetLootProfile();
+            profilesWatcher.Filter = loadedProfile;
+            //Logger.Debug($"FileSystemWatcher updated to Filter={loadedProfile}");
+        }
+
+        private static void LootProfile_Changed(object sender, FileSystemEventArgs e) {
+            VTankControl.vTankInstance.LoadLootProfile(e.Name);
+        }
+        #endregion
         private void WorldFilter_ChangeObject(object sender, ChangeObjectEventArgs e) {
             try {
                 if (e.Change != WorldChangeType.StorageChange) return;
@@ -659,6 +702,10 @@ namespace UtilityBelt.Tools {
                     Globals.Core.CommandLineText -= Current_CommandLineText;
                     Globals.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
                     Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                    if (profilesWatcher != null) {
+                        profilesWatcher.Dispose();
+                        uTank2.PluginCore.PC.LootProfileChanged -= PC_LootProfileChanged;
+                    }
                 }
                 disposed = true;
             }

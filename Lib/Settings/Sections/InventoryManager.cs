@@ -46,6 +46,12 @@ namespace UtilityBelt.Lib.Settings.Sections {
             get { return (int)GetSetting("IGRange"); }
             set { UpdateSetting("IGRange", value); }
         }
+        [Summary("Watch VTank Loot Profile for changes, and reload")]
+        [DefaultValue(false)]
+        public bool WatchLootProfile {
+            get { return (bool)GetSetting("WatchLootProfile"); }
+            set { UpdateSetting("WatchLootProfile", value); if (Globals.InventoryManager != null) Tools.InventoryManager.WatchLootProfile_Changed(value); }
+        }
         public InventoryManager(SectionBase parent) : base(parent) {
             Name = "InventoryManager";
         }
