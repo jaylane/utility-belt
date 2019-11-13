@@ -502,7 +502,7 @@ namespace UtilityBelt.Tools {
                 return;
             }
 
-            var playerDistance = Globals.Core.WorldFilter.Distance(Globals.Core.CharacterFilter.Id, destinationId) * 240;
+            var playerDistance = (float)Globals.Core.WorldFilter.Distance(Globals.Core.CharacterFilter.Id, destinationId) * 240;
             if (playerDistance > Globals.Settings.InventoryManager.IGRange) {
                 Util.WriteToChat($"ItemGiver: {targetPlayer} is {playerDistance:n2} meters away");
                 return;

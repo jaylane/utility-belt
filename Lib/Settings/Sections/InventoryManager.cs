@@ -42,8 +42,8 @@ namespace UtilityBelt.Lib.Settings.Sections {
         }
         [Summary("Maximum Range for ItemGiver commands")]
         [DefaultValue(15)]
-        public double IGRange {
-            get { return (int)GetSetting("IGRange"); }
+        public float IGRange {
+            get { return (float)GetSetting("IGRange"); }
             set { UpdateSetting("IGRange", value); }
         }
         [Summary("Watch VTank Loot Profile for changes, and reload")]
