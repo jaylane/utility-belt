@@ -137,10 +137,9 @@ namespace UtilityBelt.Tools {
                 Globals.Settings.InventoryManager.WatchLootProfile = false;
                 return;
             }
+            if (profilesWatcher != null)
+                profilesWatcher.Dispose();
             if (enabled) {
-                if (profilesWatcher != null) {
-                    profilesWatcher.Dispose();
-                }
                 string loadedProfile = VTankControl.vTankInstance.GetLootProfile();
                 profilesWatcher = new FileSystemWatcher();
                 profilesWatcher.NotifyFilter = NotifyFilters.LastWrite;
@@ -152,7 +151,6 @@ namespace UtilityBelt.Tools {
                 Logger.Debug($"FileSystemWatcher enabled on Path={profilePath},Filter={loadedProfile}");
             } else {
                 uTank2.PluginCore.PC.LootProfileChanged -= PC_LootProfileChanged;
-                profilesWatcher.Dispose();
             }
         }
 
