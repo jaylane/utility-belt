@@ -7,7 +7,6 @@ namespace UtilityBelt.Lib.Settings
 {
     [JsonObject(MemberSerialization.OptIn)]
     public class Settings {
-        private string pluginStorageDirectory;
         public bool ShouldSave = false;
 
         public event EventHandler Changed;
@@ -15,40 +14,10 @@ namespace UtilityBelt.Lib.Settings
         #region Public Properties
         public bool HasCharacterSettingsLoaded { get; set; } = false;
 
-        // no JsonProperty because we dont want to store this with each character,
-        // todo: make sure this gets loaded in properly with PopulateObject from settings.default.json
-        //[JsonProperty]
-        [SummaryAttribute("Path where plugin will store all of its data")]
-        public string PluginStorageDirectory {
-            get {
-                // read from plugin.json if available
-                if (!string.IsNullOrEmpty(pluginStorageDirectory)) {
-                    return pluginStorageDirectory;
-                }
-
-                // default is documents\decal plugins\<plugin name>\
-                var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-                var decalDocumentsPath = Path.Combine(documentsPath, "Decal Plugins");
-
-                return Path.Combine(decalDocumentsPath, Globals.PluginName);
-            }
-            private set {
-                pluginStorageDirectory = value;
-            }
-        }
-
         // path to global plugin config
         public string DefaultCharacterSettingsFilePath {
             get {
                 return Path.Combine(Util.GetAssemblyDirectory(), "settings.default.json");
-            }
-        }
-
-        // current character's storage path
-        public string CharacterStoragePath {
-            get {
-                var path = Path.Combine(PluginStorageDirectory, Globals.Core.CharacterFilter.Server);
-                return Path.Combine(path, Globals.Core.CharacterFilter.Name);
             }
         }
         #endregion
@@ -155,7 +124,7 @@ namespace UtilityBelt.Lib.Settings
         // load character specific settings
         public void Load() {
             try {
-                var path = Path.Combine(CharacterStoragePath, "settings.json");
+                var path = Path.Combine(Util.GetCharacterDirectory(), "settings.json");
 
                 DisableSaving();
 
@@ -181,7 +150,7 @@ namespace UtilityBelt.Lib.Settings
                 if (!ShouldSave && !force) return;
 
                 var json = JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented);
-                var path = Path.Combine(CharacterStoragePath, "settings.json");
+                var path = Path.Combine(Util.GetCharacterDirectory(), "settings.json");
 
                 File.WriteAllText(path, json);
             }
@@ -194,11 +163,9 @@ namespace UtilityBelt.Lib.Settings
         // it will be deleted afterwards
         private void LoadOldXML() {
             try {
-                var path = Path.Combine(CharacterStoragePath, "config.xml");
-
-                Logger.Debug($"Loading old xml for migration: {path}");
-
+                var path = Path.Combine(Util.GetCharacterDirectory(), "config.xml");
                 if (!File.Exists(path)) return;
+                Logger.Debug($"Loading old xml for migration: {path}");
 
                 XmlDocument doc = new XmlDocument();
                 doc.Load(path);
@@ -262,7 +229,7 @@ namespace UtilityBelt.Lib.Settings
                 Save(true);
 
                 // if we successfully migrated, delete the old xml config
-                if (File.Exists(Path.Combine(CharacterStoragePath, "settings.json"))) {
+                if (File.Exists(Path.Combine(Util.GetCharacterDirectory(), "settings.json"))) {
                     Logger.Debug($"Deleting old xml after migration: {path}");
                     File.Delete(path);
                 }
