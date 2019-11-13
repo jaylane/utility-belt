@@ -29,10 +29,16 @@ namespace UtilityBelt.Tools {
             Property = propertyInfo;
         }
     }
-    public class DataTimer : System.Timers.Timer {
-        public string Data;
+    public class DelayedCommand {
+        public string Command;
+        public double Delay;
+        public DateTime RunAt;
 
-        public DataTimer(double interval) : base(interval) { }
+        public DelayedCommand(string command, double delayMilliseconds) {
+            Command = command;
+            Delay = delayMilliseconds;
+            RunAt = DateTime.UtcNow.AddMilliseconds(delayMilliseconds);
+        }
     }
 
     public class Misc : IDisposable {
@@ -44,7 +50,7 @@ namespace UtilityBelt.Tools {
         private int portalAttempts = 0;
         private static WorldObject portal = null;
 
-        readonly private List<Timer> delayTimers = new List<Timer>();
+        readonly private List<DelayedCommand> delayedCommands = new List<DelayedCommand>();
 
         private bool disposed = false;
 
@@ -307,7 +313,7 @@ namespace UtilityBelt.Tools {
             string[] rest = theRest.Split(' ');
             if (string.IsNullOrEmpty(theRest)
                 || rest.Length < 2
-                || !int.TryParse(rest[0], out int delay)
+                || !double.TryParse(rest[0], out double delay)
                 || delay <= 0
             ) {
                 Util.WriteToChat("Usage: /ub delay <milliseconds> <command>");
@@ -318,26 +324,10 @@ namespace UtilityBelt.Tools {
 
             Logger.Debug($"Scheduling command `{command}` with delay of {delay}ms");
 
-            Timer timer = new DataTimer(delay) {
-                Data = command,
-                AutoReset = false
-            };
-            timer.Elapsed += Delay_Command_Timer_Elapsed;
-            timer.Start();
+            DelayedCommand delayed = new DelayedCommand(command, delay); 
 
-            delayTimers.Add(timer);
-        }
-
-        private void Delay_Command_Timer_Elapsed(object sender, ElapsedEventArgs e) {
-            ((DataTimer)sender).Stop();
-            ((DataTimer)sender).Dispose();
-
-            Logger.Debug($"Executing command `{((DataTimer)sender).Data}` (delay was {((DataTimer)sender).Interval}ms)");
-            Util.DispatchChatToBoxWithPluginIntercept(((DataTimer)sender).Data);
-
-            if (delayTimers.Contains(((DataTimer)sender))) {
-                delayTimers.Remove(((DataTimer)sender));
-            }
+            delayedCommands.Add(delayed);
+            delayedCommands.Sort((x, y) => x.RunAt.CompareTo(y.RunAt));
         }
 
         private void UB_useflags() {
@@ -659,6 +649,12 @@ namespace UtilityBelt.Tools {
                         VTankControl.Nav_UnBlock();
                     }
                 }
+
+                while (delayedCommands.Count > 0 && delayedCommands[0].RunAt <= DateTime.UtcNow) {
+                    Logger.Debug($"Executing command `{delayedCommands[0].Command}` (delay was {delayedCommands[0].Delay}ms)");
+                    Util.DispatchChatToBoxWithPluginIntercept(delayedCommands[0].Command);
+                    delayedCommands.RemoveAt(0);
+                }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -697,13 +693,6 @@ namespace UtilityBelt.Tools {
                     Globals.Core.WorldFilter.ApproachVendor -= WorldFilter_ApproachVendor;
                     Globals.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
                     Globals.Core.CharacterFilter.Logoff -= CharacterFilter_Logoff;
-
-                    foreach (var timer in delayTimers) {
-                        if (timer != null) {
-                            timer.Stop();
-                            timer.Dispose();
-                        }
-                    }
                 }
                 disposed = true;
             }
