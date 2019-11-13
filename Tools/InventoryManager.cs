@@ -27,8 +27,8 @@ namespace UtilityBelt.Tools {
         private Dictionary<int, DateTime> blacklistedContainers = new Dictionary<int, DateTime>();
 
         private static readonly List<int> giveObjects = new List<int>(), idItems = new List<int>();
-        private static DateTime lastIdSpam = DateTime.MinValue, bailTimer = DateTime.MinValue, startGive, lastProfileChange = DateTime.MinValue;
-        private static bool igRunning = false, givePartialItem, isRegex = false;
+        private static DateTime lastIdSpam = DateTime.MinValue, bailTimer = DateTime.MinValue, startGive, reloadLootProfileTS = DateTime.MinValue;
+        private static bool igRunning = false, givePartialItem, isRegex = false, reloadLootProfile = false;
         private static int currentItem, retryCount, destinationId, failedItems, totalFailures, maxGive, itemsGiven, lastIdCount;
         private LootCore lootProfile = null;
         private static string targetPlayer = "", utlProfile = "", profilePath = "";
@@ -138,6 +138,9 @@ namespace UtilityBelt.Tools {
                 return;
             }
             if (enabled) {
+                if (profilesWatcher != null) {
+                    profilesWatcher.Dispose();
+                }
                 string loadedProfile = VTankControl.vTankInstance.GetLootProfile();
                 profilesWatcher = new FileSystemWatcher();
                 profilesWatcher.NotifyFilter = NotifyFilters.LastWrite;
@@ -156,11 +159,11 @@ namespace UtilityBelt.Tools {
         private static void PC_LootProfileChanged() {
             string loadedProfile = VTankControl.vTankInstance.GetLootProfile();
             profilesWatcher.Filter = loadedProfile;
-            //Logger.Debug($"FileSystemWatcher updated to Filter={loadedProfile}");
         }
 
         private static void LootProfile_Changed(object sender, FileSystemEventArgs e) {
-            VTankControl.vTankInstance.LoadLootProfile(e.Name);
+            reloadLootProfile = true;
+            reloadLootProfileTS = DateTime.UtcNow;
         }
         #endregion
         private void WorldFilter_ChangeObject(object sender, ChangeObjectEventArgs e) {
@@ -308,7 +311,10 @@ namespace UtilityBelt.Tools {
 
                 Stop();
             }
-
+            if (reloadLootProfile && DateTime.UtcNow - reloadLootProfileTS > TimeSpan.FromSeconds(2)) {
+                reloadLootProfile = false;
+                VTankControl.vTankInstance.LoadLootProfile(VTankControl.vTankInstance.GetLootProfile());
+            }
             if (!igRunning)
                 return;
             try {
