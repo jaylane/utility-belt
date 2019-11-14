@@ -120,6 +120,9 @@ namespace UtilityBelt.Tools {
                         case "delay":
                             UB_delay(match.Groups["params"].Value);
                             break;
+                        case "videopatch":
+                            UB_video(match.Groups["params"].Value);
+                            break;
                     }
                     // Util.WriteToChat("UB called with command <" + match.Groups["command"].Value + ">, params <" + match.Groups["params"].Value+">");
 
@@ -169,6 +172,33 @@ namespace UtilityBelt.Tools {
             Util.WriteToChat("Attempting: VTankControl.Decision_Lock((uTank2.ActionLockType)" + num + ", TimeSpan.FromMilliseconds(" + durat + "));");
             VTankControl.Decision_Lock((uTank2.ActionLockType)num, TimeSpan.FromMilliseconds(durat));
         }
+
+        public void UB_video(string parameters) {
+            if (UBHelper.Core.version < 1911140303) {
+                Util.WriteToChat($"Error UBHelper.dll is out of date!");
+                return;
+            }
+            char[] stringSplit = { ' ' };
+            string[] parameter = parameters.Split(stringSplit, 2);
+            switch (parameter[0]) {
+                case "enable":
+                    UBHelper.VideoPatch.Enable();
+                    break;
+
+                case "disable":
+                    UBHelper.VideoPatch.Disable();
+                    break;
+
+                case "toggle":
+                    UBHelper.VideoPatch.Toggle();
+                    break;
+                default:
+                    Util.WriteToChat("Usage: /ub videopatch {enable,disable,toggle}");
+                    break;
+            }
+        }
+
+
         public void UB_vendor(string parameters) {
             char[] stringSplit = { ' ' };
             string[] parameter = parameters.Split(stringSplit, 2);
