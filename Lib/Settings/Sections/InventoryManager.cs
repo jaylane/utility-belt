@@ -41,7 +41,7 @@ namespace UtilityBelt.Lib.Settings.Sections {
             set { UpdateSetting("IGBusyCount", value); }
         }
         [Summary("Maximum Range for ItemGiver commands")]
-        [DefaultValue(15)]
+        [DefaultValue(15f)]
         public float IGRange {
             get { return (float)GetSetting("IGRange"); }
             set { UpdateSetting("IGRange", value); }
