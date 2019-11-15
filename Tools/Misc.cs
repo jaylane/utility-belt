@@ -123,6 +123,9 @@ namespace UtilityBelt.Tools {
                         case "videopatch":
                             UB_video(match.Groups["params"].Value);
                             break;
+                        case "playeroption":
+                            UB_playeroption(match.Groups["params"].Value);
+                            break;
                     }
                     // Util.WriteToChat("UB called with command <" + match.Groups["command"].Value + ">, params <" + match.Groups["params"].Value+">");
 
@@ -154,6 +157,8 @@ namespace UtilityBelt.Tools {
                 "   /ub ig[p] <profile[.utl]> to <character|selected>\n" + //private static readonly Regex igRegex = new Regex(@"^\/ub ig(?<partial>p)? ?(?<utlProfile>.+) to (?<targetPlayer>.+)");
                 "   /ub follow[p] [character|selected] - follows the named character, selected, or closest\n" +
                 "   /ub delay <milliseconds> <command> - runs <command> after <milliseconds delay>\n" +
+                "   /ub videopatch {enable,disable,toggle} - online toggling of Mag's video patch\n" +
+                "   /ub playeroption <option> <on/true|off/false> - set player options\n" +
                 "TODO: Add rest of commands");
         }
         public void UB_testBlock(string theRest) {
@@ -171,6 +176,28 @@ namespace UtilityBelt.Tools {
             }
             Util.WriteToChat("Attempting: VTankControl.Decision_Lock((uTank2.ActionLockType)" + num + ", TimeSpan.FromMilliseconds(" + durat + "));");
             VTankControl.Decision_Lock((uTank2.ActionLockType)num, TimeSpan.FromMilliseconds(durat));
+        }
+
+        public void UB_playeroption(string parameters) {
+            string[] p = parameters.Split(' ');
+            if (p.Length != 2) {
+                Util.WriteToChat($"Usage: /ub playeroption <option> <on/true|off/false>");
+                return;
+            }
+            int option;
+            try {
+                option = (int)Enum.Parse(typeof(UBHelper.Player.PlayerOption), p[0], true);
+            } catch {
+                Util.WriteToChat($"Invalid option. Valid values are: {string.Join(", ", Enum.GetNames(typeof(UBHelper.Player.PlayerOption)))}");
+                return;
+            }
+            bool value = false;
+            string inval = p[1].ToLower();
+            if (inval.Equals("on") || inval.Equals("true"))
+                value = true;
+
+            UBHelper.Player.SetOption((UBHelper.Player.PlayerOption)option, value);
+            Util.WriteToChat($"Setting {(((UBHelper.Player.PlayerOption)option).ToString())} = {value.ToString()}");
         }
 
         public void UB_video(string parameters) {
