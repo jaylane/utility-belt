@@ -10,6 +10,13 @@ using System.Text;
 namespace UtilityBelt.Lib.Settings.Sections {
     [Section("VisualNav")]
     public class VisualNav : SectionBase {
+        [Summary("Enabled")]
+        [DefaultValue(true)]
+        public bool Enabled {
+            get { return (bool)GetSetting("Enabled"); }
+            set { UpdateSetting("Enabled", value); }
+        }
+
         [Summary("Line offset from the ground, in meters")]
         [DefaultValue(0.05f)]
         public float LineOffset {
