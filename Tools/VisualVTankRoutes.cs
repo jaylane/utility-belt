@@ -62,7 +62,14 @@ namespace UtilityBelt.Tools {
 
             uTank2.PluginCore.PC.NavRouteChanged += PC_NavRouteChanged;
 
-            Globals.Settings.VisualNav.PropertyChanged += (s, e) => { UpdateUI(); };
+            Globals.Settings.VisualNav.PropertyChanged += (s, e) => {
+                if (e.PropertyName == "Enabled") {
+                    forceUpdate = true;
+                    DrawCurrentRoute();
+                }
+
+                UpdateUI();
+            };
 
             UpdateUI();
         }
@@ -73,8 +80,9 @@ namespace UtilityBelt.Tools {
 
         private void PC_NavRouteChanged() {
             try {
+                if (!Globals.Settings.VisualNav.SaveNoneRoutes || !Globals.Settings.VisualNav.Enabled) return;
+
                 needsDraw = true;
-                if (!Globals.Settings.VisualNav.SaveNoneRoutes) return;
 
                 var routePath = VTNavRoute.GetLoadedNavigationProfile();
                 var vTank = VTankControl.vTankInstance;
@@ -223,6 +231,15 @@ namespace UtilityBelt.Tools {
         }
 
         private void DrawCurrentRoute() {
+            if (!Globals.Settings.VisualNav.Enabled) {
+                if (currentRoute != null) {
+                    currentRoute.Dispose();
+                    currentRoute = null;
+                }
+
+                return;
+            }
+
             var vTank = VTankControl.vTankInstance;
             var routePath = Path.Combine(Util.GetVTankProfilesDirectory(), vTank.GetNavProfile());
             
