@@ -36,6 +36,7 @@ namespace UtilityBelt
 
                 Globals.Init("UtilityBelt", Host, Core);
                 Util.Init(); //static classes can not have constructors, but still need to init variables.
+                UBHelper.Core.Startup();
             }
 			catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -59,8 +60,8 @@ namespace UtilityBelt
         /// </summary>
         protected override void Shutdown() {
 			try {
-
-			}
+                UBHelper.Core.Shutdown();
+            }
 			catch (Exception ex) { Logger.LogException(ex); }
 		}
 
