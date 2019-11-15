@@ -519,8 +519,8 @@ namespace UtilityBelt.Tools {
 
         public void ClearHud() {
             if (hud != null) {
+                hud.Clear(GetHudRect());
                 hud.Enabled = false;
-                hud.Clear();
             }
         }
 
