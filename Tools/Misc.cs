@@ -140,7 +140,7 @@ namespace UtilityBelt.Tools {
         }
 
         public void UB() {
-            Util.WriteToChat("UtilityBelt v"+Util.GetVersion()+" by trevis type /ub help for a list of commands");
+            Util.WriteToChat("UtilityBelt v"+Util.GetVersion(true)+" type /ub help for a list of commands");
         }
         public void UB_help() {
             Util.WriteToChat("UtilityBelt Commands: \n" +

@@ -16,6 +16,7 @@ namespace UtilityBelt {
         public static void Init() {
             TruncateLogFiles();
             PruneOldLogs();
+            Debug($"UB Initialized {DateTime.UtcNow} v{Util.GetVersion(true)}");
         }
 
         public static void Debug(string message) {

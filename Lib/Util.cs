@@ -44,7 +44,7 @@ namespace UtilityBelt
                 var productVersion = FileVersionInfo.GetVersionInfo(assembly.Location).ProductVersion;
 
                 // show the short version for release branch builds
-                if (releaseBranchVersion.IsMatch(productVersion)) {
+                if (releaseBranchVersion.IsMatch(productVersion) && !includeGitExtras) {
                     return FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
                 }
                 else {
