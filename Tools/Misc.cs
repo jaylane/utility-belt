@@ -503,7 +503,55 @@ namespace UtilityBelt.Tools {
                     return;
                 }
 
-                if (string.IsNullOrEmpty(newValue)) {
+                if (option.Object is System.Collections.IList list)
+                {
+                    var b = new StringBuilder();
+                    if (!string.IsNullOrEmpty(newValue))
+                    {
+                        var parts = newValue.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                        switch (parts[0].ToLower())
+                        {
+                            case "add":
+                                if (parts.Length < 2 || string.IsNullOrEmpty(parts[1].Trim()))
+                                {
+                                    Logger.Debug("Missing item to add");
+                                    return;
+                                }
+                                list.Add(parts[1]);
+                                break;
+
+                            case "remove":
+                                if (parts.Length < 2 || string.IsNullOrEmpty(parts[1].Trim()))
+                                {
+                                    Logger.Debug("Missing item to remove");
+                                    return;
+                                }
+                                list.Remove(parts[1]);
+                                break;
+
+                            case "clear":
+                                list.Clear();
+                                break;
+
+                            default:
+                                Util.WriteToChat($"Unknown verb: {parts[1]}");
+                                return;
+                        }
+                    }
+
+                    b.Append(name);
+                    b.Append(" = [ ");
+                    int i = 0;
+                    foreach (var o in list)
+                    {
+                        if (i++ > 0)
+                            b.Append(", ");
+                        b.Append(o);
+                    }
+                    b.Append(" ]");
+                    Util.WriteToChat(b.ToString());
+                }
+                else if (string.IsNullOrEmpty(newValue)) {
                     Util.WriteToChat(name + " = " + option.Object.ToString());
                 }
                 else {

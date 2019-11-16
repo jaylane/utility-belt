@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text;
 
 namespace UtilityBelt.Lib.Settings
 {
@@ -96,7 +97,21 @@ namespace UtilityBelt.Lib.Settings
             var prop = GetType().GetProperty(propName);
 
             if (direct && prop != null && Globals.Settings != null && Globals.Settings.ShouldSave) {
-                Logger.Debug($"{GetAncestry()}{propName} = {prop.GetValue(this, null)}");
+                var name = $"{GetAncestry()}{propName}";
+                var value = prop.GetValue(this, null);
+                if (value is System.Collections.IList list)
+                {
+                    var b = new StringBuilder(name).Append(" = [");
+                    for (var i = 0; i < list.Count; ++i)
+                    {
+                        if (i > 0) b.Append(", ");
+                        b.Append(list[i].ToString());
+                    }
+                    b.Append(" ]");
+                    Logger.Debug(b.ToString());
+                }
+                else
+                    Logger.Debug($"{name} = {value}");
             }
 
             if (parent != null) parent.OnPropertyChanged(Name, false);
