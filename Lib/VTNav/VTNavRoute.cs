@@ -31,6 +31,7 @@ namespace UtilityBelt.Lib.VTNav {
 
             uTank2.PluginCore.PC.NavWaypointChanged += PC_NavWaypointChanged;
             Globals.Settings.VisualNav.Display.CurrentWaypoint.PropertyChanged += (s, e) => { UpdateCurrentWaypoint(); };
+            Globals.Settings.VisualNav.PropertyChanged += (s, e) => { UpdateCurrentWaypoint(); };
         }
 
         public void AddOffset(double ns, double ew, double offset) {
@@ -253,9 +254,15 @@ namespace UtilityBelt.Lib.VTNav {
 
                 if (float.TryParse(navCloseStopRangeStr, out float navCloseStopRange)) {
                     currentNavShape.Visible = true;
-                    currentNavShape.ScaleX = (float)navCloseStopRange * 240f;
-                    currentNavShape.ScaleY = (float)navCloseStopRange * 240f;
-                    currentNavShape.Anchor((float)current.NS, (float)current.EW, (float)(current.Z * 240f) + Globals.Settings.VisualNav.LineOffset);
+                    if (Globals.Settings.VisualNav.ScaleCurrentWaypoint) {
+                        currentNavShape.ScaleX = (float)navCloseStopRange * 240f;
+                        currentNavShape.ScaleY = (float)navCloseStopRange * 240f;
+                        currentNavShape.Anchor((float)current.NS, (float)current.EW, (float)(current.Z * 240f) + Globals.Settings.VisualNav.LineOffset);
+                    }
+                    else {
+                        currentNavShape.Scale(0.3f);
+                        currentNavShape.Anchor((float)current.NS, (float)current.EW, (float)(current.Z * 240f) + Globals.Settings.VisualNav.LineOffset + 0.2f);
+                    }
                     currentNavShape.Color = Globals.Settings.VisualNav.Display.CurrentWaypoint.Color;
                     return;
                 }
