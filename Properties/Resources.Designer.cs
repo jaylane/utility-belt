@@ -79,5 +79,15 @@ namespace UtilityBelt.Properties {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] UBHelper {
+            get {
+                object obj = ResourceManager.GetObject("UBHelper", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

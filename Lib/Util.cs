@@ -36,7 +36,7 @@ namespace UtilityBelt
             }
         }
 
-        private static Regex releaseBranchVersion = new Regex(@"^\d+\.\d+.\d+\.(release|master)\.");
+        private static Regex releaseBranchVersion = new Regex(@"^\d+\.\d+.\d+\.(release|master)[\.\-]");
         public static string GetVersion(bool includeGitExtras=false) {
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
 

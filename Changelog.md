@@ -1,3 +1,11 @@
+## 0.0.14 (2019-11-15) [UtilityBeltInstaller-0.0.14.exe](/uploads/0d29c14ccc27377941cb5f92c37ffaef/UtilityBeltInstaller-0.0.14.exe)
+- Added VisualNav.Enabled setting
+- Added `/ub playeroption <option> <on/true|off/false>` - command to set player options (thanks Yonneh)
+- Added `/ub videopatch {enable,disable,toggle}` - online toggling of Mag's video patch (thanks Yonneh)
+- Fixed bug with `/ub delay` causing vTank to barf
+- Fixed bugs/crash with LootProfileWatcher (thanks Yonneh)
+- Added ability to modify settings arrays from cli (thanks Cosmic Jester)
+
 ## 0.0.13 (2019-11-11) [UtilityBeltInstaller-0.0.13.exe](/uploads/5502b71f708d32f45f5bef073d3759b7/UtilityBeltInstaller-0.0.13.exe)
 - Added new and improved AutoVendor test mode (thanks Yonneh)
 - Added `/ub delay <milliseconds> <command>` to run <command> after <milliseconds> delay
