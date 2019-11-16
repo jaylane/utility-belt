@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Major>0</Major>
     <Minor>0</Minor>
-    <Build>13</Build>
+    <Build>14</Build>
     <Revision>0</Revision>
     <Branch>master</Branch>
   </PropertyGroup>
@@ -901,6 +901,6 @@
     <GitBranch LocalPath="$(MSBuildProjectDirectory)">
       <Output TaskParameter="branch" PropertyName="Branch" />
     </GitBranch>
-    <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.cs" AssemblyTitle="UtilityBelt" AssemblyDescription="Hack the Planet" AssemblyCompany="Ellingson Mineral Company" AssemblyProduct="UtilityBelt" AssemblyCopyright="Copyright 1337 Zero Cool" ComVisible="false" CLSCompliant="false" AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Branch).$(Revision) ($([System.DateTime]::UTCNow.ToString(`yyyy-MM-dd HH:mm`)))" AssemblyVersion="$(Major).$(Minor).$(Build)" AssemblyFileVersion="$(Major).$(Minor).$(Build)" Guid="c51788b5-3c43-471a-8034-79d5865fd7bd" />
+    <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.cs" AssemblyTitle="UtilityBelt" AssemblyDescription="Hack the Planet" AssemblyCompany="Ellingson Mineral Company" AssemblyProduct="UtilityBelt" AssemblyCopyright="Copyright 1337 Zero Cool" ComVisible="false" CLSCompliant="false" AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Branch).$(Revision) ($([System.DateTime]::UTCNow.ToString(`yyyy-MM-dd HH:mm:ss`)))" AssemblyVersion="$(Major).$(Minor).$(Build)" AssemblyFileVersion="$(Major).$(Minor).$(Build)" Guid="c51788b5-3c43-471a-8034-79d5865fd7bd" />
   </Target>
 </Project>

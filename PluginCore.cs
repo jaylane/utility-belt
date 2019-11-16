@@ -27,15 +27,18 @@ namespace UtilityBelt
         private ChatNameClickHandler chatNameClickHandler;
         private ChatLogger chatLogger;
 
+        public PluginCore() : base() {
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+        }
+
         /// <summary>
         /// This is called when the plugin is started up. This happens only once.
         /// </summary>
         protected override void Startup() {
 			try {
-                AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
-
                 Globals.Init("UtilityBelt", Host, Core);
                 Util.Init(); //static classes can not have constructors, but still need to init variables.
+
                 UBHelper.Core.Startup();
             }
 			catch (Exception ex) { Logger.LogException(ex); }
@@ -63,16 +66,16 @@ namespace UtilityBelt
                 UBHelper.Core.Shutdown();
             }
 			catch (Exception ex) { Logger.LogException(ex); }
-		}
+        }
 
-		[BaseEvent("LoginComplete", "CharacterFilter")]
-		private void CharacterFilter_LoginComplete(object sender, EventArgs e)
-		{
+        [BaseEvent("LoginComplete", "CharacterFilter")]
+		private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
 			try {
                 Util.CreateDataDirectories();
                 Logger.Init();
-
                 Globals.Settings = new Settings();
+
+                Logger.Debug($"UB Initialized {DateTime.UtcNow} v{Util.GetVersion(true)}");
 
                 VTankControl.initializeVTankInterface();
                 
