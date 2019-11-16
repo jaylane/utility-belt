@@ -1,3 +1,6 @@
+## 0.0.15 (TBD)
+- Added `VisualNav.ScaleCurrentWaypoint` option to enable/disable scaling current waypoint using vTankMinNavDistance
+
 ## 0.0.14 (2019-11-15) [UtilityBeltInstaller-0.0.14.exe](/uploads/0d29c14ccc27377941cb5f92c37ffaef/UtilityBeltInstaller-0.0.14.exe)
 - Added VisualNav.Enabled setting
 - Added `/ub playeroption <option> <on/true|off/false>` - command to set player options (thanks Yonneh)

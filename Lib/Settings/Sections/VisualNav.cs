@@ -17,6 +17,13 @@ namespace UtilityBelt.Lib.Settings.Sections {
             set { UpdateSetting("Enabled", value); }
         }
 
+        [Summary("ScaleCurrentWaypoint")]
+        [DefaultValue(true)]
+        public bool ScaleCurrentWaypoint {
+            get { return (bool)GetSetting("ScaleCurrentWaypoint"); }
+            set { UpdateSetting("ScaleCurrentWaypoint", value); }
+        }
+
         [Summary("Line offset from the ground, in meters")]
         [DefaultValue(0.05f)]
         public float LineOffset {
