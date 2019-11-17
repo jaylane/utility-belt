@@ -46,6 +46,13 @@ namespace UtilityBelt.Lib.Settings.Sections {
             get { return (float)GetSetting("IGRange"); }
             set { UpdateSetting("IGRange", value); }
         }
+        [Summary("Treat stacks as single item")]
+        [DefaultValue(true)]
+        public bool TreatStackAsSingleItem
+        {
+            get { return (bool)GetSetting("TreatStackAsSingleItem"); }
+            set { UpdateSetting("TreatStackAsSingleItem", value); }
+        }
         [Summary("Watch VTank Loot Profile for changes, and reload")]
         [DefaultValue(false)]
         public bool WatchLootProfile {

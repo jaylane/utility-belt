@@ -3,7 +3,6 @@ using Decal.Adapter.Wrappers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using VirindiViewService.Controls;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -29,7 +28,7 @@ namespace UtilityBelt.Tools {
         private static readonly List<int> giveObjects = new List<int>(), idItems = new List<int>();
         private static DateTime lastIdSpam = DateTime.MinValue, bailTimer = DateTime.MinValue, startGive, reloadLootProfileTS = DateTime.MinValue;
         private static bool igRunning = false, givePartialItem, isRegex = false, reloadLootProfile = false;
-        private static int currentItem, retryCount, destinationId, failedItems, totalFailures, maxGive, itemsGiven, lastIdCount;
+        private static int currentItem, retryCount, destinationId, failedItems, totalFailures, maxGive, itemsGiven, lastIdCount, pendingSplitCount;
         private LootCore lootProfile = null;
         private static string targetPlayer = "", utlProfile = "", profilePath = "";
         private static readonly Dictionary<string, int> givenItemsCount = new Dictionary<string, int>();
@@ -330,7 +329,7 @@ namespace UtilityBelt.Tools {
                         return;
                     }
 
-                    if (giveObjects.Count == 0 && idItems.Count == 0) {
+                    if (giveObjects.Count == 0 && idItems.Count == 0 && pendingSplitCount == 0) {
                         IGStop();
                     }
                 }
@@ -583,8 +582,13 @@ namespace UtilityBelt.Tools {
                 Regex itemre = new Regex(utlProfile);
                 foreach (WorldObject item in Globals.Core.WorldFilter.GetInventory()) {
 
-                    if (giveObjects.Count >= maxGive)
+                    if ((Globals.Settings.InventoryManager.TreatStackAsSingleItem && giveObjects.Count >= maxGive) ||
+                        (!Globals.Settings.InventoryManager.TreatStackAsSingleItem &&
+                            giveObjects.Sum(o => Globals.Core.WorldFilter[o].Values(LongValueKey.StackCount, 1)) >= maxGive - pendingSplitCount))
+                    {
+                        Logger.Debug($"Max give ({maxGive}) reached, breaking");
                         break;
+                    }
 
                     // Util.WriteToChat($"Processing 0x{item.Id:X8} {item.Name}");
 
@@ -602,8 +606,24 @@ namespace UtilityBelt.Tools {
                     } else if (!Util.GetObjectName(item.Id).ToLower().Equals(utlProfile))
                         continue;
 
-                    // Util.WriteToChat($"       Adding {item.Name}");
-                    giveObjects.Add(item.Id);
+                    if (Globals.Settings.InventoryManager.TreatStackAsSingleItem)
+                    {
+                        // Util.WriteToChat($"       Adding {item.Name}");
+                        giveObjects.Add(item.Id);
+                    }
+                    else
+                    {
+                        var stackCount = item.Values(LongValueKey.StackCount, 1);
+                        if (stackCount > maxGive - giveObjects.Sum(o => Globals.Core.WorldFilter[o].Values(LongValueKey.StackCount, 1) - pendingSplitCount))
+                        {
+                            SplitStack(item, stackCount, maxGive - giveObjects.Sum(o => Globals.Core.WorldFilter[o].Values(LongValueKey.StackCount, 1) - pendingSplitCount));
+                        }
+                        else
+                        {
+                            Logger.Debug($"Giving {stackCount} * {item.Name}");
+                            giveObjects.Add(item.Id);
+                        }
+                    }
                 }
             } catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -650,17 +670,84 @@ namespace UtilityBelt.Tools {
 
                     if (result.IsKeepUpTo) {
                         if (!givenItemsCount.ContainsKey(result.RuleName)) {
-                            givenItemsCount[result.RuleName] = 1;
-                        } else if (givenItemsCount[result.RuleName] < result.Data1) {
-                            givenItemsCount[result.RuleName]++;
-                        } else {
-                            continue;
+                            givenItemsCount.Add(result.RuleName, 0);
+                        }
+
+                        var stackCount = Globals.Settings.InventoryManager.TreatStackAsSingleItem ? 1 : Globals.Core.WorldFilter[item.Id].Values(LongValueKey.StackCount, 1);
+                        if (result.Data1 < 0) // Keep this many
+                        {
+                            // Keep matches until we have kept the KeepUpTo #
+                            if (givenItemsCount[result.RuleName] < Math.Abs(result.Data1))
+                            {
+                                Logger.Debug($"Need to keep: {Math.Abs(result.Data1) - givenItemsCount[result.RuleName]}");
+                                if (!Globals.Settings.InventoryManager.TreatStackAsSingleItem &&
+                                    stackCount > Math.Abs(result.Data1) - givenItemsCount[result.RuleName])
+                                {
+                                    int splitCount = stackCount - (Math.Abs(result.Data1) - givenItemsCount[result.RuleName]);
+                                    SplitStack(item, stackCount, splitCount);
+                                    givenItemsCount[result.RuleName] += Math.Abs(result.Data1) - givenItemsCount[result.RuleName];
+                                }
+                                else
+                                {
+                                    Logger.Debug($"Keeping: {Util.GetObjectName(item.Id)} ({stackCount})");
+                                    givenItemsCount[result.RuleName] += stackCount;
+                                }
+
+                                continue;
+                            }
+                        }
+                        else // Give this many
+                        {
+                            // Keep if already given KeepUpTo #
+                            if (givenItemsCount[result.RuleName] >= result.Data1)
+                            {
+                                continue;
+                            }
+
+                            if (!Globals.Settings.InventoryManager.TreatStackAsSingleItem && stackCount > result.Data1 - givenItemsCount[result.RuleName])
+                            {
+                                int neededCount = result.Data1 - givenItemsCount[result.RuleName];
+                                SplitStack(item, stackCount, neededCount);
+                                givenItemsCount[result.RuleName] += neededCount;
+
+                                continue;
+                            }
+                            else
+                                givenItemsCount[result.RuleName] += stackCount;
                         }
                     }
+
                     giveObjects.Add(item.Id);
                 }
                 idItems.RemoveAll(x => (Globals.Core.WorldFilter[x] == null) || (Globals.Core.WorldFilter[x].Container == -1)); // Remove items from IDQueue that no longer exist
             } catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private static void SplitStack(WorldObject item, int stackCount, int splitCount)
+        {
+            EventHandler<CreateObjectEventArgs> splitHandler = null;
+            splitHandler = (sender, e) =>
+            {
+                if (e.New.Name == item.Name &&
+                    e.New.Values(LongValueKey.StackCount, 1) == splitCount)
+                {
+                    Logger.Debug($"Adding to give list: {Util.GetObjectName(e.New.Id)}");
+                    giveObjects.Add(e.New.Id);
+                    pendingSplitCount -= splitCount;
+                    Globals.Core.WorldFilter.CreateObject -= splitHandler;
+                }
+            };
+
+            pendingSplitCount += splitCount;
+            Globals.Core.Actions.SelectItem(item.Id);
+            Globals.Core.Actions.SelectedStackCount = splitCount;
+            Globals.Core.WorldFilter.CreateObject += splitHandler;
+            Globals.Core.Actions.MoveItem(item.Id, Globals.Core.CharacterFilter.Id, 0, false);
+
+            Logger.Debug(string.Format("ItemGiver Splitting {0}. old: {1} new: {2}",
+                Util.GetObjectName(item.Id),
+                stackCount,
+                splitCount));
         }
 
         public void Dispose() {
