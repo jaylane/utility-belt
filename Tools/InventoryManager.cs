@@ -28,7 +28,7 @@ namespace UtilityBelt.Tools {
         private static readonly List<int> giveObjects = new List<int>(), idItems = new List<int>();
         private static DateTime lastIdSpam = DateTime.MinValue, bailTimer = DateTime.MinValue, startGive, reloadLootProfileTS = DateTime.MinValue;
         private static bool igRunning = false, givePartialItem, isRegex = false, reloadLootProfile = false;
-        private static int currentItem, retryCount, destinationId, failedItems, totalFailures, maxGive, itemsGiven, lastIdCount, pendingSplitCount;
+        private static int currentItem, retryCount, destinationId, failedItems, totalFailures, maxGive, itemsGiven, lastIdCount, pendingSplitCount, pendingGiveCount;
         private LootCore lootProfile = null;
         private static string targetPlayer = "", utlProfile = "", profilePath = "";
         private static readonly Dictionary<string, int> givenItemsCount = new Dictionary<string, int>();
@@ -568,7 +568,7 @@ namespace UtilityBelt.Tools {
             VTankControl.Nav_UnBlock();
             VTankControl.Item_UnBlock();
 
-            itemsGiven = totalFailures = failedItems = 0;
+            itemsGiven = totalFailures = failedItems = pendingGiveCount = pendingSplitCount = 0;
             igRunning = isRegex = false;
             lootProfile = null;
             givenItemsCount.Clear();
@@ -582,9 +582,7 @@ namespace UtilityBelt.Tools {
                 Regex itemre = new Regex(utlProfile);
                 foreach (WorldObject item in Globals.Core.WorldFilter.GetInventory()) {
 
-                    if ((Globals.Settings.InventoryManager.TreatStackAsSingleItem && giveObjects.Count >= maxGive) ||
-                        (!Globals.Settings.InventoryManager.TreatStackAsSingleItem &&
-                            giveObjects.Sum(o => Globals.Core.WorldFilter[o].Values(LongValueKey.StackCount, 1)) >= maxGive - pendingSplitCount))
+                    if (pendingGiveCount >= maxGive)
                     {
                         Logger.Debug($"Max give ({maxGive}) reached, breaking");
                         break;
@@ -610,23 +608,27 @@ namespace UtilityBelt.Tools {
                     {
                         // Util.WriteToChat($"       Adding {item.Name}");
                         giveObjects.Add(item.Id);
+                        pendingGiveCount++;
                     }
                     else
                     {
                         var stackCount = item.Values(LongValueKey.StackCount, 1);
-                        if (stackCount > maxGive - giveObjects.Sum(o => Globals.Core.WorldFilter[o].Values(LongValueKey.StackCount, 1) - pendingSplitCount))
+                        if (stackCount > maxGive - pendingGiveCount)
                         {
-                            SplitStack(item, stackCount, maxGive - giveObjects.Sum(o => Globals.Core.WorldFilter[o].Values(LongValueKey.StackCount, 1) - pendingSplitCount));
+                            SplitStack(item, stackCount, maxGive - pendingGiveCount);
+                            pendingGiveCount = maxGive;
                         }
                         else
                         {
                             Logger.Debug($"Giving {stackCount} * {item.Name}");
                             giveObjects.Add(item.Id);
+                            pendingGiveCount += stackCount;
                         }
                     }
                 }
             } catch (Exception ex) { Logger.LogException(ex); }
         }
+
         private void GetIGItems() {
             try {
                 foreach (WorldObject item in Globals.Core.WorldFilter.GetInventory()) {
@@ -729,6 +731,7 @@ namespace UtilityBelt.Tools {
             splitHandler = (sender, e) =>
             {
                 if (e.New.Name == item.Name &&
+                    e.New.Type == item.Type &&
                     e.New.Values(LongValueKey.StackCount, 1) == splitCount)
                 {
                     Logger.Debug($"Adding to give list: {Util.GetObjectName(e.New.Id)}");
