@@ -20,7 +20,7 @@ InstallDir "C:\Games\Decal Plugins\${APPNAME}"
 InstallDirRegKey HKLM "Software\${SOFTWARECOMPANY}\${APPNAME}" ""
 ;SetFont "Verdana" 8
 ;Icon "Installer\Res\Decal.ico"
-OutFile "${APPNAME}Installer-${VERSION}.exe"
+OutFile "${BUILDPATH}\${APPNAME}Installer-${VERSION}.exe"
 
 ; Use compression
 

@@ -1,0 +1,20 @@
+variables:
+  NUGET_PATH: 'C:\Tools\nuget.exe'
+  MSBUILD_PATH: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\msbuild.exe'
+  NSIS_PATH: 'C:\Program Files (x86)\NSIS\makensis.exe'
+  INSTALLER_PATH: '.\Installer\Install.nsi'
+  BUILD_PATH: '.\bin\'
+
+stages:
+  - build
+
+build:
+  stage: build
+  script:
+    - '& "$env:NUGET_PATH" restore'
+    - '& "$env:MSBUILD_PATH" /p:Configuration=Release /clp:ErrorsOnly'
+    - '& "$env:NSIS_PATH" "$env:INSTALLER_PATH"'
+  artifacts:
+    expire_in: 30 days
+    paths:
+      - '$env:BUILD_PATH\'
