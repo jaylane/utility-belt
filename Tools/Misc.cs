@@ -126,6 +126,9 @@ namespace UtilityBelt.Tools {
                         case "playeroption":
                             UB_playeroption(match.Groups["params"].Value);
                             break;
+                        case "fixbusy":
+                            UB_fixbusy();
+                            break;
                     }
                     // Util.WriteToChat("UB called with command <" + match.Groups["command"].Value + ">, params <" + match.Groups["params"].Value+">");
 
@@ -176,6 +179,12 @@ namespace UtilityBelt.Tools {
             }
             Util.WriteToChat("Attempting: VTankControl.Decision_Lock((uTank2.ActionLockType)" + num + ", TimeSpan.FromMilliseconds(" + durat + "));");
             VTankControl.Decision_Lock((uTank2.ActionLockType)num, TimeSpan.FromMilliseconds(durat));
+        }
+
+        public void UB_fixbusy() {
+            UBHelper.Core.ClearBusyCount();
+            UBHelper.Core.ClearBusyState();
+            Util.WriteToChat($"Busy State and Busy Count have been reset");
         }
 
         public void UB_playeroption(string parameters) {
