@@ -28,7 +28,12 @@ namespace UtilityBelt
         private ChatLogger chatLogger;
 
         public PluginCore() : base() {
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+            System.Resources.ResourceManager rm = new System.Resources.ResourceManager(GetType().Namespace + ".Properties.Resources", System.Reflection.Assembly.GetExecutingAssembly());
+
+            // if you add a new embedded assembly, you should load it here.
+            System.Reflection.Assembly.Load((byte[])rm.GetObject("UBHelper"));
+            System.Reflection.Assembly.Load((byte[])rm.GetObject("Newtonsoft_Json"));
+            System.Reflection.Assembly.Load((byte[])rm.GetObject("SharedMemory"));
         }
 
         /// <summary>
@@ -42,20 +47,6 @@ namespace UtilityBelt
                 UBHelper.Core.Startup();
             }
 			catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
-            string dllName = args.Name.Contains(",") ? args.Name.Substring(0, args.Name.IndexOf(',')) : args.Name.Replace(".dll", "");
-
-            dllName = dllName.Replace(".", "_");
-
-            if (dllName.EndsWith("_resources")) return null;
-
-            System.Resources.ResourceManager rm = new System.Resources.ResourceManager(GetType().Namespace + ".Properties.Resources", System.Reflection.Assembly.GetExecutingAssembly());
-
-            byte[] bytes = (byte[])rm.GetObject(dllName);
-
-            return System.Reflection.Assembly.Load(bytes);
         }
 
         /// <summary>
@@ -130,7 +121,6 @@ namespace UtilityBelt
 		{
 			try {
                 Globals.Core.RenderFrame -= Core_RenderFrame;
-                AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(CurrentDomain_AssemblyResolve);
 
                 if (autoSalvage != null) autoSalvage.Dispose();
                 if (autoTrade != null) autoTrade.Dispose();
