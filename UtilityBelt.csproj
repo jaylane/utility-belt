@@ -68,6 +68,7 @@
     <Reference Include="UBHelper, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Resources\UBHelper.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="utank2-i">
       <HintPath>C:\Games\VirindiPlugins\VirindiTank\utank2-i.dll</HintPath>
@@ -188,6 +189,7 @@
     <EmbeddedResource Include="Resources\icons\utilitybelt.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".gitlab-ci.yml" />
     <None Include="Changelog.md" />
     <None Include="Installer\Install.nsi" />
     <None Include="Lib\MagTools\license.md" />
