@@ -729,11 +729,6 @@ namespace UtilityBelt.Tools {
             } catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        public void QueueSplitStack(WorldObject item, int stackCount, int splitCount)
-        {
-
-        }
-
         public bool TrySplitStack()
         {
             var item = splitQueue.Peek();
