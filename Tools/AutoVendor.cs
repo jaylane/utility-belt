@@ -260,11 +260,15 @@ namespace UtilityBelt.Tools {
                 if (Globals.Settings.AutoVendor.Enabled == false)
                     return;
 
-                if (!isRunning)
-                    Start(e.Vendor.MerchantId);
+                Start(e.Vendor.MerchantId);
             } catch (Exception ex) { Logger.LogException(ex); }
         }
 
+        private void UBHelper_VendorClosed(object sender, EventArgs e) {
+            UBHelper.Vendor.VendorClosed -= UBHelper_VendorClosed;
+            if (isRunning)
+                Stop();
+        }
         private void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
             try {
                 if (e.Text.StartsWith("/ub autovendor ")) {
@@ -369,6 +373,7 @@ namespace UtilityBelt.Tools {
 
             Globals.InventoryManager.Pause();
 
+            UBHelper.Vendor.VendorClosed += UBHelper_VendorClosed;
             isRunning = true;
             needsToBuy = needsToSell = false;
             lastThought = bailTimer = DateTime.UtcNow;
@@ -440,7 +445,7 @@ namespace UtilityBelt.Tools {
                     if (DateTime.UtcNow - lastEvent >= TimeSpan.FromMilliseconds(15000)) {
                         if (lastEvent != DateTime.MinValue) // minvalue was not set, so it expired naturally:
                             Logger.Debug($"Event Timeout. Pyreals: {expectedPyreals:n0}, Sell List: {pendingSell.Count():n0}, Buy List: {pendingBuy.Count():n0}");
-                        if (HasVendorOpen()) {
+                        if (HasVendorOpen()) { // not needed any more, but leaving it in for good measure.
                             if (needsToBuy) {
                                 needsToBuy = false;
                                 Globals.Core.Actions.VendorBuyAll();
@@ -740,6 +745,7 @@ namespace UtilityBelt.Tools {
                     if (isRunning) {
                         Globals.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
                         Globals.Core.EchoFilter.ClientDispatch -= EchoFilter_ClientDispatch;
+                        UBHelper.Vendor.VendorClosed -= UBHelper_VendorClosed;
                     }
                 }
                 disposed = true;
