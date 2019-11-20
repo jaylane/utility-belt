@@ -37,7 +37,7 @@ namespace UtilityBelt.Lib.Settings {
         // path to global plugin config
         public string DefaultCharacterSettingsFilePath {
             get {
-                return Path.Combine(Util.GetAssemblyDirectory(), "settings.default.json");
+                return Path.Combine(Util.AssemblyDirectory, "settings.default.json");
             }
         }
         #endregion

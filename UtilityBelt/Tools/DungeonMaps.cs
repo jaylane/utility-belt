@@ -459,6 +459,8 @@ namespace UtilityBelt.Tools {
                         currentBlock.visitedTiles.Add((uint)(Globals.Core.Actions.Landcell << 16 >> 16));
                     }
 
+                    if (hud == null || hud.Region == null) return;
+
                     var watch = System.Diagnostics.Stopwatch.StartNew();
 
                     float x = isFollowingCharacter ? (float)Globals.Core.Actions.LocationX : dragOffsetX;

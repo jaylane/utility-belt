@@ -1,10 +1,10 @@
 ; Define your application name
 !define APPNAME "UtilityBelt"
-!define SOFTWARECOMPANY "SunnujDecalPlugins"
+!define SOFTWARECOMPANY "HackThePlanet"
 !define APPGUID "{c51788b5-3c43-471a-8034-79d5865fd7bd}"
 
-!define ASSEMBLY "UtilityBelt.dll"
-!define CLASSNAME "UtilityBelt.PluginCore"
+!define ASSEMBLY "UBLoader.dll"
+!define CLASSNAME "UBLoader.PluginCore"
 
 !define BUILDPATH ".\..\bin"
 
@@ -49,9 +49,11 @@ Section "" CoreSection
 
 	; Set Section Files and Shortcuts
 	SetOutPath "$INSTDIR\"
-
+	
 	File "${BUILDPATH}\${ASSEMBLY}"
 	File "${BUILDPATH}\${APPNAME}.pdb"
+	File "${BUILDPATH}\UtilityBelt.dll"
+	File "${BUILDPATH}\UtilityBelt.pdb"
 
 SectionEnd
 
@@ -103,12 +105,13 @@ Section Uninstall
 
 	;Clean up
 	Delete "$INSTDIR\${ASSEMBLY}"
-	Delete "${BUILDPATH}\{APPNAME}.pdb"
+	Delete "$INSTDIR\UBLoader.pdb"
+	Delete "$INSTDIR\UtilityBelt.dll"
+	Delete "$INSTDIR\UtilityBelt.pdb"
 	Delete "$INSTDIR\SharedMemory.dll"
 	Delete "$INSTDIR\Newtonsoft.Json.dll"
 	Delete "${BUILDPATH}\Resources\tiles\*.bmp"
 	Delete "${BUILDPATH}\Resources\quests.xml"
-	;Delete "$INSTDIR\ADDITIONALFILES"
 	RMDir "$INSTDIR\"
 
 SectionEnd
