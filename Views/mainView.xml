@@ -1,151 +1,60 @@
 <?xml version="1.0"?>
 <view icon="100" title="UtilityBelt" width="400" height="270">
   <control progid="DecalControls.Notebook" name="Notebook">
-    <page label="Tools">
-      <control progid="DecalControls.Notebook" name="nbMain">
-        <page label="AutoSalvage">
+    <page label="Main">
+      <control progid="DecalControls.FixedLayout" clipped="">
+        <control progid="DecalControls.PushButton" name="AutoVendorEnable" left="8" top="8" width="88" height="24" text="   Auto Vendor"/>
+        <control progid="DecalControls.PushButton" name="AutoVendorTestMode" left="96" top="8" width="22" height="24" text="T"/>
+        <control progid="DecalControls.PushButton" name="AutoTradeTestMode" left="96" top="40" width="22" height="24" text="T"/>
+        <control progid="DecalControls.PushButton" name="AutoTradeEnable" left="8" top="40" width="88" height="24" text="  Auto Trade"/>
+        <control progid="DecalControls.PushButton" name="DungeonMapsEnabled" left="144" top="8" width="110" height="24" text=" Dungeon Maps"/>
+        <control progid="DecalControls.PushButton" name="VideoPatchEnabled" left="144" top="40" width="110" height="24" text="Video Patch  "/>
+        <control progid="DecalControls.PushButton" name="VisualNavEnabled" left="280" top="8" width="110" height="24" text="   Visual Nav Lines"/>
+        <control progid="DecalControls.PushButton" name="VitalSharingEnabled" left="280" top="40" width="110" height="24" text="Vital Sharing"/>
+        <control progid="DecalControls.PushButton" name="Debug" left="296" top="184" width="96" height="24" text="  Debug Mode"/>
+        <control progid="DecalControls.PushButton" name="CheckForUpdate" left="170" top="184" width="110" height="24" text="Check For Update"/>
+      </control>
+    </page>
+    <page label="Chat Log">
+      <control progid="DecalControls.Notebook">
+        <page label="Log">
           <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.Checkbox" name="AutoSalvageThink" left="8" top="8" width="250" height="16" text="Think to yourself when finished"/>
-            <control progid="DecalControls.Checkbox" name="AutoSalvageOnlyFromMainPack" left="8" top="32" width="250" height="16" text="Only salvage items in your main pack"/>
-            <control progid="DecalControls.PushButton" name="AutoSalvageStart" left="8" top="184" width="110" height="20" text="Start"/>
-
-          </control>
-
-        </page>
-        <page label="AutoVendor">
-          <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.Checkbox" name="AutoVendorEnabled" left="8" top="8" width="184" height="16" text="Enable AutoVendor"/>
-            <control progid="DecalControls.Checkbox" name="AutoVendorTestMode" left="8" top="32" width="208" height="16" text="Test Mode"/>
-            <control progid="DecalControls.Checkbox" name="AutoVendorShowMerchantInfo" left="8" top="56" width="250" height="16" text="Show merchant info on approach"/>
-            <control progid="DecalControls.Checkbox" name="AutoVendorOnlyFromMainPack" left="8" top="80" width="250" height="16" text="Only vendor items in your main pack"/>
-            <control progid="DecalControls.Checkbox" name="AutoVendorThink" left="8" top="104" width="250" height="16" text="Think to yourself when finished"/>
-
-            <control progid="DecalControls.StaticText" name="AutoVendorTriesLabel" left="8" top="144" width="208" height="16" justify="Center" text="Open Vendor Attempts"/>
-            <control progid="DecalControls.Slider" name="AutoVendorTries"          left="8" top="160" width="208" height="16" maximum="29" textcolor="0" vertical="0"/>
-            <control progid="DecalControls.StaticText" name="AutoVendorTriesText"  left="224" top="160" width="40" height="16" text="0"/>
-          </control>
-
-        </page>
-        <page label="AutoTrade">
-          <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.Checkbox" name="AutoTradeEnabled" left="4" top="4" width="232" height="16" text="Enable AutoTrade on Trade Open" />
-            <control progid="DecalControls.Checkbox" name="AutoTradeTestMode" left="244" top="4" width="152" height="16" text="Test Mode"/>
-            <control progid="DecalControls.Checkbox" name="AutoTradeAutoAccept" left="4" top="24" width="192" height="16" text="Auto-Accept trade" />
-            <control progid="DecalControls.Checkbox" name="AutoTradeOnlyFromMainPack" left="4" top="44" width="250" height="16" text="Only trade items in your main pack"/>
-            <control progid="DecalControls.Checkbox" name="AutoTradeThink" left="4" top="64" width="250" height="16" text="Think to yourself when finished"/>
-            <control progid="DecalControls.StaticText" name="AutoTradeAcceptChars" left="4" top="84" width="120" height="16" text="Auto-Accept From:"/>
-            <control progid="DecalControls.Edit" name="AutoTradeAcceptNewChar" left="124" top="84" width="218" height="16"/>
-            <control progid="DecalControls.PushButton" name="AutoTradeAcceptAddNewChar" left="346" top="84" width="50" height="16" text="Add"/>
-            <control progid="DecalControls.List" name="AutoTradeAcceptCharList" left="4" top="104" width="392" height="100">
-              <column progid="DecalControls.IconColumn" name="AutoTradeAcceptCharListRemove" />
-              <column progid="DecalControls.TextColumn" name="AutoTradeAcceptCharListCharName" />
+            <control progid="DecalControls.StaticText" name="ChatLogFilterLabel" left="0" top="4" width="40" height="16" text="Filter:" />
+            <control progid="DecalControls.Edit" name="ChatLogFilterText" left="48" top="4" width="240" height="16" />
+            <control progid="DecalControls.PushButton" name="ChatLogClear" left="292" top="4" width="100" height="20" text="Clear Log" />
+            <control progid="DecalControls.List" name="ChatLogLogList" left="0" top="28" width="400" height="160">
+              <column progid="DecalControls.TextColumn" name="ChatLogLogListTimestampColumn" fixedwidth="60" />
+              <column progid="DecalControls.IconColumn" name="ChatLogLogListTypeColumn" fixedwidth="20" />
+              <column progid="DecalControls.TextColumn" name="ChatLogLogListMessageColumn" />
             </control>
           </control>
         </page>
-        <page label="InventoryManager">
-          <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.Checkbox" name="InventoryManagerAutoCram" left="8" top="8" width="400" height="16" text="Automatically cram items into side packs (while vendoring)"/>
-            <control progid="DecalControls.Checkbox" name="InventoryManagerAutoStack" left="8" top="32" width="400" height="16" text="Automatically combine stacked items (while vendoring)"/>
-            <control progid="DecalControls.PushButton" name="InventoryManagerTest" left="8" top="184" width="110" height="20" text="AutoStack"/>
-          </control>
-
-        </page>
-        <page label="Jumper">
-          <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.Checkbox" name="JumperPauseNav" left="8" top="8" width="184" height="16" text="Pause Nav during execution"/>
-            <control progid="DecalControls.Checkbox" name="JumperThinkComplete" left="8" top="32" width="208" height="16" text="Think to yourself when finished"/>
-            <control progid="DecalControls.Checkbox" name="JumperThinkFail" left="8" top="56" width="250" height="16" text="Think to yourself if jump fails"/>
-            <control progid="DecalControls.Slider" name="JumperAttempts"          left="8"   top="110" width="208" height="16" maximum="29" textcolor="0" vertical="0"/>
-            <control progid="DecalControls.StaticText" name="JumperAttemptsLabel" left="8"   top="94" width="208" height="16" justify="Center" text="Jump Attempts"/>
-            <control progid="DecalControls.StaticText" name="JumperAttemptsText"  left="224"  top="110"  width="40" height="16" text="0"/>
-          </control>
-
-        </page>
-        <page label="Chat Log">
-          <control progid="DecalControls.Notebook">
-            <page label="Log">
-              <control progid="DecalControls.FixedLayout" clipped="">
-                <control progid="DecalControls.StaticText" name="ChatLogFilterLabel" left="0" top="4" width="40" height="16" text="Filter:" />
-                <control progid="DecalControls.Edit" name="ChatLogFilterText" left="48" top="4" width="240" height="16" />
-                <control progid="DecalControls.PushButton" name="ChatLogClear" left="292" top="4" width="100" height="20" text="Clear Log" />
-                <control progid="DecalControls.List" name="ChatLogLogList" left="0" top="28" width="400" height="160">
-                  <column progid="DecalControls.TextColumn" name="ChatLogLogListTimestampColumn" fixedwidth="60" />
-                  <column progid="DecalControls.IconColumn" name="ChatLogLogListTypeColumn" fixedwidth="20" />
-                  <column progid="DecalControls.TextColumn" name="ChatLogLogListMessageColumn" />
-                </control>
-              </control>
-            </page>
-            <page label="Settings">
-              <control progid="DecalControls.FixedLayout" clipped="">
-                <control progid="DecalControls.Checkbox" name="ChatLogSaveToFile" left="4" top="4" width="184" height="16" text="Save Chat Logs to Disk" />
-                <control progid="DecalControls.StaticText" name="ChatLogMessageFilterLabel" left="4" top="24" width="40" height="16" text="Filter:" />
-                <control progid="DecalControls.Edit" name="ChatLogMessageFilter" left="48" top="24" width="350" height="16" />
-                <control progid="DecalControls.StaticText" name="ChatLogTypeListLabel" left="4" top="44" width="80" height="16" text="Chat Types:" />
-                <control progid="DecalControls.List" name="ChatLogTypeList" left="84" top="44" height="60" width="180">
-                  <column progid="DecalControls.CheckColumn" name="ChatLogTypeSelectedColumn" />
-                  <column progid="DecalControls.IconColumn" name="ChatLogTypeIconColumn" fixedwidth="20" />
-                  <column progid="DecalControls.TextColumn" name="ChatLogTypeNameColumn" />
-                </control>
-                <control progid="DecalControls.PushButton" name="ChatLogRuleAddButton" left="268" top="44" width="128" height="60" text="Add Rule" />
-                <control progid="DecalControls.StaticText" name="ChatLogRuleListLabel" top="100" left="4" height="16" width="184" text="Rules" />
-                <control progid="DecalControls.List" name="ChatLogRuleList" top="120" left="4" height="150" width="392">
-                  <column progid="DecalControls.IconColumn" name="ChatLogRuleRemoveColumn" />
-                  <column progid="DecalControls.IconColumn" name="ChatLogRuleTypeListColumn" />
-                  <column progid="DecalControls.TextColumn" name="ChatLogRuleMessageFilterColumn" />
-                </control>
-              </control>
-            </page>
-          </control>
-        </page>
-      </control>
-
-    </page>
-    <page label="DungeonMaps">
-      <control progid="DecalControls.NoteBook">
         <page label="Settings">
           <control progid="DecalControls.FixedLayout" clipped="">
-            <control progid="DecalControls.Checkbox" name="DungeonMapsEnabled" left="8" top="8" width="184" height="16" text="Enable Dungeon Maps"/>
-            <control progid="DecalControls.Checkbox" name="DungeonMapsDrawWhenClosed" left="8" top="32" width="208" height="16" text="Draw maps when window is closed"/>
-            <control progid="DecalControls.Slider" name="DungeonMapsOpacity" left="8" top="152" width="208" height="16" minimum="0" maximum="20" textcolor="0" vertical="0"/>
-            <control progid="DecalControls.StaticText" name="DungeonMapsOpacityLabel" left="8" top="136" width="200" height="16" justify="Center" text="Map Opacity"/>
-            <control progid="DecalControls.Checkbox" name="DungeonMapsShowVisitedTiles" left="8" top="80" width="208" height="16" text="Show visited tiles"/>
-            <control progid="DecalControls.PushButton" name="DungeonMapsClearTileCache" left="8" top="190" width="110" height="20" text="Clear Tile Cache"/>
-          </control>
-        </page>
-        <page label="Map Display">
-          <control progid="DecalControls.List" name="DungeonMapsSettingsList" left="0" top="0" width="400" height="200">
-            <column progid="DecalControls.CheckColumn" name="DungeonMapsSettingsListEnabled"/>
-            <column progid="DecalControls.IconColumn" name="DungeonMapsSettingsListColor" fixedwidth="30" />
-            <column progid="DecalControls.TextColumn" name="DungeonMapsSettingsListSetting" />
-          </control>
-        </page>
-        <page label="Marker Display">
-          <control progid="DecalControls.List" name="DungeonMapsMarkersList" left="0" top="0" width="400" height="200">
-            <column progid="DecalControls.CheckColumn" name="DungeonMapsMarkersListEnabled"/>
-            <column progid="DecalControls.IconColumn" name="DungeonMapsMarkersListColor" fixedwidth="30" />
-            <column progid="DecalControls.TextColumn" name="DungeonMapsMarkersListSettingName" />
-            <column progid="DecalControls.TextColumn" name="DungeonMapsMarkersListSettingValue" />
+            <control progid="DecalControls.Checkbox" name="ChatLogSaveToFile" left="4" top="4" width="184" height="16" text="Save Chat Logs to Disk" />
+            <control progid="DecalControls.StaticText" name="ChatLogMessageFilterLabel" left="4" top="24" width="40" height="16" text="Filter:" />
+            <control progid="DecalControls.Edit" name="ChatLogMessageFilter" left="48" top="24" width="350" height="16" />
+            <control progid="DecalControls.StaticText" name="ChatLogTypeListLabel" left="4" top="44" width="80" height="16" text="Chat Types:" />
+            <control progid="DecalControls.List" name="ChatLogTypeList" left="84" top="44" height="60" width="180">
+              <column progid="DecalControls.CheckColumn" name="ChatLogTypeSelectedColumn" />
+              <column progid="DecalControls.IconColumn" name="ChatLogTypeIconColumn" fixedwidth="20" />
+              <column progid="DecalControls.TextColumn" name="ChatLogTypeNameColumn" />
+            </control>
+            <control progid="DecalControls.PushButton" name="ChatLogRuleAddButton" left="268" top="44" width="128" height="60" text="Add Rule" />
+            <control progid="DecalControls.StaticText" name="ChatLogRuleListLabel" top="100" left="4" height="16" width="184" text="Rules" />
+            <control progid="DecalControls.List" name="ChatLogRuleList" top="120" left="4" height="150" width="392">
+              <column progid="DecalControls.IconColumn" name="ChatLogRuleRemoveColumn" />
+              <column progid="DecalControls.IconColumn" name="ChatLogRuleTypeListColumn" />
+              <column progid="DecalControls.TextColumn" name="ChatLogRuleMessageFilterColumn" />
+            </control>
           </control>
         </page>
       </control>
     </page>
-    <!-- this is disabled until it works on ace as well (esecially since char settings are fixed on gdle) -->
-    <!--
-    <page label="EmuConfig">
-      <control progid="DecalControls.FixedLayout" clipped="">
-        <control progid="DecalControls.List" name="EmuConfigList" left="0" top="0" width="490" height="250">
-          <column progid="DecalControls.TextColumn" name="ConfigValue" fixedwidth="350"/>
-          <column progid="DecalControls.CheckColumn" name="Enabled"/>
-        </control>
-      </control>
-
-    </page>
-    -->
     <page label="QuestTracker">
       <control progid="DecalControls.FixedLayout" clipped="" height="270">
         <control progid="DecalControls.StaticText" name="QuestsListFilterLabel" left="1" top="4" width="45" height="16" text="Search:"/>
         <control progid="DecalControls.Edit" name="QuestsListFilter" left="48" top="4" width="176" height="16" imageportalsrc="4726" text=""/>
-
         <control progid="DecalControls.Notebook" name="QuestListNotebook" left="0" top="20" width="400" height="180">
           <page label="Timed">
             <control progid="DecalControls.FixedLayout" clipped="">
@@ -159,7 +68,6 @@
                 <column progid="DecalControls.TextColumn" name="SolveCount" justify="Right" fixedwidth="60"/>
               </control>
             </control>
-
           </page>
           <page label="KillTask">
             <control progid="DecalControls.FixedLayout" clipped="">
@@ -173,7 +81,6 @@
                 <column progid="DecalControls.TextColumn" name="MaxCompletions" justify="Right" fixedwidth="80"/>
               </control>
             </control>
-
           </page>
           <page label="Once">
             <control progid="DecalControls.FixedLayout" clipped="">
@@ -185,31 +92,21 @@
                 <column progid="DecalControls.TextColumn" name="Unused2" fixedwidth="0" text="" />
               </control>
             </control>
-
           </page>
         </control>
         <control progid="DecalControls.PushButton" name="QuestListRefresh" left="8" top="205" width="110" height="20" text="Refresh"/>
       </control>
     </page>
-    <page label="VisualNav">
-      <control progid="DecalControls.FixedLayout" clipped="">
-        <control progid="DecalControls.List" name="VisualNavSettingsList" left="0" top="0" width="400" height="200">
-          <column progid="DecalControls.CheckColumn" name="VisualNavSettingsListEnabled"/>
-          <column progid="DecalControls.IconColumn" name="VisualNavSettingsListColor" fixedwidth="30" />
-          <column progid="DecalControls.TextColumn" name="VisualNavSettingsListSetting" />
-        </control>
-        <control progid="DecalControls.Checkbox" name="VisualNavSaveNoneRoutes" left="8" top="210" width="400" height="16" text="(Experimental) show embedded nav routes" />
-
-      </control>
-
-    </page>
     <page label="Settings">
       <control progid="DecalControls.FixedLayout" clipped="">
-        <control progid="DecalControls.Checkbox" name="PluginDebug" left="8" top="8" width="250" height="16" text="Show Debug Messages"/>
-        <control progid="DecalControls.Checkbox" name="PluginCheckForUpdates" left="8" top="26" width="250" height="16" text="Check for updates on login"/>
-        <control progid="DecalControls.PushButton" name="DoUpdateCheck" left="8" top="190" width="130" height="20" text="Check for Update"/>
+        <control progid="DecalControls.List" name="SettingsList" left="0" top="0" width="400" height="152">
+          <column progid="DecalControls.TextColumn" fixedwidth="280" name="SettingKey" />
+          <column progid="DecalControls.TextColumn" name="SettingValue" />
+          <column progid="DecalControls.TextColumn" fixedwidth="3" name="_padding" />
+        </control>
+        <control name="SettingsForm" progid="DecalControls.FixedLayout" clipped="" left="0" top="152" width="400" height="72">
+        </control>
       </control>
     </page>
   </control>
-
 </view>

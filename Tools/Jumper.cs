@@ -27,66 +27,12 @@ namespace UtilityBelt.Tools {
         private bool waitingForJump = false;
         private int jumpTries = 0;
 
-        HudCheckBox UIJumperPauseNav { get; set; }
-        HudCheckBox UIJumperThinkComplete { get; set; }
-        HudCheckBox UIJumperThinkFail { get; set; }
-        HudHSlider UIJumperAttempts { get; set; }
-        HudStaticText UIJumperAttemptsText { get; set; }
-
-
         public Jumper() {
             try {
-
-                UIJumperAttemptsText = Globals.MainView.view != null ? (HudStaticText)Globals.MainView.view["JumperAttemptsText"] : new HudStaticText();
-
-                UIJumperPauseNav = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["JumperPauseNav"] : new HudCheckBox();
-                UIJumperPauseNav.Change += UIJumperPauseNav_Change;
-
-                UIJumperThinkComplete = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["JumperThinkComplete"] : new HudCheckBox();
-                UIJumperThinkComplete.Change += UIJumperThinkComplete_Change;
-
-                UIJumperThinkFail = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["JumperThinkFail"] : new HudCheckBox();
-                UIJumperThinkFail.Change += UIJumperThinkFail_Change;
-
-                UIJumperAttempts = Globals.MainView.view != null ? (HudHSlider)Globals.MainView.view["JumperAttempts"] : new HudHSlider();
-                UIJumperAttempts.Changed += UIJumperAttempts_Changed;
-
-
-            Globals.Core.CommandLineText += Current_CommandLineText;
-            Globals.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
-
-                UpdateUI();
+                Globals.Core.CommandLineText += Current_CommandLineText;
+                Globals.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
             } catch (Exception ex) { Logger.LogException(ex); }
         }
-
-        private void UpdateUI() {
-            UIJumperPauseNav.Checked = Globals.Settings.Jumper.PauseNav;
-            UIJumperAttemptsText.Text = Globals.Settings.Jumper.Attempts.ToString();
-            UIJumperThinkComplete.Checked = Globals.Settings.Jumper.ThinkComplete;
-            UIJumperThinkFail.Checked = Globals.Settings.Jumper.ThinkFail;
-            UIJumperAttempts.Position = Globals.Settings.Jumper.Attempts-1;
-        }
-
-        private void UIJumperPauseNav_Change(object sender, EventArgs e) {
-            Globals.Settings.Jumper.PauseNav = UIJumperPauseNav.Checked;
-        }
-
-        private void UIJumperThinkComplete_Change(object sender, EventArgs e) {
-            Globals.Settings.Jumper.ThinkComplete = UIJumperThinkComplete.Checked;
-        }
-
-        private void UIJumperThinkFail_Change(object sender, EventArgs e) {
-            Globals.Settings.Jumper.ThinkFail = UIJumperThinkFail.Checked;
-        }
-
-        private void UIJumperAttempts_Changed(int min, int max, int pos) {
-            pos++;
-            if (pos != Globals.Settings.Jumper.Attempts) {
-                Globals.Settings.Jumper.Attempts = pos;
-                UIJumperAttemptsText.Text = pos.ToString();
-            }
-        }
-
 
         public void Think() {
             if (isTurning && DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(100)) {

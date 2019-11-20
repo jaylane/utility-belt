@@ -1,0 +1,8 @@
+﻿<?xml version="1.0"?>
+<view icon="9685" title="Enum Flag Editor" width="330" height="160">
+  <control progid="DecalControls.FixedLayout" clipped="">
+    <control progid="DecalControls.List" name="ChildList" left="0" top="0" width="330" height="150">
+      <column progid="DecalControls.Checkbox" name="Flagged" />
+    </control>
+  </control>
+</view>

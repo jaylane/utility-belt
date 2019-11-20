@@ -236,41 +236,44 @@ namespace UtilityBelt.Lib.VTNav {
         }
 
         private void UpdateCurrentWaypoint() {
-            var routeFinished = VTankControl.vTankInstance.NavCurrent > VTankControl.vTankInstance.NavNumPoints - 1;
-            var isWaypointRoute = NavType != eNavType.Target;
-            var isEnabled = Globals.Settings.VisualNav.Display.CurrentWaypoint.Enabled;
-            var isValidPointOffset = NavOffset + VTankControl.vTankInstance.NavCurrent < points.Count;
+            try {
+                var routeFinished = VTankControl.vTankInstance.NavCurrent > VTankControl.vTankInstance.NavNumPoints - 1;
+                var isWaypointRoute = NavType != eNavType.Target;
+                var isEnabled = Globals.Settings.VisualNav.Display.CurrentWaypoint.Enabled;
+                var isValidPointOffset = NavOffset + VTankControl.vTankInstance.NavCurrent < points.Count;
 
-            if (isEnabled && isWaypointRoute && !routeFinished && isValidPointOffset) {
+                if (isEnabled && isWaypointRoute && !routeFinished && isValidPointOffset) {
 
-                var current = points[NavOffset + VTankControl.vTankInstance.NavCurrent];
+                    var current = points[NavOffset + VTankControl.vTankInstance.NavCurrent];
 
-                if (currentNavShape == null) {
-                    currentNavShape = Globals.Core.D3DService.MarkCoordsWithShape(0f, 0f, 0f, D3DShape.Ring, Color.Red.ToArgb());
+                    if (currentNavShape == null) {
+                        currentNavShape = Globals.Core.D3DService.MarkCoordsWithShape(0f, 0f, 0f, D3DShape.Ring, Color.Red.ToArgb());
+                    }
+
+                    // this is dumb, i cant get it to convert straight to a float
+                    var navCloseStopRangeStr = VTankControl.vTankInstance.GetSetting("NavCloseStopRange").ToString();
+
+                    if (float.TryParse(navCloseStopRangeStr, out float navCloseStopRange)) {
+                        currentNavShape.Visible = true;
+                        if (Globals.Settings.VisualNav.ScaleCurrentWaypoint) {
+                            currentNavShape.ScaleX = (float)navCloseStopRange * 240f;
+                            currentNavShape.ScaleY = (float)navCloseStopRange * 240f;
+                            currentNavShape.Anchor((float)current.NS, (float)current.EW, (float)(current.Z * 240f) + Globals.Settings.VisualNav.LineOffset);
+                        }
+                        else {
+                            currentNavShape.Scale(0.3f);
+                            currentNavShape.Anchor((float)current.NS, (float)current.EW, (float)(current.Z * 240f) + Globals.Settings.VisualNav.LineOffset + 0.2f);
+                        }
+                        currentNavShape.Color = Globals.Settings.VisualNav.Display.CurrentWaypoint.Color;
+                        return;
+                    }
                 }
 
-                // this is dumb, i cant get it to convert straight to a float
-                var navCloseStopRangeStr = VTankControl.vTankInstance.GetSetting("NavCloseStopRange").ToString();
-
-                if (float.TryParse(navCloseStopRangeStr, out float navCloseStopRange)) {
-                    currentNavShape.Visible = true;
-                    if (Globals.Settings.VisualNav.ScaleCurrentWaypoint) {
-                        currentNavShape.ScaleX = (float)navCloseStopRange * 240f;
-                        currentNavShape.ScaleY = (float)navCloseStopRange * 240f;
-                        currentNavShape.Anchor((float)current.NS, (float)current.EW, (float)(current.Z * 240f) + Globals.Settings.VisualNav.LineOffset);
-                    }
-                    else {
-                        currentNavShape.Scale(0.3f);
-                        currentNavShape.Anchor((float)current.NS, (float)current.EW, (float)(current.Z * 240f) + Globals.Settings.VisualNav.LineOffset + 0.2f);
-                    }
-                    currentNavShape.Color = Globals.Settings.VisualNav.Display.CurrentWaypoint.Color;
-                    return;
+                if (currentNavShape != null) {
+                    currentNavShape.Visible = false;
                 }
             }
-
-            if (currentNavShape != null) {
-                currentNavShape.Visible = false;
-            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public void Draw() {

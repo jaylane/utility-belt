@@ -18,17 +18,7 @@ using UtilityBelt.Lib.Settings;
 using System.Timers;
 
 namespace UtilityBelt.Tools {
-    public class OptionResult {
-        public object Object;
-        public object Parent;
-        public PropertyInfo Property;
 
-        public OptionResult(object obj, PropertyInfo propertyInfo, object parent) {
-            Object = obj;
-            Parent = parent;
-            Property = propertyInfo;
-        }
-    }
     public class DelayedCommand {
         public string Command;
         public double Delay;
@@ -218,15 +208,15 @@ namespace UtilityBelt.Tools {
             string[] parameter = parameters.Split(stringSplit, 2);
             switch (parameter[0]) {
                 case "enable":
-                    UBHelper.VideoPatch.Enable();
+                    Globals.Settings.Plugin.VideoPatch = true;
                     break;
 
                 case "disable":
-                    UBHelper.VideoPatch.Disable();
+                    Globals.Settings.Plugin.VideoPatch = false;
                     break;
 
                 case "toggle":
-                    UBHelper.VideoPatch.Toggle();
+                    Globals.Settings.Plugin.VideoPatch = !Globals.Settings.Plugin.VideoPatch;
                     break;
                 default:
                     Util.WriteToChat("Usage: /ub videopatch {enable,disable,toggle}");
@@ -523,14 +513,14 @@ namespace UtilityBelt.Tools {
         private void UB_opt(string args) {
             try {
                 if (args.ToLower().Trim() == "list") {
-                    ListOptions(Globals.Settings, "");
+                    Util.WriteToChat("All Settings:\n" + ListOptions(Globals.Settings, ""));
                     return;
                 }
 
                 if (!optionRe.IsMatch(args.Trim())) return;
 
                 var match = optionRe.Match(args.Trim());
-                var option = GetOptionProperty(match.Groups["option"].Value);
+                var option = Globals.Settings.GetOptionProperty(match.Groups["option"].Value);
                 string name = match.Groups["option"].Value;
                 string newValue = match.Groups["value"].Value;
 
@@ -601,7 +591,8 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void ListOptions(object obj, string history) {
+        private string ListOptions(object obj, string history) {
+            var results = "";
             obj = obj ?? Globals.Settings;
 
             var props = obj.GetType().GetProperties();
@@ -611,46 +602,14 @@ namespace UtilityBelt.Tools {
                 var defaultValueAttributes = prop.GetCustomAttributes(typeof(DefaultValueAttribute), true);
 
                 if (defaultValueAttributes.Length > 0) {
-                    Util.WriteToChat($"{history}{prop.Name}");
+                    results += $"{history}{prop.Name} = {Globals.Settings.DisplayValue(history+prop.Name, true)}\n";
                 }
                 else if (summaryAttributes.Length > 0) {
-                    ListOptions(prop.GetValue(obj, null), $"{history}{prop.Name}.");
+                    results += ListOptions(prop.GetValue(obj, null), $"{history}{prop.Name}.");
                 }
             }
-        }
 
-        private OptionResult GetOptionProperty(string key) {
-            try {
-                var parts = key.Split('.');
-                object obj = Globals.Settings;
-                PropertyInfo lastProp = null;
-                object lastObj = obj;
-                for (var i = 0; i < parts.Length; i++) {
-                    if (obj == null) return null;
-
-                    var found = false;
-                    foreach (var prop in obj.GetType().GetProperties()) {
-                        if (prop.Name.ToLower() == parts[i].ToLower()) {
-                            lastProp = prop;
-                            lastObj = obj;
-                            obj = prop.GetValue(obj, null);
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (!found) return null;
-                }
-
-                if (lastProp != null) {
-                    var d = lastProp.GetCustomAttributes(typeof(DefaultValueAttribute), true);
-
-                    return d.Length > 0 ? new OptionResult(obj, lastProp, lastObj) : null;
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-
-            return null;
+            return results;
         }
 
         private void OpenVendor() {

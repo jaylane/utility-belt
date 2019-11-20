@@ -1,15 +1,35 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Xml;
 
-namespace UtilityBelt.Lib.Settings
-{
+namespace UtilityBelt.Lib.Settings {
+    public class OptionResult {
+        public object Object;
+        public object Parent;
+        public PropertyInfo Property;
+        public PropertyInfo ParentProperty;
+
+        public OptionResult(object obj, PropertyInfo propertyInfo, object parent, PropertyInfo parentProperty) {
+            Object = obj;
+            Parent = parent;
+            Property = propertyInfo;
+            ParentProperty = parentProperty;
+        }
+    }
+
     [JsonObject(MemberSerialization.OptIn)]
     public class Settings {
         public bool ShouldSave = false;
 
         public event EventHandler Changed;
+
+        private Dictionary<string, OptionResult> optionResultCache = new Dictionary<string, OptionResult>();
 
         #region Public Properties
         public bool HasCharacterSettingsLoaded { get; set; } = false;
@@ -40,6 +60,10 @@ namespace UtilityBelt.Lib.Settings
         public Sections.AutoTrade AutoTrade { get; set; }
 
         [JsonProperty]
+        [Summary("Chat Logger Settings")]
+        public Sections.ChatLogger ChatLogger { get; set; }
+
+        [JsonProperty]
         [Summary("DungeonMaps Settings")]
         public Sections.DungeonMaps DungeonMaps { get; set; }
 
@@ -48,40 +72,87 @@ namespace UtilityBelt.Lib.Settings
         public Sections.InventoryManager InventoryManager { get; set; }
 
         [JsonProperty]
-        [Summary("VisualNav Settings")]
-        public Sections.VisualNav VisualNav { get; set; }
-
-        [JsonProperty]
         [Summary("Jumper Settings")]
         public Sections.Jumper Jumper { get; set; }
 
         [JsonProperty]
-        [Summary("VTank Integration Settings")]
-        public Sections.VTank VTank { get; set; }
+        [Summary("VisualNav Settings")]
+        public Sections.VisualNav VisualNav { get; set; }
 
         [JsonProperty]
-        [Summary("Chat Logger Settings")]
-        public Sections.ChatLogger ChatLogger { get; set; }
+        [Summary("VTank Integration Settings")]
+        public Sections.VTank VTank { get; set; }
         #endregion
 
         public Settings() {
             try {
                 SetupSection(Plugin = new Sections.Plugin(null));
                 SetupSection(AutoSalvage = new Sections.AutoSalvage(null));
-                SetupSection(AutoVendor = new Sections.AutoVendor(null));
                 SetupSection(AutoTrade = new Sections.AutoTrade(null));
+                SetupSection(AutoVendor = new Sections.AutoVendor(null));
+                SetupSection(ChatLogger = new Sections.ChatLogger(null));
                 SetupSection(DungeonMaps = new Sections.DungeonMaps(null));
                 SetupSection(InventoryManager = new Sections.InventoryManager(null));
-                SetupSection(VisualNav = new Sections.VisualNav(null));
                 SetupSection(Jumper = new Sections.Jumper(null));
+                SetupSection(VisualNav = new Sections.VisualNav(null));
                 SetupSection(VTank = new Sections.VTank(null));
-                SetupSection(ChatLogger = new Sections.ChatLogger(null));
 
                 Load();
 
                 Logger.Debug("Finished loading settings");
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        internal OptionResult GetOptionProperty(string key) {
+            try {
+                if (optionResultCache.ContainsKey(key)) return optionResultCache[key];
+
+                var parts = key.Split('.');
+                object obj = Globals.Settings;
+                PropertyInfo parentProp = null;
+                PropertyInfo lastProp = null;
+                object lastObj = obj;
+                for (var i = 0; i < parts.Length; i++) {
+                    if (obj == null) return null;
+
+                    var found = false;
+                    foreach (var prop in obj.GetType().GetProperties()) {
+                        if (prop.Name.ToLower() == parts[i].ToLower()) {
+                            parentProp = lastProp;
+                            lastProp = prop;
+                            lastObj = obj;
+                            obj = prop.GetValue(obj, null);
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) return null;
+                }
+
+                if (lastProp != null) {
+                    var d = lastProp.GetCustomAttributes(typeof(DefaultValueAttribute), true);
+
+                    if (d.Length > 0) {
+                        optionResultCache[key] = new OptionResult(obj, lastProp, lastObj, parentProp);
+                        return optionResultCache[key];
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return null;
+        }
+
+        internal object Get(string key) {
+            try {
+                var prop = GetOptionProperty(key);
+                return prop.Property.GetValue(prop.Parent, null);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return null;
         }
 
         public void EnableSaving() {
@@ -282,6 +353,47 @@ namespace UtilityBelt.Lib.Settings
             catch (Exception ex) { Logger.LogException(ex); }
 
             return defaultValue;
+        }
+
+        internal string DisplayValue(string key, bool expandLists=false, object value=null) {
+            try {
+                var prop = GetOptionProperty(key);
+                value = value ?? Get(key);
+
+                if (value.GetType().IsEnum) {
+                    var supportsFlagsAttributes = prop.Property.GetCustomAttributes(typeof(SupportsFlagsAttribute), true);
+
+                    if (supportsFlagsAttributes.Length > 0) {
+                        return "0x" + ((uint)value).ToString("X8");
+                    }
+                    else {
+                        return value.ToString();
+                    }
+                }
+                else if (value.GetType() != typeof(string) && value.GetType().GetInterfaces().Contains(typeof(IEnumerable))) {
+                    if (expandLists) {
+                        var results = new List<string>();
+
+                        foreach (var item in (IEnumerable)value) {
+                            results.Add(DisplayValue(key, false, item));
+                        }
+
+                        return $"[{string.Join(",", results.ToArray())}]";
+                    }
+                    else {
+                        return "[List]";
+                    }
+                }
+                else if (prop.Property.Name.Contains("Color")) {
+                    return "0x" + ((int)value).ToString("X8");
+                }
+                else {
+                    return value.ToString();
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return "null";
         }
         #endregion
     }

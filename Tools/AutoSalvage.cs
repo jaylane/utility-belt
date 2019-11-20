@@ -14,10 +14,6 @@ namespace UtilityBelt.Tools {
         private List<int> blacklistedIds = new List<int>();
         private bool isRunning = false;
         private bool shouldSalvage = false;
-        
-        HudCheckBox UIAutoSalvageThink { get; set; }
-        HudCheckBox UIAutoSalvageOnlyFromMainPack { get; set; }
-        HudButton UIAutoSalvageStart { get; set; }
 
         private DateTime lastThought = DateTime.MinValue;
         private DateTime lastAction = DateTime.MinValue;
@@ -30,26 +26,6 @@ namespace UtilityBelt.Tools {
         public AutoSalvage() {
             Globals.Core.CommandLineText += Current_CommandLineText;
             Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
-
-            UIAutoSalvageStart = Globals.MainView.view != null ? (HudButton)Globals.MainView.view["AutoSalvageStart"] : new HudButton();
-            UIAutoSalvageStart.Hit += UIAutoSalvageStart_Hit;
-
-            UIAutoSalvageThink = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoSalvageThink"] : new HudCheckBox();
-            UIAutoSalvageThink.Change += UIAutoSalvageThink_Change;
-
-            UIAutoSalvageOnlyFromMainPack = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoSalvageOnlyFromMainPack"] : new HudCheckBox();
-            UIAutoSalvageOnlyFromMainPack.Change += UIAutoSalvageOnlyFromMainPack_Change;
-
-            Globals.Settings.AutoSalvage.PropertyChanged += (s, e) => {
-                UpdateUI();
-            };
-
-            UpdateUI();
-        }
-
-        private void UpdateUI() {
-            UIAutoSalvageOnlyFromMainPack.Checked = Globals.Settings.AutoSalvage.OnlyFromMainPack;
-            UIAutoSalvageThink.Checked = Globals.Settings.AutoSalvage.Think;
         }
 
         private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
@@ -59,21 +35,6 @@ namespace UtilityBelt.Tools {
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void UIAutoSalvageStart_Hit(object sender, EventArgs e) {
-            try {
-                Start();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void UIAutoSalvageThink_Change(object sender, EventArgs e) {
-            Globals.Settings.AutoSalvage.Think = UIAutoSalvageThink.Checked;
-        }
-
-        private void UIAutoSalvageOnlyFromMainPack_Change(object sender, EventArgs e) {
-            Globals.Settings.AutoSalvage.OnlyFromMainPack = UIAutoSalvageOnlyFromMainPack.Checked;
         }
 
         private void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) {

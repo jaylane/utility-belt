@@ -25,9 +25,6 @@ namespace UtilityBelt.Tools {
 
         private List<D3DObj> shapes = new List<D3DObj>();
 
-        HudList VisualNavSettingsList { get; set; }
-        HudCheckBox VisualNavSaveNoneRoutes { get; set; }
-
         const int COL_ENABLED = 0;
         const int COL_ICON = 1;
         const int COL_NAME = 2;
@@ -35,13 +32,6 @@ namespace UtilityBelt.Tools {
         public VisualVTankRoutes() {
             Globals.Core.CommandLineText += Core_CommandLineText;
             Globals.Core.CharacterFilter.ChangePortalMode += CharacterFilter_ChangePortalMode;
-            VisualNavSettingsList = Globals.MainView.view != null ? (HudList)Globals.MainView.view["VisualNavSettingsList"] : new HudList();
-            VisualNavSettingsList.Click += VisualNavSettingsList_Click;
-
-            VisualNavSaveNoneRoutes = (HudCheckBox)Globals.MainView.view["VisualNavSaveNoneRoutes"];
-            VisualNavSaveNoneRoutes.Change += VisualNavSaveNoneRoutes_Change;
-
-            PopulateSettings();
 
             var server = Globals.Core.CharacterFilter.Server;
             var character = Globals.Core.CharacterFilter.Name;
@@ -67,15 +57,7 @@ namespace UtilityBelt.Tools {
                     forceUpdate = true;
                     DrawCurrentRoute();
                 }
-
-                UpdateUI();
             };
-
-            UpdateUI();
-        }
-
-        private void UpdateUI() {
-            VisualNavSaveNoneRoutes.Checked = Globals.Settings.VisualNav.SaveNoneRoutes;
         }
 
         private void PC_NavRouteChanged() {
@@ -104,34 +86,6 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void VisualNavSaveNoneRoutes_Change(object sender, EventArgs e) {
-            try {
-                Globals.Settings.VisualNav.SaveNoneRoutes = VisualNavSaveNoneRoutes.Checked;
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void PopulateSettings() {
-            int scroll = 0;
-            if (Globals.MainView.view.Visible) {
-                scroll = VisualNavSettingsList.ScrollPosition;
-            }
-
-            VisualNavSettingsList.ClearRows();
-
-            foreach (var setting in Globals.Settings.VisualNav.Display.ValidSettings) {
-                HudList.HudListRowAccessor row = VisualNavSettingsList.AddRow();
-
-                var option = Globals.Settings.VisualNav.Display.GetPropValue<ColorToggleOption>(setting);
-
-                ((HudCheckBox)row[COL_ENABLED]).Checked = option.Enabled;
-                ((HudStaticText)row[COL_NAME]).Text = setting;
-                ((HudPictureBox)row[COL_ICON]).Image = GetSettingIcon(option);
-            }
-
-            VisualNavSettingsList.ScrollPosition = scroll;
-        }
-
         private ACImage GetSettingIcon(ColorToggleOption option) {
             var bmp = new Bitmap(32, 32);
             using (Graphics gfx = Graphics.FromImage(bmp)) {
@@ -141,67 +95,6 @@ namespace UtilityBelt.Tools {
             }
 
             return new ACImage(bmp);
-        }
-
-        private void VisualNavSettingsList_Click(object sender, int row, int col) {
-            try {
-                HudList.HudListRowAccessor clickedRow = VisualNavSettingsList[row];
-                var name = ((HudStaticText)clickedRow[COL_NAME]).Text;
-                var option = Globals.Settings.VisualNav.Display.GetPropValue<ColorToggleOption>(name);
-
-                if (option == null) {
-                    Util.WriteToChat("Bad option clicked: " + name);
-                    return;
-                }
-
-                switch (col) {
-                    case COL_ENABLED:
-                        option.Enabled = ((HudCheckBox)clickedRow[COL_ENABLED]).Checked;
-                        break;
-
-                    case COL_ICON:
-                        int originalColor = option.Color;
-                        var picker = new ColorPicker(Globals.MainView, name, Color.FromArgb(originalColor));
-
-                        Globals.Settings.DisableSaving();
-
-                        picker.RaiseColorPickerCancelEvent += (s, e) => {
-                            // restore color
-                            option.Color = originalColor;
-                            Globals.Settings.EnableSaving();
-                            picker.Dispose();
-                            needsDraw = true;
-                        };
-
-                        picker.RaiseColorPickerSaveEvent += (s,  e) => {
-                            // this is to force a change event
-                            option.Color = originalColor;
-                            Globals.Settings.EnableSaving();
-                            option.Color = e.Color.ToArgb();
-                            PopulateSettings();
-                            picker.Dispose();
-                            needsDraw = true;
-                        };
-
-                        picker.RaiseColorPickerChangeEvent += (s, e) => {
-                            option.Color = e.Color.ToArgb();
-                            needsDraw = true;
-                        };
-
-                        picker.view.VisibleChanged += (s, e) => {
-                            // restore color
-                            option.Color = originalColor;
-                            Globals.Settings.EnableSaving();
-                            if (!picker.view.Visible) {
-                                picker.Dispose();
-                            }
-                            needsDraw = true;
-                        };
-
-                        break;
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Profiles_Changed(object sender, FileSystemEventArgs e) {
@@ -231,12 +124,8 @@ namespace UtilityBelt.Tools {
         }
 
         private void DrawCurrentRoute() {
-            if (!Globals.Settings.VisualNav.Enabled) {
-                if (currentRoute != null) {
-                    currentRoute.Dispose();
-                    currentRoute = null;
-                }
-
+            if (!Globals.Settings.VisualNav.Enabled || Globals.Settings.Plugin.VideoPatch) {
+                ClearCurrentRoute();
                 return;
             }
 
