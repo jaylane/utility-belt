@@ -19,21 +19,11 @@ namespace UtilityBelt.Tools
         private string traderName = null;
         private bool running = false;
         private bool doAccept = false;
+        private Dictionary<string, int> keepUpToCounts = new Dictionary<string, int>();
         private readonly List<int> pendingAddItems = new List<int>();
         private readonly List<int> addedItems = new List<int>();
-        private readonly Dictionary<string, int> keepUpToCounts = new Dictionary<string, int>();
-        private int? editingRow = null;
         private int lastIdCount = 0;
         private DateTime bailTimer = DateTime.MinValue;
-
-        HudCheckBox UIAutoTradeEnable { get; set; }
-        HudCheckBox UIAutoTradeTestMode { get; set; }
-        HudCheckBox UIAutoTradeThink { get; set; }
-        HudCheckBox UIAutoTradeOnlyFromMainPack { get; set; }
-        HudCheckBox UIAutoTradeAutoAccept { get; set; }
-        HudTextBox UIAutoTradeAcceptNewChar { get; set; }
-        HudButton UIAutoTradeAcceptAddNewChar { get; set; }
-        HudList UIAutoTradeAcceptCharList { get; set; }
 
         public AutoTrade()
         {
@@ -43,83 +33,14 @@ namespace UtilityBelt.Tools
                 Directory.CreateDirectory(Path.Combine(Util.GetCharacterDirectory(), "autotrade"));
                 Directory.CreateDirectory(Path.Combine(Util.GetServerDirectory(), "autotrade"));
 
-                UIAutoTradeEnable = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoTradeEnabled"] : new HudCheckBox();
-                UIAutoTradeEnable.Change += UIAutoTradeEnable_Change;
-
-                UIAutoTradeTestMode = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoTradeTestMode"] : new HudCheckBox();
-                UIAutoTradeTestMode.Change += UIAutoTradeTestMode_Change;
-
-                UIAutoTradeThink = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoTradeThink"] : new HudCheckBox();
-                UIAutoTradeThink.Change += UIAutoTradeThink_Change;
-
-                UIAutoTradeOnlyFromMainPack = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoTradeOnlyFromMainPack"] : new HudCheckBox();
-                UIAutoTradeOnlyFromMainPack.Change += UIAutoTradeOnlyFromMainPack_Change;
-
-                UIAutoTradeAutoAccept = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoTradeAutoAccept"] : new HudCheckBox();
-                UIAutoTradeAutoAccept.Change += UIAutoTradeAutoAccept_Change;
-
-                UIAutoTradeAcceptNewChar = Globals.MainView.view != null ? (HudTextBox)Globals.MainView.view["AutoTradeAcceptNewChar"] : new HudTextBox();
-
-                UIAutoTradeAcceptAddNewChar = Globals.MainView.view != null ? (HudButton)Globals.MainView.view["AutoTradeAcceptAddNewChar"] : new HudButton();
-                UIAutoTradeAcceptAddNewChar.Hit += UIAutoTradeAcceptAddNewChar_Hit;
-
-                UIAutoTradeAcceptCharList = Globals.MainView.view != null ? (HudList)Globals.MainView.view["AutoTradeAcceptCharList"] : new HudList();
-                UIAutoTradeAcceptCharList.Click += UIAutoTradeAcceptCharList_Click;
-
                 Globals.Core.WorldFilter.EnterTrade += WorldFilter_EnterTrade;
                 Globals.Core.WorldFilter.EndTrade += WorldFilter_EndTrade;
                 Globals.Core.WorldFilter.AddTradeItem += WorldFilter_AddTradeItem;
                 Globals.Core.WorldFilter.FailToAddTradeItem += WorldFilter_FailToAddTradeItem;
                 Globals.Core.WorldFilter.AcceptTrade += WorldFilter_AcceptTrade;
                 Globals.Core.CommandLineText += Core_CommandLineText;
-
-                Globals.Settings.AutoTrade.PropertyChanged += (s, e) => UpdateUI();
-                
-                UpdateUI();
             }
             catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void UIAutoTradeAcceptCharList_Click(object sender, int row, int col)
-        {
-            if (col == 0)
-            {
-                if (editingRow.HasValue && row == editingRow.Value)
-                {
-                    editingRow = null;
-                    UIAutoTradeAcceptNewChar.Text = "";
-                    UIAutoTradeAcceptAddNewChar.Text = "Add";
-                }
-
-                Globals.Settings.AutoTrade.AutoAcceptChars.RemoveAt(row);
-            }
-            else
-            {
-                editingRow = row;
-                UIAutoTradeAcceptNewChar.Text = Globals.Settings.AutoTrade.AutoAcceptChars[row];
-                ((HudStaticText)UIAutoTradeAcceptCharList[row][1]).TextColor = System.Drawing.Color.Red;
-                UIAutoTradeAcceptAddNewChar.Text = "Save";
-            }
-        }
-
-        private void UIAutoTradeAcceptAddNewChar_Hit(object sender, EventArgs e)
-        {
-            if (!string.IsNullOrEmpty(UIAutoTradeAcceptNewChar.Text))
-            {
-                if (editingRow.HasValue)
-                {
-                    Globals.Settings.AutoTrade.AutoAcceptChars[editingRow.Value] = UIAutoTradeAcceptNewChar.Text;
-                    ((HudStaticText)UIAutoTradeAcceptCharList[editingRow.Value][1]).TextColor = System.Drawing.Color.White;
-                    UIAutoTradeAcceptAddNewChar.Text = "Add";
-                    editingRow = null;
-                }
-                else
-                {
-                    Globals.Settings.AutoTrade.AutoAcceptChars.Add(UIAutoTradeAcceptNewChar.Text);
-                }
-
-                UIAutoTradeAcceptNewChar.Text = "";
-            }
         }
 
         private void WorldFilter_AcceptTrade(object sender, AcceptTradeEventArgs e)
@@ -165,48 +86,6 @@ namespace UtilityBelt.Tools
             if (running)
                 Stop();
             traderId = 0;
-        }
-
-        private void UIAutoTradeAutoAccept_Change(object sender, EventArgs e)
-        {
-            Globals.Settings.AutoTrade.AutoAccept = UIAutoTradeAutoAccept.Checked;
-        }
-
-        private void UIAutoTradeOnlyFromMainPack_Change(object sender, EventArgs e)
-        {
-            Globals.Settings.AutoTrade.OnlyFromMainPack = UIAutoTradeOnlyFromMainPack.Checked;
-        }
-
-        private void UIAutoTradeThink_Change(object sender, EventArgs e)
-        {
-            Globals.Settings.AutoTrade.Think = UIAutoTradeThink.Checked;
-        }
-
-        private void UIAutoTradeTestMode_Change(object sender, EventArgs e)
-        {
-            Globals.Settings.AutoTrade.TestMode = UIAutoTradeTestMode.Checked;
-        }
-
-        private void UIAutoTradeEnable_Change(object sender, EventArgs e)
-        {
-            Globals.Settings.AutoTrade.Enabled = UIAutoTradeEnable.Checked;
-        }
-
-        private void UpdateUI()
-        {
-            UIAutoTradeEnable.Checked = Globals.Settings.AutoTrade.Enabled;
-            UIAutoTradeTestMode.Checked = Globals.Settings.AutoTrade.TestMode;
-            UIAutoTradeThink.Checked = Globals.Settings.AutoTrade.Think;
-            UIAutoTradeOnlyFromMainPack.Checked = Globals.Settings.AutoTrade.OnlyFromMainPack;
-            UIAutoTradeAutoAccept.Checked = Globals.Settings.AutoTrade.AutoAccept;
-
-            UIAutoTradeAcceptCharList.ClearRows();
-            foreach (var ch in Globals.Settings.AutoTrade.AutoAcceptChars)
-            {
-                var row = UIAutoTradeAcceptCharList.AddRow();
-                ((HudPictureBox)row[0]).Image = 0x60011F8;
-                ((HudStaticText)row[1]).Text = ch;
-            }
         }
 
         private void Core_CommandLineText(object sender, Decal.Adapter.ChatParserInterceptEventArgs e)

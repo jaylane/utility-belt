@@ -1,9 +1,12 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Decal.Adapter.Wrappers;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using UtilityBelt.Constants;
+using UtilityBelt.Lib.Constants;
 
 namespace UtilityBelt.Lib.Settings.Sections {
     [Section("Plugin")]
@@ -13,6 +16,21 @@ namespace UtilityBelt.Lib.Settings.Sections {
         public bool CheckForUpdates {
             get { return (bool)GetSetting("CheckForUpdates"); }
             set { UpdateSetting("CheckForUpdates", value); }
+        }
+
+        [Summary("Test")]
+        [DefaultValue(ObjectClass.TradeNote)]
+        public ObjectClass ObjectClassTest {
+            get { return (ObjectClass)GetSetting("ObjectClassTest"); }
+            set { UpdateSetting("ObjectClassTest", value); }
+        }
+
+        [Summary("BehaviorFlag testing")]
+        [DefaultValue(BehaviorFlag.Admin | BehaviorFlag.Corpse)]
+        [SupportsFlags]
+        public BehaviorFlag BehaviorFlagTest {
+            get { return (BehaviorFlag)GetSetting("BehaviorFlagTest"); }
+            set { UpdateSetting("BehaviorFlagTest", value); }
         }
 
         [Summary("Show debug messages")]
@@ -54,6 +72,23 @@ namespace UtilityBelt.Lib.Settings.Sections {
         public int portalAttempts {
             get { return (int)GetSetting("portalAttempts"); }
             set { UpdateSetting("portalAttempts", value); }
+        }
+
+        [Summary("Patches the client (in realtime) to disable 3d rendering")]
+        [DefaultValue(false)]
+        public bool VideoPatch {
+            get { return (bool)GetSetting("VideoPatch"); }
+            set {
+                UpdateSetting("VideoPatch", value);
+
+                if (UBHelper.Core.version < 1911140303) {
+                    Util.WriteToChat($"Error UBHelper.dll is out of date!");
+                    return;
+                }
+
+                if (value) UBHelper.VideoPatch.Enable();
+                else UBHelper.VideoPatch.Disable();
+            }
         }
 
         public Plugin(SectionBase parent) : base(parent) {

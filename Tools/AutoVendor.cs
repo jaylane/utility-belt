@@ -37,86 +37,17 @@ namespace UtilityBelt.Tools {
         private readonly Dictionary<int, int> pendingBuy = new Dictionary<int, int>();
         private readonly List<int> pendingSell = new List<int>();
 
-        HudCheckBox UIAutoVendorEnable { get; set; }
-        HudCheckBox UIAutoVendorTestMode { get; set; }
-        HudCheckBox UIAutoVendorShowMerchantInfo { get; set; }
-        HudCheckBox UIAutoVendorThink { get; set; }
-        HudCheckBox UIAutoVendorOnlyFromMainPack { get; set; }
-        HudHSlider UIAutoVendorTries { get; set; }
-        HudStaticText UIAutoVendorTriesText { get; set; }
-
         public AutoVendor() {
             try {
                 Directory.CreateDirectory(Path.Combine(Util.GetPluginDirectory(), "autovendor"));
                 Directory.CreateDirectory(Path.Combine(Util.GetCharacterDirectory(), "autovendor"));
                 Directory.CreateDirectory(Path.Combine(Util.GetServerDirectory(), "autovendor"));
 
-                UIAutoVendorTriesText = Globals.MainView.view != null ? (HudStaticText)Globals.MainView.view["AutoVendorTriesText"] : new HudStaticText();
-
-                UIAutoVendorEnable = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoVendorEnabled"] : new HudCheckBox();
-                UIAutoVendorEnable.Change += UIAutoVendorEnable_Change;
-
-                UIAutoVendorTestMode = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoVendorTestMode"] : new HudCheckBox();
-                UIAutoVendorTestMode.Change += UIAutoVendorTestMode_Change;
-
-                UIAutoVendorShowMerchantInfo = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoVendorShowMerchantInfo"] : new HudCheckBox();
-                UIAutoVendorShowMerchantInfo.Change += UIAutoVendorShowMerchantInfo_Change;
-
-                UIAutoVendorThink = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoVendorThink"] : new HudCheckBox();
-                UIAutoVendorThink.Change += UIAutoVendorThink_Change;
-
-                UIAutoVendorOnlyFromMainPack = Globals.MainView.view != null ? (HudCheckBox)Globals.MainView.view["AutoVendorOnlyFromMainPack"] : new HudCheckBox();
-                UIAutoVendorOnlyFromMainPack.Change += UIAutoVendorOnlyFromMainPack_Change;
-
-                UIAutoVendorTries = Globals.MainView.view != null ? (HudHSlider)Globals.MainView.view["AutoVendorTries"] : new HudHSlider();
-                UIAutoVendorTries.Changed += UIAutoVendorTries_Changed;
-
                 Globals.Core.WorldFilter.ApproachVendor += WorldFilter_ApproachVendor;
                 Globals.Core.CommandLineText += Current_CommandLineText;
-
-                Globals.Settings.AutoSalvage.PropertyChanged += (s, e) => { UpdateUI(); };
-
-                UpdateUI();
             } catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void UpdateUI() {
-            UIAutoVendorEnable.Checked = Globals.Settings.AutoVendor.Enabled;
-            UIAutoVendorTestMode.Checked = Globals.Settings.AutoVendor.TestMode;
-            UIAutoVendorShowMerchantInfo.Checked = Globals.Settings.AutoVendor.ShowMerchantInfo;
-            UIAutoVendorThink.Checked = Globals.Settings.AutoVendor.Think;
-            UIAutoVendorOnlyFromMainPack.Checked = Globals.Settings.AutoVendor.OnlyFromMainPack;
-            UIAutoVendorTries.Position = Globals.Settings.AutoVendor.Tries - 1;
-            UIAutoVendorTriesText.Text = Globals.Settings.AutoVendor.Tries.ToString();
-        }
-
-        private void UIAutoVendorEnable_Change(object sender, EventArgs e) {
-            Globals.Settings.AutoVendor.Enabled = UIAutoVendorEnable.Checked;
-        }
-
-        private void UIAutoVendorTestMode_Change(object sender, EventArgs e) {
-            Globals.Settings.AutoVendor.TestMode = UIAutoVendorTestMode.Checked;
-        }
-
-        private void UIAutoVendorShowMerchantInfo_Change(object sender, EventArgs e) {
-            Globals.Settings.AutoVendor.ShowMerchantInfo = UIAutoVendorShowMerchantInfo.Checked;
-        }
-
-        private void UIAutoVendorThink_Change(object sender, EventArgs e) {
-            Globals.Settings.AutoVendor.Think = UIAutoVendorThink.Checked;
-        }
-
-        private void UIAutoVendorOnlyFromMainPack_Change(object sender, EventArgs e) {
-            Globals.Settings.AutoVendor.OnlyFromMainPack = UIAutoVendorOnlyFromMainPack.Checked;
-        }
-
-        private void UIAutoVendorTries_Changed(int min, int max, int pos) {
-            pos++;
-            if (pos != Globals.Settings.AutoVendor.Tries) {
-                Globals.Settings.AutoVendor.Tries = pos;
-                UIAutoVendorTriesText.Text = pos.ToString();
-            }
-        }
         public readonly Dictionary<int, string> ShopItemListTypes = new Dictionary<int, string> { { 0x00000001, "Weapons" }, { 0x00000002, "Armor" }, { 0x00000004, "Clothing" }, { 0x00000008, "Jewelry" }, { 0x00000010, "Miscellaneous" }, { 0x00000020, "Food" }, { 0x00000080, "Miscellaneous" }, { 0x00000100, "Weapons" }, { 0x00000200, "Containers" }, { 0x00000400, "Miscellaneous" }, { 0x00000800, "Gems" }, { 0x00001000, "Spell Components" }, { 0x00002000, "Books, Paper" }, { 0x00004000, "Keys, Tools" }, { 0x00008000, "Magic Items" }, { 0x00040000, "Trade Notes" }, { 0x00080000, "Mana Stones" }, { 0x00100000, "Services" }, { 0x00400000, "Cooking Items" }, { 0x00800000, "Alchemical Items" }, { 0x01000000, "Fletching Items" }, { 0x04000000, "Alchemical Items" }, { 0x08000000, "Fletching Items" }, { 0x20000000, "Keys, Tools" } };
         private void Reset_pendingBuy() {
             if (pendingBuy.Count > 0) {

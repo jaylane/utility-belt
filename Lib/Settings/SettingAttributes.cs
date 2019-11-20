@@ -66,4 +66,8 @@ namespace UtilityBelt.Lib.Settings {
             Enabled = enabled;
         }
     }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    class SupportsFlagsAttribute : Attribute {
+    }
 }

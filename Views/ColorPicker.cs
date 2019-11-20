@@ -55,7 +55,7 @@ namespace UtilityBelt.Views {
 
             view = new VirindiViewService.HudView(properties, controls);
 
-            view.Title = $"Set a color for {setting} waypoints";
+            view.Title = $"Set a color for {setting}";
 
             int x = (mainView.view.Location.X + (mainView.view.Width / 2)) - (view.Width / 2);
             int y = (mainView.view.Location.Y + (mainView.view.Height / 2)) - (view.Height / 2);

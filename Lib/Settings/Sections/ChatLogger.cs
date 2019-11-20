@@ -17,8 +17,7 @@ namespace UtilityBelt.Lib.Settings.Sections
             set { UpdateSetting("SaveToFile", value); }
         }
 
-        [Summary("List of message types to log")]
-        [DefaultValue(null)]
+        //[Summary("List of message types to log")]
         public ObservableCollection<ChatLogRule> Rules { get; set; } = new ObservableCollection<ChatLogRule>();
 
         public ChatLogger(SectionBase parent) : base(parent)

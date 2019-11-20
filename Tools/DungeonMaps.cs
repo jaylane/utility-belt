@@ -50,19 +50,7 @@ namespace UtilityBelt.Tools {
         readonly System.Windows.Forms.Timer zoomSaveTimer;
         private long lastDrawMs = 0;
         private long lastHudMs = 0;
-        private ColorPicker picker;
-        private MarkerOptions markerOptionsView;
-
-        HudCheckBox UIDungeonMapsEnabled { get; set; }
-        HudCheckBox UIDungeonMapsDrawWhenClosed { get; set; }
-        HudCheckBox UIDungeonMapsShowVisitedTiles { get; set; }
-        HudHSlider UIDungeonMapsOpacity { get; set; }
-        HudButton UIDungeonMapsClearTileCache { get; set; }
-        
         HudButton UIFollowCharacter { get; set; }
-
-        HudList UIDungeonMapsSettingsList { get; set; }
-        HudList UIDungeonMapsMarkersList { get; set; }
 
         public DungeonMaps() {
             try {
@@ -74,30 +62,6 @@ namespace UtilityBelt.Tools {
                 UIFollowCharacter.Hit += UIFollowCharacter_Hit;
 
                 Globals.MapView.view["DungeonMapsRenderContainer"].MouseEvent += DungeonMaps_MouseEvent;
-
-                UIDungeonMapsClearTileCache = (HudButton)Globals.MainView.view["DungeonMapsClearTileCache"];
-                UIDungeonMapsClearTileCache.Hit += UIDungeonMapsClearTileCache_Hit;
-
-                UIDungeonMapsEnabled = (HudCheckBox)Globals.MainView.view["DungeonMapsEnabled"];
-                UIDungeonMapsEnabled.Change += UIDungeonMapsEnabled_Change;
-
-                UIDungeonMapsDrawWhenClosed = (HudCheckBox)Globals.MainView.view["DungeonMapsDrawWhenClosed"];
-                UIDungeonMapsDrawWhenClosed.Change += UIDungeonMapsDrawWhenClosed_Change;
-
-                UIDungeonMapsShowVisitedTiles = (HudCheckBox)Globals.MainView.view["DungeonMapsShowVisitedTiles"];
-                UIDungeonMapsShowVisitedTiles.Change += UIDungeonMapsShowVisitedTiles_Change;
-
-                UIDungeonMapsOpacity = (HudHSlider)Globals.MainView.view["DungeonMapsOpacity"];
-                UIDungeonMapsOpacity.Changed += UIDungeonMapsOpacity_Changed;
-
-                UIDungeonMapsSettingsList = (HudList)Globals.MainView.view["DungeonMapsSettingsList"];
-                UIDungeonMapsSettingsList.Click += UIDungeonMapsSettingsList_Click;
-
-                UIDungeonMapsMarkersList = (HudList)Globals.MainView.view["DungeonMapsMarkersList"];
-                UIDungeonMapsMarkersList.Click += UIDungeonMapsMarkersList_Click; ;
-
-                UpdateUI();
-
                 #endregion
 
                 using (Stream manifestResourceStream = typeof(MainView).Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.compass.png")) {
@@ -108,7 +72,7 @@ namespace UtilityBelt.Tools {
                 }
 
                 Globals.Core.RegionChange3D += Core_RegionChange3D;
-
+                Globals.Settings.DungeonMaps.PropertyChanged += DungeonMaps_PropertyChanged;
                 Globals.MapView.view.Resize += View_Resize;
                 Globals.MapView.view.Moved += View_Moved;
 
@@ -121,17 +85,17 @@ namespace UtilityBelt.Tools {
                     zoomSaveTimer.Stop();
                     Globals.Settings.DungeonMaps.MapZoom = scale;
                 };
-
-                PopulateSettings();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void UpdateUI() {
-            UIDungeonMapsEnabled.Checked = Globals.Settings.DungeonMaps.Enabled;
-            UIDungeonMapsDrawWhenClosed.Checked = Globals.Settings.DungeonMaps.DrawWhenClosed;
-            UIDungeonMapsShowVisitedTiles.Checked = Globals.Settings.DungeonMaps.ShowVisitedTiles;
-            UIDungeonMapsOpacity.Position = Globals.Settings.DungeonMaps.Opacity;
+        private void DungeonMaps_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
+            if (Globals.Settings.DungeonMaps.Enabled && hud == null) {
+                CreateHud();
+            }
+            else if (!Globals.Settings.DungeonMaps.Enabled) {
+                ClearHud();
+            }
         }
 
         #region UI Event Handlers
@@ -140,34 +104,6 @@ namespace UtilityBelt.Tools {
                 isFollowingCharacter = true;
             }
             catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void UIDungeonMapsEnabled_Change(object sender, EventArgs e) {
-            try {
-                Globals.Settings.DungeonMaps.Enabled = UIDungeonMapsEnabled.Checked;
-                Toggle();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void UIDungeonMapsDrawWhenClosed_Change(object sender, EventArgs e) {
-            try {
-                Globals.Settings.DungeonMaps.DrawWhenClosed = UIDungeonMapsDrawWhenClosed.Checked;
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void UIDungeonMapsShowVisitedTiles_Change(object sender, EventArgs e) {
-            try {
-                Globals.Settings.DungeonMaps.ShowVisitedTiles = UIDungeonMapsShowVisitedTiles.Checked;
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void UIDungeonMapsOpacity_Changed(int min, int max, int pos) {
-            if (pos != Globals.Settings.DungeonMaps.Opacity) {
-                Globals.Settings.DungeonMaps.Opacity = pos;
-            }
         }
 
         private void View_Resize(object sender, EventArgs e) {
@@ -236,210 +172,7 @@ namespace UtilityBelt.Tools {
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
-
-        private void UIDungeonMapsSettingsList_Click(object sender, int row, int col) {
-            try {
-                HudList.HudListRowAccessor clickedRow = UIDungeonMapsSettingsList[row];
-                var name = ((HudStaticText)clickedRow[COL_NAME]).Text;
-                var option = Globals.Settings.DungeonMaps.Display.GetPropValue<ColorToggleOption>(name);
-
-                if (option == null) {
-                    Util.WriteToChat("Bad option clicked: " + name);
-                    return;
-                }
-
-                switch (col) {
-                    case COL_ENABLED:
-                        option.Enabled = ((HudCheckBox)clickedRow[COL_ENABLED]).Checked;
-                        break;
-
-                    case COL_ICON:
-                        int originalColor = option.Color;
-                        picker = new ColorPicker(Globals.MainView, name, Color.FromArgb(originalColor));
-
-                        Globals.Settings.DisableSaving();
-                        
-                        picker.RaiseColorPickerCancelEvent += (s, e) => {
-                            // restore color
-                            SetDisplayColor(name, originalColor);
-                            Globals.Settings.EnableSaving();
-                            picker.Dispose();
-                            picker = null;
-                        };
-
-                        picker.RaiseColorPickerSaveEvent += (s, e) => {
-                            // this is to force a change event
-                            SetDisplayColor(name, originalColor);
-                            Globals.Settings.EnableSaving();
-                            SetDisplayColor(name, e.Color.ToArgb());
-                            PopulateSettings();
-                            picker.Dispose();
-                            picker = null;
-                        };
-
-                        picker.RaiseColorPickerChangeEvent += (s, e) => {
-                            SetDisplayColor(name, e.Color.ToArgb());
-                        };
-
-                        picker.view.VisibleChanged += (s, e) => {
-                            // restore color
-                            SetDisplayColor(name, originalColor);
-                            Globals.Settings.EnableSaving();
-                            if (!picker.view.Visible) {
-                                picker.Dispose();
-                                picker = null;
-                            }
-                        };
-                        
-                        break;
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void UIDungeonMapsMarkersList_Click(object sender, int row, int col) {
-            try {
-                HudList.HudListRowAccessor clickedRow = UIDungeonMapsMarkersList[row];
-                var name = ((HudStaticText)clickedRow[COL_NAME]).Text;
-                var option = Globals.Settings.DungeonMaps.Display.Markers.GetPropValue<MarkerToggleOption>(name);
-
-                if (option == null) {
-                    Util.WriteToChat("Bad option clicked: " + name);
-                    return;
-                }
-
-                switch (col) {
-                    case COL_ENABLED:
-                        option.Enabled = ((HudCheckBox)clickedRow[COL_ENABLED]).Checked;
-                        break;
-
-                    case COL_ICON:
-                        // todo: make this only disable saving this specific setting
-                        Globals.Settings.DisableSaving();
-
-                        var originalOptions = option.Clone();
-                        markerOptionsView = new MarkerOptions(Globals.MainView, option);
-
-                        markerOptionsView.RaiseCancelEvent += (s, e) => {
-                            option.RestoreFrom(originalOptions);
-                            Globals.Settings.EnableSaving();
-                            markerOptionsView.Dispose();
-                            markerOptionsView = null;
-                        };
-
-                        markerOptionsView.RaiseSaveEvent += (s, e) => {
-                            var newOptions = option.Clone();
-                            option.RestoreFrom(originalOptions);
-                            Globals.Settings.EnableSaving();
-                            option.RestoreFrom(newOptions);
-                            PopulateSettings();
-                            markerOptionsView.Dispose();
-                            markerOptionsView = null;
-                        };
-
-                        markerOptionsView.RaiseChangeEvent += (s, e) => {
-                        };
-
-                        markerOptionsView.view.VisibleChanged += (s, e) => {
-                            if (!markerOptionsView.view.Visible) {
-                                option.RestoreFrom(originalOptions);
-                                Globals.Settings.EnableSaving();
-                                markerOptionsView.Dispose();
-                                markerOptionsView = null;
-                            }
-                        };
-
-                        break;
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
         #endregion
-
-        private void SetDisplayColor(string name, int color) {
-            var option = Globals.Settings.DungeonMaps.Display.GetPropValue<ColorToggleOption>(name);
-            option.Color = color;
-
-            if (Globals.Settings.DungeonMaps.Display.TileOptions.Contains(name)) {
-                ClearTileCache();
-            }
-        }
-
-        private void PopulateSettings() {
-            try {
-                PopulateDisplaySettings();
-                PopulateMarkerSettings();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void PopulateMarkerSettings() {
-            int scroll = 0;
-            if (Globals.MainView.view.Visible) {
-                scroll = UIDungeonMapsMarkersList.ScrollPosition;
-            }
-
-            UIDungeonMapsMarkersList.ClearRows();
-
-            foreach (var setting in Globals.Settings.DungeonMaps.Display.Markers.ValidSettings) {
-                var option = Globals.Settings.DungeonMaps.Display.Markers.GetPropValue<MarkerToggleOption>(setting);
-
-                if (option != null) {
-                    HudList.HudListRowAccessor row = UIDungeonMapsMarkersList.AddRow();
-                    ((HudCheckBox)row[COL_ENABLED]).Checked = option.Enabled;
-                    ((HudStaticText)row[COL_NAME]).Text = setting;
-                    ((HudPictureBox)row[COL_ICON]).Image = GetSettingIcon(Color.FromArgb(option.Color));
-                }
-                else {
-                    Util.WriteToChat("Bad DisplayOption: " + setting);
-                }
-            }
-
-            UIDungeonMapsMarkersList.ScrollPosition = scroll;
-        }
-
-        private void PopulateDisplaySettings() {
-            int scroll = 0;
-            if (Globals.MainView.view.Visible) {
-                scroll = UIDungeonMapsSettingsList.ScrollPosition;
-            }
-
-            UIDungeonMapsSettingsList.ClearRows();
-
-            foreach (var setting in Globals.Settings.DungeonMaps.Display.ValidSettings) {
-                var option = Globals.Settings.DungeonMaps.Display.GetPropValue<ColorToggleOption>(setting);
-
-                if (option != null) {
-                    HudList.HudListRowAccessor row = UIDungeonMapsSettingsList.AddRow();
-                    ((HudCheckBox)row[COL_ENABLED]).Checked = option.Enabled;
-                    ((HudStaticText)row[COL_NAME]).Text = setting;
-                    ((HudPictureBox)row[COL_ICON]).Image = GetSettingIcon(Color.FromArgb(option.Color));
-                }
-                else {
-                    Util.WriteToChat("Bad DisplayOption: " + setting);
-                }
-            }
-
-            UIDungeonMapsSettingsList.ScrollPosition = scroll;
-        }
-
-        private ACImage GetSettingIcon(Color color) {
-            var bmp = new Bitmap(32, 32);
-            using (Graphics gfx = Graphics.FromImage(bmp)) {
-                using (SolidBrush brush = new SolidBrush(color)) {
-                    gfx.FillRectangle(brush, 0, 0, 32, 32);
-                }
-            }
-
-            return new ACImage(bmp);
-        }
-
-        private void UIDungeonMapsClearTileCache_Hit(object sender, EventArgs e) {
-            try {
-                ClearTileCache();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
 
         private void Toggle() {
             try {
@@ -499,7 +232,10 @@ namespace UtilityBelt.Tools {
         }
 
         public void CreateHud() {
-            if (hud != null) return;
+            if (hud != null) {
+                hud.Enabled = true;
+                return;
+            }
 
             hud = Globals.Core.RenderService.CreateHud(GetHudRect());
 
@@ -518,20 +254,14 @@ namespace UtilityBelt.Tools {
         }
 
         public void ClearHud() {
-            if (hud != null) {
-                hud.Clear(GetHudRect());
+            if (hud != null && hud.Enabled) {
+                hud.Clear();
                 hud.Enabled = false;
             }
         }
 
         public void UpdateHud() {
             DrawHud();
-        }
-
-        public bool DoesHudNeedUpdate() {
-            if (!Globals.Settings.DungeonMaps.Enabled) return false;
-
-            return false;
         }
 
         public void DrawHud() {
@@ -776,8 +506,6 @@ namespace UtilityBelt.Tools {
                     if (drawBitmap != null) drawBitmap.Dispose();
                     if (compassBitmap != null) compassBitmap.Dispose();
                     if (zoomSaveTimer != null) zoomSaveTimer.Dispose();
-                    if (picker != null) picker.Dispose();
-                    if (markerOptionsView != null) markerOptionsView.Dispose();
                 }
                 disposed = true;
             }

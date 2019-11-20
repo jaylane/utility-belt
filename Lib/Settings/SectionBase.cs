@@ -98,20 +98,7 @@ namespace UtilityBelt.Lib.Settings
 
             if (direct && prop != null && Globals.Settings != null && Globals.Settings.ShouldSave) {
                 var name = $"{GetAncestry()}{propName}";
-                var value = prop.GetValue(this, null);
-                if (value is System.Collections.IList list)
-                {
-                    var b = new StringBuilder(name).Append(" = [");
-                    for (var i = 0; i < list.Count; ++i)
-                    {
-                        if (i > 0) b.Append(", ");
-                        b.Append(list[i].ToString());
-                    }
-                    b.Append(" ]");
-                    Logger.Debug(b.ToString());
-                }
-                else
-                    Logger.Debug($"{name} = {value}");
+                Logger.Debug($"{name} = {Globals.Settings.DisplayValue(name, true)}");
             }
 
             if (parent != null) parent.OnPropertyChanged(Name, false);

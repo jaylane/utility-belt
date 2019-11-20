@@ -21,11 +21,13 @@ namespace UtilityBelt.Lib {
     public static class UpdateChecker {
         private static string json = "";
 
-        public static void CheckForUpdate() {
+        public static void CheckForUpdate(bool loud=false) {
+            if (loud) Util.WriteToChat("Checking for update");
+
             new Thread(() => {
                 Thread.CurrentThread.IsBackground = true;
                 FetchGitlabData();
-                OnGitlabFetchComplete();
+                OnGitlabFetchComplete(loud);
             }).Start();
         }
 
@@ -49,7 +51,7 @@ namespace UtilityBelt.Lib {
             catch {}
         }
 
-        private static void OnGitlabFetchComplete() {
+        private static void OnGitlabFetchComplete(bool loud) {
             try {
                 if (!string.IsNullOrEmpty(json)) {
                     try {
@@ -58,6 +60,7 @@ namespace UtilityBelt.Lib {
                         Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
                         FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
                         Version version = new Version(fvi.FileVersion);
+                        bool foundUpdate = false;
 
                         foreach (var tag in tags) {
                             try {
@@ -70,10 +73,15 @@ namespace UtilityBelt.Lib {
                                     var description = string.Join("", lines.ToArray());
                                     Globals.Host.Actions.AddChatText($"[{Globals.PluginName}] Version {releaseVersion.ToString()} is now available! {description}", 3);
                                     Globals.Host.Actions.AddChatText($"Get it here: <Tell:IIDString:{Util.GetChatId()}:openurl|https://gitlab.com/trevis/utilitybelt>https://gitlab.com/trevis/utilitybelt</Tell>", 3);
+                                    foundUpdate = true;
                                     break;
                                 }
                             }
                             catch (Exception ex) { Logger.LogException(ex); }
+
+                            if (!foundUpdate) {
+                                Util.WriteToChat("Plugin is up to date: " + Util.GetVersion(true));
+                            }
                         }
                     }
                     catch (Exception ex) { Logger.LogException(ex); }

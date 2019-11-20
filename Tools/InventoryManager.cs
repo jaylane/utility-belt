@@ -36,10 +36,6 @@ namespace UtilityBelt.Tools {
 
         private static FileSystemWatcher profilesWatcher = null;
 
-        HudCheckBox UIInventoryManagerAutoCram { get; set; }
-        HudCheckBox UIInventoryManagerAutoStack { get; set; }
-        HudButton UIInventoryManagerTest { get; set; }
-
         // TODO: support AutoPack profiles when cramming
         public InventoryManager() {
             profilePath = Path.Combine(Util.GetPluginDirectory(), "itemgiver");
@@ -49,36 +45,7 @@ namespace UtilityBelt.Tools {
             Globals.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
             Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
 
-            UIInventoryManagerTest = (HudButton)Globals.MainView.view["InventoryManagerTest"];
-            UIInventoryManagerTest.Hit += UIInventoryManagerTest_Hit;
-
-            UIInventoryManagerAutoCram = (HudCheckBox)Globals.MainView.view["InventoryManagerAutoCram"];
-            UIInventoryManagerAutoCram.Change += UIInventoryManagerAutoCram_Change;
-
-            UIInventoryManagerAutoStack = (HudCheckBox)Globals.MainView.view["InventoryManagerAutoStack"];
-            UIInventoryManagerAutoStack.Change += UIInventoryManagerAutoStack_Change;
-
-            Globals.Settings.InventoryManager.PropertyChanged += (s, e) => { UpdateUI(); };
-
             if (Globals.Settings.InventoryManager.WatchLootProfile) WatchLootProfile_Changed(true);
-            UpdateUI();
-        }
-
-        private void UpdateUI() {
-            UIInventoryManagerAutoStack.Checked = Globals.Settings.InventoryManager.AutoStack;
-            UIInventoryManagerAutoCram.Checked = Globals.Settings.InventoryManager.AutoCram;
-        }
-
-        private void UIInventoryManagerTest_Hit(object sender, EventArgs e) {
-            Start();
-        }
-
-        private void UIInventoryManagerAutoCram_Change(object sender, EventArgs e) {
-            Globals.Settings.InventoryManager.AutoCram = UIInventoryManagerAutoCram.Checked;
-        }
-
-        private void UIInventoryManagerAutoStack_Change(object sender, EventArgs e) {
-            Globals.Settings.InventoryManager.AutoStack = UIInventoryManagerAutoStack.Checked;
         }
 
         private static readonly Regex giveRegex = new Regex(@"^\/ub give(?<flags>[pPr]*) ?(?<giveCount>\d+)? (?<itemName>.+) to (?<targetPlayer>.+)");
