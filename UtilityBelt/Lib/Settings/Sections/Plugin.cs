@@ -18,21 +18,6 @@ namespace UtilityBelt.Lib.Settings.Sections {
             set { UpdateSetting("CheckForUpdates", value); }
         }
 
-        [Summary("Test")]
-        [DefaultValue(ObjectClass.TradeNote)]
-        public ObjectClass ObjectClassTest {
-            get { return (ObjectClass)GetSetting("ObjectClassTest"); }
-            set { UpdateSetting("ObjectClassTest", value); }
-        }
-
-        [Summary("BehaviorFlag testing")]
-        [DefaultValue(BehaviorFlag.Admin | BehaviorFlag.Corpse)]
-        [SupportsFlags]
-        public BehaviorFlag BehaviorFlagTest {
-            get { return (BehaviorFlag)GetSetting("BehaviorFlagTest"); }
-            set { UpdateSetting("BehaviorFlagTest", value); }
-        }
-
         [Summary("Show debug messages")]
         [DefaultValue(false)]
         public bool Debug {
