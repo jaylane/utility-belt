@@ -1,23 +1,20 @@
-﻿using System;
+﻿using Decal.Adapter;
+using Decal.Adapter.Wrappers;
+using Decal.Filters;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Decal.Adapter;
-using Decal.Adapter.Wrappers;
-using UtilityBelt.Lib.VendorCache;
-using UtilityBelt.Views;
-using VirindiViewService.Controls;
 using System.Text.RegularExpressions;
-using System.ComponentModel;
-using System.Reflection;
+using System.Windows.Media;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Constants;
-using Decal.Filters;
 using UtilityBelt.Lib.Settings;
-using System.Timers;
 
-namespace UtilityBelt.Tools {
+namespace UtilityBelt.Tools
+{
 
     public class DelayedCommand {
         public string Command;
@@ -32,6 +29,7 @@ namespace UtilityBelt.Tools {
     }
 
     public class Misc : IDisposable {
+        private static readonly MediaPlayer mediaPlayer = new MediaPlayer();
         private DateTime vendorTimestamp = DateTime.MinValue;
         private int vendorOpening = 0;
         private static WorldObject vendor = null;
@@ -119,6 +117,9 @@ namespace UtilityBelt.Tools {
                         case "fixbusy":
                             UB_fixbusy();
                             break;
+                        case "playsound":
+                            UB_playsound(match.Groups["params"].Value);
+                            break;
                     }
                     // Util.WriteToChat("UB called with command <" + match.Groups["command"].Value + ">, params <" + match.Groups["params"].Value+">");
 
@@ -152,6 +153,7 @@ namespace UtilityBelt.Tools {
                 "   /ub delay <milliseconds> <command> - runs <command> after <milliseconds delay>\n" +
                 "   /ub videopatch {enable,disable,toggle} - online toggling of Mag's video patch\n" +
                 "   /ub playeroption <option> <on/true|off/false> - set player options\n" +
+                "   /ub playsound [volume] [path] - play sound file\n" +
                 "TODO: Add rest of commands");
         }
         public void UB_testBlock(string theRest) {
@@ -169,6 +171,45 @@ namespace UtilityBelt.Tools {
             }
             Util.WriteToChat("Attempting: VTankControl.Decision_Lock((uTank2.ActionLockType)" + num + ", TimeSpan.FromMilliseconds(" + durat + "));");
             VTankControl.Decision_Lock((uTank2.ActionLockType)num, TimeSpan.FromMilliseconds(durat));
+        }
+
+        private static readonly Regex PlaySoundParamRegex = new Regex(@"^(?<volume>\d*)?\s*(?<path>.*)$");
+        private void UB_playsound(string @params)
+        {
+            string absPath = null;
+            double volume = 0.5;
+            string path = null;
+            var m = PlaySoundParamRegex.Match(@params);
+            if (m != null && m.Success)
+            {
+                path = m.Groups["path"].Value;
+                if (!string.IsNullOrEmpty(m.Groups["volume"].Value) && int.TryParse(m.Groups["volume"].Value, out var volumeInt))
+                {
+                    volume = Math.Max(0, Math.Min(100, volumeInt)) * 0.01;
+                }
+            }
+
+            if (File.Exists(path))
+                absPath = path;
+            else if (Regex.IsMatch(path, @"$[a-zA-Z0-9.-_ ]*$"))
+            {
+                var ext = Path.GetExtension(path);
+                if (string.IsNullOrEmpty(ext))
+                    path = Path.Combine(Util.GetPluginDirectory(), path + ".mp3");
+                else
+                    path = Path.Combine(Util.GetPluginDirectory(), path);
+                if (File.Exists(path))
+                    absPath = path;
+            }
+
+            if (string.IsNullOrEmpty(absPath))
+                Util.WriteToChat($"Could not find file: <{path}>");
+            else
+            {
+                mediaPlayer.Open(new Uri(absPath));
+                mediaPlayer.Volume = volume;
+                mediaPlayer.Play();
+            }
         }
 
         public void UB_fixbusy() {
