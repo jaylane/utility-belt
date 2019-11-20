@@ -202,13 +202,15 @@ namespace UtilityBelt.Tools {
         protected virtual void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
-                    Globals.Core.CommandLineText -= Core_CommandLineText;
-                    Globals.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
-                    uTank2.PluginCore.PC.NavRouteChanged -= PC_NavRouteChanged;
+                    try {
+                        Globals.Core.CommandLineText -= Core_CommandLineText;
+                        Globals.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
+                        uTank2.PluginCore.PC.NavRouteChanged -= PC_NavRouteChanged;
+                    }
+                    catch { }
 
                     if (profilesWatcher != null) profilesWatcher.Dispose();
                     if (navFileWatcher != null) navFileWatcher.Dispose();
-
                     if (currentRoute != null) currentRoute.Dispose();
                 }
                 disposed = true;

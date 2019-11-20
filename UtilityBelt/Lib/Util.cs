@@ -36,12 +36,16 @@ namespace UtilityBelt
             }
         }
 
+        public static string AssemblyLocation = "";
+        public static string AssemblyDirectory  { get { return System.IO.Path.GetDirectoryName(AssemblyLocation); } }
+
         private static Regex releaseBranchVersion = new Regex(@"^\d+\.\d+.\d+\.(release)[\.\-]");
         public static string GetVersion(bool includeGitExtras=false) {
-            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetAssembly(typeof(UtilityBeltPlugin));
 
             if (assembly != null) {
-                var productVersion = FileVersionInfo.GetVersionInfo(assembly.Location).ProductVersion;
+                Util.WriteToChat($"AssemblyLocation: {AssemblyLocation}");
+                var productVersion = FileVersionInfo.GetVersionInfo(AssemblyLocation).ProductVersion;
 
                 // show the short version for release branch builds
                 if (releaseBranchVersion.IsMatch(productVersion) && !includeGitExtras) {
@@ -50,13 +54,10 @@ namespace UtilityBelt
                 else {
                     return productVersion;
                 }
+
             }
 
             return "0.0.0";
-        }
-
-        public static string GetAssemblyDirectory() {
-            return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         }
 
         public static string GetPluginDirectory() {
@@ -78,9 +79,7 @@ namespace UtilityBelt
         }
 
         internal static string GetResourcesDirectory() {
-            string assemblyFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-            return Path.Combine(assemblyFolder, "Resources");
+            return Path.Combine(AssemblyDirectory, "Resources");
         }
 
         public static void CreateDataDirectories() {
@@ -372,9 +371,7 @@ namespace UtilityBelt
         }
 
         internal static string GetTilePath() {
-            string assemblyFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-            return Path.Combine(Path.Combine(assemblyFolder, "Resources"), "tiles");
+            return Path.Combine(Path.Combine(AssemblyDirectory, "Resources"), "tiles");
         }
 
         internal static void Think(string message) {
