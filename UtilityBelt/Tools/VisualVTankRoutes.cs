@@ -124,14 +124,14 @@ namespace UtilityBelt.Tools {
         }
 
         private void DrawCurrentRoute() {
-            if (!Globals.Settings.VisualNav.Enabled || Globals.Settings.Plugin.VideoPatch) {
+            var vTank = VTankControl.vTankInstance;
+
+            if (!Globals.Settings.VisualNav.Enabled || Globals.Settings.Plugin.VideoPatch || string.IsNullOrEmpty(vTank.GetNavProfile())) {
                 ClearCurrentRoute();
                 return;
             }
 
-            var vTank = VTankControl.vTankInstance;
             var routePath = Path.Combine(Util.GetVTankProfilesDirectory(), vTank.GetNavProfile());
-            
             if (routePath == currentRoutePath && !forceUpdate) return;
 
             forceUpdate = false;

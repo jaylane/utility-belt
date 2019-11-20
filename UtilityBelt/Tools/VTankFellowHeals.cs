@@ -21,7 +21,7 @@ namespace UtilityBelt.Tools {
 
         public const string BUFFER_NAME = "UtilityBeltyVTankFellowHealsBuffer";
         public const int UPDATE_TIMEOUT = 6000; // ms
-        public const int UPDATE_INTERVAL = 300; // ms
+        public const int UPDATE_INTERVAL = 500; // ms
         public int BUFFER_SIZE = 1024 * 1024;
 
         public VTankFellowHeals() {
@@ -61,41 +61,63 @@ namespace UtilityBelt.Tools {
                 int recordCount = 0;
                 var updates = new List<UBPlayerUpdate>();
                 var i = 0;
+                int offset = sizeof(int);
+
                 using (var mutex = new Mutex(false, "UtilityBelt.VTankFellowHeals.SharedMemory")) {
-                    if (!mutex.WaitOne(TimeSpan.FromMilliseconds(50), false)) {
+                    try {
+                        if (!mutex.WaitOne(TimeSpan.FromMilliseconds(20), true)) {
+                            return;
+                        }
+                    }
+                    catch (AbandonedMutexException) {
                         return;
                     }
 
-                    sharedBuffer.Read<int>(out recordCount);
+                    try {
+                        sharedBuffer.Read<int>(out recordCount, 0);
+                        while (i < recordCount && offset <= sharedBuffer.BufferSize) {
+                            UBPlayerUpdate update = new UBPlayerUpdate();
+                            offset = update.Deserialize(sharedBuffer, offset);
 
-                    int offset = sizeof(int);
-                    while (i < recordCount && offset <= sharedBuffer.BufferSize) {
-                        UBPlayerUpdate update = new UBPlayerUpdate();
-                        offset = update.Deserialize(sharedBuffer, offset);
-
-                        if (update.PlayerID != Globals.Core.CharacterFilter.Id && DateTime.UtcNow - update.lastUpdate <= TimeSpan.FromMilliseconds(UPDATE_TIMEOUT)) {
-                            updates.Add(update);
-                            UpdateVTankVitalInfo(update);
-                        }
-                        else if (update.PlayerID != Globals.Core.CharacterFilter.Id) {
-                            if (HasVTank()) {
-                                //Util.WriteToChat("Marking player as invalid: " + update.PlayerID.ToString() + " on server " + update.Server);
-                                vTank.HelperPlayerSetInvalid(update.PlayerID);
+                            if (update.PlayerID != Globals.Core.CharacterFilter.Id && DateTime.UtcNow - update.lastUpdate <= TimeSpan.FromMilliseconds(UPDATE_TIMEOUT)) {
+                                updates.Add(update);
+                                UpdateVTankVitalInfo(update);
                             }
-                        }
+                            else if (update.PlayerID != Globals.Core.CharacterFilter.Id) {
+                                if (HasVTank()) {
+                                    //Util.WriteToChat("Marking player as invalid: " + update.PlayerID.ToString() + " on server " + update.Server);
+                                    vTank.HelperPlayerSetInvalid(update.PlayerID);
+                                }
+                            }
 
-                        i++;
+                            i++;
+                        }
+                    }
+                    catch {
+                        try {
+                            sharedBuffer.Write<int>(ref recordCount, 0);
+                        }
+                        catch { }
+                        return;
                     }
 
                     var newRecordCount = updates.Count + 1;
 
-                    sharedBuffer.Write(ref newRecordCount, 0);
-                    offset = playerUpdate.Serialize(sharedBuffer, sizeof(int));
-
                     //Util.WriteToChat($"Wrote newRecordCount:{newRecordCount} w/ id:{playerUpdate.PlayerID} stam:{playerUpdate.curStam}/{playerUpdate.maxStam}");
 
-                    for (var x = 0; x < updates.Count; x++) {
-                        offset = updates[x].Serialize(sharedBuffer, offset);
+                    try {
+                        sharedBuffer.Write(ref newRecordCount, 0);
+                        offset = playerUpdate.Serialize(sharedBuffer, sizeof(int));
+                        for (var x = 0; x < updates.Count; x++) {
+                            offset = updates[x].Serialize(sharedBuffer, offset);
+                        }
+                    }
+                    catch {
+                        newRecordCount = 0;
+                        try {
+                            sharedBuffer.Write<int>(ref recordCount, 0);
+                        }
+                        catch { }
                     }
 
                     lastUpdate = DateTime.UtcNow;

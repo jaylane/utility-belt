@@ -748,12 +748,18 @@ namespace UtilityBelt.Tools {
         protected virtual void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
-                    Globals.Core.CommandLineText -= Current_CommandLineText;
-                    Globals.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
-                    Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                    if (Globals.Core != null) {
+                        Globals.Core.CommandLineText -= Current_CommandLineText;
+                        if (Globals.Core.WorldFilter != null) {
+                            Globals.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
+                            Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                        }
+                    }
                     if (profilesWatcher != null) {
                         profilesWatcher.Dispose();
-                        uTank2.PluginCore.PC.LootProfileChanged -= PC_LootProfileChanged;
+                        if (uTank2.PluginCore.PC != null) {
+                            uTank2.PluginCore.PC.LootProfileChanged -= PC_LootProfileChanged;
+                        }
                     }
                 }
                 disposed = true;

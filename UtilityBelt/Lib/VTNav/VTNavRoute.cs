@@ -270,7 +270,12 @@ namespace UtilityBelt.Lib.VTNav {
                 }
 
                 if (currentNavShape != null) {
-                    currentNavShape.Visible = false;
+                    try {
+                        currentNavShape.Visible = false;
+                    }
+                    catch {
+                        currentNavShape = null;
+                    }
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -339,9 +344,14 @@ namespace UtilityBelt.Lib.VTNav {
 
         protected virtual void Dispose(bool disposing) {
             if (!disposed) {
-                Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
-                Globals.Core.WorldFilter.ReleaseObject -= WorldFilter_ReleaseObject;
-                uTank2.PluginCore.PC.NavWaypointChanged -= PC_NavWaypointChanged;
+                if (Globals.Core != null && Globals.Core.WorldFilter != null) {
+                    Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                    Globals.Core.WorldFilter.ReleaseObject -= WorldFilter_ReleaseObject;
+                }
+
+                if (uTank2.PluginCore.PC != null) {
+                    uTank2.PluginCore.PC.NavWaypointChanged -= PC_NavWaypointChanged;
+                }
 
                 foreach (var shape in shapes) {
                     try {
