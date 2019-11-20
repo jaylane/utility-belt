@@ -7,6 +7,7 @@
 - Added `Plugin.VideoPatch` setting to ammend/replace `/ub videopatch` command
 - Add Equipment Manager for all your equipping needs
 - Added negative Keep # functionality to ItemGiver as well as (optionally) giving partial stacks of items.
+- Add /ub playsounds to play mp3 files from command line
 
 ## 0.0.14 (2019-11-15) [UtilityBeltInstaller-0.0.14.exe](/uploads/0d29c14ccc27377941cb5f92c37ffaef/UtilityBeltInstaller-0.0.14.exe)
 - Added VisualNav.Enabled setting
