@@ -305,6 +305,7 @@ namespace UtilityBelt.Tools
                             }
                             else
                             {
+                                keepUpToCounts[item.Value.RuleName] += stackCount;
                                 AddToTradeWindow(item.Key);
                             }
                         }
@@ -474,6 +475,7 @@ namespace UtilityBelt.Tools
                     Globals.Core.WorldFilter.EndTrade -= WorldFilter_EndTrade;
                     Globals.Core.WorldFilter.AddTradeItem -= WorldFilter_AddTradeItem;
                     Globals.Core.WorldFilter.FailToAddTradeItem -= WorldFilter_FailToAddTradeItem;
+                    Globals.Core.WorldFilter.AcceptTrade -= WorldFilter_AcceptTrade;
                     Globals.Core.CommandLineText -= Core_CommandLineText;
                 }
                 disposed = true;
