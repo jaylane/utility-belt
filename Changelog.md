@@ -2,6 +2,7 @@
 - Added `VisualNav.ScaleCurrentWaypoint` option to enable/disable scaling current waypoint using vTankMinNavDistance
 - Added `/ub fixbusy` command to reset the client's Busy State and Busy Count both to 0.
 - Beta builds are now available in #utilitybelt on https://discord.gg/c75pPaz
+- Add resiliency to auto trade
 
 ## 0.0.14 (2019-11-15) [UtilityBeltInstaller-0.0.14.exe](/uploads/0d29c14ccc27377941cb5f92c37ffaef/UtilityBeltInstaller-0.0.14.exe)
 - Added VisualNav.Enabled setting

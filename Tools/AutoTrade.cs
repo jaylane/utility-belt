@@ -19,9 +19,12 @@ namespace UtilityBelt.Tools
         private string traderName = null;
         private bool running = false;
         private bool doAccept = false;
-        private int pendingAddCount = 0;
-        private Dictionary<string, int> keepUpToCounts = new Dictionary<string, int>();
+        private readonly List<int> pendingAddItems = new List<int>();
+        private readonly List<int> addedItems = new List<int>();
+        private readonly Dictionary<string, int> keepUpToCounts = new Dictionary<string, int>();
         private int? editingRow = null;
+        private int lastIdCount = 0;
+        private DateTime bailTimer = DateTime.MinValue;
 
         HudCheckBox UIAutoTradeEnable { get; set; }
         HudCheckBox UIAutoTradeTestMode { get; set; }
@@ -141,13 +144,20 @@ namespace UtilityBelt.Tools
         private void WorldFilter_FailToAddTradeItem(object sender, FailToAddTradeItemEventArgs e)
         {
             if (running)
-                pendingAddCount--;
+                pendingAddItems.Remove(e.ItemId);
         }
 
         private void WorldFilter_AddTradeItem(object sender, AddTradeItemEventArgs e)
         {
             if (running && e.SideId != 2)
-                pendingAddCount--;
+            {
+                Logger.Debug($"{Util.GetObjectName(e.ItemId)} added to trade window");
+                if (pendingAddItems.Remove(e.ItemId))
+                {
+                    addedItems.Add(e.ItemId);
+                    bailTimer = DateTime.UtcNow;
+                }
+            }
         }
 
         private void WorldFilter_EndTrade(object sender, EndTradeEventArgs e)
@@ -237,8 +247,11 @@ namespace UtilityBelt.Tools
         {
             running = true;
             doAccept = false;
-            pendingAddCount = 0;
+            pendingAddItems.Clear();
             keepUpToCounts.Clear();
+            addedItems.Clear();
+            bailTimer = DateTime.UtcNow;
+            lastIdCount = 0;
 
             var hasLootCore = false;
             if (lootProfile == null)
@@ -303,7 +316,7 @@ namespace UtilityBelt.Tools
             {
                 if (doAccept)
                 {
-                    if (pendingAddCount <= 0)
+                    if (pendingAddItems.Count <= 0)
                     {
                         doAccept = false;
                         if (traderId != 0 && Globals.Settings.AutoTrade.AutoAccept)
@@ -316,6 +329,12 @@ namespace UtilityBelt.Tools
                     }
 
                     return;
+                }
+
+                if (DateTime.UtcNow - bailTimer > TimeSpan.FromSeconds(10))
+                {
+                    Util.WriteToChat("AutoTrade timed out - STOPPING");
+                    Stop();
                 }
 
                 if (Globals.Settings.AutoTrade.Enabled && VTankControl.navBlockedUntil < DateTime.UtcNow + TimeSpan.FromSeconds(1))
@@ -335,6 +354,13 @@ namespace UtilityBelt.Tools
                             Logger.Debug(string.Format("AutoTrade waiting to id {0} items, this will take approximately {0} seconds.", Globals.Assessor.GetNeededIdCount(itemsToId)));
                         }
 
+                        var neededIdCount = Globals.Assessor.GetNeededIdCount(itemsToId);
+                        if (lastIdCount != neededIdCount)
+                        {
+                            lastIdCount = neededIdCount;
+                            bailTimer = DateTime.UtcNow;
+                        }
+
                         // waiting
                         return;
                     }
@@ -349,7 +375,71 @@ namespace UtilityBelt.Tools
                     return;
                 }
 
-                AddTradeItems();
+                if (Globals.Core.Actions.BusyState != 0)
+                    return;
+
+                foreach (var item in GetTradeItems())
+                {
+                    // Skip if item already added to trade window
+                    if (addedItems.Contains(item.Key))
+                        continue;
+
+                    Logger.Debug($"Trade Item: {Util.GetObjectName(item.Key)}");
+
+                    if (item.Value.IsKeepUpTo)
+                    {
+                        if (!keepUpToCounts.ContainsKey(item.Value.RuleName))
+                            keepUpToCounts.Add(item.Value.RuleName, 0);
+
+                        var stackCount = Globals.Core.WorldFilter[item.Key].Values(LongValueKey.StackCount, 1);
+                        if (item.Value.Data1 < 0) // keep this many
+                        {
+                            if (keepUpToCounts[item.Value.RuleName] < -1 * item.Value.Data1)
+                            {
+                                // add kept item to addedItems list so we don't try to add it in another pass
+                                addedItems.Add(item.Key);
+
+                                if (stackCount > -1 * item.Value.Data1 - keepUpToCounts[item.Value.RuleName])
+                                {
+                                    TrySplitItem(item.Key, stackCount, stackCount - (-1 * item.Value.Data1 - keepUpToCounts[item.Value.RuleName]));
+                                    keepUpToCounts[item.Value.RuleName] = -1 * item.Value.Data1;
+                                    return;
+                                }
+                                else
+                                    keepUpToCounts[item.Value.RuleName] += stackCount;
+                            }
+                            else
+                            {
+                                AddToTradeWindow(item.Key);
+                            }
+                        }
+                        else // give this many
+                        {
+                            if (keepUpToCounts[item.Value.RuleName] >= item.Value.Data1)
+                                continue;
+
+                            if (stackCount > item.Value.Data1 - keepUpToCounts[item.Value.RuleName])
+                            {
+                                TrySplitItem(item.Key, stackCount, item.Value.Data1 - keepUpToCounts[item.Value.RuleName]);
+                                keepUpToCounts[item.Value.RuleName] = item.Value.Data1;
+                                return;
+                            }
+                            else
+                            {
+                                AddToTradeWindow(item.Key);
+                            }
+                        }
+                    }
+                    else if (item.Value.IsKeep)
+                    {
+                        AddToTradeWindow(item.Key);
+                    }
+                }
+
+                if (Globals.Settings.AutoTrade.AutoAccept)
+                    doAccept = true;
+                else
+                    Stop();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -373,7 +463,10 @@ namespace UtilityBelt.Tools
             finally
             {
                 running = false;
+                doAccept = false;
                 keepUpToCounts.Clear();
+                pendingAddItems.Clear();
+                addedItems.Clear();
             }
         }
 
@@ -420,113 +513,36 @@ namespace UtilityBelt.Tools
             return Util.IsItemSafeToGetRidOf(item);
         }
 
-        private void AddTradeItems()
+        private void AddToTradeWindow(int itemId)
         {
-            try
+            Logger.Debug($"Adding to trade window: {Util.GetObjectName(itemId)}");
+            pendingAddItems.Add(itemId);
+            Globals.Core.Actions.TradeAdd(itemId);
+        }
+
+        private void TrySplitItem(int item, int stackCount, int splitCount)
+        {
+            EventHandler<CreateObjectEventArgs> splitHandler = null;
+            splitHandler = (sender, e) =>
             {
-                foreach (var item in GetTradeItems())
+                if (e.New.Container == Globals.Core.CharacterFilter.Id &&
+                    e.New.Name == Globals.Core.WorldFilter[item].Name &&
+                    e.New.Type == Globals.Core.WorldFilter[item].Type &&
+                    e.New.Values(LongValueKey.StackCount, 1) == splitCount)
                 {
-                    Logger.Debug($"Trade Item: {Util.GetObjectName(item.Key)}");
-
-                    if (item.Value.IsKeepUpTo)
-                    {
-                        if (!keepUpToCounts.ContainsKey(item.Value.RuleName))
-                            keepUpToCounts.Add(item.Value.RuleName, 0);
-
-                        var stackCount = Globals.Core.WorldFilter[item.Key].Values(LongValueKey.StackCount, 1);
-                        if (item.Value.Data1 < 0)
-                        {
-                            if (keepUpToCounts[item.Value.RuleName] < Math.Abs(item.Value.Data1))
-                            {
-                                Logger.Debug($"Need to keep: {Math.Abs(item.Value.Data1) - keepUpToCounts[item.Value.RuleName]}");
-                                if (stackCount > Math.Abs(item.Value.Data1) - keepUpToCounts[item.Value.RuleName])
-                                {
-                                    int splitCount = stackCount - (Math.Abs(item.Value.Data1) - keepUpToCounts[item.Value.RuleName]);
-                                    EventHandler<CreateObjectEventArgs> splitHandler = null;
-                                    splitHandler = (sender, e) =>
-                                    {
-                                        if (e.New.Name == Globals.Core.WorldFilter[item.Key].Name &&
-                                            e.New.Values(LongValueKey.StackCount, 1) == splitCount)
-                                        {
-                                            Logger.Debug($"Adding to trade window: {Util.GetObjectName(e.New.Id)}");
-                                            Globals.Core.Actions.TradeAdd(e.New.Id);
-                                            pendingAddCount++;
-                                            Globals.Core.WorldFilter.CreateObject -= splitHandler;
-                                        }
-                                    };
-
-                                    Globals.Core.Actions.SelectItem(item.Key);
-                                    Globals.Core.Actions.SelectedStackCount = splitCount;
-                                    Globals.Core.WorldFilter.CreateObject += splitHandler;
-                                    keepUpToCounts[item.Value.RuleName] += Math.Abs(item.Value.Data1) - keepUpToCounts[item.Value.RuleName];
-                                    Globals.Core.Actions.MoveItem(item.Key, Globals.Core.CharacterFilter.Id, 0, false);
-
-                                    Logger.Debug(string.Format("AutoTrade Splitting {0}. old: {1} new: {2}", Util.GetObjectName(item.Key),
-                                        stackCount,
-                                        splitCount));
-                                }
-                                else
-                                {
-                                    Logger.Debug($"Keeping: {Util.GetObjectName(item.Key)} ({stackCount})");
-                                    keepUpToCounts[item.Value.RuleName] += stackCount;
-                                }
-
-                                continue;
-                            }
-                        }
-                        else
-                        {
-                            if (keepUpToCounts[item.Value.RuleName] >= item.Value.Data1)
-                            {
-                                continue;
-                            }
-
-                            if (stackCount > item.Value.Data1 - keepUpToCounts[item.Value.RuleName])
-                            {
-                                int neededCount = item.Value.Data1 - keepUpToCounts[item.Value.RuleName];
-                                EventHandler<CreateObjectEventArgs> splitHandler = null;
-                                splitHandler = (sender, e) =>
-                                {
-                                    if (e.New.Name == Globals.Core.WorldFilter[item.Key].Name &&
-                                        e.New.Values(LongValueKey.StackCount, 1) == neededCount)
-                                    {
-                                        Globals.Core.Actions.TradeAdd(e.New.Id);
-                                        pendingAddCount++;
-                                        Globals.Core.WorldFilter.CreateObject -= splitHandler;
-                                    }
-                                };
-
-                                Globals.Core.Actions.SelectItem(item.Key);
-                                Globals.Core.Actions.SelectedStackCount = neededCount;
-                                Globals.Core.WorldFilter.CreateObject += splitHandler;
-                                keepUpToCounts[item.Value.RuleName] += neededCount;
-                                Globals.Core.Actions.MoveItem(item.Key, Globals.Core.CharacterFilter.Id, 0, false);
-
-                                Logger.Debug(string.Format("AutoTrade Splitting {0}. old: {1} new: {2}", Util.GetObjectName(item.Key),
-                                    stackCount,
-                                    item.Value.Data1 - keepUpToCounts[item.Value.RuleName]));
-
-                                continue;
-                            }
-                        }
-
-                        keepUpToCounts[item.Value.RuleName] += stackCount;
-                    }
-
-                    Logger.Debug($"Adding to trade: {Util.GetObjectName(item.Key)}");
-                    Globals.Core.Actions.TradeAdd(item.Key);
-                    pendingAddCount++;
+                    Logger.Debug($"Adding {splitCount} of {Util.GetObjectName(e.New.Id)} to trade window");
+                    pendingAddItems.Add(e.New.Id);
+                    Globals.Core.Actions.TradeAdd(e.New.Id);
+                    Globals.Core.WorldFilter.CreateObject -= splitHandler;
                 }
+            };
 
-                if (Globals.Settings.AutoTrade.AutoAccept)
-                {
-                    doAccept = true;
-                    return;
-                }
+            Globals.Core.Actions.SelectItem(item);
+            Globals.Core.Actions.SelectedStackCount = splitCount;
+            Globals.Core.WorldFilter.CreateObject += splitHandler;
+            Globals.Core.Actions.MoveItem(item, Globals.Core.CharacterFilter.Id, 0, false);
 
-                Stop();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+            Logger.Debug($"AutoTrade Splitting {Util.GetObjectName(item)}. old: {stackCount} new: {splitCount}");
         }
 
         private string GetProfilePath(string profileName)
