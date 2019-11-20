@@ -20,6 +20,7 @@ namespace UtilityBelt {
         private VTankFellowHeals vTankFellowHeals;
         private ChatNameClickHandler chatNameClickHandler;
         private ChatLogger chatLogger;
+        private EquipmentManager equipmentManager;
 
         public UtilityBeltPlugin() {
             System.Resources.ResourceManager rm = new System.Resources.ResourceManager(GetType().Namespace + ".Properties.Resources", System.Reflection.Assembly.GetExecutingAssembly());
@@ -65,6 +66,7 @@ namespace UtilityBelt {
                 if (Globals.MapView != null) Globals.MapView.Dispose();
                 if (Globals.MainView != null) Globals.MainView.Dispose();
                 if (chatLogger != null) chatLogger.Dispose();
+                if (equipmentManager != null) equipmentManager.Dispose();
             }
 			catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -103,6 +105,7 @@ namespace UtilityBelt {
             vTankFellowHeals = new VTankFellowHeals();
             chatNameClickHandler = new ChatNameClickHandler();
             chatLogger = new ChatLogger();
+            equipmentManager = new EquipmentManager();
 
             Globals.Core.RenderFrame += Core_RenderFrame;
 
@@ -124,6 +127,7 @@ namespace UtilityBelt {
                 if (Globals.VisualVTankRoutes != null) Globals.VisualVTankRoutes.Think();
                 if (Globals.Assessor != null) Globals.Assessor.Think();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Think();
+                if (equipmentManager != null) equipmentManager.Think();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

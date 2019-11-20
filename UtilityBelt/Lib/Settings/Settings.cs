@@ -68,6 +68,10 @@ namespace UtilityBelt.Lib.Settings {
         public Sections.DungeonMaps DungeonMaps { get; set; }
 
         [JsonProperty]
+        [Summary("Equipment Manager Settings")]
+        public Sections.EquipmentManager EquipmentManager { get; set; }
+
+        [JsonProperty]
         [Summary("InventoryManager Settings")]
         public Sections.InventoryManager InventoryManager { get; set; }
 
@@ -92,6 +96,7 @@ namespace UtilityBelt.Lib.Settings {
                 SetupSection(AutoVendor = new Sections.AutoVendor(null));
                 SetupSection(ChatLogger = new Sections.ChatLogger(null));
                 SetupSection(DungeonMaps = new Sections.DungeonMaps(null));
+                SetupSection(EquipmentManager = new Sections.EquipmentManager(null));
                 SetupSection(InventoryManager = new Sections.InventoryManager(null));
                 SetupSection(Jumper = new Sections.Jumper(null));
                 SetupSection(VisualNav = new Sections.VisualNav(null));

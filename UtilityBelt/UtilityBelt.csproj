@@ -101,6 +101,7 @@
     <Compile Include="Lib\Settings\Sections\AutoTrade.cs" />
     <Compile Include="Lib\Settings\Sections\AutoVendor.cs" />
     <Compile Include="Lib\Settings\Sections\ChatLogger.cs" />
+    <Compile Include="Lib\Settings\Sections\EquipmentManager.cs" />
     <Compile Include="Lib\Settings\Sections\Jumper.cs" />
     <Compile Include="Lib\Settings\Sections\DungeonMaps.cs" />
     <Compile Include="Lib\Settings\Sections\InventoryManager.cs" />
@@ -155,6 +156,7 @@
     <Compile Include="Tools\ChatLogger.cs" />
     <Compile Include="Tools\ChatNameClickHandler.cs" />
     <Compile Include="Tools\Counter.cs" />
+    <Compile Include="Tools\EquipmentManager.cs" />
     <Compile Include="Tools\InventoryManager.cs" />
     <Compile Include="Tools\DungeonMaps.cs" />
     <Compile Include="Tools\Jumper.cs" />

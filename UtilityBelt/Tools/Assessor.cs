@@ -57,7 +57,7 @@ namespace UtilityBelt.Tools {
                 IdentQueue.Enqueue(f);
         }
 
-        public bool NeedsInventoryData(List<int> items) {
+        public bool NeedsInventoryData(IEnumerable<int> items) {
             bool needsData = false;
             var itemsNeedingData = 0;
 
@@ -78,7 +78,7 @@ namespace UtilityBelt.Tools {
             return true;
         }
 
-        public int GetNeededIdCount(List<int> items) {
+        public int GetNeededIdCount(IEnumerable<int> items) {
             var itemsNeedingData = 0;
             foreach (var id in items) {
                 var wo = Globals.Core.WorldFilter[id];
@@ -90,7 +90,7 @@ namespace UtilityBelt.Tools {
             return itemsNeedingData;
         }
 
-        internal void RequestAll(List<int> items) {
+        internal void RequestAll(IEnumerable<int> items) {
             var itemsNeedingData = 0;
 
             foreach (var id in items) {
