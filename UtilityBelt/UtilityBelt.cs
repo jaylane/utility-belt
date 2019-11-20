@@ -44,33 +44,6 @@ namespace UtilityBelt {
 			catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        public void Shutdown() {
-			try {
-                Globals.Core.RenderFrame -= Core_RenderFrame;
-                Globals.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
-
-                if (autoSalvage != null) autoSalvage.Dispose();
-                if (autoTrade != null) autoTrade.Dispose();
-                if (Globals.DungeonMaps != null) Globals.DungeonMaps.Dispose();
-                //if (emuConfig != null) emuConfig.Dispose();
-                if (questTracker != null) questTracker.Dispose();
-                if (Globals.Misc != null) Globals.Misc.Dispose();
-                if (jumper != null) jumper.Dispose();
-                if (counter != null) counter.Dispose();
-                if (Globals.VisualVTankRoutes != null) Globals.VisualVTankRoutes.Dispose();
-                if (vTankFellowHeals != null) vTankFellowHeals.Dispose();
-                if (chatNameClickHandler != null) chatNameClickHandler.Dispose();
-                if (Globals.AutoVendor != null) Globals.AutoVendor.Dispose();
-                if (Globals.Assessor != null) Globals.Assessor.Dispose();
-                if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();
-                if (Globals.MapView != null) Globals.MapView.Dispose();
-                if (Globals.MainView != null) Globals.MainView.Dispose();
-                if (chatLogger != null) chatLogger.Dispose();
-                if (equipmentManager != null) equipmentManager.Dispose();
-            }
-			catch (Exception ex) { Logger.LogException(ex); }
-        }
-
 		private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
 			try {
                 Init();
@@ -110,6 +83,7 @@ namespace UtilityBelt {
             Globals.Core.RenderFrame += Core_RenderFrame;
 
             if (Globals.Settings.Plugin.CheckForUpdates) {
+                Util.WriteToChat("Init calling check for update");
                 UpdateChecker.CheckForUpdate();
             }
         }
@@ -131,5 +105,32 @@ namespace UtilityBelt {
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
-	}
+
+        public void Shutdown() {
+            try {
+                Globals.Core.RenderFrame -= Core_RenderFrame;
+                Globals.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
+
+                if (autoSalvage != null) autoSalvage.Dispose();
+                if (autoTrade != null) autoTrade.Dispose();
+                if (Globals.DungeonMaps != null) Globals.DungeonMaps.Dispose();
+                //if (emuConfig != null) emuConfig.Dispose();
+                if (questTracker != null) questTracker.Dispose();
+                if (Globals.Misc != null) Globals.Misc.Dispose();
+                if (jumper != null) jumper.Dispose();
+                if (counter != null) counter.Dispose();
+                if (Globals.VisualVTankRoutes != null) Globals.VisualVTankRoutes.Dispose();
+                if (vTankFellowHeals != null) vTankFellowHeals.Dispose();
+                if (chatNameClickHandler != null) chatNameClickHandler.Dispose();
+                if (Globals.AutoVendor != null) Globals.AutoVendor.Dispose();
+                if (Globals.Assessor != null) Globals.Assessor.Dispose();
+                if (Globals.InventoryManager != null) Globals.InventoryManager.Dispose();
+                if (Globals.MapView != null) Globals.MapView.Dispose();
+                if (Globals.MainView != null) Globals.MainView.Dispose();
+                if (chatLogger != null) chatLogger.Dispose();
+                if (equipmentManager != null) equipmentManager.Dispose();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+    }
 }

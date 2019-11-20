@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Major>0</Major>
     <Minor>0</Minor>
-    <Build>16</Build>
+    <Build>15</Build>
     <Revision>0</Revision>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />

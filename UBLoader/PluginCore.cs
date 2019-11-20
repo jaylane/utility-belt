@@ -19,6 +19,7 @@ namespace UBLoader {
         private bool needsReload = false;
         private DateTime lastFileChange = DateTime.UtcNow;
 
+        public string PluginAssemblyNamespace { get { return "UtilityBelt.UtilityBeltPlugin"; } }
         public string PluginAssemblyName { get { return "UtilityBelt.dll"; } }
         public string PluginAssemblyPath {
             get {
@@ -34,10 +35,10 @@ namespace UBLoader {
         /// </summary>
         protected override void Startup() {
 			try {
-                Core.RenderFrame += Core_RenderFrame;
                 Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
 
                 LoadPluginAssembly();
+
                 PluginWatcher = new FileSystemWatcher();
                 PluginWatcher.Path = PluginAssemblyPath;
                 PluginWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
@@ -51,6 +52,7 @@ namespace UBLoader {
         private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
             try {
                 IsLoggedIn = true;
+                Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
             }
             catch (Exception ex) { LogException(ex); }
         }
@@ -59,6 +61,7 @@ namespace UBLoader {
             try {
                 if (needsReload && DateTime.UtcNow - lastFileChange > TimeSpan.FromSeconds(3)) {
                     needsReload = false;
+                    Core.RenderFrame -= Core_RenderFrame;
                     Core.Actions.AddChatText("Reloading UtilityBelt", 1);
                     UnloadPluginAssembly();
                     LoadPluginAssembly();
@@ -69,6 +72,9 @@ namespace UBLoader {
 
         private void PluginWatcher_Changed(object sender, FileSystemEventArgs e) {
             try {
+                if (needsReload == false) {
+                    Core.RenderFrame += Core_RenderFrame;
+                }
                 needsReload = true;
                 lastFileChange = DateTime.UtcNow;
             }
@@ -79,7 +85,7 @@ namespace UBLoader {
             try {
                 var assemblyPath = System.IO.Path.Combine(PluginAssemblyPath, PluginAssemblyName);
                 CurrentAssembly = Assembly.Load(File.ReadAllBytes(assemblyPath));
-                PluginType = CurrentAssembly.GetType("UtilityBelt.UtilityBeltPlugin");
+                PluginType = CurrentAssembly.GetType(PluginAssemblyNamespace);
                 MethodInfo startupMethod = PluginType.GetMethod("Startup");
                 PluginInstance = Activator.CreateInstance(PluginType);
                 startupMethod.Invoke(PluginInstance, new object[] { assemblyPath, Host, Core });
@@ -105,19 +111,11 @@ namespace UBLoader {
             catch (Exception ex) { LogException(ex); }
         }
 
-        private string GetAssemblyDirectory() {
-            string fullPath = System.Reflection.Assembly.GetAssembly(typeof(PluginCore)).Location;
-
-            return System.IO.Path.GetDirectoryName(fullPath);
-        }
-
         /// <summary>
         /// This is called when the plugin is shut down. This happens only once.
         /// </summary>
         protected override void Shutdown() {
 			try {
-                Core.RenderFrame -= Core_RenderFrame;
-                Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
                 UnloadPluginAssembly();
             }
 			catch (Exception ex) { LogException(ex); }

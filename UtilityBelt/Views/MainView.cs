@@ -209,14 +209,6 @@ namespace UtilityBelt.Views {
             }
         }
 
-        private void DoUpdateCheck_Hit(object sender, EventArgs e) {
-            try {
-                Util.WriteToChat("Checking for update");
-                UpdateChecker.CheckForUpdate();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
         internal override ACImage GetIcon() {
             return GetIcon("UtilityBelt.Resources.icons.utilitybelt.png");
         }

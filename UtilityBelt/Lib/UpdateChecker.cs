@@ -19,19 +19,19 @@ namespace UtilityBelt.Lib {
     }
 
     public static class UpdateChecker {
-        private static string json = "";
-
         public static void CheckForUpdate(bool loud=false) {
             if (loud) Util.WriteToChat("Checking for update");
 
             new Thread(() => {
                 Thread.CurrentThread.IsBackground = true;
-                FetchGitlabData();
-                OnGitlabFetchComplete(loud);
+                var json = FetchGitlabData();
+                if (!string.IsNullOrEmpty(json)) {
+                    OnGitlabFetchComplete(json, loud);
+                }
             }).Start();
         }
 
-        public static void FetchGitlabData() {
+        public static string FetchGitlabData() {
             // no tls 1.2 in dotnet 3.5???
             try {
                 var url = string.Format(@"http://http.haxit.org/ubupdatecheck.php");
@@ -43,23 +43,22 @@ namespace UtilityBelt.Lib {
                 using (HttpWebResponse response = (HttpWebResponse)request.GetResponse()) {
                     using (Stream stream = response.GetResponseStream()) {
                         using (StreamReader reader = new StreamReader(stream)) {
-                            json = reader.ReadToEnd();
+                            return reader.ReadToEnd();
                         }
                     }
                 }
             }
             catch {}
+
+            return null;
         }
 
-        private static void OnGitlabFetchComplete(bool loud) {
+        private static void OnGitlabFetchComplete(string json, bool loud) {
             try {
                 if (!string.IsNullOrEmpty(json)) {
                     try {
                         var tags = JsonConvert.DeserializeObject<GitLabTagData[]>(json);
-
-                        Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-                        FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-                        Version version = new Version(fvi.FileVersion);
+                        Version version = System.Reflection.Assembly.GetAssembly(typeof(UtilityBeltPlugin)).GetName().Version;
                         bool foundUpdate = false;
 
                         foreach (var tag in tags) {
@@ -78,11 +77,13 @@ namespace UtilityBelt.Lib {
                                 }
                             }
                             catch (Exception ex) { Logger.LogException(ex); }
-
-                            if (!foundUpdate) {
-                                Util.WriteToChat("Plugin is up to date: " + Util.GetVersion(true));
-                            }
                         }
+
+                        if (!foundUpdate) {
+                            Util.WriteToChat("Plugin is up to date: " + Util.GetVersion(true));
+                        }
+
+                        json = "";
                     }
                     catch (Exception ex) { Logger.LogException(ex); }
                 }

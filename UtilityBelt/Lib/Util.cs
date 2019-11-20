@@ -44,7 +44,6 @@ namespace UtilityBelt
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetAssembly(typeof(UtilityBeltPlugin));
 
             if (assembly != null) {
-                Util.WriteToChat($"AssemblyLocation: {AssemblyLocation}");
                 var productVersion = FileVersionInfo.GetVersionInfo(AssemblyLocation).ProductVersion;
 
                 // show the short version for release branch builds
