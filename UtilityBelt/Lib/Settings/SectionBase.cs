@@ -21,7 +21,7 @@ namespace UtilityBelt.Lib.Settings
 
         // get this setting's value.  this keeps track of if this settings has
         // been set, and if not returns a DefaultValueAttribute
-        protected object GetSetting(string propName) {
+        protected virtual object GetSetting(string propName) {
             try {
                 var prop = GetType().GetProperty(propName);
 
