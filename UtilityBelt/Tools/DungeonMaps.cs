@@ -90,12 +90,7 @@ namespace UtilityBelt.Tools {
         }
 
         private void DungeonMaps_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
-            if (Globals.Settings.DungeonMaps.Enabled && hud == null) {
-                CreateHud();
-            }
-            else if (!Globals.Settings.DungeonMaps.Enabled) {
-                ClearHud();
-            }
+            Toggle();
         }
 
         #region UI Event Handlers
