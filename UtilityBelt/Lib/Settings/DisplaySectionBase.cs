@@ -33,7 +33,7 @@ namespace UtilityBelt.Lib.Settings {
 
         // get this setting's value.  if it has not been requested yet
         // we need to create it with defaults from the attributes
-        new protected object GetSetting(string propName) {
+        protected override object GetSetting(string propName) {
             try {
                 var prop = GetType().GetProperty(propName);
 
@@ -44,7 +44,7 @@ namespace UtilityBelt.Lib.Settings {
                     return GetMarkerToggleOption(prop);
                 }
                 else {
-                    return null;
+                    return base.GetSetting(propName);
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
