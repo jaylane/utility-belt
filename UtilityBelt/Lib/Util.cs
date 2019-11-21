@@ -22,7 +22,7 @@ namespace UtilityBelt
             System.Configuration.Configuration config = null;
             System.Configuration.KeyValueConfigurationElement element = null;
             try {
-                config = System.Configuration.ConfigurationManager.OpenExeConfiguration(Assembly.GetExecutingAssembly().Location);
+                config = System.Configuration.ConfigurationManager.OpenExeConfiguration(AssemblyLocation);
                 element = config.AppSettings.Settings["PluginDirectory"];
             } catch { }
             if (element != null && !string.IsNullOrEmpty(element.Value)) {
