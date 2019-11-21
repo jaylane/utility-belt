@@ -80,6 +80,10 @@ namespace UtilityBelt.Lib.Settings {
         public Sections.Jumper Jumper { get; set; }
 
         [JsonProperty]
+        [Summary("Nametags Settings")]
+        public Sections.Nametags Nametags { get; set; }
+
+        [JsonProperty]
         [Summary("VisualNav Settings")]
         public Sections.VisualNav VisualNav { get; set; }
 
@@ -99,6 +103,7 @@ namespace UtilityBelt.Lib.Settings {
                 SetupSection(EquipmentManager = new Sections.EquipmentManager(null));
                 SetupSection(InventoryManager = new Sections.InventoryManager(null));
                 SetupSection(Jumper = new Sections.Jumper(null));
+                SetupSection(Nametags = new Sections.Nametags(null));
                 SetupSection(VisualNav = new Sections.VisualNav(null));
                 SetupSection(VTank = new Sections.VTank(null));
 
