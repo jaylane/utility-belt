@@ -80,6 +80,8 @@ namespace UtilityBelt {
             chatLogger = new ChatLogger();
             equipmentManager = new EquipmentManager();
 
+            Nametags.Init(); // static class
+
             Globals.Core.RenderFrame += Core_RenderFrame;
 
             if (Globals.Settings.Plugin.CheckForUpdates) {
@@ -129,6 +131,7 @@ namespace UtilityBelt {
                 if (Globals.MainView != null) Globals.MainView.Dispose();
                 if (chatLogger != null) chatLogger.Dispose();
                 if (equipmentManager != null) equipmentManager.Dispose();
+                Nametags.Dispose();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

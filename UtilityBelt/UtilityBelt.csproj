@@ -86,6 +86,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Lib\Settings\Sections\Nametags.cs" />
+    <Compile Include="Tools\Nametags.cs" />
     <Compile Include="Lib\ChatLog\ChatLog.cs" />
     <Compile Include="Lib\ChatLog\ChatLogWriter.cs" />
     <Compile Include="Lib\ChatLog\ChatMessageType.cs" />
