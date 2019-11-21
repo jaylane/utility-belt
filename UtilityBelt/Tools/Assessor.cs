@@ -43,12 +43,13 @@ namespace UtilityBelt.Tools {
                 int thisid;
                 tryagain:
                 thisid = IdentQueue.Dequeue();
-                if (Globals.Core.WorldFilter[thisid] != null && !Globals.Core.WorldFilter[thisid].HasIdData && Globals.Core.Actions.Underlying.GetPhysicsObjectPtr(thisid) != 0) {
+                if (Globals.Core.WorldFilter[thisid] != null && !Globals.Core.WorldFilter[thisid].HasIdData) {
                     lastIdentLimit = DateTime.UtcNow;
                     m(thisid);
                 } else {
                     Logger.Debug($"Assessor: 0x{thisid} Failed");
-                    goto tryagain;
+                    if (IdentQueue.Count > 0)
+                        goto tryagain;
                 }
             }
         }
