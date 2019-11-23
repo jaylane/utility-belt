@@ -11,7 +11,7 @@ namespace UtilityBelt
 {
 	public static class Globals {
         public static string PluginName { get; private set; }
-        public static PluginHost Host { get; private set; }
+        public static NetServiceHost Host { get; private set; }
         public static CoreManager Core { get; private set; }
 
         public static Settings Settings { get; internal set; }
@@ -26,7 +26,7 @@ namespace UtilityBelt
         public static VisualVTankRoutes VisualVTankRoutes { get; internal set; }
         public static DoorWatcher DoorWatcher { get; internal set; }
 
-        public static void Init(string pluginName, PluginHost host, CoreManager core) {
+        public static void Init(string pluginName, NetServiceHost host, CoreManager core) {
             PluginName = pluginName;
             Host = host;
             Core = core;

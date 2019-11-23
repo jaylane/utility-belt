@@ -4,7 +4,7 @@
 !define APPGUID "{c51788b5-3c43-471a-8034-79d5865fd7bd}"
 
 !define ASSEMBLY "UBLoader.dll"
-!define CLASSNAME "UBLoader.PluginCore"
+!define CLASSNAME "UBLoader.FilterCore"
 
 !define BUILDPATH ".\..\bin"
 
@@ -62,14 +62,18 @@ Section -FinishSection
 	WriteRegStr HKLM "Software\${SOFTWARECOMPANY}\${APPNAME}" "" "$INSTDIR"
 	WriteRegStr HKLM "Software\${SOFTWARECOMPANY}\${APPNAME}" "Version" "${VERSION}"
 
+	;Unregister old plugin
+	DeleteRegKey HKLM "Software\Decal\Plugins\${APPGUID}"
+
 	;Register in decal
-	WriteRegStr HKLM "Software\Decal\Plugins\${APPGUID}" "" "${APPNAME}"
-	WriteRegDWORD HKLM "Software\Decal\Plugins\${APPGUID}" "Enabled" "1"
-	WriteRegStr HKLM "Software\Decal\Plugins\${APPGUID}" "Object" "${CLASSNAME}"
-	WriteRegStr HKLM "Software\Decal\Plugins\${APPGUID}" "Assembly" "${ASSEMBLY}"
-	WriteRegStr HKLM "Software\Decal\Plugins\${APPGUID}" "Path" "$INSTDIR"
-	WriteRegStr HKLM "Software\Decal\Plugins\${APPGUID}" "Surrogate" "{71A69713-6593-47EC-0002-0000000DECA1}"
-	WriteRegStr HKLM "Software\Decal\Plugins\${APPGUID}" "Uninstaller" "${APPNAME}"
+	WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "" "${APPNAME}"
+	WriteRegDWORD HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Enabled" "1"
+	WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Object" "${CLASSNAME}"
+	WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Assembly" "${ASSEMBLY}"
+	WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Path" "$INSTDIR"
+	WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Surrogate" "{71A69713-6593-47EC-0002-0000000DECA1}"
+	WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Uninstaller" "${APPNAME}"
+
 
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayName" "${APPNAME}"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString" "$INSTDIR\uninstall.exe"
