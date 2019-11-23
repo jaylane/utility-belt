@@ -38,8 +38,8 @@ namespace UtilityBelt.Tools {
         private static void Nametags_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
             switch (e.PropertyName) {
                 case "Enabled":
-                    if (Globals.Settings.Nametags.Enabled) if (!enabled) Enable();
-                    else if (enabled) Disable();
+                    if (Globals.Settings.Nametags.Enabled && !enabled) Enable();
+                    else if (!Globals.Settings.Nametags.Enabled && enabled) Disable();
                     return;
                 case "MaxRange":
                     maxRange = Globals.Settings.Nametags.MaxRange;
