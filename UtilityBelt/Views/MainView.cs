@@ -34,6 +34,7 @@ namespace UtilityBelt.Views {
                     { "AutoTradeEnable", "AutoTrade.Enabled" },
                     { "AutoTradeTestMode", "AutoTrade.TestMode" },
                     { "DungeonMapsEnabled", "DungeonMaps.Enabled" },
+                    { "NameTagsEnabled", "Nametags.Enabled" },
                     { "VideoPatchEnabled", "Plugin.VideoPatch" },
                     { "VisualNavEnabled", "VisualNav.Enabled" },
                     { "VitalSharingEnabled", "VTank.VitalSharing" },
