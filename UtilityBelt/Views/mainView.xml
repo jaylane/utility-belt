@@ -5,15 +5,18 @@
       <control progid="DecalControls.FixedLayout" clipped="">
         <control progid="DecalControls.PushButton" name="AutoVendorEnable" left="8" top="8" width="88" height="24" text="   Auto Vendor"/>
         <control progid="DecalControls.PushButton" name="AutoVendorTestMode" left="96" top="8" width="22" height="24" text="T"/>
-        <control progid="DecalControls.PushButton" name="AutoTradeTestMode" left="96" top="40" width="22" height="24" text="T"/>
         <control progid="DecalControls.PushButton" name="AutoTradeEnable" left="8" top="40" width="88" height="24" text="  Auto Trade"/>
+        <control progid="DecalControls.PushButton" name="AutoTradeTestMode" left="96" top="40" width="22" height="24" text="T"/>
+        <control progid="DecalControls.PushButton" name="ExportPCap" left="8" top="184" width="110" height="24" text="Export PCAP"/>
+        
         <control progid="DecalControls.PushButton" name="DungeonMapsEnabled" left="144" top="8" width="110" height="24" text=" Dungeon Maps"/>
-        <control progid="DecalControls.PushButton" name="VideoPatchEnabled" left="280" top="8" width="110" height="24" text="Video Patch  "/>
-        <control progid="DecalControls.PushButton" name="VisualNavEnabled" left="144" top="72" width="110" height="24" text="   Visual Nav Lines"/>
-        <control progid="DecalControls.PushButton" name="VitalSharingEnabled" left="280" top="40" width="110" height="24" text="Vital Sharing"/>
-        <control progid="DecalControls.PushButton" name="Debug" left="296" top="184" width="96" height="24" text="  Debug Mode"/>
-        <control progid="DecalControls.PushButton" name="CheckForUpdate" left="170" top="184" width="110" height="24" text="Check For Update"/>
         <control progid="DecalControls.PushButton" name="NameTagsEnabled" left="144" top="40" width="110" height="24" text="Name Tags  "/>
+        <control progid="DecalControls.PushButton" name="VisualNavEnabled" left="144" top="72" width="110" height="24" text="   Visual Nav Lines"/>
+        <control progid="DecalControls.PushButton" name="CheckForUpdate" left="144" top="184" width="110" height="24" text="Check For Update"/>
+
+        <control progid="DecalControls.PushButton" name="VideoPatchEnabled" left="280" top="8" width="110" height="24" text="Video Patch  "/>
+        <control progid="DecalControls.PushButton" name="VitalSharingEnabled" left="280" top="40" width="110" height="24" text="Vital Sharing"/>
+        <control progid="DecalControls.PushButton" name="Debug" left="280" top="184" width="110" height="24" text="  Debug Mode"/>
       </control>
     </page>
     <page label="AutoTinker">

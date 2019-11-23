@@ -120,6 +120,9 @@ namespace UtilityBelt.Tools
                         case "playsound":
                             UB_playsound(match.Groups["params"].Value);
                             break;
+                        case "pcap":
+                            UB_pcap(match.Groups["params"].Value);
+                            break;
                     }
                     // Util.WriteToChat("UB called with command <" + match.Groups["command"].Value + ">, params <" + match.Groups["params"].Value+">");
 
@@ -154,6 +157,7 @@ namespace UtilityBelt.Tools
                 "   /ub videopatch {enable,disable,toggle} - online toggling of Mag's video patch\n" +
                 "   /ub playeroption <option> <on/true|off/false> - set player options\n" +
                 "   /ub playsound [volume] [path] - play sound file\n" +
+                "   /ub pcap {enable,disable,print} - Rolling PCap logger\n" +
                 "TODO: Add rest of commands");
         }
         public void UB_testBlock(string theRest) {
@@ -212,12 +216,14 @@ namespace UtilityBelt.Tools
             }
         }
 
+        #region /ub fixbusy
         public void UB_fixbusy() {
             UBHelper.Core.ClearBusyCount();
             UBHelper.Core.ClearBusyState();
             Util.WriteToChat($"Busy State and Busy Count have been reset");
         }
-
+        #endregion
+        #region /ub playeroption <option> <on/true|off/false>
         public void UB_playeroption(string parameters) {
             string[] p = parameters.Split(' ');
             if (p.Length != 2) {
@@ -239,7 +245,8 @@ namespace UtilityBelt.Tools
             UBHelper.Player.SetOption((UBHelper.Player.PlayerOption)option, value);
             Util.WriteToChat($"Setting {(((UBHelper.Player.PlayerOption)option).ToString())} = {value.ToString()}");
         }
-
+        #endregion
+        #region /ub videopatch {enable,disable,toggle}
         public void UB_video(string parameters) {
             if (UBHelper.Core.version < 1911140303) {
                 Util.WriteToChat($"Error UBHelper.dll is out of date!");
@@ -264,8 +271,38 @@ namespace UtilityBelt.Tools
                     break;
             }
         }
-
-
+        #endregion
+        #region /ub pcap {enable [bufferDepth],disable,print}
+        public void UB_pcap(string parameters) {
+            if (UBHelper.Core.version < 1911220544) {
+                Util.WriteToChat($"Error UBHelper.dll is out of date!");
+                return;
+            }
+            char[] stringSplit = { ' ' };
+            string[] parameter = parameters.Split(stringSplit, 2);
+            switch (parameter[0]) {
+                case "enable":
+                    int bd = Globals.Settings.Plugin.PCapBufferDepth;
+                    if (bd > 65535)
+                        Util.WriteToChat($"WARNING: Large buffers can have negative performance impacts on the game. Buffer depths between 1000 and 20000 are recommended.");
+                    Util.WriteToChat($"Enabled rolling PCap logger with a bufferDepth of {bd:n0}. This will consume {(bd * 505):n0} bytes of memory.");
+                    Util.WriteToChat($"Issue the command [/ub pcap print] to write this out to a .pcap file for submission!");
+                    Globals.Settings.Plugin.PCap = true;
+                    break;
+                case "disable":
+                    Globals.Settings.Plugin.PCap = false;
+                    break;
+                case "print":
+                    string filename = $"{Util.GetPluginDirectory()}\\pkt_{DateTime.UtcNow:yyyy-M-d}_{(int)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds}_log.pcap";
+                    UBHelper.PCap.Print(filename);
+                    break;
+                default:
+                    Util.WriteToChat("Usage: /ub pcap {enable,disable,print}");
+                    break;
+            }
+        }
+        #endregion
+        #region /ub vendor {open[p] [vendorname,vendorid,vendorhex],opencancel,buyall,sellall,clearbuy,clearsell}
         public void UB_vendor(string parameters) {
             char[] stringSplit = { ' ' };
             string[] parameter = parameters.Split(stringSplit, 2);
@@ -314,6 +351,16 @@ namespace UtilityBelt.Tools
                     break;
             }
         }
+        private void UB_vendor_open(string vendorname, bool partial) {
+            vendor = FindName(vendorname, partial, new ObjectClass[] { ObjectClass.Vendor });
+            if (vendor != null) {
+                OpenVendor();
+                return;
+            }
+            Util.ThinkOrWrite("AutoVendor failed to open vendor", Globals.Settings.AutoVendor.Think);
+        }
+        #endregion
+        #region /ub closestportal || /ub portal <name> || /ub portalp <name>
         public void UB_portal(string portalName, bool partial) {
             portal = FindName(portalName, partial, new ObjectClass[] { ObjectClass.Portal, ObjectClass.Npc });
             if (portal != null) {
@@ -323,6 +370,8 @@ namespace UtilityBelt.Tools
             
             Util.ThinkOrWrite("Could not find a portal", Globals.Settings.Plugin.portalThink);
         }
+        #endregion
+        #region /ub follow [name]
         public void UB_follow(string characterName, bool partial) {
             WorldObject followChar = FindName(characterName, partial, new ObjectClass[] { ObjectClass.Player });
             if (followChar != null) {
@@ -349,15 +398,8 @@ namespace UtilityBelt.Tools
             } catch { }
 
         }
+        #endregion
 
-        private void UB_vendor_open(string vendorname, bool partial) {
-            vendor = FindName(vendorname, partial, new ObjectClass[]{ ObjectClass.Vendor});
-            if (vendor != null) {
-                OpenVendor();
-                return;
-            }
-            Util.ThinkOrWrite("AutoVendor failed to open vendor", Globals.Settings.AutoVendor.Think);
-        }
 
         private void UB_pos() {
             var selected = Globals.Core.Actions.CurrentSelection;
