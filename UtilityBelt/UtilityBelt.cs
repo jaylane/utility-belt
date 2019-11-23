@@ -19,6 +19,8 @@ namespace UtilityBelt {
         private Counter counter;
         private VTankFellowHeals vTankFellowHeals;
         private ChatNameClickHandler chatNameClickHandler;
+        private AutoTinker autotinker;
+        private AutoImbue autoimbue;
         private ChatLogger chatLogger;
         private EquipmentManager equipmentManager;
 
@@ -79,6 +81,8 @@ namespace UtilityBelt {
             chatNameClickHandler = new ChatNameClickHandler();
             chatLogger = new ChatLogger();
             equipmentManager = new EquipmentManager();
+            autotinker = new AutoTinker();
+            autoimbue = new AutoImbue();
 
             Nametags.Init(); // static class
 
@@ -100,8 +104,11 @@ namespace UtilityBelt {
                 if (Globals.DungeonMaps != null) Globals.DungeonMaps.Think();
                 if (jumper != null) jumper.Think();
                 if (counter != null) counter.Think();
+                if (autotinker != null) autotinker.Think();
+                if (autoimbue != null) autoimbue.Think();
                 if (Globals.VisualVTankRoutes != null) Globals.VisualVTankRoutes.Think();
                 if (Globals.Assessor != null) Globals.Assessor.Think();
+                if (Globals.InventoryManager != null) Globals.InventoryManager.Think();
                 if (Globals.InventoryManager != null) Globals.InventoryManager.Think();
                 if (equipmentManager != null) equipmentManager.Think();
             }
@@ -131,6 +138,8 @@ namespace UtilityBelt {
                 if (Globals.MainView != null) Globals.MainView.Dispose();
                 if (chatLogger != null) chatLogger.Dispose();
                 if (equipmentManager != null) equipmentManager.Dispose();
+                if (autotinker != null) autotinker.Dispose();
+                if (autoimbue != null) autoimbue.Dispose();
                 Nametags.Dispose();
             }
             catch (Exception ex) { Logger.LogException(ex); }

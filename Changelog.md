@@ -1,4 +1,5 @@
 ## 0.0.15 (TBD)
+- Added AutoTinker and AutoImbue (thanks Schneebly)
 - Added `VisualNav.ScaleCurrentWaypoint` option to enable/disable scaling current waypoint using vTankMinNavDistance
 - Added `/ub fixbusy` command to reset the client's Busy State and Busy Count both to 0.
 - Beta builds are now available in #utilitybelt on https://discord.gg/c75pPaz
