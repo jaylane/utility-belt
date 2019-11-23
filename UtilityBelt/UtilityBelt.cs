@@ -33,7 +33,7 @@ namespace UtilityBelt {
             System.Reflection.Assembly.Load((byte[])rm.GetObject("SharedMemory"));
         }
 
-        public void Startup(string assemblyLocation, PluginHost Host, CoreManager Core) {
+        public void Startup(string assemblyLocation, NetServiceHost Host, CoreManager Core) {
 			try {
                 Util.AssemblyLocation = assemblyLocation;
                 Globals.Init("UtilityBelt", Host, Core);

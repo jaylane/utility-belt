@@ -104,37 +104,37 @@ namespace UtilityBelt.MagTools.Shared {
 
             switch (dothings) {
                 case "upforward":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementForward"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Core.QueryKeyBoardMap("MovementForward"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Core.QueryKeyBoardMap("MovementForward")) * 0x10000));
                     break;
                 case "upstrafeleft":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeLeft"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeLeft")) * 0x10000));
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Core.QueryKeyBoardMap("MovementStrafeLeft"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Core.QueryKeyBoardMap("MovementStrafeLeft")) * 0x10000));
                     break;
                 case "upbackward":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementBackup"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementBackup")) * 0x10000));
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Core.QueryKeyBoardMap("MovementBackup"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Core.QueryKeyBoardMap("MovementBackup")) * 0x10000));
                     break;
                 case "upstraferight":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeRight"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeRight")) * 0x10000));
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Core.QueryKeyBoardMap("MovementStrafeRight"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Core.QueryKeyBoardMap("MovementStrafeRight")) * 0x10000));
                     break;
                 case "upspace":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementJump"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementJump")) * 0x10000));
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)(CharCode((char)Globals.Core.QueryKeyBoardMap("MovementJump"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Core.QueryKeyBoardMap("MovementJump")) * 0x10000));
                     break;
                 case "upshift":
                     Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)VK_SHIFT, (UIntPtr)0xC02A0001);
                     break;
                 case "downforward":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementForward"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementForward")) * 0x10000));
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Core.QueryKeyBoardMap("MovementForward"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Core.QueryKeyBoardMap("MovementForward")) * 0x10000));
                     break;
                 case "downstrafeleft":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeLeft"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeLeft")) * 0x10000));
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Core.QueryKeyBoardMap("MovementStrafeLeft"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Core.QueryKeyBoardMap("MovementStrafeLeft")) * 0x10000));
                     break;
                 case "downbackward":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementBackup"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementBackup")) * 0x10000));
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Core.QueryKeyBoardMap("MovementBackup"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Core.QueryKeyBoardMap("MovementBackup")) * 0x10000));
                     break;
                 case "downstraferight":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeRight"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementStrafeRight")) * 0x10000));
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Core.QueryKeyBoardMap("MovementStrafeRight"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Core.QueryKeyBoardMap("MovementStrafeRight")) * 0x10000));
                     break;
                 case "downspace":
-                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Host.GetKeyboardMapping("MovementJump"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Host.GetKeyboardMapping("MovementJump")) * 0x10000));
+                    Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)(CharCode((char)Globals.Core.QueryKeyBoardMap("MovementJump"))), (UIntPtr)(0x00000001 + ScanCode((char)Globals.Core.QueryKeyBoardMap("MovementJump")) * 0x10000));
                     break;
                 case "downshift":
                     Binding = User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)VK_SHIFT, (UIntPtr)0xC02A0001);

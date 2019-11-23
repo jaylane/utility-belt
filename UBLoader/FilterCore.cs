@@ -10,7 +10,7 @@ namespace UBLoader {
 	[WireUpBaseEvents]
     
 	[FriendlyName("UtilityBelt")]
-	public class PluginCore : PluginBase {
+	public class FilterCore : FilterBase {
         public object PluginInstance;
         public Assembly CurrentAssembly;
         public Type PluginType;
@@ -23,7 +23,7 @@ namespace UBLoader {
         public string PluginAssemblyName { get { return "UtilityBelt.dll"; } }
         public string PluginAssemblyPath {
             get {
-                string fullPath = System.Reflection.Assembly.GetAssembly(typeof(PluginCore)).Location;
+                string fullPath = System.Reflection.Assembly.GetAssembly(typeof(FilterCore)).Location;
                 return System.IO.Path.GetDirectoryName(fullPath);
             }
         }
@@ -35,9 +35,8 @@ namespace UBLoader {
         /// </summary>
         protected override void Startup() {
 			try {
-                Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
-
                 LoadPluginAssembly();
+                ServerDispatch += FilterCore_ServerDispatch;
 
                 PluginWatcher = new FileSystemWatcher();
                 PluginWatcher.Path = PluginAssemblyPath;
@@ -48,11 +47,34 @@ namespace UBLoader {
             }
 			catch (Exception ex) { LogException(ex); }
         }
+        void FilterCore_ServerDispatch(object sender, NetworkMessageEventArgs e) {
+            try {
+                if (e.Message.Type == 0xF7DF) { // Login_EnterGame_ServerReady
+                    if (!IsLoggedIn) {
+                        LoadPluginAssembly();
+                        Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
+                        Core.CharacterFilter.Logoff += CharacterFilter_Logoff;
+                    }
+                }
+            }
+            catch (Exception ex) { LogException(ex); }
+        }
+
 
         private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
             try {
                 IsLoggedIn = true;
                 Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
+            }
+            catch (Exception ex) { LogException(ex); }
+        }
+
+        private void CharacterFilter_Logoff(object sender, LogoffEventArgs e) {
+            try {
+                IsLoggedIn = false;
+                Core.CharacterFilter.Logoff -= CharacterFilter_Logoff;
+                MethodInfo shutdownMethod = PluginType.GetMethod("Shutdown");
+                shutdownMethod.Invoke(PluginInstance, null);
             }
             catch (Exception ex) { LogException(ex); }
         }
