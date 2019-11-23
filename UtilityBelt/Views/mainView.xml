@@ -16,6 +16,63 @@
         <control progid="DecalControls.PushButton" name="NameTagsEnabled" left="144" top="40" width="110" height="24" text="Name Tags  "/>
       </control>
     </page>
+    <page label="AutoTinker">
+      <control progid="DecalControls.FixedLayout" clipped="" height="270">
+        <control progid="DecalControls.Notebook" name="TinkerNoteBook" left="0" top="0" width="400" height="250">
+          <page label="Tinker">
+            <control progid="DecalControls.FixedLayout" clipped="">
+              <control progid="DecalControls.List" name="AutoTinkerList" left="0" top="95" width="400" height="110">
+                <column progid="DecalControls.TextColumn" name="TinkCount" fixedwidth="50" text="" />
+                <column progid="DecalControls.TextColumn" name="ItemName" fixedwidth="90"/>
+                <column progid="DecalControls.TextColumn" name="Salvage" fixedwidth="170" text="" />
+                <column progid="DecalControls.TextColumn" name="SuccessPercent" fixedwidth="50" text="" />
+                <column progid="DecalControls.TextColumn" name="SalvID" fixedwidth="0" text="" />
+                <column progid="DecalControls.TextColumn" name="ItemID" fixedwidth="0" text="" />
+                <column progid="DecalControls.TextColumn"/>
+              </control>
+              <control progid="DecalControls.StaticText" name="AutoTinkItemLabel" left="25" top="2" width="50" height="24" justify="Left" text="Item: "/>
+              <control progid="DecalControls.StaticText" name="AutoTinkItemNameLabel" left="75" top="2" width="150" height="24" text="[None]"/>
+              <control progid="DecalControls.PushButton" name="AutoTinkAddSelectedButton" left="250" top="2" width="110" height="20" text="Add Selected Item"/>
+              <control progid="DecalControls.StaticText" name="AutoTinkSalvageLabel" left="205" top="30" width="50" height="24" justify="Left" text="Salvage: "/>
+              <control progid="DecalControls.Choice" name="AutoTinkCombo" left="250" top="30" width="120" height="24"/>
+              <control progid="DecalControls.StaticText" name="AutoTinkMinPercentLabel" left="25" top="30" width="100" height="24" text="Minimum Percent:"/>
+              <control progid="DecalControls.Edit" name="AutoTinkMinPercentTextBox" left="130" top="28" width="40" height="19" imageportalsrc="4726" text="99.5"/>
+              <control progid="DecalControls.StaticText" name="AutoTinkTinkCountListLabel" left="5" top="80" width="70" height="16" justify="Left" text="Tink #"/>
+              <control progid="DecalControls.StaticText" name="AutoTinkItemListLabel" left="60" top="80" width="70" height="16" justify="Center" text="Item"/>
+              <control progid="DecalControls.StaticText" name="AutoTinkSalvageListLabel" left="185" top="80" width="70" height="16" justify="Center" text="Salvage"/>
+              <control progid="DecalControls.StaticText" name="AutoTinkSuccessListLabel" left="305" top="80" width="70" height="16" justify="Right" text="Success %"/>
+              <control progid="DecalControls.PushButton" name="PopulateListButton" left="65" top="55" width="70" height="20" text="Populate"/>
+              <control progid="DecalControls.PushButton" name="AutoTinkStartButton" left="165" top="55" width="70" height="20" text="Start"/>
+              <control progid="DecalControls.PushButton" name="AutoTinkStopButton" left="265" top="55" width="70" height="20" text="Stop"/>
+            </control>
+          </page>
+          <page label="Imbue">
+            <control progid="DecalControls.FixedLayout" clipped="">
+              <control progid="DecalControls.List" name="AutoImbueList" left="0" top="70" width="400" height="140">
+                <column progid="DecalControls.TextColumn" name="AutoImbueTinkCount" fixedwidth="50" text="" />
+                <column progid="DecalControls.TextColumn" name="AutoImbueItemName" fixedwidth="90"/>
+                <column progid="DecalControls.TextColumn" name="AutoImbueSalvage" fixedwidth="170" text="" />
+                <column progid="DecalControls.TextColumn" name="AutoImbueSuccessPercent" fixedwidth="50" text="" />
+                <column progid="DecalControls.TextColumn" name="AutoImbueSalvID" fixedwidth="0" text="" />
+                <column progid="DecalControls.TextColumn" name="AutoImbueItemID" fixedwidth="0" text="" />
+                <column progid="DecalControls.TextColumn"/>
+              </control>
+              <control progid="DecalControls.StaticText" name="AutoImbueDmgTypeLabel" left="15" top="2" width="100" height="24" justify="Left" text="Dmg Type: "/>
+              <control progid="DecalControls.Choice" name="AutoImbueDmgTypeCombo" left="100" top="2" width="70" height="24"/>
+              <control progid="DecalControls.StaticText" name="PopulateAutoImbueSalvageStatic" left="215" top="2" width="50" height="24" justify="Left" text="Salvage: "/>
+              <control progid="DecalControls.Choice" name="AutoImbueSalvageCombo" left="260" top="2" width="120" height="24"/>
+              <control progid="DecalControls.StaticText" name="AutoImbueCountListLabel" left="5" top="55" width="70" height="16" justify="Left" text="Tink #"/>
+              <control progid="DecalControls.StaticText" name="AutoImbueItemListLabel" left="60" top="55" width="70" height="16" justify="Center" text="Item"/>
+              <control progid="DecalControls.StaticText" name="AutoImbueSalvageListLabel" left="185" top="55" width="70" height="16" justify="Center" text="Salvage"/>
+              <control progid="DecalControls.StaticText" name="AutoImbueSuccessListLabel" left="305" top="55" width="70" height="16" justify="Right" text="Success %"/>
+              <control progid="DecalControls.PushButton" name="AutoImbueRefreshListButton" left="65" top="30" width="70" height="20" text="Refresh"/>
+              <control progid="DecalControls.PushButton" name="AutoImbueStartButton" left="165" top="30" width="70" height="20" text="Start"/>
+              <control progid="DecalControls.PushButton" name="AutoImbueStopButton" left="265" top="30" width="70" height="20" text="Stop"/>
+            </control>
+          </page>
+        </control>
+      </control>
+    </page>
     <page label="Chat Log">
       <control progid="DecalControls.Notebook">
         <page label="Log">

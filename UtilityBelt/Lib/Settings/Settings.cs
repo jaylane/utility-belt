@@ -56,6 +56,10 @@ namespace UtilityBelt.Lib.Settings {
         public Sections.AutoVendor AutoVendor { get; set; }
 
         [JsonProperty]
+        [Summary("AutoTinker Settings")]
+        public Sections.AutoTinker AutoTinker { get; set; }
+
+        [JsonProperty]
         [Summary("AutoTrade Settings")]
         public Sections.AutoTrade AutoTrade { get; set; }
 
@@ -96,6 +100,7 @@ namespace UtilityBelt.Lib.Settings {
             try {
                 SetupSection(Plugin = new Sections.Plugin(null));
                 SetupSection(AutoSalvage = new Sections.AutoSalvage(null));
+                SetupSection(AutoTinker = new Sections.AutoTinker(null));
                 SetupSection(AutoTrade = new Sections.AutoTrade(null));
                 SetupSection(AutoVendor = new Sections.AutoVendor(null));
                 SetupSection(ChatLogger = new Sections.ChatLogger(null));
