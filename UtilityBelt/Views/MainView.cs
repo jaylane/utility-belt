@@ -23,6 +23,7 @@ namespace UtilityBelt.Views {
         private HudStaticText SummaryText = null;
         private HudFixedLayout FormLayout = null;
         private HudButton CheckForUpdate;
+        internal HudButton ExportPCap;
 
         private List<HudButton> toggleButtons = new List<HudButton>();
 
@@ -66,9 +67,11 @@ namespace UtilityBelt.Views {
                 SettingsList = (HudList)view["SettingsList"];
                 SettingEditLayout = (HudFixedLayout)view["SettingsForm"];
                 CheckForUpdate = (HudButton)view["CheckForUpdate"];
+                ExportPCap = (HudButton)view["ExportPCap"];
 
                 SettingsList.Click += SettingsList_Click;
                 CheckForUpdate.Hit += CheckForUpdate_Hit;
+                ExportPCap.Hit += ExportPCap_Hit;
                 Globals.Settings.Changed += Settings_Changed;
 
                 foreach (var kv in buttons) {
@@ -86,6 +89,8 @@ namespace UtilityBelt.Views {
                     };
                 }
 
+                if (!Globals.Settings.Plugin.PCap) ExportPCap.Visible = false;
+
                 PopulateSettings(Globals.Settings, "");
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -93,6 +98,10 @@ namespace UtilityBelt.Views {
 
         private void CheckForUpdate_Hit(object sender, EventArgs e) {
             UpdateChecker.CheckForUpdate();
+        }
+        private void ExportPCap_Hit(object sender, EventArgs e) {
+            string filename = $"{Util.GetPluginDirectory()}\\pkt_{DateTime.UtcNow:yyyy-M-d}_{(int)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds}_log.pcap";
+            UBHelper.PCap.Print(filename);
         }
 
         private void Settings_Changed(object sender, EventArgs e) {
