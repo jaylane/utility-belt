@@ -63,25 +63,34 @@ Section -FinishSection
 	WriteRegStr HKLM "Software\${SOFTWARECOMPANY}\${APPNAME}" "Version" "${VERSION}"
 
 	;Unregister old plugin
-	DeleteRegKey HKLM "Software\Decal\Plugins\${APPGUID}"
+	ClearErrors
+	ReadRegStr $0 HKLM "Software\Decal\Plugins\${APPGUID}" ""
+	${IfNot} ${Errors}
+		DeleteRegKey HKLM "Software\Decal\Plugins\${APPGUID}"
+	${EndIf}
 
 	;Register in decal
-	WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "" "${APPNAME}"
-	WriteRegDWORD HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Enabled" "1"
-	WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Object" "${CLASSNAME}"
-	WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Assembly" "${ASSEMBLY}"
-	WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Path" "$INSTDIR"
-	WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Surrogate" "{71A69713-6593-47EC-0002-0000000DECA1}"
-	WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Uninstaller" "${APPNAME}"
-
+	ClearErrors
+	ReadRegStr $0 HKLM "Software\Decal\NetworkFilters\${APPGUID}" ""
+	${If} ${Errors}
+		WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "" "${APPNAME}"
+		WriteRegDWORD HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Enabled" "1"
+		WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Object" "${CLASSNAME}"
+		WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Assembly" "${ASSEMBLY}"
+		WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Path" "$INSTDIR"
+		WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Surrogate" "{71A69713-6593-47EC-0002-0000000DECA1}"
+		WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Uninstaller" "${APPNAME}"
+	${Else}
+		${IF} $0 != "${APPNAME}"
+			MESSAGEBOX MB_OK|MB_ICONSTOP "Skipped decal registration. A decal filter with this GUID already exists ($0), and is not ${APPNAME}.  This should not happen, but report it on gitlab or discord if you are seeing this."
+		${ENDIF}
+	${EndIf}
 
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayName" "${APPNAME}"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString" "$INSTDIR\uninstall.exe"
 	WriteUninstaller "$INSTDIR\uninstall.exe"
-	;MessageBox MB_OK "Done"
-
 	
-	;Clean up old installer resources
+	;Clean up old plugin resources
 	Delete "$INSTDIR\SharedMemory.dll"
 	Delete "$INSTDIR\Newtonsoft.Json.dll"
 	Delete "$INSTDIR\\Resources\tiles\*.bmp"
@@ -101,7 +110,7 @@ Section Uninstall
 
 	;Remove from registry...
 	DeleteRegKey HKLM "Software\${SOFTWARECOMPANY}\${APPNAME}"
-	DeleteRegKey HKLM "Software\Decal\Plugins\${APPGUID}"
+	DeleteRegKey HKLM "Software\Decal\Filters\${APPGUID}"
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}"
 
 	; Delete self
