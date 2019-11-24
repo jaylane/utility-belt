@@ -108,6 +108,8 @@ namespace UtilityBelt.Views {
             foreach (var kv in buttons) {
                 UpdateButton(kv);
             }
+
+            Globals.MainView.ExportPCap.Visible = Globals.Settings.Plugin.PCap;
         }
 
         private void UpdateButton(KeyValuePair<string, string> kv) {

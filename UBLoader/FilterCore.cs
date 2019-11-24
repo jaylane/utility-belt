@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Decal.Adapter;
 using Decal.Adapter.Wrappers;
@@ -17,74 +19,143 @@ namespace UBLoader {
         public FileSystemWatcher PluginWatcher = null;
 
         private bool needsReload = false;
+        private bool pluginsReady = false;
         private DateTime lastFileChange = DateTime.UtcNow;
 
+        public string PluginName { get { return "UtilityBelt"; } }
         public string PluginAssemblyNamespace { get { return "UtilityBelt.UtilityBeltPlugin"; } }
         public string PluginAssemblyName { get { return "UtilityBelt.dll"; } }
-        public string PluginAssemblyPath {
+        public string PluginAssemblyDirectory {
             get {
                 string fullPath = System.Reflection.Assembly.GetAssembly(typeof(FilterCore)).Location;
                 return System.IO.Path.GetDirectoryName(fullPath);
             }
         }
+        public string PluginAssemblyPath {
+            get {
+                return System.IO.Path.Combine(PluginAssemblyDirectory, PluginAssemblyName);
+            }
+        }
 
-        public bool IsLoggedIn = false;
+        private string pluginStorageDirectory;
+        public string PluginStorageDirectory {
+            get {
+                if (!string.IsNullOrEmpty(pluginStorageDirectory)) return pluginStorageDirectory;
+
+                System.Configuration.Configuration config = null;
+                System.Configuration.KeyValueConfigurationElement element = null;
+                try {
+                    config = System.Configuration.ConfigurationManager.OpenExeConfiguration(PluginAssemblyPath);
+                    element = config.AppSettings.Settings["PluginDirectory"];
+                }
+                catch { }
+                if (element != null && !string.IsNullOrEmpty(element.Value)) {
+                    pluginStorageDirectory = element.Value;
+                }
+                else {
+                    pluginStorageDirectory = System.IO.Path.Combine(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins"), PluginName);
+                    try {
+                        config.AppSettings.Settings.Add("PluginDirectory", pluginStorageDirectory);
+                        config.Save();
+                    }
+                    catch { }
+                }
+
+                return pluginStorageDirectory;
+            }
+        }
+
+        public string AccountName;
+        public string CharacterName;
+        public string ServerName;
+        public Dictionary<int, string> Characters = new Dictionary<int, string>();
 
         /// <summary>
         /// This is called when the plugin is started up. This happens only once.
         /// </summary>
         protected override void Startup() {
-			try {
-                LoadPluginAssembly();
-                ServerDispatch += FilterCore_ServerDispatch;
-
-                PluginWatcher = new FileSystemWatcher();
-                PluginWatcher.Path = PluginAssemblyPath;
-                PluginWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
-                PluginWatcher.Filter = PluginAssemblyName;
-                PluginWatcher.Changed += PluginWatcher_Changed; ;
-                PluginWatcher.EnableRaisingEvents = true;
-            }
-			catch (Exception ex) { LogException(ex); }
-        }
-        void FilterCore_ServerDispatch(object sender, NetworkMessageEventArgs e) {
             try {
-                if (e.Message.Type == 0xF7DF) { // Login_EnterGame_ServerReady
-                    if (!IsLoggedIn) {
-                        LoadPluginAssembly();
-                        Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
-                        Core.CharacterFilter.Logoff += CharacterFilter_Logoff;
+                ServerDispatch += FilterCore_ServerDispatch;
+                ClientDispatch += FilterCore_ClientDispatch;
+                Core.PluginInitComplete += Core_PluginInitComplete;
+                Core.PluginTermComplete += Core_PluginTermComplete;
+            }
+            catch (Exception ex) { LogException(ex); }
+        }
+
+        private void FilterCore_ClientDispatch(object sender, NetworkMessageEventArgs e) {
+            try {
+                if (e.Message.Type == 0xF657) { // SendEnterWorld C2S
+                    int loginId = Convert.ToInt32(e.Message["character"]);
+
+                    if (Characters.ContainsKey(loginId)) {
+                        CharacterName = Characters[loginId];
+                    }
+                    else {
+                        throw new Exception($"Character id not in character list! " + Characters.Keys.ToArray());
                     }
                 }
             }
             catch (Exception ex) { LogException(ex); }
         }
 
-
-        private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
+        private void FilterCore_ServerDispatch(object sender, NetworkMessageEventArgs e) {
             try {
-                IsLoggedIn = true;
-                Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
+                switch (e.Message.Type) {
+                    case 0xF658: // LoginCharacterSet S2C
+                        AccountName = e.Message.Value<string>("zonename");
+                        int characterCount = e.Message.Value<int>("characterCount");
+                        MessageStruct characters = e.Message.Struct("characters");
+
+                        Characters.Clear();
+
+                        for (int i = 0; i < characterCount; i++) {
+                            int id = characters.Struct(i).Value<int>("character");
+                            string name = characters.Struct(i).Value<string>("name");
+                            Characters.Add(id, name);
+                        }
+                        break;
+
+                    case 0xF7E1:
+                        ServerName = e.Message.Value<string>("server");
+                        break;
+                }
             }
             catch (Exception ex) { LogException(ex); }
         }
 
-        private void CharacterFilter_Logoff(object sender, LogoffEventArgs e) {
+        private void Core_PluginInitComplete(object sender, EventArgs e) {
             try {
-                IsLoggedIn = false;
-                Core.CharacterFilter.Logoff -= CharacterFilter_Logoff;
-                MethodInfo shutdownMethod = PluginType.GetMethod("Shutdown");
-                shutdownMethod.Invoke(PluginInstance, null);
+                pluginsReady = true;
+                LoadPluginAssembly();
+
+                PluginWatcher = new FileSystemWatcher();
+                PluginWatcher.Path = PluginAssemblyDirectory;
+                PluginWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
+                PluginWatcher.Filter = PluginAssemblyName;
+                PluginWatcher.Changed += PluginWatcher_Changed; ;
+                PluginWatcher.EnableRaisingEvents = true;
+            }
+            catch (Exception ex) { LogException(ex); }
+        }
+
+        private void Core_PluginTermComplete(object sender, EventArgs e) {
+            try {
+                pluginsReady = false;
+                UnloadPluginAssembly();
             }
             catch (Exception ex) { LogException(ex); }
         }
 
         private void Core_RenderFrame(object sender, EventArgs e) {
             try {
-                if (needsReload && DateTime.UtcNow - lastFileChange > TimeSpan.FromSeconds(3)) {
+                if (needsReload && pluginsReady && DateTime.UtcNow - lastFileChange > TimeSpan.FromSeconds(3)) {
                     needsReload = false;
                     Core.RenderFrame -= Core_RenderFrame;
-                    Core.Actions.AddChatText("Reloading UtilityBelt", 1);
+                    try {
+                        Core.Actions.AddChatText("Reloading UtilityBelt", 1);
+                    }
+                    catch { }
                     UnloadPluginAssembly();
                     LoadPluginAssembly();
                 }
@@ -105,17 +176,25 @@ namespace UBLoader {
 
         private void LoadPluginAssembly() {
             try {
-                var assemblyPath = System.IO.Path.Combine(PluginAssemblyPath, PluginAssemblyName);
-                CurrentAssembly = Assembly.Load(File.ReadAllBytes(assemblyPath));
+                if (!pluginsReady) {
+                    needsReload = true;
+                    Core.RenderFrame += Core_RenderFrame;
+                    return;
+                }
+
+                CurrentAssembly = Assembly.Load(File.ReadAllBytes(PluginAssemblyPath));
                 PluginType = CurrentAssembly.GetType(PluginAssemblyNamespace);
                 MethodInfo startupMethod = PluginType.GetMethod("Startup");
                 PluginInstance = Activator.CreateInstance(PluginType);
-                startupMethod.Invoke(PluginInstance, new object[] { assemblyPath, Host, Core });
-
-                if (IsLoggedIn) {
-                    MethodInfo initMethod = PluginType.GetMethod("Init");
-                    initMethod.Invoke(PluginInstance, null);
-                }
+                startupMethod.Invoke(PluginInstance, new object[] {
+                    PluginAssemblyPath,
+                    PluginStorageDirectory,
+                    Host,
+                    Core,
+                    AccountName,
+                    CharacterName,
+                    ServerName
+                });
             }
             catch (Exception ex) { LogException(ex); }
         }
@@ -138,15 +217,16 @@ namespace UBLoader {
         /// </summary>
         protected override void Shutdown() {
 			try {
+                Core.PluginInitComplete -= Core_PluginInitComplete;
+                Core.PluginTermComplete -= Core_PluginTermComplete;
                 UnloadPluginAssembly();
             }
 			catch (Exception ex) { LogException(ex); }
         }
 
-        public static void LogException(Exception ex) {
+        public void LogException(Exception ex) {
             try {
-                var path = System.IO.Path.Combine(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins"), "UtilityBelt");
-                using (StreamWriter writer = new StreamWriter(System.IO.Path.Combine(path, "exceptions.txt"), true)) {
+                using (StreamWriter writer = new StreamWriter(System.IO.Path.Combine(PluginStorageDirectory, "exceptions.txt"), true)) {
                     writer.WriteLine("============================================================================");
                     writer.WriteLine(DateTime.Now.ToString());
                     writer.WriteLine("Error: " + ex.Message);

@@ -18,22 +18,9 @@ namespace UtilityBelt
 {
 	public static class Util {
         private static string pluginDirectory;
-        public static void Init() {
-            System.Configuration.Configuration config = null;
-            System.Configuration.KeyValueConfigurationElement element = null;
-            try {
-                config = System.Configuration.ConfigurationManager.OpenExeConfiguration(AssemblyLocation);
-                element = config.AppSettings.Settings["PluginDirectory"];
-            } catch { }
-            if (element != null && !string.IsNullOrEmpty(element.Value)) {
-                pluginDirectory = element.Value;
-            } else {
-                pluginDirectory = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins"), Globals.PluginName);
-                try {
-                    config.AppSettings.Settings.Add("PluginDirectory", pluginDirectory);
-                    config.Save();
-                } catch { }
-            }
+        public static void Init(string assemblyLocation, string storagePath) {
+            AssemblyLocation = assemblyLocation;
+            pluginDirectory = storagePath;
         }
 
         public static string AssemblyLocation = "";
@@ -64,12 +51,12 @@ namespace UtilityBelt
         }
 
         public static string GetServerDirectory() {
-            return Path.Combine(GetPluginDirectory(), Globals.Core.CharacterFilter.Server);
+            return Path.Combine(GetPluginDirectory(), Globals.ServerName);
         }
 
         public static string GetCharacterDirectory() {
-            String path = Path.Combine(GetPluginDirectory(), Globals.Core.CharacterFilter.Server);
-            path = Path.Combine(path, Globals.Core.CharacterFilter.Name);
+            String path = Path.Combine(GetPluginDirectory(), Globals.ServerName);
+            path = Path.Combine(path, Globals.CharacterName);
             return path;
         }
 

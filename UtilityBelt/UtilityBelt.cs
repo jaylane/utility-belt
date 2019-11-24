@@ -24,6 +24,8 @@ namespace UtilityBelt {
         private ChatLogger chatLogger;
         private EquipmentManager equipmentManager;
 
+        private bool didInit = false;
+
         public UtilityBeltPlugin() {
             System.Resources.ResourceManager rm = new System.Resources.ResourceManager(GetType().Namespace + ".Properties.Resources", System.Reflection.Assembly.GetExecutingAssembly());
 
@@ -33,32 +35,43 @@ namespace UtilityBelt {
             System.Reflection.Assembly.Load((byte[])rm.GetObject("SharedMemory"));
         }
 
-        public void Startup(string assemblyLocation, NetServiceHost Host, CoreManager Core) {
+        public void Startup(string assemblyLocation, string storagePath, NetServiceHost Host, CoreManager Core, string accountName, string characterName, string serverName) {
 			try {
-                Util.AssemblyLocation = assemblyLocation;
-                Globals.Init("UtilityBelt", Host, Core);
-                Util.Init(); //static classes can not have constructors, but still need to init variables.
+                Globals.Init("UtilityBelt", Host, Core, accountName, characterName, serverName);
+                Util.Init(assemblyLocation, storagePath); //static classes can not have constructors, but still need to init variables.
 
                 UBHelper.Core.Startup();
 
-                Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
+                // if we are logged in already, we need to init manually.
+                // this happens during hot reloads while logged in.
+                if (Globals.Core.CharacterFilter.LoginStatus != 0) {
+                    Init();
+                }
+                else {
+                    Core.CharacterFilter.Login += CharacterFilter_Login;
+                }
             }
 			catch (Exception ex) { Logger.LogException(ex); }
         }
 
-		private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
+        private void CharacterFilter_Login(object sender, EventArgs e) {
 			try {
                 Init();
             }
 			catch (Exception ex) { Logger.LogException(ex); }
-		}
+        }
 
         public void Init() {
+            // CharacterFilter_Login will be called multiple times if the character was already in the world,
+            // so make sure we only actually init once
+            if (didInit) return;
+            didInit = true;
+
             Util.CreateDataDirectories();
             Logger.Init();
             Globals.Settings = new Settings();
 
-            Logger.Debug($"UB Initialized {DateTime.UtcNow} v{Util.GetVersion(true)}");
+            Logger.Debug($"UB Initialized {DateTime.UtcNow} v{Util.GetVersion(true)}. {Globals.CharacterName} on {Globals.ServerName}");
 
             VTankControl.initializeVTankInterface();
 
@@ -89,7 +102,6 @@ namespace UtilityBelt {
             Globals.Core.RenderFrame += Core_RenderFrame;
 
             if (Globals.Settings.Plugin.CheckForUpdates) {
-                Util.WriteToChat("Init calling check for update");
                 UpdateChecker.CheckForUpdate();
             }
         }
@@ -118,7 +130,7 @@ namespace UtilityBelt {
         public void Shutdown() {
             try {
                 Globals.Core.RenderFrame -= Core_RenderFrame;
-                Globals.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
+                Globals.Core.CharacterFilter.Login -= CharacterFilter_Login;
 
                 if (autoSalvage != null) autoSalvage.Dispose();
                 if (autoTrade != null) autoTrade.Dispose();
