@@ -1,4 +1,4 @@
-## 0.0.15 (TBD)
+## 0.1.0 (TBD)
 - Added AutoTinker and AutoImbue (thanks Schneebly)
 - Added `VisualNav.ScaleCurrentWaypoint` option to enable/disable scaling current waypoint using vTankMinNavDistance
 - Added `/ub fixbusy` command to reset the client's Busy State and Busy Count both to 0.
@@ -7,8 +7,9 @@
 - New UI!
 - Added `Plugin.VideoPatch` setting to ammend/replace `/ub videopatch` command
 - Add Equipment Manager for all your equipping needs
-- Added negative Keep # functionality to ItemGiver as well as (optionally) giving partial stacks of items.
-- Add /ub playsounds to play mp3 files from command line
+- Add negative Keep # functionality (gives away all but {Keep#} count items)
+- Add setting `InventoryManager.TreatStackAsSingleItem` (currently only used in itemgiver)
+- Add `/ub playsounds` to play mp3 files from command line
 - Add `/ub pcap` to export pcap files from a rolling buffer
 
 ## 0.0.14 (2019-11-15) [UtilityBeltInstaller-0.0.14.exe](/uploads/0d29c14ccc27377941cb5f92c37ffaef/UtilityBeltInstaller-0.0.14.exe)

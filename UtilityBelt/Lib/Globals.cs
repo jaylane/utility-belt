@@ -25,11 +25,18 @@ namespace UtilityBelt
         public static DungeonMaps DungeonMaps { get; internal set; }
         public static VisualVTankRoutes VisualVTankRoutes { get; internal set; }
         public static DoorWatcher DoorWatcher { get; internal set; }
+        public static string AccountName { get; internal set; }
+        public static string CharacterName { get; internal set; }
+        public static string ServerName { get; internal set; }
 
-        public static void Init(string pluginName, NetServiceHost host, CoreManager core) {
+        public static void Init(string pluginName, NetServiceHost host, CoreManager core, string account, string character, string server) {
             PluginName = pluginName;
+            AccountName = account;
+            CharacterName = character;
+            ServerName = server;
             Host = host;
             Core = core;
+
             DoorWatcher = new DoorWatcher();
         }
     }

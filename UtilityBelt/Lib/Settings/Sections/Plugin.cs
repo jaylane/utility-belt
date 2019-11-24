@@ -75,25 +75,27 @@ namespace UtilityBelt.Lib.Settings.Sections {
                 else UBHelper.VideoPatch.Disable();
             }
         }
+
         [Summary("Enables a rolling PCAP buffer, to export recent packets")]
         [DefaultValue(false)]
         public bool PCap {
             get { return (bool)GetSetting("PCap"); }
             set {
                 UpdateSetting("PCap", value);
+
                 if (UBHelper.Core.version < 1911220544) {
                     Util.WriteToChat($"Error UBHelper.dll is out of date!");
                     return;
                 }
+
                 if (value) {
-                    Globals.MainView.ExportPCap.Visible = true;
                     UBHelper.PCap.Enable(PCapBufferDepth);
                 } else {
-                    Globals.MainView.ExportPCap.Visible = false;
                     UBHelper.PCap.Disable(); 
                 }
             }
         }
+
         [Summary("PCap rolling buffer depth")]
         [DefaultValue(5000)]
         public int PCapBufferDepth {
