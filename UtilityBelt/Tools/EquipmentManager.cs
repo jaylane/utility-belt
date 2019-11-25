@@ -10,6 +10,17 @@ namespace UtilityBelt.Tools
 {
     public class EquipmentManager : IDisposable
     {
+        private static readonly ObjectClass[] ValidEquippableObjectClasses = new[]
+               {
+                        ObjectClass.Armor,
+                        ObjectClass.Clothing,
+                        ObjectClass.Gem, // Aetheria
+                        ObjectClass.Jewelry,
+                        ObjectClass.MeleeWeapon,
+                        ObjectClass.MissileWeapon,
+                        ObjectClass.WandStaffOrb
+                    };
+
         private bool running = false;
         private object lootProfile = null;
         private DateTime bailTimer = DateTime.MinValue;
@@ -81,7 +92,7 @@ namespace UtilityBelt.Tools
                     return;
 
                 //Logger.Debug($"Change object fired - {Util.GetObjectName(e.Changed.Id)}");
-                if (e.Changed.Id == itemList.Peek() && e.Changed.Values(LongValueKey.Slot, -1) == -1)
+                if (itemList.Count > 0 && e.Changed.Id == itemList.Peek() && e.Changed.Values(LongValueKey.Slot, -1) == -1)
                 {
                     Logger.Debug("Equipment Manager: Removing item from queue");
                     itemList.Dequeue();
@@ -122,11 +133,11 @@ namespace UtilityBelt.Tools
                             }
                             break;
 
-                        case "test": // TODO
+                        case "test":
                             Start(profileName, true);
                             break;
 
-                        case "help": // TODO
+                        case "help":
                             Util.WriteToChat("Usage: /ub equip { list | load | test | help } [profile.utl]");
                             break;
 
@@ -263,159 +274,184 @@ namespace UtilityBelt.Tools
 
         public void Think()
         {
-            try
+            if (!running)
+                return;
+
+            CheckVTankNavBlock();
+
+            if (Globals.Core.Actions.BusyState == 0)
             {
-                if (!running)
+                if (HasPendingIdItems())
                     return;
 
+                if (itemList == null)
+                {
+                    itemList = new Queue<int>();
+                    foreach (var id in CheckUtl())
+                        itemList.Enqueue(id);
+
+                    Logger.Debug($"Found {itemList.Count} items to equip");
+                }
+
+                if (itemList.Count == 0)
+                {
+                    Logger.Debug("Item queue empty - stopping");
+                    Stop();
+                    return;
+                }
+
+                if (isTestMode)
+                {
+                    Util.WriteToChat("Will attempt to equip the following items in order:");
+                    while (itemList.Count > 0)
+                    {
+                        var item = itemList.Dequeue();
+                        Util.WriteToChat($" * {Util.GetObjectName(item)} <{item}>");
+                    }
+
+                    Stop();
+                    return;
+                }
+
+                if (dequippingState)
+                {
+                    if (TryDequipItem())
+                        return;
+
+                    Logger.Debug("Finished dequipping items");
+                    dequippingState = false;
+                }
+
+                if (!TryGetItemToEquip(out var wo))
+                    return;
+
+                if (lastEquippingItem != itemList.Peek())
+                {
+                    lastEquippingItem = itemList.Peek();
+                    currentEquipAttempts = 0;
+                }
+                else if (++currentEquipAttempts > 15) // Stop trying to make fetch happen
+                {
+                    Logger.Debug($"Too many equip attempts ({Util.GetObjectName(itemList.Peek())}) - SKIPPING");
+                    currentEquipAttempts = 0;
+                    itemList.Dequeue();
+                    return;
+                }
+
+                EquipItem(wo);
+            }
+
+            if (DateTime.UtcNow - bailTimer > TimeSpan.FromSeconds(10))
+            {
+                Util.WriteToChat($"Equipment Manager bail, timeout expired");
+                Stop();
+            }
+        }
+
+        private static void EquipItem(WorldObject wo)
+        {
+            try
+            {
+                Logger.Debug($"Attempting to equip item - {Util.GetObjectName(wo.Id)}");
+                Globals.Core.Actions.UseItem(wo.Id, 0);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private static void CheckVTankNavBlock()
+        {
+            try
+            {
                 if (VTankControl.navBlockedUntil < DateTime.UtcNow + TimeSpan.FromSeconds(1))
                 { //if equip is running, and nav block has less than a second remaining, refresh it
                     VTankControl.Nav_Block(30000, Globals.Settings.Plugin.Debug);
                     VTankControl.Item_Block(30000, false);
                 }
-
-                if (Globals.Core.Actions.BusyState == 0)
-                {
-                    if (pendingIdCount > 0)
-                    {
-                        var idCount = Globals.Assessor.GetNeededIdCount(equippableItems.Select(i => i.Id));
-                        if (idCount != pendingIdCount)
-                        {
-                            pendingIdCount = idCount;
-                            bailTimer = DateTime.UtcNow;
-                        }
-
-                        if (idCount > 0)
-                        {
-                            if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15))
-                            {
-                                Util.WriteToChat(string.Format("Equip Mgr waiting to id {0} items, this will take approximately {0} seconds.", idCount));
-                                lastIdSpam = DateTime.UtcNow;
-                            }
-
-                            return;
-                        }
-                    }
-
-                    if (itemList == null)
-                    {
-                        itemList = new Queue<int>();
-                        foreach (var item in equippableItems)
-                        {
-                            Logger.Debug($"Assessing {Util.GetObjectName(item.Id)}...");
-                            uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item.Id);
-                            if (itemInfo == null) continue;
-                            uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
-                            if (result.IsKeep)
-                            {
-                                Logger.Debug($"Matches rule: {result.RuleName}");
-                                itemList.Enqueue(item.Id);
-                            }
-                        }
-
-                        Logger.Debug($"Found {itemList.Count} items to equip");
-                    }
-
-                    if (itemList.Count == 0)
-                    {
-                        Logger.Debug("Item queue empty - stopping");
-                        Stop();
-                        return;
-                    }
-
-                    if (isTestMode)
-                    {
-                        Util.WriteToChat("Will attempt to equip the following items in order:");
-                        while (itemList.Count > 0)
-                        {
-                            var item = itemList.Dequeue();
-                            Util.WriteToChat($" * {Util.GetObjectName(item)} <{item}>");
-                        }
-
-                        Stop();
-                        return;
-                    }
-
-                    if (dequippingState)
-                    {
-                        foreach (var item in Globals.Core.WorldFilter.GetInventory())
-                        {
-                            // skip items in profile since they are going to be equipped
-                            if (itemList.Contains(item.Id))
-                                continue;
-
-                            if (item.Values(LongValueKey.Slot, -1) == -1)
-                            {
-                                Logger.Debug($"Dequipping item - {Util.GetObjectName(item.Id)}");
-                                Globals.Core.Actions.MoveItem(item.Id, Globals.Core.CharacterFilter.Id);
-                                return;
-                            }
-                        }
-
-                        Logger.Debug("Finished dequipping items");
-                        dequippingState = false;
-                    }
-
-                    WorldObject wo = null;
-                    while (wo == null || wo.Values(LongValueKey.Slot, -1) == -1)
-                    {
-                        if (!IsValidItem(itemList.Peek(), out wo) || wo == null)
-                        {
-                            Util.WriteToChat($"Could not find item with id: {wo.Id} - SKIPPING");
-                            itemList.Dequeue();
-                            return;
-                        }
-                        else if (wo.Values(LongValueKey.Slot, -1) == -1)
-                        {
-                            Logger.Debug($"Item already equipped: {wo.Id} - SKIPPING");
-                            itemList.Dequeue();
-                            if (itemList.Count == 0)
-                            {
-                                return;
-                            }
-                        }
-                    }
-
-                    if (lastEquippingItem != itemList.Peek())
-                    {
-                        lastEquippingItem = itemList.Peek();
-                        currentEquipAttempts = 0;
-                    }
-                    else if (++currentEquipAttempts > 15) // Stop trying to make fetch happen
-                    {
-                        Logger.Debug($"Too many equip attempts ({Util.GetObjectName(itemList.Peek())}) - SKIPPING");
-                        currentEquipAttempts = 0;
-                        itemList.Dequeue();
-                        return;
-                    }
-
-                    Logger.Debug($"Attempting to equip item - {Util.GetObjectName(wo.Id)}");
-                    Globals.Core.Actions.UseItem(wo.Id, 0);
-                }
-
-                if (DateTime.UtcNow - bailTimer > TimeSpan.FromSeconds(10))
-                {
-                    Util.WriteToChat($"Equipment Manager bail, timeout expired");
-                    Stop();
-                }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
+        private bool TryDequipItem()
+        {
+            try
+            {
+                foreach (var item in Globals.Core.WorldFilter.GetInventory())
+                {
+                    // skip items in profile since they are going to be equipped
+                    if (itemList.Contains(item.Id))
+                        continue;
+
+                    if (item.Values(LongValueKey.Slot, -1) == -1)
+                    {
+                        Logger.Debug($"Dequipping item - {Util.GetObjectName(item.Id)}");
+                        Globals.Core.Actions.MoveItem(item.Id, Globals.Core.CharacterFilter.Id);
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return false;
+        }
+
+        private bool TryGetItemToEquip(out WorldObject wo)
+        {
+            wo = null;
+            try
+            {
+                while (wo == null || wo.Values(LongValueKey.Slot, -1) == -1)
+                {
+                    if (!IsValidItem(itemList.Peek(), out wo) || wo == null)
+                    {
+                        Util.WriteToChat($"Could not find item with id: {wo.Id} - SKIPPING");
+                        itemList.Dequeue();
+                        return false;
+                    }
+                    else if (wo.Values(LongValueKey.Slot, -1) == -1)
+                    {
+                        Logger.Debug($"Item already equipped: {wo.Id} - SKIPPING");
+                        itemList.Dequeue();
+                        if (itemList.Count == 0)
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return true;
+        }
+
+        private IEnumerable<int> CheckUtl()
+        {
+            List<int> ids = new List<int>();
+            try
+            {
+                foreach (var item in equippableItems)
+                {
+                    Logger.Debug($"Assessing {Util.GetObjectName(item.Id)}...");
+                    uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item.Id);
+                    if (itemInfo == null) continue;
+                    uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
+                    if (result.IsKeep)
+                    {
+                        Logger.Debug($"Matches rule: {result.RuleName}");
+                        ids.Add(item.Id);
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return ids;
+        }
+
         private IEnumerable<WorldObject> GetEquippableItems()
         {
+            
             foreach (var item in Globals.Core.WorldFilter.GetInventory())
             {
-                if (!new[]
-                    {
-                        ObjectClass.Armor,
-                        ObjectClass.Clothing,
-                        ObjectClass.Gem, // Aetheria
-                        ObjectClass.Jewelry,
-                        ObjectClass.MeleeWeapon,
-                        ObjectClass.MissileWeapon,
-                        ObjectClass.WandStaffOrb
-                    }.Contains(item.ObjectClass))
+                if (!ValidEquippableObjectClasses.Contains(item.ObjectClass))
                 {
                     continue;
                 }
@@ -424,6 +460,36 @@ namespace UtilityBelt.Tools
 
                 yield return item;
             }
+        }
+
+        private bool HasPendingIdItems()
+        {
+            try
+            {
+                if (pendingIdCount > 0)
+                {
+                    var idCount = Globals.Assessor.GetNeededIdCount(equippableItems.Select(i => i.Id));
+                    if (idCount != pendingIdCount)
+                    {
+                        pendingIdCount = idCount;
+                        bailTimer = DateTime.UtcNow;
+                    }
+
+                    if (idCount > 0)
+                    {
+                        if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15))
+                        {
+                            Util.WriteToChat(string.Format("Equip Mgr waiting to id {0} items, this will take approximately {0} seconds.", idCount));
+                            lastIdSpam = DateTime.UtcNow;
+                        }
+
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return false;
         }
 
         #region IDisposable Support
