@@ -122,8 +122,11 @@ namespace UtilityBelt.Tools {
         private int lastMonarchId = int.MaxValue;
         private DateTime lastThunk = DateTime.MinValue;
         internal D3DObj tag;
+        internal bool tagVisible = false;
         internal D3DObj ticker;
-        private bool showTicker = true;
+        internal bool tickerVisible = false;
+        private bool showTicker = false;
+        private bool needsProcess = true;
         public BitcoinMiner(WorldObject wo) {
             //Util.WriteToChat($"BitcoinMiner(0x{id:X8}) got here");
             id = wo.Id;
@@ -131,14 +134,13 @@ namespace UtilityBelt.Tools {
             float lugianOffset = 0f;
             var heritage = wo.Values(LongValueKey.Heritage, -1);
             if (oc == ObjectClass.Player && heritage > 5 && heritage < 10) lugianOffset = 0.20f;
-            tag = Globals.Core.D3DService.MarkObjectWith3DText(id, "Loading...", "arial", 0);
-            ticker = Globals.Core.D3DService.MarkObjectWith3DText(id, "Loading...", "arial", 0);
+            tag = Globals.Core.D3DService.MarkObjectWith3DText(id, wo.Name, "Arial", 0);
+            ticker = Globals.Core.D3DService.MarkObjectWith3DText(id, "Loading...", "Arial", 0);
             tag.Color = ticker.Color = Nametags.colors[oc];
             tag.Scale(0.15f);
             tag.Anchor(id, lugianOffset + 1.22f, 0f, 0f, 0f);
             tag.OrientToCamera(false);
             tag.Visible = ticker.Visible = false;
-            ticker.Color = Nametags.colors[oc];
             ticker.Scale(0.1f);
             ticker.Anchor(id, lugianOffset + 1.17f, 0f, 0f, 0f);
             ticker.OrientToCamera(false);
@@ -154,48 +156,57 @@ namespace UtilityBelt.Tools {
             }
             int physics = Globals.Core.Actions.Underlying.GetPhysicsObjectPtr(id);
             if (physics == 0) return;
-            if (oc == ObjectClass.Player && !wo.HasIdData) {
-                Globals.Assessor.Queue(id);
-                return;
-            }
-            switch (oc) {
-                case ObjectClass.Player:
-                    int level = wo.Values(LongValueKey.CreatureLevel, 1);
-                    if (level != lastLevel) {
-                        lastLevel = level;
-                        tag.SetText(D3DTextType.Text3D, $"{wo.Name} [{lastLevel}]", "arial", 0);
-                    }
-                    int monarch = wo.Values(LongValueKey.Monarch, 0);
-                    if (monarch != lastMonarchId) {
-                        lastMonarchId = monarch;
-                        if (lastMonarchId == 0) showTicker = false;
-                        else if (lastMonarchId == id) ticker.SetText(D3DTextType.Text3D, $"<{wo.Name}>", "arial", 0);
-                        else ticker.SetText(D3DTextType.Text3D, $"<{wo.Values(StringValueKey.MonarchName, "")}>", "arial", 0);
-                    }
-                    break;
-                case ObjectClass.Portal:
-                    if (wo.HasIdData) {
-                        if (!ticker.Visible) {
+
+            if (needsProcess) {
+                switch (oc) {
+                    case ObjectClass.Player:
+                        if (wo.HasIdData) {
+                            int level = wo.Values(LongValueKey.CreatureLevel, 1);
+                            if (level != lastLevel) {
+                                lastLevel = level;
+                                tag.SetText(D3DTextType.Text3D, $"{wo.Name} [{level}]", "Arial", 0);
+                            }
+                            int monarch = wo.Values(LongValueKey.Monarch, 0);
+                            if (monarch != lastMonarchId) {
+                                lastMonarchId = monarch;
+                                if (monarch == 0) {
+                                    showTicker = false;
+                                } else {
+                                    showTicker = true;
+                                    if (monarch == id) {
+                                        ticker.SetText(D3DTextType.Text3D, $"<{wo.Name}>", "Arial", 0);
+                                    } else {
+                                        ticker.SetText(D3DTextType.Text3D, $"<{wo.Values(StringValueKey.MonarchName, "")}>", "Arial", 0);
+                                    }
+                                }
+                            }
+                        } else Globals.Assessor.Queue(id);
+                        break;
+                    case ObjectClass.Portal:
+                        if (wo.HasIdData) {
+                            needsProcess = false;
                             showTicker = true;
-                            ticker.SetText(D3DTextType.Text3D, $"<{wo.Values(StringValueKey.PortalDestination, "")}>", "arial", 0);
-                        }
-                    }
-                    if (!tag.Visible) tag.SetText(D3DTextType.Text3D, wo.Name, "arial", 0);
-                    break;
-                default:
-                    if (!tag.Visible) {
-                        showTicker = false;
-                        tag.SetText(D3DTextType.Text3D, wo.Name, "arial", 0);
-                    }
-                    break;
+                            ticker.SetText(D3DTextType.Text3D, $"<{wo.Values(StringValueKey.PortalDestination, "")}>", "Arial", 0);
+                        } else Globals.Assessor.Queue(id);
+                        break;
+                    case ObjectClass.Monster:
+                        if (wo.HasIdData) {
+                            needsProcess = false;
+                            int level = wo.Values(LongValueKey.CreatureLevel, 1);
+                            tag.SetText(D3DTextType.Text3D, $"{wo.Name} [{level}]", "Arial", 0);
+                        } else Globals.Assessor.Queue(id);
+                        break;
+                    default:
+                        needsProcess = false;
+                        break;
+                }
             }
             if (*(float*)(physics + 0x20) > Nametags.maxRange) {
-                if (tag.Visible) tag.Visible = false;
-                if (ticker.Visible) ticker.Visible = false;
-                return;
+                if (tagVisible) tagVisible = tag.Visible = false;
+                if (tickerVisible) tickerVisible = ticker.Visible = false;
             } else {
-                if (!tag.Visible) tag.Visible = true;
-                if (!ticker.Visible && showTicker) ticker.Visible = true;
+                if (!tagVisible) tagVisible = tag.Visible = true;
+                if (!tickerVisible && showTicker) tickerVisible = ticker.Visible = true;
             }
         }
         public void Dispose() {
