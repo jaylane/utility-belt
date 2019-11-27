@@ -1,4 +1,5 @@
-﻿using Decal.Adapter.Wrappers;
+﻿using Decal.Adapter;
+using Decal.Adapter.Wrappers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -88,7 +89,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
 
             if (d <= 0) return;
 
-            var obj = Globals.Core.D3DService.NewD3DObj();
+            var obj = CoreManager.Current.D3DService.NewD3DObj();
             obj.Visible = false;
             obj.Color = color.ToArgb();
             obj.SetShape(D3DShape.Cube);
@@ -105,7 +106,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
         public void DrawText(string text, VTNPoint rp, float height, Color color) {
             if (rp == null) return;
 
-            var textObj = Globals.Core.D3DService.MarkCoordsWith3DText(0, 0, 0, text, "arial", 0);
+            var textObj = CoreManager.Current.D3DService.MarkCoordsWith3DText(0, 0, 0, text, "arial", 0);
             textObj.Visible = false;
             textObj.Color = color.ToArgb();
 
@@ -122,7 +123,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
         public void DrawIcon(int iconId, float height, VTNPoint point) {
             if (point == null) return;
 
-            var icon = Globals.Core.D3DService.MarkCoordsWithIcon((float)point.NS, (float)point.EW, (float)(point.Z * 240) + height + (float)route.GetZOffset(point.NS, point.EW), iconId);
+            var icon = CoreManager.Current.D3DService.MarkCoordsWithIcon((float)point.NS, (float)point.EW, (float)(point.Z * 240) + height + (float)route.GetZOffset(point.NS, point.EW), iconId);
             route.AddOffset(point.NS, point.EW, 0.5);
 
             icon.OrientToCamera(true);
@@ -142,9 +143,9 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
 
             rp = GetPreviousPoint();
 
-            var color = Color.FromArgb(Globals.Settings.VisualNav.Display.Lines.Color);
+            var color = Color.FromArgb(UtilityBeltPlugin.Instance.VisualNav.Display.Lines.Color);
 
-            if (Globals.Settings.VisualNav.Display.Lines.Enabled) {
+            if (UtilityBeltPlugin.Instance.VisualNav.Display.Lines.Enabled) {
                 DrawLineTo(rp, color);
             }
         }

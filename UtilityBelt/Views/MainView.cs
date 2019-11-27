@@ -42,21 +42,23 @@ namespace UtilityBelt.Views {
                     { "Debug", "Plugin.Debug" }
                 };
 
-        public MainView() {
-            try {
-                CreateFromXMLResource("UtilityBelt.Views.MainView.xml");
+        public MainView(UtilityBeltPlugin ub) : base(ub) {
+            CreateFromXMLResource("UtilityBelt.Views.MainView.xml");
+        }
 
+        public void Init() {
+            try {
                 view.Location = new Point(
-                    Globals.Settings.Plugin.WindowPositionX,
-                    Globals.Settings.Plugin.WindowPositionY
+                    UB.Plugin.WindowPositionX,
+                    UB.Plugin.WindowPositionY
                 );
 
                 var timer = new Timer();
                 timer.Interval = 2000; // save the window position 2 seconds after it has stopped moving
                 timer.Tick += (s, e) => {
                     timer.Stop();
-                    Globals.Settings.Plugin.WindowPositionX = view.Location.X;
-                    Globals.Settings.Plugin.WindowPositionY = view.Location.Y;
+                    UB.Plugin.WindowPositionX = view.Location.X;
+                    UB.Plugin.WindowPositionY = view.Location.Y;
                 };
 
                 view.Moved += (s, e) => {
@@ -72,26 +74,26 @@ namespace UtilityBelt.Views {
                 SettingsList.Click += SettingsList_Click;
                 CheckForUpdate.Hit += CheckForUpdate_Hit;
                 ExportPCap.Hit += ExportPCap_Hit;
-                Globals.Settings.Changed += Settings_Changed;
+                UB.Settings.Changed += Settings_Changed;
 
                 foreach (var kv in buttons) {
                     UpdateButton(kv);
                     var hudButton = (HudButton)view[kv.Key];
                     hudButton.Hit += (s, e) => {
                         try {
-                            var prop = Globals.Settings.GetOptionProperty(kv.Value);
-                            prop.Property.SetValue(prop.Parent, !(bool)Globals.Settings.Get(kv.Value), null);
-                            if (!Globals.Settings.Plugin.Debug) {
-                                Util.WriteToChat($"{kv.Value} = {Globals.Settings.DisplayValue(kv.Value)}");
+                            var prop = UB.Settings.GetOptionProperty(kv.Value);
+                            prop.Property.SetValue(prop.Parent, !(bool)UB.Settings.Get(kv.Value), null);
+                            if (!UB.Plugin.Debug) {
+                                Util.WriteToChat($"{kv.Value} = {UB.Settings.DisplayValue(kv.Value)}");
                             }
                         }
                         catch (Exception ex) { Logger.LogException(ex); }
                     };
                 }
 
-                if (!Globals.Settings.Plugin.PCap) ExportPCap.Visible = false;
+                if (!UB.Plugin.PCap) ExportPCap.Visible = false;
 
-                PopulateSettings(Globals.Settings, "");
+                PopulateSettings(UB, "");
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -109,13 +111,14 @@ namespace UtilityBelt.Views {
                 UpdateButton(kv);
             }
 
-            Globals.MainView.ExportPCap.Visible = Globals.Settings.Plugin.PCap;
+            ExportPCap.Visible = UB.Plugin.PCap;
         }
 
         private void UpdateButton(KeyValuePair<string, string> kv) {
             var hudButton = (HudButton)view[kv.Key];
+
             hudButton.OverlayImageRectangle = new Rectangle(3, 4, 16, 16);
-            if ((bool)Globals.Settings.Get(kv.Value)) {
+            if ((bool)UB.Settings.Get(kv.Value)) {
                 hudButton.OverlayImage = 0x060069A1;
             }
             else {
@@ -126,7 +129,7 @@ namespace UtilityBelt.Views {
         private void SettingsList_Click(object sender, int rowIndex, int colIndex) {
             try {
                 var row = ((HudList.HudListRowAccessor)SettingsList[rowIndex]);
-                var prop = Globals.Settings.GetOptionProperty(((HudStaticText)row[0]).Text);
+                var prop = UB.Settings.GetOptionProperty(((HudStaticText)row[0]).Text);
 
                 if (selectedIndex >= 0 && SettingsList.RowCount > selectedIndex) {
                     ((HudStaticText)((HudList.HudListRowAccessor)SettingsList[selectedIndex])[0]).TextColor = view.Theme.GetColor("ListText");
@@ -160,18 +163,18 @@ namespace UtilityBelt.Views {
                 SettingEditLayout.AddControl(FormLayout, new Rectangle(5, descriptionHeight, 390, 25));
             }
             
-            var prop = Globals.Settings.GetOptionProperty(setting);
+            var prop = UB.Settings.GetOptionProperty(setting);
             SummaryText.TextAlignment = WriteTextFormats.WordBreak;
 
             var d = prop.Property.GetCustomAttributes(typeof(SummaryAttribute), true);
             if (d.Length == 1) {
-                SummaryText.Text = ((SummaryAttribute)d[0]).Text;
+                SummaryText.Text = ((SummaryAttribute)d[0]).Summary;
             }
             else {
                 // no summary attribute, so we use the parent's
                 d = prop.ParentProperty.GetCustomAttributes(typeof(SummaryAttribute), true);
                 if (d.Length == 1) {
-                    SummaryText.Text = ((SummaryAttribute)d[0]).Text + " " + prop.Property.Name;
+                    SummaryText.Text = ((SummaryAttribute)d[0]).Summary + " " + prop.Property.Name;
                 }
                 else {
                     SummaryText.Text = prop.Property.Name;
@@ -187,18 +190,60 @@ namespace UtilityBelt.Views {
         }
 
         private void PopulateSettings(object obj, string history) {
-            obj = obj ?? Globals.Settings;
+            var results = "";
+            obj = obj ?? UB;
+
+            if (string.IsNullOrEmpty(history)) {
+                var props = UB.GetToolProps();
+
+                foreach (var prop in props) {
+                    PopulateSettings(prop.GetValue(UB, null), $"{history}{prop.Name}.");
+                }
+            }
+            else {
+                var props = obj.GetType().GetProperties();
+
+                foreach (var prop in props) {
+                    var summaryAttributes = prop.GetCustomAttributes(typeof(SummaryAttribute), true);
+                    var defaultValueAttributes = prop.GetCustomAttributes(typeof(DefaultValueAttribute), true);
+
+
+                    ((SectionBase)obj).PropertyChanged += (object sender, PropertyChangedEventArgs e) => {
+                        var fullName = history + e.PropertyName;
+
+                        for (var i = 0; i < SettingsList.RowCount; i++) {
+                            var row = ((HudList.HudListRowAccessor)SettingsList[i]);
+                            if (((HudStaticText)row[0]).Text == fullName) {
+                                ((HudStaticText)row[1]).Text = UB.Settings.DisplayValue(fullName);
+                                break;
+                            }
+                        }
+                    };
+
+                    if (defaultValueAttributes.Length > 0) {
+                        var row = SettingsList.AddRow();
+                        ((HudStaticText)row[0]).Text = history + prop.Name;
+                        ((HudStaticText)row[1]).Text = UB.Settings.DisplayValue(history + prop.Name);
+                        ((HudStaticText)row[1]).TextAlignment = WriteTextFormats.Right;
+                    }
+                    else if (summaryAttributes.Length > 0) {
+                        PopulateSettings(prop.GetValue(obj, null), $"{history}{prop.Name}.");
+                    }
+                }
+            }
+            /*
+            obj = obj ?? UB;
 
             var props = obj.GetType().GetProperties();
 
-            if (obj != Globals.Settings) {
+            if (history != "") {
                 ((SectionBase)obj).PropertyChanged += (object sender, PropertyChangedEventArgs e) => {
                     var fullName = history + e.PropertyName;
 
                     for (var i = 0; i < SettingsList.RowCount; i++) {
                         var row = ((HudList.HudListRowAccessor)SettingsList[i]);
                         if (((HudStaticText)row[0]).Text == fullName) {
-                            ((HudStaticText)row[1]).Text = Globals.Settings.DisplayValue(fullName);
+                            ((HudStaticText)row[1]).Text = UB.Settings.DisplayValue(fullName);
                             break;
                         }
                     }
@@ -212,13 +257,14 @@ namespace UtilityBelt.Views {
                 if (defaultValueAttributes.Length > 0) {
                     var row = SettingsList.AddRow();
                     ((HudStaticText)row[0]).Text = history + prop.Name;
-                    ((HudStaticText)row[1]).Text = Globals.Settings.DisplayValue(history + prop.Name);
+                    ((HudStaticText)row[1]).Text = UB.Settings.DisplayValue(history + prop.Name);
                     ((HudStaticText)row[1]).TextAlignment = WriteTextFormats.Right;
                 }
                 else if (summaryAttributes.Length > 0) {
                     PopulateSettings(prop.GetValue(obj, null), $"{history}{prop.Name}.");
                 }
             }
+            */
         }
 
         internal override ACImage GetIcon() {

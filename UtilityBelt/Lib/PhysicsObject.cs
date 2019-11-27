@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Decal.Adapter;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -31,7 +32,7 @@ namespace UtilityBelt.Lib {
                 unsafe {
                     PhysicsObject obj = new PhysicsObject();
 
-                    IntPtr ptr = Globals.Core.Actions.PhysicsObject(id);
+                    IntPtr ptr = CoreManager.Current.Actions.PhysicsObject(id);
                     IntPtr offsetPtr = new IntPtr((int)ptr + 0x48);
 
                     obj = (PhysicsObject)Marshal.PtrToStructure(offsetPtr, obj.GetType());

@@ -69,6 +69,7 @@ namespace UBLoader {
         public string CharacterName;
         public string ServerName;
         public Dictionary<int, string> Characters = new Dictionary<int, string>();
+        private bool hasLoaded = false;
 
         /// <summary>
         /// This is called when the plugin is started up. This happens only once.
@@ -127,14 +128,22 @@ namespace UBLoader {
         private void Core_PluginInitComplete(object sender, EventArgs e) {
             try {
                 pluginsReady = true;
-                LoadPluginAssembly();
 
-                PluginWatcher = new FileSystemWatcher();
-                PluginWatcher.Path = PluginAssemblyDirectory;
-                PluginWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
-                PluginWatcher.Filter = PluginAssemblyName;
-                PluginWatcher.Changed += PluginWatcher_Changed; ;
-                PluginWatcher.EnableRaisingEvents = true;
+                if (needsReload == false) {
+                    Core.RenderFrame += Core_RenderFrame;
+                }
+
+                needsReload = true;
+                lastFileChange = DateTime.UtcNow;
+
+                if (PluginWatcher == null) {
+                    PluginWatcher = new FileSystemWatcher();
+                    PluginWatcher.Path = PluginAssemblyDirectory;
+                    PluginWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
+                    PluginWatcher.Filter = PluginAssemblyName;
+                    PluginWatcher.Changed += PluginWatcher_Changed; ;
+                    PluginWatcher.EnableRaisingEvents = true;
+                }
             }
             catch (Exception ex) { LogException(ex); }
         }
@@ -149,11 +158,11 @@ namespace UBLoader {
 
         private void Core_RenderFrame(object sender, EventArgs e) {
             try {
-                if (needsReload && pluginsReady && DateTime.UtcNow - lastFileChange > TimeSpan.FromSeconds(3)) {
+                if (needsReload && pluginsReady && DateTime.UtcNow - lastFileChange > TimeSpan.FromSeconds(1)) {
                     needsReload = false;
                     Core.RenderFrame -= Core_RenderFrame;
                     try {
-                        Core.Actions.AddChatText("Reloading UtilityBelt", 1);
+                        if (hasLoaded) Core.Actions.AddChatText("Reloading UtilityBelt", 1);
                     }
                     catch { }
                     UnloadPluginAssembly();
@@ -195,6 +204,8 @@ namespace UBLoader {
                     CharacterName,
                     ServerName
                 });
+
+                hasLoaded = true;
             }
             catch (Exception ex) { LogException(ex); }
         }
@@ -238,6 +249,17 @@ namespace UBLoader {
                     }
                     writer.WriteLine("============================================================================");
                     writer.WriteLine("");
+                    writer.Close();
+                }
+            }
+            catch {
+            }
+        }
+
+        public void LogError(string message) {
+            try {
+                using (StreamWriter writer = new StreamWriter(System.IO.Path.Combine(PluginStorageDirectory, "exceptions.txt"), true)) {
+                    writer.WriteLine(message);
                     writer.Close();
                 }
             }

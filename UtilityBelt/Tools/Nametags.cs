@@ -1,88 +1,156 @@
-﻿using Decal.Adapter.Wrappers;
+﻿using Decal.Adapter;
+using Decal.Adapter.Wrappers;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using UtilityBelt.Lib;
+using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Tools {
-    public static class Nametags {
+    [Name("Nametags")]
+    public class Nametags : ToolBase {
         private static Dictionary<int, BitcoinMiner> tags = new Dictionary<int, BitcoinMiner>();
-        public static List<int> destructionQueue = new List<int>();
-        public static Dictionary<ObjectClass, int> colors = new Dictionary<ObjectClass, int>(){{ObjectClass.Player,-16711681},{ObjectClass.Portal,-16711936},{ObjectClass.Npc,-256},{ObjectClass.Vendor,-65281},{ObjectClass.Monster,-65536}};
-        public static Dictionary<ObjectClass, bool> enabled_types = new Dictionary<ObjectClass, bool>(){{ObjectClass.Player,true},{ObjectClass.Portal,true},{ObjectClass.Npc,true},{ObjectClass.Vendor,true},{ObjectClass.Monster,true}};
-        public static float maxRange = 35f;
-        public static bool enabled = false;
+        internal static List<int> destructionQueue = new List<int>();
+        internal static Dictionary<ObjectClass, int> colors = new Dictionary<ObjectClass, int>(){{ObjectClass.Player,-16711681},{ObjectClass.Portal,-16711936},{ObjectClass.Npc,-256},{ObjectClass.Vendor,-65281},{ObjectClass.Monster,-65536}};
+        internal static Dictionary<ObjectClass, bool> enabled_types = new Dictionary<ObjectClass, bool>(){{ObjectClass.Player,true},{ObjectClass.Portal,true},{ObjectClass.Npc,true},{ObjectClass.Vendor,true},{ObjectClass.Monster,true}};
+        internal static float maxRange = 35f;
+        internal static bool enabled = false;
         private static DateTime evaluate_tags_time = DateTime.MinValue;
-        public static void Init() {
-            Globals.Settings.Nametags.PropertyChanged += Nametags_PropertyChanged;
-            if (Globals.Settings.Nametags.Enabled) Enable();
+
+        #region Config
+        [Summary("Enabled")]
+        [DefaultValue(true)]
+        public bool Enabled {
+            get { return (bool)GetSetting("Enabled"); }
+            set { UpdateSetting("Enabled", value); }
         }
-        private static void Enable() {
+
+        [Summary("Maximum Range for Nametags")]
+        [DefaultValue(35f)]
+        public float MaxRange {
+            get { return (float)GetSetting("MaxRange"); }
+            set { UpdateSetting("MaxRange", value); }
+        }
+
+        [Summary("Player Nametag")]
+        [DefaultEnabled(true)]
+        [DefaultColor(-16711681)]
+        public ColorToggleOption Player {
+            get { return (ColorToggleOption)GetSetting("Player"); }
+            private set { UpdateSetting("Player", value); }
+        }
+        [Summary("Portal Nametag")]
+        [DefaultEnabled(true)]
+        [DefaultColor(-16711936)]
+        public ColorToggleOption Portal {
+            get { return (ColorToggleOption)GetSetting("Portal"); }
+            private set { UpdateSetting("Portal", value); }
+        }
+        [Summary("Npc Nametag")]
+        [DefaultEnabled(true)]
+        [DefaultColor(-256)]
+        public ColorToggleOption Npc {
+            get { return (ColorToggleOption)GetSetting("Npc"); }
+            private set { UpdateSetting("Npc", value); }
+        }
+        [Summary("Vendor Nametag")]
+        [DefaultEnabled(true)]
+        [DefaultColor(-65281)]
+        public ColorToggleOption Vendor {
+            get { return (ColorToggleOption)GetSetting("Vendor"); }
+            private set { UpdateSetting("Vendor", value); }
+        }
+        [Summary("Monster Nametag")]
+        [DefaultEnabled(true)]
+        [DefaultColor(-65536)]
+        public ColorToggleOption Monster {
+            get { return (ColorToggleOption)GetSetting("Monster"); }
+            private set { UpdateSetting("Monster", value); }
+        }
+
+        #endregion
+
+        public Nametags(UtilityBeltPlugin ub, string name) : base(ub, name) {
+            PropertyChanged += Nametags_PropertyChanged;
+            if (Enabled) Enable();
+        }
+
+        private void Enable() {
             //copy pasta
-            if (Globals.Core.CharacterFilter.LoginStatus != 0)
+            if (UB.Core.CharacterFilter.LoginStatus != 0)
                 EnableReal();
             else
-                Globals.Core.CharacterFilter.Login += CharacterFilter_Login;
+                UB.Core.CharacterFilter.Login += CharacterFilter_Login;
         }
-        private static void EnableReal() {
-            if (Globals.Settings.Nametags.Enabled) {
+        private void EnableReal() {
+            if (Enabled) {
                 enabled = true;
-                Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
-                Globals.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
-                Globals.Core.RenderFrame += Core_RenderFrame;
+                UB.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
+                UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
+                UB.Core.RenderFrame += Core_RenderFrame;
                 evaluate_tags_time = DateTime.MinValue;
             }
         }
-        private static void CharacterFilter_Login(object sender, LoginEventArgs e) {
-            Globals.Core.CharacterFilter.Login -= CharacterFilter_Login;
+        private void CharacterFilter_Login(object sender, LoginEventArgs e) {
+            UB.Core.CharacterFilter.Login -= CharacterFilter_Login;
             EnableReal();
         }
 
-        public static void Dispose() {
-            Globals.Settings.Nametags.PropertyChanged -= Nametags_PropertyChanged;
-            if (enabled) Disable();
+        protected override void Dispose(bool disposing) {
+            if (!disposedValue) {
+                if (disposing) {
+
+                    PropertyChanged -= Nametags_PropertyChanged;
+                    if (enabled) Disable();
+                    base.Dispose(disposing);
+                }
+                disposedValue = true;
+            }
         }
+
         public static void Disable() {
             enabled = false;
-            Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
-            Globals.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
-            Globals.Core.RenderFrame -= Core_RenderFrame;
+            CoreManager.Current.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+            CoreManager.Current.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
+            CoreManager.Current.RenderFrame -= Core_RenderFrame;
             foreach (var i in tags) i.Value.Dispose();
             tags.Clear();
             destructionQueue.Clear();
         }
-        private static void Nametags_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
+        private void Nametags_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
             switch (e.PropertyName) {
                 case "Enabled":
-                    if (Globals.Settings.Nametags.Enabled && !enabled) Enable();
-                    else if (!Globals.Settings.Nametags.Enabled && enabled) Disable();
+                    if (Enabled && !enabled) Enable();
+                    else if (!Enabled && enabled) Disable();
                     return;
                 case "MaxRange":
-                    maxRange = Globals.Settings.Nametags.MaxRange;
+                    maxRange = MaxRange;
                     return;
                 case "Player":
-                    enabled_types[ObjectClass.Player] = Globals.Settings.Nametags.Player.Enabled;
-                    colors[ObjectClass.Player] = Globals.Settings.Nametags.Player.Color;
+                    enabled_types[ObjectClass.Player] = Player.Enabled;
+                    colors[ObjectClass.Player] = Player.Color;
                     break;
                 case "Portal":
-                    enabled_types[ObjectClass.Portal] = Globals.Settings.Nametags.Portal.Enabled;
-                    colors[ObjectClass.Portal] = Globals.Settings.Nametags.Portal.Color;
+                    enabled_types[ObjectClass.Portal] = Portal.Enabled;
+                    colors[ObjectClass.Portal] = Portal.Color;
                     break;
                 case "Npc":
-                    enabled_types[ObjectClass.Npc] = Globals.Settings.Nametags.Npc.Enabled;
-                    colors[ObjectClass.Npc] = Globals.Settings.Nametags.Npc.Color;
+                    enabled_types[ObjectClass.Npc] = Npc.Enabled;
+                    colors[ObjectClass.Npc] = Npc.Color;
                     break;
                 case "Vendor":
-                    enabled_types[ObjectClass.Vendor] = Globals.Settings.Nametags.Vendor.Enabled;
-                    colors[ObjectClass.Vendor] = Globals.Settings.Nametags.Vendor.Color;
+                    enabled_types[ObjectClass.Vendor] = Vendor.Enabled;
+                    colors[ObjectClass.Vendor] = Vendor.Color;
                     break;
                 case "Monster":
-                    enabled_types[ObjectClass.Player] = Globals.Settings.Nametags.Monster.Enabled;
-                    colors[ObjectClass.Player] = Globals.Settings.Nametags.Monster.Color;
+                    enabled_types[ObjectClass.Player] = Monster.Enabled;
+                    colors[ObjectClass.Player] = Monster.Color;
                     break;
             }
             evaluate_tags_time = DateTime.UtcNow + TimeSpan.FromMilliseconds(250);
         }
         private static void AddTag(WorldObject wo) {
-            if (wo.Id == Globals.Core.CharacterFilter.Id) return;
+            if (wo.Id == CoreManager.Current.CharacterFilter.Id) return;
             if (tags.ContainsKey(wo.Id)) return;
             if (enabled_types.ContainsKey(wo.ObjectClass) && enabled_types[wo.ObjectClass]) tags.Add(wo.Id, new BitcoinMiner(wo));
         }
@@ -120,7 +188,7 @@ namespace UtilityBelt.Tools {
                 if (DateTime.UtcNow > evaluate_tags_time) {
                     evaluate_tags_time = DateTime.MaxValue;
                     EvaluateTags();
-                    foreach (WorldObject wo in Globals.Core.WorldFilter.GetLandscape()) AddTag(wo);
+                    foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetLandscape()) AddTag(wo);
                 }
 
 
@@ -148,8 +216,8 @@ namespace UtilityBelt.Tools {
             float lugianOffset = 0f;
             var heritage = wo.Values(LongValueKey.Heritage, -1);
             if (oc == ObjectClass.Player && heritage > 5 && heritage < 10) lugianOffset = 0.20f;
-            tag = Globals.Core.D3DService.MarkObjectWith3DText(id, wo.Name, "Arial", 0);
-            ticker = Globals.Core.D3DService.MarkObjectWith3DText(id, "Loading...", "Arial", 0);
+            tag = CoreManager.Current.D3DService.MarkObjectWith3DText(id, wo.Name, "Arial", 0);
+            ticker = CoreManager.Current.D3DService.MarkObjectWith3DText(id, "Loading...", "Arial", 0);
             tag.Color = ticker.Color = Nametags.colors[oc];
             tag.Scale(0.15f);
             tag.Anchor(id, lugianOffset + 1.22f, 0f, 0f, 0f);
@@ -160,15 +228,16 @@ namespace UtilityBelt.Tools {
             ticker.OrientToCamera(false);
             UpdateData();
         }
+
         public unsafe void UpdateData() {
             if (DateTime.UtcNow - lastThunk < TimeSpan.FromSeconds(1)) return;
             lastThunk = DateTime.UtcNow;
-            WorldObject wo = Globals.Core.WorldFilter[id];
+            WorldObject wo = CoreManager.Current.WorldFilter[id];
             if (wo == null) {
                 Dispose();
                 return;
             }
-            int physics = Globals.Core.Actions.Underlying.GetPhysicsObjectPtr(id);
+            int physics = CoreManager.Current.Actions.Underlying.GetPhysicsObjectPtr(id);
             if (physics == 0) return;
 
             if (needsProcess) {
@@ -194,21 +263,21 @@ namespace UtilityBelt.Tools {
                                     }
                                 }
                             }
-                        } else Globals.Assessor.Queue(id);
+                        } else UtilityBeltPlugin.Instance.Assessor.Queue(id);
                         break;
                     case ObjectClass.Portal:
                         if (wo.HasIdData) {
                             needsProcess = false;
                             showTicker = true;
                             ticker.SetText(D3DTextType.Text3D, $"<{wo.Values(StringValueKey.PortalDestination, "")}>", "Arial", 0);
-                        } else Globals.Assessor.Queue(id);
+                        } else UtilityBeltPlugin.Instance.Assessor.Queue(id);
                         break;
                     case ObjectClass.Monster:
                         if (wo.HasIdData) {
                             needsProcess = false;
                             int level = wo.Values(LongValueKey.CreatureLevel, 1);
                             tag.SetText(D3DTextType.Text3D, $"{wo.Name} [{level}]", "Arial", 0);
-                        } else Globals.Assessor.Queue(id);
+                        } else UtilityBeltPlugin.Instance.Assessor.Queue(id);
                         break;
                     default:
                         needsProcess = false;

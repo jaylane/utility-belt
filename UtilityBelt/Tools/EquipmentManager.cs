@@ -1,17 +1,17 @@
 ﻿using Decal.Adapter.Wrappers;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using UtilityBelt.Lib;
 
-namespace UtilityBelt.Tools
-{
-    public class EquipmentManager : IDisposable
-    {
-        private static readonly ObjectClass[] ValidEquippableObjectClasses = new[]
-               {
+namespace UtilityBelt.Tools {
+    [Name("EquipmentManager")]
+    public class EquipmentManager : ToolBase {
+        private static readonly ObjectClass[] ValidEquippableObjectClasses = new[] {
                         ObjectClass.Armor,
                         ObjectClass.Clothing,
                         ObjectClass.Gem, // Aetheria
@@ -34,101 +34,40 @@ namespace UtilityBelt.Tools
         private int lastEquippingItem = 0;
         private bool isTestMode = false;
 
-        public EquipmentManager()
-        {
-            try
-            {
-                Directory.CreateDirectory(Path.Combine(Util.GetPluginDirectory(), "equip"));
-                Directory.CreateDirectory(Path.Combine(Util.GetCharacterDirectory(), "equip"));
-                Directory.CreateDirectory(Path.Combine(Util.GetServerDirectory(), "equip"));
-
-                Globals.Core.CommandLineText += Core_CommandLineText;
-                Globals.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+        #region Config
+        [Summary("Think to yourself when done equipping items")]
+        [DefaultValue(false)]
+        public bool Think {
+            get => (bool)GetSetting("Think");
+            set => UpdateSetting("Think", value);
         }
+        #endregion
 
-        private bool IsValidItem(int item, out WorldObject wo)
-        {
-            wo = null;
+        #region Commands
+        #region /ub equip
+        [Summary("Commands to manage your equipment.")]
+        [Usage("/ub equip {list | load <lootProfile> | test <lootProfile>}")]
+        [Example("/ub equip load profile.utl", "Equips all items matching profile.utl.")]
+        [Example("/ub equip list", "Lists available equipment profiles.")]
+        [Example("/ub equip test profile.utl", "Test equipping profile.utl")]
+        [CommandPattern("equip", @"^ *(?<Verb>(load|list|test)) *(?<Profile>.*) *$")]
+        public void DoEquip(string command, Match args) {
+                    var verb = args.Groups["Verb"].Value;
+                    var profileName = args.Groups["Profile"].Value;
 
-            if (item == 0 || !Globals.Core.Actions.IsValidObject(item))
-            {
-                return false;
-            }
-
-            wo = Globals.Core.WorldFilter[item];
-            if (wo == null || wo.Values(LongValueKey.EquipableSlots, 0) == 0)
-            {
-                return false;
-            }
-
-            if (wo.Container != Globals.Core.CharacterFilter.Id)
-            {
-                if (!Globals.Core.Actions.IsValidObject(wo.Container))
-                {
-                    return false;
-                }
-
-                var container = Globals.Core.WorldFilter[wo.Container];
-                if (container == null || container.Container != Globals.Core.CharacterFilter.Id)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private void WorldFilter_ChangeObject(object sender, ChangeObjectEventArgs e)
-        {
-            try
-            {
-                if (!running)
-                    return;
-                if (e.Change != WorldChangeType.StorageChange)
-                    return;
-                if (dequippingState)
-                    return;
-
-                //Logger.Debug($"Change object fired - {Util.GetObjectName(e.Changed.Id)}");
-                if (itemList.Count > 0 && e.Changed.Id == itemList.Peek() && e.Changed.Values(LongValueKey.Slot, -1) == -1)
-                {
-                    Logger.Debug("Equipment Manager: Removing item from queue");
-                    itemList.Dequeue();
-                    bailTimer = DateTime.UtcNow;
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private static readonly Regex cliRe = new Regex(@"^/ub\s+equip\s+(?<verb>load|list|test|help)(?:\s+(?<profileName>.*))?");
-        private void Core_CommandLineText(object sender, Decal.Adapter.ChatParserInterceptEventArgs e)
-        {
-            try
-            {
-                var match = cliRe.Match(e.Text);
-                if (match != null && match.Success)
-                {
-                    var verb = match.Groups["verb"].Value.Trim();
-                    var profileName = match.Groups["profileName"].Value;
-
-                    if (verb != "help" && verb != "list" && string.IsNullOrEmpty(profileName))
-                    {
+                    if (verb != "help" && verb != "list" && string.IsNullOrEmpty(profileName)) {
                         Util.WriteToChat("Profile name required");
                         return;
                     }
 
-                    switch (verb)
-                    {
+                    switch (verb) {
                         case "load":
                             Start(profileName);
                             break;
 
                         case "list":
-                            Util.WriteToChat("Equip Profiles");
-                            foreach (var p in GetProfiles(profileName))
-                            {
+                            WriteToChat("Equip Profiles");
+                            foreach (var p in GetProfiles(profileName)) {
                                 Util.WriteToChat($" * {Path.GetFileName(p)} ({Path.GetDirectoryName(p)})");
                             }
                             break;
@@ -137,21 +76,73 @@ namespace UtilityBelt.Tools
                             Start(profileName, true);
                             break;
 
-                        case "help":
-                            Util.WriteToChat("Usage: /ub equip { list | load | test | help } [profile.utl]");
-                            break;
-
                         default:
-                            Util.WriteToChat($"Unknown verb: {verb}");
+                            LogError($"Unknown verb: {verb}");
                             break;
                     }
+        }
+        #endregion
+        #endregion
+
+        public EquipmentManager(UtilityBeltPlugin ub, string name) : base(ub, name) {
+            try {
+                Directory.CreateDirectory(Path.Combine(Util.GetPluginDirectory(), "equip"));
+                Directory.CreateDirectory(Path.Combine(Util.GetCharacterDirectory(), "equip"));
+                Directory.CreateDirectory(Path.Combine(Util.GetServerDirectory(), "equip"));
+
+                // TODO: be selective about when to subscribe to RenderFrame
+                UB.Core.RenderFrame += Core_RenderFrame;
+                UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private bool IsValidItem(int item, out WorldObject wo) {
+            wo = null;
+
+            if (item == 0 || !UB.Core.Actions.IsValidObject(item)) {
+                return false;
+            }
+
+            wo = UB.Core.WorldFilter[item];
+            if (wo == null || wo.Values(LongValueKey.EquipableSlots, 0) == 0) {
+                return false;
+            }
+
+            if (wo.Container != UB.Core.CharacterFilter.Id) {
+                if (!UB.Core.Actions.IsValidObject(wo.Container)) {
+                    return false;
+                }
+
+                var container = UB.Core.WorldFilter[wo.Container];
+                if (container == null || container.Container != UB.Core.CharacterFilter.Id) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private void WorldFilter_ChangeObject(object sender, ChangeObjectEventArgs e) {
+            try {
+                if (!running)
+                    return;
+                if (e.Change != WorldChangeType.StorageChange)
+                    return;
+                if (dequippingState)
+                    return;
+
+                //LogDebug($"Change object fired - {Util.GetObjectName(e.Changed.Id)}");
+                if (itemList.Count > 0 && e.Changed.Id == itemList.Peek() && e.Changed.Values(LongValueKey.Slot, -1) == -1) {
+                    LogDebug("Removing item from queue");
+                    itemList.Dequeue();
+                    bailTimer = DateTime.UtcNow;
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private IEnumerable<string> GetProfiles(string profileName = "")
-        {
+        private IEnumerable<string> GetProfiles(string profileName = "") {
             var charPath = Path.Combine(Util.GetCharacterDirectory(), "equip");
             var mainPath = Path.Combine(Util.GetPluginDirectory(), "equip");
             var serverPath = Path.Combine(Util.GetServerDirectory(), "equip");
@@ -163,11 +154,9 @@ namespace UtilityBelt.Tools
             return charFiles.Concat(serverFiles).Concat(mainFiles);
         }
 
-        private void Start(string profileName = "", bool testMode = false)
-        {
-            try
-            {
-                Logger.Debug($"Executing equip load command with profile '{profileName}'");
+        private void Start(string profileName = "", bool testMode = false) {
+            try {
+                LogDebug($"Executing equip load command with profile '{profileName}'");
                 running = true;
                 bailTimer = DateTime.UtcNow;
                 dequippingState = true;
@@ -178,27 +167,23 @@ namespace UtilityBelt.Tools
                 timer.Start();
 
                 var hasLootCore = false;
-                if (lootProfile == null)
-                {
-                    try
-                    {
+                if (lootProfile == null) {
+                    try {
                         lootProfile = new VTClassic.LootCore();
                         hasLootCore = true;
                     }
                     catch (Exception ex) { Logger.LogException(ex); }
 
-                    if (!hasLootCore)
-                    {
-                        Util.WriteToChat("Unable to load VTClassic, something went wrong.");
+                    if (!hasLootCore) {
+                        LogError("Unable to load VTClassic, something went wrong.");
                         return;
                     }
                 }
 
-                var profilePath = GetProfilePath(string.IsNullOrEmpty(profileName) ? (Globals.Core.CharacterFilter.Name + ".utl") : profileName);
+                var profilePath = GetProfilePath(string.IsNullOrEmpty(profileName) ? (UB.Core.CharacterFilter.Name + ".utl") : profileName);
 
-                if (!File.Exists(profilePath))
-                {
-                    Logger.Debug("No equip profile exists: " + profilePath);
+                if (!File.Exists(profilePath)) {
+                    LogError("No equip profile exists: " + profilePath);
                     Stop();
                     return;
                 }
@@ -207,63 +192,51 @@ namespace UtilityBelt.Tools
                 ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
 
                 equippableItems.AddRange(GetEquippableItems());
-                Logger.Debug($"Found {equippableItems.Count} equippable items");
-                if (Globals.Assessor.NeedsInventoryData(equippableItems.Select(i => i.Id)))
-                {
-                    pendingIdCount = Globals.Assessor.GetNeededIdCount(equippableItems.Select(i => i.Id));
-                    Globals.Assessor.RequestAll(equippableItems.Select(i => i.Id));
+                LogDebug($"Found {equippableItems.Count} equippable items");
+                if (UB.Assessor.NeedsInventoryData(equippableItems.Select(i => i.Id))) {
+                    pendingIdCount = UB.Assessor.GetNeededIdCount(equippableItems.Select(i => i.Id));
+                    UB.Assessor.RequestAll(equippableItems.Select(i => i.Id));
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private string GetProfilePath(string profileName)
-        {
+        private string GetProfilePath(string profileName) {
             var charPath = Path.Combine(Util.GetCharacterDirectory(), "equip");
             var mainPath = Path.Combine(Util.GetPluginDirectory(), "equip");
             var serverPath = Path.Combine(Util.GetServerDirectory(), "equip");
 
-            if (File.Exists(Path.Combine(charPath, profileName)))
-            {
+            if (File.Exists(Path.Combine(charPath, profileName))) {
                 return Path.Combine(charPath, profileName);
             }
-            else if (File.Exists(Path.Combine(serverPath, profileName)))
-            {
+            else if (File.Exists(Path.Combine(serverPath, profileName))) {
                 return Path.Combine(serverPath, profileName);
             }
-            else if (File.Exists(Path.Combine(mainPath, profileName)))
-            {
+            else if (File.Exists(Path.Combine(mainPath, profileName))) {
                 return Path.Combine(mainPath, profileName);
             }
-            else if (File.Exists(Path.Combine(charPath, "default.utl")))
-            {
+            else if (File.Exists(Path.Combine(charPath, "default.utl"))) {
                 return Path.Combine(charPath, "default.utl");
             }
-            else if (File.Exists(Path.Combine(serverPath, "default.utl")))
-            {
+            else if (File.Exists(Path.Combine(serverPath, "default.utl"))) {
                 return Path.Combine(serverPath, "default.utl");
             }
-            else if (File.Exists(Path.Combine(mainPath, "default.utl")))
-            {
+            else if (File.Exists(Path.Combine(mainPath, "default.utl"))) {
                 return Path.Combine(mainPath, "default.utl");
             }
             return Path.Combine(mainPath, profileName);
         }
 
-        private void Stop()
-        {
-            try
-            {
-                Util.ThinkOrWrite($"Equipment Manager: Finished equipping items in {timer.Elapsed.TotalSeconds}s",
-                    Globals.Settings.EquipmentManager.Think);
+        private void Stop() {
+            try {
+                Util.ThinkOrWrite($"Equipment Manager: Finished equipping items in {timer.Elapsed.TotalSeconds}s", Think);
 
                 if (lootProfile != null) ((VTClassic.LootCore)lootProfile).UnloadProfile();
                 VTankControl.Nav_UnBlock();
                 VTankControl.Item_UnBlock();
             }
             catch (Exception ex) { Logger.LogException(ex); }
-            finally
-            {
+            finally {
                 running = false;
                 itemList = null;
                 currentEquipAttempts = 0;
@@ -272,39 +245,33 @@ namespace UtilityBelt.Tools
             }
         }
 
-        public void Think()
-        {
+        public void Core_RenderFrame(object sender, EventArgs e) {
             if (!running)
                 return;
 
             CheckVTankNavBlock();
 
-            if (Globals.Core.Actions.BusyState == 0)
-            {
+            if (UB.Core.Actions.BusyState == 0) {
                 if (HasPendingIdItems())
                     return;
 
-                if (itemList == null)
-                {
+                if (itemList == null) {
                     itemList = new Queue<int>();
                     foreach (var id in CheckUtl())
                         itemList.Enqueue(id);
 
-                    Logger.Debug($"Found {itemList.Count} items to equip");
+                    LogDebug($"Found {itemList.Count} items to equip");
                 }
 
-                if (itemList.Count == 0)
-                {
-                    Logger.Debug("Item queue empty - stopping");
+                if (itemList.Count == 0) {
+                    LogDebug("Item queue empty - stopping");
                     Stop();
                     return;
                 }
 
-                if (isTestMode)
-                {
-                    Util.WriteToChat("Will attempt to equip the following items in order:");
-                    while (itemList.Count > 0)
-                    {
+                if (isTestMode) {
+                    WriteToChat("Will attempt to equip the following items in order:");
+                    while (itemList.Count > 0) {
                         var item = itemList.Dequeue();
                         Util.WriteToChat($" * {Util.GetObjectName(item)} <{item}>");
                     }
@@ -313,26 +280,24 @@ namespace UtilityBelt.Tools
                     return;
                 }
 
-                if (dequippingState)
-                {
+                if (dequippingState) {
                     if (TryDequipItem())
                         return;
 
-                    Logger.Debug("Finished dequipping items");
+                    LogDebug("Finished dequipping items");
                     dequippingState = false;
                 }
 
                 if (!TryGetItemToEquip(out var wo))
                     return;
 
-                if (lastEquippingItem != itemList.Peek())
-                {
+                if (lastEquippingItem != itemList.Peek()) {
                     lastEquippingItem = itemList.Peek();
                     currentEquipAttempts = 0;
                 }
                 else if (++currentEquipAttempts > 15) // Stop trying to make fetch happen
                 {
-                    Logger.Debug($"Too many equip attempts ({Util.GetObjectName(itemList.Peek())}) - SKIPPING");
+                    LogDebug($"Too many equip attempts ({Util.GetObjectName(itemList.Peek())}) - SKIPPING");
                     currentEquipAttempts = 0;
                     itemList.Dequeue();
                     return;
@@ -341,50 +306,40 @@ namespace UtilityBelt.Tools
                 EquipItem(wo);
             }
 
-            if (DateTime.UtcNow - bailTimer > TimeSpan.FromSeconds(10))
-            {
-                Util.WriteToChat($"Equipment Manager bail, timeout expired");
+            if (DateTime.UtcNow - bailTimer > TimeSpan.FromSeconds(10)) {
+                WriteToChat($"bail, timeout expired");
                 Stop();
             }
         }
 
-        private static void EquipItem(WorldObject wo)
-        {
-            try
-            {
-                Logger.Debug($"Attempting to equip item - {Util.GetObjectName(wo.Id)}");
-                Globals.Core.Actions.UseItem(wo.Id, 0);
+        private void EquipItem(WorldObject wo) {
+            try {
+                LogDebug($"Attempting to equip item - {Util.GetObjectName(wo.Id)}");
+                UB.Core.Actions.UseItem(wo.Id, 0);
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private static void CheckVTankNavBlock()
-        {
-            try
-            {
-                if (VTankControl.navBlockedUntil < DateTime.UtcNow + TimeSpan.FromSeconds(1))
-                { //if equip is running, and nav block has less than a second remaining, refresh it
-                    VTankControl.Nav_Block(30000, Globals.Settings.Plugin.Debug);
+        private void CheckVTankNavBlock() {
+            try {
+                if (VTankControl.navBlockedUntil < DateTime.UtcNow + TimeSpan.FromSeconds(1)) { //if equip is running, and nav block has less than a second remaining, refresh it
+                    VTankControl.Nav_Block(30000, UB.Plugin.Debug);
                     VTankControl.Item_Block(30000, false);
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private bool TryDequipItem()
-        {
-            try
-            {
-                foreach (var item in Globals.Core.WorldFilter.GetInventory())
-                {
+        private bool TryDequipItem() {
+            try {
+                foreach (var item in UB.Core.WorldFilter.GetInventory()) {
                     // skip items in profile since they are going to be equipped
                     if (itemList.Contains(item.Id))
                         continue;
 
-                    if (item.Values(LongValueKey.Slot, -1) == -1)
-                    {
-                        Logger.Debug($"Dequipping item - {Util.GetObjectName(item.Id)}");
-                        Globals.Core.Actions.MoveItem(item.Id, Globals.Core.CharacterFilter.Id);
+                    if (item.Values(LongValueKey.Slot, -1) == -1) {
+                        LogDebug($"Dequipping item - {Util.GetObjectName(item.Id)}");
+                        UB.Core.Actions.MoveItem(item.Id, UB.Core.CharacterFilter.Id);
                         return true;
                     }
                 }
@@ -394,25 +349,19 @@ namespace UtilityBelt.Tools
             return false;
         }
 
-        private bool TryGetItemToEquip(out WorldObject wo)
-        {
+        private bool TryGetItemToEquip(out WorldObject wo) {
             wo = null;
-            try
-            {
-                while (wo == null || wo.Values(LongValueKey.Slot, -1) == -1)
-                {
-                    if (!IsValidItem(itemList.Peek(), out wo) || wo == null)
-                    {
-                        Util.WriteToChat($"Could not find item with id: {wo.Id} - SKIPPING");
+            try {
+                while (wo == null || wo.Values(LongValueKey.Slot, -1) == -1) {
+                    if (!IsValidItem(itemList.Peek(), out wo) || wo == null) {
+                        LogError($"Could not find item with id: {wo.Id} - SKIPPING");
                         itemList.Dequeue();
                         return false;
                     }
-                    else if (wo.Values(LongValueKey.Slot, -1) == -1)
-                    {
-                        Logger.Debug($"Item already equipped: {wo.Id} - SKIPPING");
+                    else if (wo.Values(LongValueKey.Slot, -1) == -1) {
+                        LogDebug($"Item already equipped: {wo.Id} - SKIPPING");
                         itemList.Dequeue();
-                        if (itemList.Count == 0)
-                        {
+                        if (itemList.Count == 0) {
                             return false;
                         }
                     }
@@ -423,20 +372,16 @@ namespace UtilityBelt.Tools
             return true;
         }
 
-        private IEnumerable<int> CheckUtl()
-        {
+        private IEnumerable<int> CheckUtl() {
             List<int> ids = new List<int>();
-            try
-            {
-                foreach (var item in equippableItems)
-                {
-                    Logger.Debug($"Assessing {Util.GetObjectName(item.Id)}...");
+            try {
+                foreach (var item in equippableItems) {
+                    LogDebug($"Assessing {Util.GetObjectName(item.Id)}...");
                     uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item.Id);
                     if (itemInfo == null) continue;
                     uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
-                    if (result.IsKeep)
-                    {
-                        Logger.Debug($"Matches rule: {result.RuleName}");
+                    if (result.IsKeep) {
+                        LogDebug($"Matches rule: {result.RuleName}");
                         ids.Add(item.Id);
                     }
                 }
@@ -446,13 +391,10 @@ namespace UtilityBelt.Tools
             return ids;
         }
 
-        private IEnumerable<WorldObject> GetEquippableItems()
-        {
-            
-            foreach (var item in Globals.Core.WorldFilter.GetInventory())
-            {
-                if (!ValidEquippableObjectClasses.Contains(item.ObjectClass))
-                {
+        private IEnumerable<WorldObject> GetEquippableItems() {
+
+            foreach (var item in UB.Core.WorldFilter.GetInventory()) {
+                if (!ValidEquippableObjectClasses.Contains(item.ObjectClass)) {
                     continue;
                 }
                 if (item.Values(LongValueKey.EquipableSlots, 0) == 0)
@@ -462,24 +404,18 @@ namespace UtilityBelt.Tools
             }
         }
 
-        private bool HasPendingIdItems()
-        {
-            try
-            {
-                if (pendingIdCount > 0)
-                {
-                    var idCount = Globals.Assessor.GetNeededIdCount(equippableItems.Select(i => i.Id));
-                    if (idCount != pendingIdCount)
-                    {
+        private bool HasPendingIdItems() {
+            try {
+                if (pendingIdCount > 0) {
+                    var idCount = UB.Assessor.GetNeededIdCount(equippableItems.Select(i => i.Id));
+                    if (idCount != pendingIdCount) {
                         pendingIdCount = idCount;
                         bailTimer = DateTime.UtcNow;
                     }
 
-                    if (idCount > 0)
-                    {
-                        if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15))
-                        {
-                            Util.WriteToChat(string.Format("Equip Mgr waiting to id {0} items, this will take approximately {0} seconds.", idCount));
+                    if (idCount > 0) {
+                        if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15)) {
+                            WriteToChat(string.Format("waiting to id {0} items, this will take approximately {0} seconds.", idCount));
                             lastIdSpam = DateTime.UtcNow;
                         }
 
@@ -493,25 +429,16 @@ namespace UtilityBelt.Tools
         }
 
         #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    Globals.Core.CommandLineText -= Core_CommandLineText;
-                    Globals.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
+        protected override void Dispose(bool disposing) {
+            if (!disposedValue) {
+                if (disposing) {
+                    UB.Core.RenderFrame -= Core_RenderFrame;
+                    UB.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
+                    base.Dispose(disposing);
                 }
 
                 disposedValue = true;
             }
-        }
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
         #endregion
     }

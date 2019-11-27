@@ -5,10 +5,12 @@ using Decal.Filters;
 using UtilityBelt.MagTools.Shared;
 using System.Text.RegularExpressions;
 using VirindiViewService.Controls;
+using UtilityBelt.Lib;
+using System.ComponentModel;
 
 namespace UtilityBelt.Tools {
-    class Jumper : IDisposable {
-        private bool disposed = false;
+    [Name("Jumper")]
+    public class Jumper : ToolBase {
         private bool isTurning = false;
         private bool needToTurn = false;
         private bool needToJump = false;
@@ -27,14 +29,132 @@ namespace UtilityBelt.Tools {
         private bool waitingForJump = false;
         private int jumpTries = 0;
 
-        public Jumper() {
+        #region Config
+        [Summary("PauseNav")]
+        [DefaultValue(true)]
+        public bool PauseNav {
+            get { return (bool)GetSetting("PauseNav"); }
+            set { UpdateSetting("PauseNav", value); }
+        }
+
+        [Summary("ThinkComplete")]
+        [DefaultValue(false)]
+        public bool ThinkComplete {
+            get { return (bool)GetSetting("ThinkComplete"); }
+            set { UpdateSetting("ThinkComplete", value); }
+        }
+
+        [Summary("ThinkFail")]
+        [DefaultValue(false)]
+        public bool ThinkFail {
+            get { return (bool)GetSetting("ThinkFail"); }
+            set { UpdateSetting("ThinkFail", value); }
+        }
+
+        [Summary("Attempts")]
+        [DefaultValue(3)]
+        public int Attempts {
+            get { return (int)GetSetting("Attempts"); }
+            set { UpdateSetting("Attempts", value); }
+        }
+        #endregion
+
+        #region Commands
+
+        #region /ub face
+        [Summary("Face heading commands with built in VTank pausing and retries")]
+        [Usage("/ub face <heading>")]
+        [Example("/ub face 180", "Faces your character towards 180 degrees (south).")]
+        [CommandPattern("face", @"^ *(?<Heading>\d+) *$")]
+        public void DoFace(string command, Match args) {
+            if (!int.TryParse(args.Groups["Heading"].Value, out targetDirection)) {
+                LogError("Invalid jump heading: " + args.Groups["Heading"].Value);
+                return;
+            }
+            isTurning = true;
+            needToTurn = true;
+            turningSeconds = DateTime.UtcNow;
+            UB.Core.Actions.FaceHeading(targetDirection, true);
+            LogDebug("Turning to " + targetDirection);
+        }
+        #endregion
+
+        #region /ub jump
+        [Summary("Jump commands with built in VTank pausing and retries")]
+        [Usage("/ub jump[swzxc] [heading] [holdtime]")]
+        [Example("/ub jumpsw 180 500", "Face 180 degrees (south) and jump forward with 500/1000 power.")]
+        [Example("/ub jumpsx 300", "Jump backward with 300/1000 power.")]
+        [Example("/ub jump", "Taps jump.")]
+        [CommandPattern("jump", @"^ *((?<faceDirection>\d+)\s+)?(?<msToHoldDown>\d+)?$", true)]
+        public void DoJump(string command, Match args) {
+            if (needToJump || waitingForJump) {
+                LogError("You are already jumping. try again later.");
+                return;
+            }
+            needToJump = true;
+            string jumpFlags = "";
+
+            //set jump duration in ms
+            if (!string.IsNullOrEmpty(args.Groups["msToHoldDown"].Value)) {
+                if (!int.TryParse(args.Groups["msToHoldDown"].Value, out msToHoldDown)) {
+                    return;
+                }
+                if (msToHoldDown < 0 || msToHoldDown > 1000) {  //check jump held for 0-1000 ms
+                    LogError("holdtime should be a number between 0 and 1000");
+                    return;
+                }
+            }
+            else { msToHoldDown = 0; }
+
+
+            if (!string.IsNullOrEmpty(args.Groups["faceDirection"].Value)) {
+                if (!int.TryParse(args.Groups["faceDirection"].Value, out faceDirectionInt)) {
+                    return;
+                }
+                if (faceDirectionInt < 0 || faceDirectionInt > 359) {
+                    LogError("direction should be a number between 0 and 360");
+                    return;
+                }
+                needToTurn = true;
+                targetDirection = faceDirectionInt;
+            }
+            else {
+                needToTurn = false;
+            }
+
+            //set jump direction
+            jumpFlags = command.Replace("jump", "");
+
+            if (jumpFlags.Contains("w")) addW = true;
+            if (jumpFlags.Contains("z")) addZ = true;
+            if (jumpFlags.Contains("x")) addX = true;
+            if (jumpFlags.Contains("c")) addC = true;
+            if (jumpFlags.Contains("s")) addShift = true;
+
+            needToJump = true;
+            //start turning
+            if (needToTurn) {
+                turningSeconds = DateTime.UtcNow;
+                isTurning = true;
+                needToTurn = false;
+                UB.Core.Actions.FaceHeading(targetDirection, true);
+            }
+            else {
+                isTurning = false;
+            }
+        }
+        #endregion
+        #endregion
+
+        public Jumper(UtilityBeltPlugin ub, string name) : base(ub, name) {
             try {
-                Globals.Core.CommandLineText += Current_CommandLineText;
-                Globals.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
+                // TODO: make this not always listen
+                UB.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
+                UB.Core.RenderFrame += Core_RenderFrame;
             } catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        public void Think() {
+        public void Core_RenderFrame(object sender, EventArgs e) {
             if (isTurning && DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(100)) {
                 lastThought = DateTime.UtcNow;
                 if (targetDirection == Math.Round(CoreManager.Current.Actions.Heading, 0)) {
@@ -45,7 +165,7 @@ namespace UtilityBelt.Tools {
             //abort turning if takes longer than 3 seconds
             if (isTurning && DateTime.UtcNow - turningSeconds >= TimeSpan.FromSeconds(3)) {
                 isTurning = false;
-                Util.ThinkOrWrite("Turning failed", Globals.Settings.Jumper.ThinkFail);
+                Util.ThinkOrWrite("Turning failed", ThinkFail);
             }
             //Do the jump thing
             if (needToJump && !isTurning) {
@@ -53,8 +173,8 @@ namespace UtilityBelt.Tools {
                 enableNavTimer = TimeSpan.FromMilliseconds(msToHoldDown + 1000);
                 //Util.WriteToChat("Jumper enableNavTimer: "+enableNavTimer);
 
-                if (Globals.Settings.Jumper.PauseNav)
-                    VTankControl.Nav_Block(15000, Globals.Settings.Plugin.Debug);
+                if (PauseNav)
+                    VTankControl.Nav_Block(15000, UB.Plugin.Debug);
                 PostMessageTools.SendSpace(msToHoldDown, addShift, addW, addZ, addX, addC);
                 waitingForJump = true;
                 
@@ -63,16 +183,16 @@ namespace UtilityBelt.Tools {
             //Set vtank nav setting back to original state after jump/turn complete
             if (waitingForJump && DateTime.UtcNow - navSettingTimer >= enableNavTimer) {
                 jumpTries++;
-                if (jumpTries < Globals.Settings.Jumper.Attempts) {
+                if (jumpTries < Attempts) {
                     navSettingTimer = DateTime.UtcNow;
                     Logger.Debug("Timeout waiting for jump, trying again...");
-                    if (Globals.Settings.Jumper.PauseNav)
-                        VTankControl.Nav_Block(15000, Globals.Settings.Plugin.Debug);
+                    if (PauseNav)
+                        VTankControl.Nav_Block(15000, UB.Plugin.Debug);
                     PostMessageTools.SendSpace(msToHoldDown, addShift, addW, addZ, addX, addC);
                 } else {
-                    Util.ThinkOrWrite("You have failed to jump too many times.", Globals.Settings.Jumper.ThinkFail);
+                    Util.ThinkOrWrite("You have failed to jump too many times.", ThinkFail);
 
-                    if (Globals.Settings.Jumper.PauseNav)
+                    if (PauseNav)
                         VTankControl.Nav_UnBlock();
                     waitingForJump = false;
                     //clear settings
@@ -86,9 +206,9 @@ namespace UtilityBelt.Tools {
             try {
                 if (waitingForJump && e.Message.Type == 0xF74E && (int)e.Message["object"] == CoreManager.Current.CharacterFilter.Id) {
                     // Util.WriteToChat(string.Format("You Jumped. height: {0}", e.Message["height"]));
-                    if (Globals.Settings.Jumper.ThinkComplete)
+                    if (ThinkComplete)
                         Util.Think("Jumper Success");
-                    if (Globals.Settings.Jumper.PauseNav)
+                    if (PauseNav)
                         VTankControl.Nav_UnBlock();
                     waitingForJump = false;
                     //clear settings
@@ -99,119 +219,15 @@ namespace UtilityBelt.Tools {
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
-        private static readonly Regex faceRegex = new Regex(@"^\/ub face (?<faceDirection>\d+)");
-        private static readonly Regex jumpRegex = new Regex(@"^\/ub (?<faceDirection>\d+)? ?(?<shift>s)?jump(?<jumpDirection>[wzxc])?( )?(?<msToHoldDown>\d+)?");
-        void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
-            try {
-                // handle /ub face command
-                Match faceMatch = faceRegex.Match(e.Text);
-                if (faceMatch.Success) {
-                    e.Eat = true;
-                    if (!int.TryParse(faceMatch.Groups["faceDirection"].Value, out targetDirection))
-                        return;
-                    isTurning = true;
-                    needToTurn = true;
-                    turningSeconds = DateTime.UtcNow;
-                    CoreManager.Current.Actions.FaceHeading(targetDirection, true);
-                    Logger.Debug("Jumper: Turning to " + targetDirection);
-                    return;
-                }
 
-                //handle /ub jump command
-                Match jumpMatch = jumpRegex.Match(e.Text);
-                if (jumpMatch.Success) {
-                    e.Eat = true;
-                    if (needToJump || waitingForJump) {
-                        Util.WriteToChat("Error: You are already jumping. try again later.");
-                        return;
-                    }
-                    needToJump = true;
-                    string jumpDirection = "";
-
-                    //set jump duration in ms
-                    if (!string.IsNullOrEmpty(jumpMatch.Groups["msToHoldDown"].Value)) {
-                        
-                        if (!int.TryParse(jumpMatch.Groups["msToHoldDown"].Value, out msToHoldDown)) {
-                            return;
-                        }
-                        if (msToHoldDown < 0 || msToHoldDown > 1000) {  //check jump held for 0-1000 ms
-                            Util.WriteToChat("holdtime should be a number between 0 and 1000");
-                            jumper_usage();
-                            return;
-                        }
-                    } else { msToHoldDown = 0; }
-
-
-                    if (!string.IsNullOrEmpty(jumpMatch.Groups["faceDirection"].Value)) {
-                        if (!int.TryParse(jumpMatch.Groups["faceDirection"].Value, out faceDirectionInt)) {
-                            return;
-                        }
-                        if (faceDirectionInt < 0 || faceDirectionInt > 359)
-                        {
-                            Util.WriteToChat("direction should be a number between 0 and 360");
-                            jumper_usage();
-                            return;
-                        }
-                        needToTurn = true;
-                        targetDirection = faceDirectionInt;
-                    } else {
-                        needToTurn = false;
-                    }
-
-                    //set jump direction
-                    jumpDirection = jumpMatch.Groups["jumpDirection"].Value.ToLower();
-                    switch (jumpDirection) {
-                        case "w":
-                            addW = true;
-                            break;
-                        case "z":
-                            addZ = true;
-                            break;
-                        case "x":
-                            addX = true;
-                            break;
-                        case "c":
-                            addC = true;
-                            break;
-                    }
-
-                    if (string.IsNullOrEmpty(jumpMatch.Groups["shift"].Value)) {
-                        addShift = false;
-                    } else {
-                        addShift = true;
-                    }
-
-                    needToJump = true;
-                    //start turning
-                    if (needToTurn) {
-                        turningSeconds = DateTime.UtcNow;
-                        isTurning = true;
-                        needToTurn = false;
-                        CoreManager.Current.Actions.FaceHeading(targetDirection, true);
-                    } else {
-                        isTurning = false;
-                    }
-                    return;
-                }
-            } catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void jumper_usage()
-        {
-            Util.WriteToChat("Usage: /ub [direction] [s]jump[wzxc] [holdtime]");
-        }
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing) {
-            if (!disposed) {
+        protected override void Dispose(bool disposing) {
+            if (!disposedValue) {
                 if (disposing) {
-                    Globals.Core.CommandLineText -= Current_CommandLineText;
-                    Globals.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
+                    UB.Core.RenderFrame -= Core_RenderFrame;
+                    UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
+                    base.Dispose(disposing);
                 }
-                disposed = true;
+                disposedValue = true;
             }
         }
     }

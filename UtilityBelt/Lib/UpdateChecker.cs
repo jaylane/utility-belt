@@ -57,6 +57,7 @@ namespace UtilityBelt.Lib {
             try {
                 if (!string.IsNullOrEmpty(json)) {
                     try {
+                        var UB = UtilityBeltPlugin.Instance;
                         var tags = JsonConvert.DeserializeObject<GitLabTagData[]>(json);
                         Version version = System.Reflection.Assembly.GetAssembly(typeof(UtilityBeltPlugin)).GetName().Version;
                         bool foundUpdate = false;
@@ -70,8 +71,8 @@ namespace UtilityBelt.Lib {
                                     lines = lines.Where(s => !string.IsNullOrEmpty(s.Trim())).Distinct().ToList();
 
                                     var description = string.Join("", lines.ToArray());
-                                    Globals.Host.Actions.AddChatText($"[{Globals.PluginName}] Version {releaseVersion.ToString()} is now available! {description}", 3);
-                                    Globals.Host.Actions.AddChatText($"Get it here: <Tell:IIDString:{Util.GetChatId()}:openurl|https://gitlab.com/trevis/utilitybelt>https://gitlab.com/trevis/utilitybelt</Tell>", 3);
+                                    UB.Host.Actions.AddChatText($"[UB] Version {releaseVersion.ToString()} is now available! {description}", 3);
+                                    UB.Host.Actions.AddChatText($"Get it here: <Tell:IIDString:{Util.GetChatId()}:openurl|https://gitlab.com/trevis/utilitybelt>https://gitlab.com/trevis/utilitybelt</Tell>", 3);
                                     foundUpdate = true;
                                     break;
                                 }

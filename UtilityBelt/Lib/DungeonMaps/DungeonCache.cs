@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Decal.Adapter;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,7 +16,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
             var block = new Dungeon(cellId);
             watch.Stop();
 
-            Logger.Debug(string.Format("DungeonMaps: took {0}ms to cache LandBlock {1} (isDungeon? {2} ({3}))", watch.ElapsedMilliseconds, (cellId).ToString("X8"), block.IsDungeon(), ((uint)(Globals.Core.Actions.Landcell << 16 >> 16)).ToString("X4")));
+            Logger.Debug(string.Format("DungeonMaps: took {0}ms to cache LandBlock {1} (isDungeon? {2} ({3}))", watch.ElapsedMilliseconds, (cellId).ToString("X8"), block.IsDungeon(), ((uint)(CoreManager.Current.Actions.Landcell << 16 >> 16)).ToString("X4")));
 
             cache.Add(block.LandBlockId, block);
 

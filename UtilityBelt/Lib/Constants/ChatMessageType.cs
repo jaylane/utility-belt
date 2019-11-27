@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Linq;
 
-namespace UtilityBelt.Lib.ChatLog
+namespace UtilityBelt.Lib.Constants
 {
     public enum ChatMessageType : uint
     {

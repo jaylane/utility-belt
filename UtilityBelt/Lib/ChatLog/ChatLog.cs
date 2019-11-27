@@ -1,4 +1,5 @@
 ﻿using System;
+using UtilityBelt.Lib.Constants;
 
 namespace UtilityBelt.Lib.ChatLog
 {

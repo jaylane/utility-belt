@@ -14,13 +14,16 @@ namespace UtilityBelt.Views {
 
         private ViewProperties properties;
         private ControlGroup controls;
-
+        protected UtilityBeltPlugin UB;
+        public BaseView(UtilityBeltPlugin ub) {
+            UB = ub;
+        }
 
         protected void CreateFromXMLResource(string resourcePath) {
             new Decal3XMLParser().ParseFromResource(resourcePath, out properties, out controls);
 
             properties.Icon = GetIcon("UtilityBelt.Resources.icons.utilitybelt.png");
-            properties.Title = string.Format("{0} - v{1}", Globals.PluginName, Util.GetVersion());
+            properties.Title = string.Format("UtilityBelt - v{0}", Util.GetVersion());
 
             view = new VirindiViewService.HudView(properties, controls);
 
@@ -32,7 +35,7 @@ namespace UtilityBelt.Views {
                 // keep the plugin window within the game window
 
                 RECT rect = new RECT();
-                GetWindowRect(Globals.Core.Decal.Hwnd, ref rect);
+                GetWindowRect(UB.Core.Decal.Hwnd, ref rect);
 
                 if (view.Location.X + view.Width > rect.Width) {
                     view.Location = new Point(rect.Width - view.Width, view.Location.Y);

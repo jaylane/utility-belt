@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Decal.Adapter;
 using Decal.Adapter.Wrappers;
 
 namespace UtilityBelt.Lib.Salvage {
@@ -86,13 +87,13 @@ namespace UtilityBelt.Lib.Salvage {
 
         public void GetTinkSkills() {
             int jackofalltradesbonus = 0;
-            //if (Globals.Core.CharacterFilter.GetCharProperty(236) == 1) {
+            //if (CoreManager.Current.CharacterFilter.GetCharProperty(236) == 1) {
             //    jackofalltradesbonus = 5;
             //}
-            weaponTinkeringSkill = Globals.Core.CharacterFilter.EffectiveSkill[CharFilterSkillType.WeaponTinkering] + jackofalltradesbonus;
-            magicItemTinkeringSkill = Globals.Core.CharacterFilter.EffectiveSkill[CharFilterSkillType.MagicItemTinkering] + jackofalltradesbonus;
-            armorTinkeringSkill = Globals.Core.CharacterFilter.EffectiveSkill[CharFilterSkillType.ArmorTinkering] + jackofalltradesbonus;
-            itemTinkeringSkill = Globals.Core.CharacterFilter.EffectiveSkill[CharFilterSkillType.ItemTinkering] + jackofalltradesbonus;
+            weaponTinkeringSkill = CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.WeaponTinkering] + jackofalltradesbonus;
+            magicItemTinkeringSkill = CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.MagicItemTinkering] + jackofalltradesbonus;
+            armorTinkeringSkill = CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.ArmorTinkering] + jackofalltradesbonus;
+            itemTinkeringSkill = CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.ItemTinkering] + jackofalltradesbonus;
         }
 
         public static float GetMaterialMod(int material) {

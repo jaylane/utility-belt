@@ -1,12 +1,15 @@
-﻿using System;
+﻿using Decal.Adapter;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UtilityBelt.Lib;
 
 namespace UtilityBelt.Tools {
-    class ChatNameClickHandler : IDisposable {
-        public ChatNameClickHandler() {
-            Globals.Core.ChatNameClicked += Core_ChatNameClicked;
+    [Name("ChatNameClickHandler")]
+    class ChatNameClickHandler : ToolBase {
+        public ChatNameClickHandler(UtilityBeltPlugin ub, string name) : base(ub, name) {
+            CoreManager.Current.ChatNameClicked += Core_ChatNameClicked;
         }
 
         private void Core_ChatNameClicked(object sender, Decal.Adapter.ChatClickInterceptEventArgs e) {
@@ -23,8 +26,8 @@ namespace UtilityBelt.Tools {
                             break;
                         case "select":
                             int.TryParse(args, out int id);
-                            if (id != 0 && Globals.Core.WorldFilter[id] != null) {
-                                Globals.Core.Actions.SelectItem(id);
+                            if (id != 0 && CoreManager.Current.WorldFilter[id] != null) {
+                                CoreManager.Current.Actions.SelectItem(id);
                             }
                             break;
 
@@ -35,19 +38,14 @@ namespace UtilityBelt.Tools {
         }
 
         #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing) {
+        protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
-                    Globals.Core.ChatNameClicked -= Core_ChatNameClicked;
+                    CoreManager.Current.ChatNameClicked -= Core_ChatNameClicked;
+                    base.Dispose(disposing);
                 }
                 disposedValue = true;
             }
-        }
-
-        public void Dispose() {
-            Dispose(true);
         }
         #endregion
     }

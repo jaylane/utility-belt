@@ -9,22 +9,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using UtilityBelt.Lib;
+using System.ComponentModel;
 
 namespace UtilityBelt.Tools {
-    class AutoTinker : IDisposable {
-
-        HudButton AutoTinkAddSelectedButton { get; set; }
-        HudButton selectSalvage { get; set; }
-        HudList AutoTinkerList { get; set; }
-        HudButton ClearList { get; set; }
-        HudButton PopulateList { get; set; }
-        HudButton AutoTinkStartButton { get; set; }
-        HudButton AutoTinkStopButton { get; set; }
-        HudButton PopulateListButton { get; set; }
-        HudStaticText AutoTinkItemLabel { get; set; }
-        HudStaticText AutoTinkItemNameLabel { get; set; }
-        HudCombo AutoTinkCombo { get; set; }
-        HudTextBox AutoTinkMinPercentTextBox { get; set; }
+    [Name("AutoTinker")]
+    public class AutoTinker : ToolBase {
+        HudButton AutoTinkAddSelectedButton;
+        HudButton selectSalvage;
+        HudList AutoTinkerList;
+        HudButton ClearList;
+        HudButton PopulateList;
+        HudButton AutoTinkStartButton;
+        HudButton AutoTinkStopButton;
+        HudButton PopulateListButton;
+        HudStaticText AutoTinkItemLabel;
+        HudStaticText AutoTinkItemNameLabel;
+        HudCombo AutoTinkCombo;
+        HudTextBox AutoTinkMinPercentTextBox;
 
         private FakeItem fakeItem = new FakeItem();
         public DataTable tinkerDT = new DataTable();
@@ -39,7 +41,6 @@ namespace UtilityBelt.Tools {
         double currentSalvageWK;
         string currentSalvage;
         string currentItemName;
-        private bool disposed;
         private bool tinking = false;
         WorldObject targetSalvage;
         WorldObject itemWO;
@@ -50,37 +51,47 @@ namespace UtilityBelt.Tools {
         Dictionary<int, double> PotentialSalvageList = new Dictionary<int, double>();
         List<string> ComboBoxList = new List<string>();
 
-        public AutoTinker() {
+        #region Config
+        [Summary("Minimum percentage required to perform tinker")]
+        [DefaultValue(99.5f)]
+        public float MinPercentage {
+            get { return (float)GetSetting("MinPercentage"); }
+            set { UpdateSetting("MinPercentage", value); }
+        }
+
+        #endregion
+
+        public AutoTinker(UtilityBeltPlugin ub, string name) : base(ub, name) {
             try {
                 CreateDataTable();
-                Globals.Core.CommandLineText += Current_CommandLineText;
-                Globals.Core.ChatBoxMessage += Current_ChatBoxMessage;
+                CoreManager.Current.CommandLineText += Current_CommandLineText;
+                CoreManager.Current.ChatBoxMessage += Current_ChatBoxMessage;
 
-                AutoTinkerList = (HudList)Globals.MainView.view["AutoTinkerList"];
+                AutoTinkerList = (HudList)UB.MainView.view["AutoTinkerList"];
                 AutoTinkerList.Click += AutoTinkerList_Click;
 
-                AutoTinkCombo = (HudCombo)Globals.MainView.view["AutoTinkCombo"];
+                AutoTinkCombo = (HudCombo)UB.MainView.view["AutoTinkCombo"];
 
                 AutoTinkCombo.Change += AutoTinkCombo_Change;
 
-                AutoTinkAddSelectedButton = (HudButton)Globals.MainView.view["AutoTinkAddSelectedButton"];
+                AutoTinkAddSelectedButton = (HudButton)UB.MainView.view["AutoTinkAddSelectedButton"];
                 AutoTinkAddSelectedButton.Hit += AutoTinkAddSelectedButton_Hit;
 
-                AutoTinkStartButton = (HudButton)Globals.MainView.view["AutoTinkStartButton"];
+                AutoTinkStartButton = (HudButton)UB.MainView.view["AutoTinkStartButton"];
                 AutoTinkStartButton.Hit += AutoTinkStartButton_Hit;
 
-                AutoTinkStopButton = (HudButton)Globals.MainView.view["AutoTinkStopButton"];
+                AutoTinkStopButton = (HudButton)UB.MainView.view["AutoTinkStopButton"];
                 AutoTinkStopButton.Hit += AutoTinkStopButton_Hit;
 
-                PopulateListButton = (HudButton)Globals.MainView.view["PopulateListButton"];
+                PopulateListButton = (HudButton)UB.MainView.view["PopulateListButton"];
                 PopulateListButton.Hit += PopulateListButton_Hit;
 
-                AutoTinkMinPercentTextBox = (HudTextBox)Globals.MainView.view["AutoTinkMinPercentTextBox"];
+                AutoTinkMinPercentTextBox = (HudTextBox)UB.MainView.view["AutoTinkMinPercentTextBox"];
 
                 AutoTinkMinPercentTextBox.Change += AutoTinkMinPercentTextBox_Changed;
-                AutoTinkMinPercentTextBox.Text = Globals.Settings.AutoTinker.MinPercentage.ToString();
+                AutoTinkMinPercentTextBox.Text = MinPercentage.ToString();
                 
-                AutoTinkItemNameLabel = (HudStaticText)Globals.MainView.view["AutoTinkItemNameLabel"];
+                AutoTinkItemNameLabel = (HudStaticText)UB.MainView.view["AutoTinkItemNameLabel"];
 
                 PopulateAutoTinkCombo();
 
@@ -93,7 +104,7 @@ namespace UtilityBelt.Tools {
                 HudList.HudListRowAccessor imbueListRow = AutoTinkerList[row];
                 HudStaticText itemID = (HudStaticText)imbueListRow[5];
                 int.TryParse(itemID.Text.ToString(), out int item);
-                Globals.Core.Actions.SelectItem(item);
+                CoreManager.Current.Actions.SelectItem(item);
 
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -102,10 +113,10 @@ namespace UtilityBelt.Tools {
         public void Think() {
             try {
                 if (waitingForIds) {
-                    if (Globals.Assessor.NeedsInventoryData(itemsToId)) {
+                    if (UB.Assessor.NeedsInventoryData(itemsToId)) {
                         if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15)) {
                             lastIdSpam = DateTime.UtcNow;
-                            var thisIdCount = Globals.Assessor.GetNeededIdCount(itemsToId);
+                            var thisIdCount = UB.Assessor.GetNeededIdCount(itemsToId);
                             Util.WriteToChat(string.Format("AutoImbue waiting to id {0} items, this will take approximately {0} seconds.", thisIdCount));
                             if (lastIdCount != thisIdCount) {
                                 lastIdCount = thisIdCount;
@@ -128,7 +139,7 @@ namespace UtilityBelt.Tools {
         public void Current_ChatBoxMessage(object sender, ChatTextInterceptEventArgs e) {
             try {
                 if (tinking) {
-                    string characterName = Globals.Core.CharacterFilter.Name;
+                    string characterName = CoreManager.Current.CharacterFilter.Name;
 
                     Regex CraftSuccess = new Regex("^" + characterName + @" successfully applies the (?<salvage>[\w\s\-]+) Salvage(\s?\(100\))?\s\(workmanship (?<workmanship>\d+\.\d+)\) to the (?<item>[\w\s\-]+)\.$");
                     Regex CraftFailure = new Regex("^" + characterName + @" fails to apply the (?<salvage>[\w\s\-]+) Salvage(\s?\(100\))?\s\(workmanship (?<workmanship>\d+\.\d+)\) to the (?<item>[\w\s\-]+).\s?The target is destroyed\.$");
@@ -142,7 +153,7 @@ namespace UtilityBelt.Tools {
                         if (currentItemName == chatcapItem && currentSalvageWK.ToString("0.00") == chatcapWK.ToString() && chatcapSalvage == currentSalvage) {
                             Logger.Debug(result + ": " + chatcapSalvage + " " + chatcapWK + " on " + chatcapItem);
                             readyForNextTink = true;
-                            Globals.Core.Actions.RequestId(fakeItem.id);
+                            CoreManager.Current.Actions.RequestId(fakeItem.id);
                         }
                         else {
                             Logger.Debug("AutoTinker: did not match success" + "chat salvageWK: " + chatcapWK.ToString() + "real salvageWK: " + currentSalvageWK.ToString("0.00") + "chat item name: " + chatcapItem + "real item name: " + currentItemName + "chat salv name: " + chatcapSalvage + "real salv name: " + currentSalvage);
@@ -186,21 +197,21 @@ namespace UtilityBelt.Tools {
                 HudStaticText c = (HudStaticText)(AutoTinkCombo[AutoTinkCombo.Current]);
                 var materialID = SalvageList[c.Text.ToString()];
 
-                foreach (var item in Globals.Core.WorldFilter.GetInventory()) {
+                foreach (var item in CoreManager.Current.WorldFilter.GetInventory()) {
                     if (!item.HasIdData) {
                         itemsToId.Add(item.Id);
                     }
                 }
 
-                if (Globals.Assessor.NeedsInventoryData(itemsToId)) {
+                if (UB.Assessor.NeedsInventoryData(itemsToId)) {
                     Util.WriteToChat("requesting all ids");
-                    Globals.Assessor.RequestAll(itemsToId);
+                    UB.Assessor.RequestAll(itemsToId);
                     waitingForIds = true;
                     lastIdSpam = DateTime.UtcNow;
                     startTime = DateTime.UtcNow;
                 }
 
-                foreach (WorldObject wo in Globals.Core.WorldFilter.GetInventory()) {
+                foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetInventory()) {
                     if (wo.Values(LongValueKey.Material) == materialID && wo.Values(LongValueKey.UsesRemaining) == 100) {
                         if (!PotentialSalvageList.ContainsKey(wo.Id)) {
                             PotentialSalvageList.Add(wo.Id,wo.Values(DoubleValueKey.SalvageWorkmanship));
@@ -212,12 +223,12 @@ namespace UtilityBelt.Tools {
         }
 
         private void AutoTinkStopButton_Hit(object sender, EventArgs e) {
-            Globals.Core.Actions.RequestId(fakeItem.id);
+            CoreManager.Current.Actions.RequestId(fakeItem.id);
             ClearAllTinks();
         }
 
         public void ClearAllTinks() {
-            Globals.Core.WorldFilter.ChangeObject -= WaitForItemUpdate;
+            CoreManager.Current.WorldFilter.ChangeObject -= WaitForItemUpdate;
             UBHelper.ConfirmationRequest.ConfirmationRequestEvent -= UBHelper_ConfirmationRequest;
             readyForNextTink = false;
             tinking = false;
@@ -239,8 +250,7 @@ namespace UtilityBelt.Tools {
                 f = 0;
             }
 
-            Globals.Settings.AutoTinker.MinPercentage = f;
-
+            MinPercentage = f;
         }
         public void AutoTinkCombo_Change(object sender, EventArgs e) {
             HudStaticText c = (HudStaticText)(AutoTinkCombo[AutoTinkCombo.Current]);
@@ -249,7 +259,7 @@ namespace UtilityBelt.Tools {
         private void DoPopulateList() {
             tinking = false;
             if (itemWO != null) {
-                itemWO = Globals.Core.WorldFilter[itemWO.Id];
+                itemWO = CoreManager.Current.WorldFilter[itemWO.Id];
             }
             ClearAllTinks();
 
@@ -279,7 +289,7 @@ namespace UtilityBelt.Tools {
 
         private void AutoTinkAddSelectedButton_Hit(object sender, EventArgs e) {
             ClearAllTinks();
-            itemWO = Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection];
+            itemWO = CoreManager.Current.WorldFilter[CoreManager.Current.Actions.CurrentSelection];
             targetItemUpdated = true;
             if (itemWO.HasIdData && itemWO.Values(DoubleValueKey.SalvageWorkmanship) > 0 && itemWO.Values(LongValueKey.Material) > 0 && itemWO.Values(LongValueKey.NumberTimesTinkered) < 10) {
                 AutoTinkItemNameLabel.Text = Util.GetObjectName(itemWO.Id);
@@ -405,23 +415,23 @@ namespace UtilityBelt.Tools {
             }
             
             if (intSalvId != 0) {
-                currentSalvageWK = Math.Round(Globals.Core.WorldFilter[intSalvId].Values(DoubleValueKey.SalvageWorkmanship),2, MidpointRounding.AwayFromZero);
+                currentSalvageWK = Math.Round(CoreManager.Current.WorldFilter[intSalvId].Values(DoubleValueKey.SalvageWorkmanship),2, MidpointRounding.AwayFromZero);
                 currentSalvage = Util.GetObjectName(intSalvId).Replace(" Salvage", "").Replace(" (100)", "");
             }
             
-            Globals.Core.Actions.SelectItem(intSalvId);
+            CoreManager.Current.Actions.SelectItem(intSalvId);
 
 
             if (!tinking) {
-                Globals.Core.Actions.SelectItem(intSalvId);
-                if (Globals.Core.Actions.CurrentSelection == intSalvId) {
+                CoreManager.Current.Actions.SelectItem(intSalvId);
+                if (CoreManager.Current.Actions.CurrentSelection == intSalvId) {
                     UBHelper.ConfirmationRequest.ConfirmationRequestEvent += UBHelper_ConfirmationRequest;
-                    string verifyPercent = (tinkerCalc.DoCalc(intSalvId, Globals.Core.WorldFilter[intItemId], Globals.Core.WorldFilter[intItemId].Values(LongValueKey.NumberTimesTinkered)).ToString("P"));
+                    string verifyPercent = (tinkerCalc.DoCalc(intSalvId, CoreManager.Current.WorldFilter[intItemId], CoreManager.Current.WorldFilter[intItemId].Values(LongValueKey.NumberTimesTinkered)).ToString("P"));
                     if (targetItemUpdated && verifyPercent == successPstr ) {
                         //Util.WriteToChat("matched success %... applying");
-                        Globals.Core.WorldFilter.ChangeObject += WaitForItemUpdate;
+                        CoreManager.Current.WorldFilter.ChangeObject += WaitForItemUpdate;
                         readyForNextTink = false;
-                        Globals.Core.Actions.ApplyItem(intSalvId, intItemId);
+                        CoreManager.Current.Actions.ApplyItem(intSalvId, intItemId);
                         targetItemUpdated = false;
                         tinking = true;
                     }
@@ -437,7 +447,7 @@ namespace UtilityBelt.Tools {
             if (e.Changed.Id == fakeItem.id && readyForNextTink) {
                 //Util.WriteToChat("changed: " + e.Changed.Name);
                 targetItemUpdated = true;
-                Globals.Core.WorldFilter.ChangeObject -= WaitForItemUpdate;
+                CoreManager.Current.WorldFilter.ChangeObject -= WaitForItemUpdate;
                 NextTink();
             }
         }
@@ -453,7 +463,7 @@ namespace UtilityBelt.Tools {
         private void PopulateAutoTinkCombo() {
             AutoTinkCombo.Clear();
             
-            FileService service = Globals.Core.Filter<FileService>();
+            FileService service = CoreManager.Current.Filter<FileService>();
             for (int i = 0; i < service.MaterialTable.Length; i++) {
                 var material = service.MaterialTable[i];
                 if (!SalvageList.ContainsKey(material.Name)) {
@@ -469,7 +479,7 @@ namespace UtilityBelt.Tools {
         }
 
         public void GetMaterialList() {
-            FileService service = Globals.Core.Filter<FileService>();
+            FileService service = CoreManager.Current.Filter<FileService>();
             for (var i = 0; i < service.MaterialTable.Length; i++) {
                 var material = service.MaterialTable[i];
             }
@@ -492,7 +502,7 @@ namespace UtilityBelt.Tools {
         //            string path = e.Text.Replace("/ub autotinker target salvage ", "").Trim();
         //            e.Eat = true;
         //
-        //            salvageWO = Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection];
+        //            salvageWO = CoreManager.Current.WorldFilter[CoreManager.Current.Actions.CurrentSelection];
         //            Util.WriteToChat("name: " + Util.GetObjectName(salvageWO.Id) + "---- Salvage Material: " + salvageWO.Values(LongValueKey.Material));
         //            var salvageMod = TinkerType.GetMaterialMod(salvageWO.Values(LongValueKey.Material));
         //
@@ -502,7 +512,7 @@ namespace UtilityBelt.Tools {
         //            string path = e.Text.Replace("/ub autotinker target salvage ", "").Trim();
         //            e.Eat = true;
         //
-        //            itemWO =  Globals.Core.WorldFilter[Globals.Core.Actions.CurrentSelection];
+        //            itemWO =  CoreManager.Current.WorldFilter[CoreManager.Current.Actions.CurrentSelection];
         //            return;
         //        }
         //        if (e.Text.StartsWith("/ub autotinker dotinker")) {
@@ -527,28 +537,25 @@ namespace UtilityBelt.Tools {
                 Util.WriteToChat("targetSalvageID is null");
             }
 
-            targetSalvage = Globals.Core.WorldFilter[targetSalvageID];
+            targetSalvage = CoreManager.Current.WorldFilter[targetSalvageID];
             fakeItem.name = itemWO.Name;
             fakeItem.id = itemWO.Id;
             if (fakeItem.tinkeredCount == 0) {
                 fakeItem.tinkeredCount = itemWO.Values(LongValueKey.NumberTimesTinkered);
             }
             fakeItem.successPercent = tinkerCalc.DoCalc(targetSalvage.Id, targetWO, fakeItem.tinkeredCount);
-            var enchantments = Globals.Core.CharacterFilter.Enchantments;
+            var enchantments = CoreManager.Current.CharacterFilter.Enchantments;
         }
 
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing) {
-            if (!disposed) {
+        protected override void Dispose(bool disposing) {
+            if (!disposedValue) {
                 if (disposing) {
-                    Globals.Core.CommandLineText -= Current_CommandLineText;
-                    Globals.Core.ChatBoxMessage -= Current_ChatBoxMessage;
+                    UB.Core.CommandLineText -= Current_CommandLineText;
+                    UB.Core.ChatBoxMessage -= Current_ChatBoxMessage;
+
+                    base.Dispose(disposing);
                 }
-                disposed = true;
+                disposedValue = true;
             }
         }
     }

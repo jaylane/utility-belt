@@ -1,4 +1,5 @@
-﻿using Decal.Adapter.Wrappers;
+﻿using Decal.Adapter;
+using Decal.Adapter.Wrappers;
 using Decal.Filters;
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
         public VTNUseNPC(StreamReader reader, VTNavRoute parentRoute, int index) : base(reader, parentRoute, index) {
             Type = eWaypointType.UseNPC;
 
-            Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
+            CoreManager.Current.WorldFilter.CreateObject += WorldFilter_CreateObject;
         }
 
         private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
@@ -35,7 +36,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
                     if (distance < closestDistance) {
                         closestDistance = distance;
 
-                        Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                        CoreManager.Current.WorldFilter.CreateObject -= WorldFilter_CreateObject;
 
                         foreach (var shape in shapes) {
                             try {
@@ -85,7 +86,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
                 return false;
             }
 
-            var wos = Globals.Core.WorldFilter.GetByName(Name);
+            var wos = CoreManager.Current.WorldFilter.GetByName(Name);
             WorldObject closestWO = null;
 
             foreach (var wo in wos) {
@@ -107,7 +108,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
                 Z = closestWO.RawCoordinates().Z / 240;
                 Id = closestWO.Id;
                 
-                Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                CoreManager.Current.WorldFilter.CreateObject -= WorldFilter_CreateObject;
             }
 
             return true;
@@ -115,22 +116,22 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
 
         public override void Draw() {
             var rp = GetPreviousPoint();
-            var color = Color.FromArgb(Globals.Settings.VisualNav.Display.Lines.Color);
+            var color = Color.FromArgb(UtilityBeltPlugin.Instance.VisualNav.Display.Lines.Color);
 
             if (closestDistance < double.MaxValue) {
-                if (rp != null && Globals.Settings.VisualNav.Display.Lines.Enabled) {
+                if (rp != null && UtilityBeltPlugin.Instance.VisualNav.Display.Lines.Enabled) {
                     DrawLineTo(rp, color);
                 }
 
                 var height = 1.55f;
-                if (Globals.Core.Actions.IsValidObject(Id)) {
-                    height = Globals.Core.Actions.Underlying.ObjectHeight(Id);
+                if (CoreManager.Current.Actions.IsValidObject(Id)) {
+                    height = CoreManager.Current.Actions.Underlying.ObjectHeight(Id);
                 }
                 height = height > 0 ? (height) : (1.55f);
 
-                color = Color.FromArgb(Globals.Settings.VisualNav.Display.UseNPC.Color);
+                color = Color.FromArgb(UtilityBeltPlugin.Instance.VisualNav.Display.UseNPC.Color);
 
-                if (Globals.Settings.VisualNav.Display.UseNPC.Enabled) {
+                if (UtilityBeltPlugin.Instance.VisualNav.Display.UseNPC.Enabled) {
                     DrawText("Talk: " + Name, this, height, color);
                 }
             }
@@ -143,7 +144,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
                         try { shape.Visible = false; } catch { }
                         shape.Dispose();
                     }
-                    Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                    CoreManager.Current.WorldFilter.CreateObject -= WorldFilter_CreateObject;
                 }
                 base.disposed = true;
             }

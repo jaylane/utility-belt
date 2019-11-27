@@ -30,7 +30,7 @@ namespace UtilityBelt.Views {
 
         public ListEditor(MainView mainView, string setting) {
             this.mainView = mainView;
-            this.prop = Globals.Settings.GetOptionProperty(setting);
+            this.prop = UtilityBeltPlugin.Instance.Settings.GetOptionProperty(setting);
             Setting = setting;
 
             VirindiViewService.XMLParsers.Decal3XMLParser parser = new VirindiViewService.XMLParsers.Decal3XMLParser();

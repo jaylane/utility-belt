@@ -3,13 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UtilityBelt.Lib;
 
-namespace UtilityBelt.Lib {
-    public class DoorWatcher : IDisposable {
+namespace UtilityBelt.Tools {
+    [Name("DoorWatcher")]
+    public class DoorWatcher : ToolBase {
         Dictionary<int, bool> doorStates = new Dictionary<int, bool>();
 
-        public DoorWatcher() {
-            Globals.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
+        public DoorWatcher(UtilityBeltPlugin ub, string name) : base(ub, name) {
+            UB.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
         }
 
         public bool GetOpenStatus(int id) {
@@ -17,9 +19,9 @@ namespace UtilityBelt.Lib {
                 return doorStates[id];
             }
 
-            if (!Globals.Core.Actions.IsValidObject(id)) return false;
+            if (!UB.Core.Actions.IsValidObject(id)) return false;
 
-            var wo = Globals.Core.WorldFilter[id];
+            var wo = UB.Core.WorldFilter[id];
 
             if (wo == null) return false;
 
@@ -34,9 +36,9 @@ namespace UtilityBelt.Lib {
                     var id = e.Message.Value<int>("object");
 
                     // make sure the client is aware of this object
-                    if (!Globals.Core.Actions.IsValidObject(id)) return;
+                    if (!UB.Core.Actions.IsValidObject(id)) return;
 
-                    var wo = Globals.Core.WorldFilter[id];
+                    var wo = UB.Core.WorldFilter[id];
 
                     if (wo == null) return;
                     if (wo.ObjectClass != Decal.Adapter.Wrappers.ObjectClass.Door) return;
@@ -55,19 +57,15 @@ namespace UtilityBelt.Lib {
         }
 
         #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing) {
+        protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
-                    Globals.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
+                    UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
+                    base.Dispose(disposing);
                 }
 
                 disposedValue = true;
             }
-        }
-        void IDisposable.Dispose() {
-            Dispose(true);
         }
         #endregion
     }

@@ -10,21 +10,22 @@ using SharedMemory;
 using UtilityBelt.Lib;
 using System.Threading;
 using System.Diagnostics;
+using System.ComponentModel;
 
 namespace UtilityBelt.Tools {
-
-    public class VTankFellowHeals : IDisposable {
+    [Name("VTankFellowHeals")]
+    public class VTankFellowHeals : ToolBase {
         cExternalInterfaceTrustedRelay vTank;
         private BufferReadWrite sharedBuffer;
         DateTime lastThought = DateTime.UtcNow;
         DateTime lastUpdate = DateTime.MinValue;
 
-        public const string BUFFER_NAME = "UtilityBeltyVTankFellowHealsBuffer";
-        public const int UPDATE_TIMEOUT = 6000; // ms
-        public const int UPDATE_INTERVAL = 500; // ms
-        public int BUFFER_SIZE = 1024 * 1024;
+        private const string BUFFER_NAME = "UtilityBeltyVTankFellowHealsBuffer";
+        private const int UPDATE_TIMEOUT = 6000; // ms
+        private const int UPDATE_INTERVAL = 500; // ms
+        private int BUFFER_SIZE = 1024 * 1024;
 
-        public VTankFellowHeals() {
+        public VTankFellowHeals(UtilityBeltPlugin ub, string name) : base(ub, name) {
             vTank = VTankControl.vTankInstance;
 
             try {
@@ -38,7 +39,7 @@ namespace UtilityBelt.Tools {
                 sharedBuffer = new SharedMemory.BufferReadWrite(BUFFER_NAME);
             }
 
-            Globals.Core.CharacterFilter.ChangeVital += CharacterFilter_ChangeVital;
+            UB.Core.CharacterFilter.ChangeVital += CharacterFilter_ChangeVital;
         }
 
         private void CharacterFilter_ChangeVital(object sender, ChangeVitalEventArgs e) {
@@ -53,7 +54,7 @@ namespace UtilityBelt.Tools {
         }
 
         public void UpdateMySharedVitals() {
-            if (!HasVTank() || !Globals.Settings.VTank.VitalSharing) return;
+            if (!HasVTank() || !UB.VTank.VitalSharing) return;
 
             UBPlayerUpdate playerUpdate = GetMyPlayerUpdate();
 
@@ -79,11 +80,11 @@ namespace UtilityBelt.Tools {
                             UBPlayerUpdate update = new UBPlayerUpdate();
                             offset = update.Deserialize(sharedBuffer, offset);
 
-                            if (update.PlayerID != Globals.Core.CharacterFilter.Id && DateTime.UtcNow - update.lastUpdate <= TimeSpan.FromMilliseconds(UPDATE_TIMEOUT)) {
+                            if (update.PlayerID != UB.Core.CharacterFilter.Id && DateTime.UtcNow - update.lastUpdate <= TimeSpan.FromMilliseconds(UPDATE_TIMEOUT)) {
                                 updates.Add(update);
                                 UpdateVTankVitalInfo(update);
                             }
-                            else if (update.PlayerID != Globals.Core.CharacterFilter.Id) {
+                            else if (update.PlayerID != UB.Core.CharacterFilter.Id) {
                                 if (HasVTank()) {
                                     //Util.WriteToChat("Marking player as invalid: " + update.PlayerID.ToString() + " on server " + update.Server);
                                     vTank.HelperPlayerSetInvalid(update.PlayerID);
@@ -129,7 +130,7 @@ namespace UtilityBelt.Tools {
         private void UpdateVTankVitalInfo(UBPlayerUpdate update) {
             try {
                 if (!HasVTank() || update == null) return;
-                if (update.Server != Globals.Core.CharacterFilter.Server) return;
+                if (update.Server != UB.Core.CharacterFilter.Server) return;
 
                 //Util.WriteToChat($"Updating vital info for {update.PlayerID} stam:{update.curStam}/{update.maxStam}");
 
@@ -155,7 +156,7 @@ namespace UtilityBelt.Tools {
 
         public void Think() {
             if (DateTime.UtcNow - lastUpdate > TimeSpan.FromMilliseconds(UPDATE_INTERVAL)) {
-                if (!HasVTank() || !Globals.Settings.VTank.VitalSharing) return;
+                if (!HasVTank() || !UB.VTank.VitalSharing) return;
 
                 UpdateMySharedVitals();
             }
@@ -163,43 +164,39 @@ namespace UtilityBelt.Tools {
 
         private UBPlayerUpdate GetMyPlayerUpdate() {
             return new UBPlayerUpdate {
-                PlayerID = Globals.Core.CharacterFilter.Id,
+                PlayerID = UB.Core.CharacterFilter.Id,
 
                 HasHealthInfo = true,
                 HasManaInfo = true,
                 HasStamInfo = true,
 
-                curHealth = Globals.Core.CharacterFilter.Vitals[CharFilterVitalType.Health].Current,
-                curMana = Globals.Core.CharacterFilter.Vitals[CharFilterVitalType.Mana].Current,
-                curStam = Globals.Core.CharacterFilter.Vitals[CharFilterVitalType.Stamina].Current,
+                curHealth = UB.Core.CharacterFilter.Vitals[CharFilterVitalType.Health].Current,
+                curMana = UB.Core.CharacterFilter.Vitals[CharFilterVitalType.Mana].Current,
+                curStam = UB.Core.CharacterFilter.Vitals[CharFilterVitalType.Stamina].Current,
 
-                maxHealth = Globals.Core.CharacterFilter.EffectiveVital[CharFilterVitalType.Health],
-                maxMana = Globals.Core.CharacterFilter.EffectiveVital[CharFilterVitalType.Mana],
-                maxStam = Globals.Core.CharacterFilter.EffectiveVital[CharFilterVitalType.Stamina],
+                maxHealth = UB.Core.CharacterFilter.EffectiveVital[CharFilterVitalType.Health],
+                maxMana = UB.Core.CharacterFilter.EffectiveVital[CharFilterVitalType.Mana],
+                maxStam = UB.Core.CharacterFilter.EffectiveVital[CharFilterVitalType.Stamina],
 
                 lastUpdate = DateTime.UtcNow,
 
-                Server = Globals.Core.CharacterFilter.Server
+                Server = UB.Core.CharacterFilter.Server
             };
         }
 
         #region IDisposable Support
-        private bool disposedValue = false;
-
-        protected virtual void Dispose(bool disposing) {
+        protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
+                    UB.Core.CharacterFilter.ChangeVital -= CharacterFilter_ChangeVital;
+
                     sharedBuffer.Dispose();
 
-                    Globals.Core.CharacterFilter.ChangeVital -= CharacterFilter_ChangeVital;
+                    base.Dispose(disposing);
                 }
                 
                 disposedValue = true;
             }
-        }
-
-        public void Dispose() {
-            Dispose(true);
         }
         #endregion
     }

@@ -34,8 +34,10 @@ namespace UtilityBelt.Lib.DungeonMaps {
         public int dungeonHeight = 0;
         public List<uint> visitedTiles = new List<uint>();
         private List<string> drawNavLines = new List<string>();
+        private UtilityBeltPlugin UB;
 
         public Dungeon(uint landCell) {
+            UB = UtilityBeltPlugin.Instance;
             LandBlockId = landCell & 0xFFFF0000;
             LandCellId = landCell;
 
@@ -50,7 +52,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
         internal void LoadCells() {
             try {
                 int cellCount;
-                FileService service = Globals.Core.Filter<FileService>();
+                FileService service = UB.Core.Filter<FileService>();
 
                 try {
                     cellCount = BitConverter.ToInt32(service.GetCellFile((int)(65534 + LandBlockId)), 4);
@@ -108,7 +110,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
             drawGfx.RotateTransform(rotation);
             drawGfx.ScaleTransform(scale, scale);
             drawGfx.TranslateTransform(mapDrawOffsetX, mapDrawOffsetY);
-            var portals = Globals.Core.WorldFilter.GetByObjectClass(ObjectClass.Portal);
+            var portals = UB.Core.WorldFilter.GetByObjectClass(ObjectClass.Portal);
 
             ColorMatrix matrix = null;
             ColorMatrix visitedMatrix = new ColorMatrix(new float[][] {
@@ -126,12 +128,12 @@ namespace UtilityBelt.Lib.DungeonMaps {
             drawCount = 0;
             foreach (var zLayer in zLayers.Keys) {
                 // floors more than one level above your char are not drawn
-                if (Globals.Core.Actions.LocationZ - zLayer < -10) {
+                if (UB.Core.Actions.LocationZ - zLayer < -10) {
                     continue;
                 }
 
                 // floors more than four levels above your char are not drawn
-                if (Globals.Core.Actions.LocationZ - zLayer > 24) {
+                if (UB.Core.Actions.LocationZ - zLayer > 24) {
                     continue;
                 }
 
@@ -150,12 +152,12 @@ namespace UtilityBelt.Lib.DungeonMaps {
                     var isVisited = false;
 
                     //visited cells
-                    if (Globals.Settings.DungeonMaps.ShowVisitedTiles && visitedTiles.Contains((uint)(cell.CellId << 16 >> 16))) {
+                    if (UB.DungeonMaps.ShowVisitedTiles && visitedTiles.Contains((uint)(cell.CellId << 16 >> 16))) {
                         isVisited = true;
                     }
                     // floors directly above your character
-                    if (Globals.Core.Actions.LocationZ - cell.Z < -3) {
-                        float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) / 6) * 0.5F;
+                    if (UB.Core.Actions.LocationZ - cell.Z < -3) {
+                        float b = 1.0F - (float)(Math.Abs(UB.Core.Actions.LocationZ - cell.Z) / 6) * 0.5F;
                         matrix = new ColorMatrix(new float[][]{
                             new float[] {1, 0, 0, 0, 0},
                             new float[] {0, 1, 0, 0, 0},
@@ -165,7 +167,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
                         });
                     }
                     // current floor
-                    else if (Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) < 3) {
+                    else if (Math.Abs(UB.Core.Actions.LocationZ - cell.Z) < 3) {
                         float b = 1.0F;
                         matrix = new ColorMatrix(new float[][]{
                             new float[] {b, 0, 0, 0, 0},
@@ -177,7 +179,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
                     }
                     // floors below
                     else {
-                        float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) / 6) * 0.4F;
+                        float b = 1.0F - (float)(Math.Abs(UB.Core.Actions.LocationZ - cell.Z) / 6) * 0.4F;
                         matrix = new ColorMatrix(new float[][]{
                             new float[] {b, 0, 0, 0, 0},
                             new float[] {0, b, 0, 0, 0},
@@ -188,7 +190,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
                     }
 
                     // only draw isVisited tiles on the current floor..
-                    if (isVisited && Math.Abs(Globals.Core.Actions.LocationZ - cell.Z) < 3) {
+                    if (isVisited && Math.Abs(UB.Core.Actions.LocationZ - cell.Z) < 3) {
                         using (Bitmap rotatedVisited = new Bitmap(rotated)) {
                             using (var rotatedGfx = Graphics.FromImage(rotatedVisited)) {
                                 attributes.SetColorMatrix(visitedMatrix);
@@ -233,7 +235,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
         }
 
         private void DrawMarkers(Graphics drawGfx, int zLayer, int rotation) {
-            foreach (var wo in Globals.Core.WorldFilter.GetLandscape()) {
+            foreach (var wo in UB.Core.WorldFilter.GetLandscape()) {
                 if (!ShouldDrawMarker(wo)) continue;
 
                 var objPos = wo.Offset();
@@ -255,12 +257,12 @@ namespace UtilityBelt.Lib.DungeonMaps {
 
         private bool ShouldDrawMarker(WorldObject wo) {
             // make sure the client knows about this object
-            if (!Globals.Core.Actions.IsValidObject(wo.Id)) return false;
+            if (!UB.Core.Actions.IsValidObject(wo.Id)) return false;
 
             // too far?
-            if (Globals.Core.WorldFilter.Distance(wo.Id, Globals.Core.CharacterFilter.Id) * 240 > 300) return false;
+            if (UB.Core.WorldFilter.Distance(wo.Id, UB.Core.CharacterFilter.Id) * 240 > 300) return false;
 
-            return Globals.Settings.DungeonMaps.Display.Markers.ShouldDraw(wo);
+            return UB.DungeonMaps.Display.Markers.ShouldDraw(wo);
         }
 
         private void DrawObjectClassMarker(WorldObject wo, Graphics gfx, float x, float y, float z, int rotation) {
@@ -271,8 +273,8 @@ namespace UtilityBelt.Lib.DungeonMaps {
                 ColorMatrix matrix = null;
 
                 // floors directly above your character
-                if (Globals.Core.Actions.LocationZ - z < -3) {
-                    float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - z) / 6) * 0.5F;
+                if (UB.Core.Actions.LocationZ - z < -3) {
+                    float b = 1.0F - (float)(Math.Abs(UB.Core.Actions.LocationZ - z) / 6) * 0.5F;
                     brush.Color = Color.FromArgb((int)(b * 255), brush.Color.R, brush.Color.G, brush.Color.B);
                     matrix = new ColorMatrix(new float[][]{
                             new float[] {1, 0, 0, 0, 0},
@@ -283,12 +285,12 @@ namespace UtilityBelt.Lib.DungeonMaps {
                         });
                 }
                 // current floor
-                else if (Math.Abs(Globals.Core.Actions.LocationZ - z) < 3) {
+                else if (Math.Abs(UB.Core.Actions.LocationZ - z) < 3) {
 
                 }
                 // floors below
                 else {
-                    float b = 1.0F - (float)(Math.Abs(Globals.Core.Actions.LocationZ - z) / 6) * 0.4F;
+                    float b = 1.0F - (float)(Math.Abs(UB.Core.Actions.LocationZ - z) / 6) * 0.4F;
                     var ca = (int)Math.Max(Math.Min((int)(b * 255), 255), 0);
                     brush.Color = Color.FromArgb(ca, brush.Color.R, brush.Color.G, brush.Color.B);
                     matrix = new ColorMatrix(new float[][]{
@@ -304,9 +306,9 @@ namespace UtilityBelt.Lib.DungeonMaps {
                     attributes.SetColorMatrix(matrix);
                 }
 
-                var color = Color.FromArgb(Globals.Settings.DungeonMaps.Display.Markers.GetMarkerColor(wo));
-                var size = Globals.Settings.DungeonMaps.Display.Markers.GetSize(wo);
-                var useIcon = Globals.Settings.DungeonMaps.Display.Markers.ShouldUseIcon(wo);
+                var color = Color.FromArgb(UB.DungeonMaps.Display.Markers.GetMarkerColor(wo));
+                var size = UB.DungeonMaps.Display.Markers.GetSize(wo);
+                var useIcon = UB.DungeonMaps.Display.Markers.ShouldUseIcon(wo);
                 var a = (int)Math.Min(Math.Max(color.A * (float)((float)brush.Color.A / 255f), 0), 255);
 
                 brush.Color = Color.FromArgb(a, color.R, color.G, color.B);
@@ -335,7 +337,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
             var onYAxis = Math.Abs(wo.Orientation().W) > 0.6 && Math.Abs(wo.Orientation().W) < 0.8;
 
             // currently we are only drawing closed doors...
-            if (!Globals.DoorWatcher.GetOpenStatus(wo.Id)) {
+            if (!UB.DoorWatcher.GetOpenStatus(wo.Id)) {
                 if (onYAxis) {
                     gfx.FillRectangle(brush, x - 0.2f, y - 1.5f, 0.4f, 3);
                 }
@@ -346,14 +348,14 @@ namespace UtilityBelt.Lib.DungeonMaps {
         }
 
         private void DrawPlayerMarker(Graphics gfx, int rotation) {
-            if (!Globals.Settings.DungeonMaps.Display.Markers.You.Enabled) return;
+            if (!UB.DungeonMaps.Display.Markers.You.Enabled) return;
 
-            var playerXOffset = -(float)Globals.Core.Actions.LocationX;
-            var playerYOffset = (float)Globals.Core.Actions.LocationY;
-            var size = Globals.Settings.DungeonMaps.Display.Markers.You.Size;
+            var playerXOffset = -(float)UB.Core.Actions.LocationX;
+            var playerYOffset = (float)UB.Core.Actions.LocationY;
+            var size = UB.DungeonMaps.Display.Markers.You.Size;
 
-            if (Globals.Settings.DungeonMaps.Display.Markers.You.UseIcon) {
-                var icon = IconCache.Get(Globals.Core.WorldFilter[Globals.Core.CharacterFilter.Id].Icon);
+            if (UB.DungeonMaps.Display.Markers.You.UseIcon) {
+                var icon = IconCache.Get(UB.Core.WorldFilter[UB.Core.CharacterFilter.Id].Icon);
                 var rect = new RectangleF(-(size / 2), -(size / 2), size, size);
 
                 // keep player icon always facing up relative to the map window
@@ -364,7 +366,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
                 gfx.TranslateTransform(-playerXOffset, -playerYOffset);
             }
             else {
-                playerBrush.Color = Color.FromArgb(Globals.Settings.DungeonMaps.Display.Markers.You.Color);
+                playerBrush.Color = Color.FromArgb(UB.DungeonMaps.Display.Markers.You.Color);
                 gfx.FillEllipse(playerBrush, playerXOffset - (size / 2), playerYOffset - (size / 2), size, size);
             }
         }
@@ -376,7 +378,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
         }
 
         private void DrawNavLines(Graphics drawGfx, int zLayer) {
-            var route = Globals.VisualVTankRoutes.currentRoute;
+            var route = UB.VisualNav.currentRoute;
             if (route == null) return;
 
             switch (route.NavType) {
@@ -396,19 +398,19 @@ namespace UtilityBelt.Lib.DungeonMaps {
 
             // sticky point
             if (allPoints.Length == 1 && route.NavType == VTNav.eNavType.Circular) {
-                if (!Globals.Settings.DungeonMaps.Display.VisualNavStickyPoint.Enabled) return;
+                if (!UB.DungeonMaps.Display.VisualNavStickyPoint.Enabled) return;
 
                 VTNPoint point = allPoints[0];
                 var landblock = Geometry.GetLandblockFromCoordinates((float)point.EW, (float)point.NS);
                 var pointOffset = Geometry.LandblockOffsetFromCoordinates(LandBlockId, (float)point.EW, (float)point.NS);
 
-                navPen.Color = Color.FromArgb(Globals.Settings.DungeonMaps.Display.VisualNavStickyPoint.Color);
+                navPen.Color = Color.FromArgb(UB.DungeonMaps.Display.VisualNavStickyPoint.Color);
                 drawGfx.DrawEllipse(navPen, -pointOffset.X - 1.5f, pointOffset.Y - 1.5f, 3f, 3f);
                 return;
             }
 
             // circular / once / linear routes.. currently not discriminating
-            if (!Globals.Settings.DungeonMaps.Display.VisualNavLines.Enabled) return;
+            if (!UB.DungeonMaps.Display.VisualNavLines.Enabled) return;
          
             for (var i = route.NavOffset; i < route.points.Count; i++) {
                 var point = route.points[i];
@@ -442,7 +444,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
                     if (prevZ < pointZ && !pointIsOnActiveLayer) continue;
                     if (prevZ > pointZ && !prevIsOnActiveLayer) continue;
 
-                    navPen.Color = Color.FromArgb(Globals.Settings.DungeonMaps.Display.VisualNavLines.Color);
+                    navPen.Color = Color.FromArgb(UB.DungeonMaps.Display.VisualNavLines.Color);
 
                     drawGfx.DrawLine(navPen, -prevOffset.X, prevOffset.Y, -pointOffset.X, pointOffset.Y);
 
@@ -455,7 +457,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
             var cells = new List<DungeonCell>();
             foreach (var zKey in zLayers.Keys) {
                 foreach (var cell in zLayers[zKey]) {
-                    if (-Math.Round(cell.X / 10) == Math.Round(Globals.Core.Actions.LocationX / 10) && Math.Round(cell.Y / 10) == Math.Round(Globals.Core.Actions.LocationY / 10)) {
+                    if (-Math.Round(cell.X / 10) == Math.Round(UB.Core.Actions.LocationX / 10) && Math.Round(cell.Y / 10) == Math.Round(UB.Core.Actions.LocationY / 10)) {
                         cells.Add(cell);
                     }
                 }
