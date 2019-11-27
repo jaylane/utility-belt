@@ -207,18 +207,19 @@ namespace UtilityBelt.Views {
                     var summaryAttributes = prop.GetCustomAttributes(typeof(SummaryAttribute), true);
                     var defaultValueAttributes = prop.GetCustomAttributes(typeof(DefaultValueAttribute), true);
 
+                    if (obj is SectionBase) {
+                        ((SectionBase)obj).PropertyChanged += (object sender, PropertyChangedEventArgs e) => {
+                            var fullName = history + e.PropertyName;
 
-                    ((SectionBase)obj).PropertyChanged += (object sender, PropertyChangedEventArgs e) => {
-                        var fullName = history + e.PropertyName;
-
-                        for (var i = 0; i < SettingsList.RowCount; i++) {
-                            var row = ((HudList.HudListRowAccessor)SettingsList[i]);
-                            if (((HudStaticText)row[0]).Text == fullName) {
-                                ((HudStaticText)row[1]).Text = UB.Settings.DisplayValue(fullName);
-                                break;
+                            for (var i = 0; i < SettingsList.RowCount; i++) {
+                                var row = ((HudList.HudListRowAccessor)SettingsList[i]);
+                                if (((HudStaticText)row[0]).Text == fullName) {
+                                    ((HudStaticText)row[1]).Text = UB.Settings.DisplayValue(fullName);
+                                    break;
+                                }
                             }
-                        }
-                    };
+                        };
+                    }
 
                     if (defaultValueAttributes.Length > 0) {
                         var row = SettingsList.AddRow();
