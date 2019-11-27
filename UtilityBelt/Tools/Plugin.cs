@@ -321,6 +321,22 @@ namespace UtilityBelt.Tools {
             UB_vendor(command + " " + args.Groups["params"].Value);
         }
         #endregion
+        #region /ub autostack
+        [Summary("Insta-Auto Stack dev test.")]
+        [Usage("/ub autostack")]
+        [CommandPattern("autostack", @"^$")]
+        public void DoAutoStack(string command, Match args) {
+            UBHelper.InventoryManager.AutoStack();
+        }
+        #endregion
+        #region /ub unstack
+        [Summary("Insta-UnStack dev test.")]
+        [Usage("/ub unstack")]
+        [CommandPattern("unstack", @"^$")]
+        public void DoUnStack(string command, Match args) {
+            UBHelper.InventoryManager.UnStack();
+        }
+        #endregion
         #endregion
 
         public Plugin(UtilityBeltPlugin ub, string name) : base(ub, name) {
