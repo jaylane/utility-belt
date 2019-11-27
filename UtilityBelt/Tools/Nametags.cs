@@ -16,12 +16,26 @@ namespace UtilityBelt.Tools {
             if (Globals.Settings.Nametags.Enabled) Enable();
         }
         private static void Enable() {
-            enabled = true;
-            Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
-            Globals.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
-            Globals.Core.RenderFrame += Core_RenderFrame;
-            evaluate_tags_time = DateTime.MinValue;
+            //copy pasta
+            if (Globals.Core.CharacterFilter.LoginStatus != 0)
+                EnableReal();
+            else
+                Globals.Core.CharacterFilter.Login += CharacterFilter_Login;
         }
+        private static void EnableReal() {
+            if (Globals.Settings.Nametags.Enabled) {
+                enabled = true;
+                Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
+                Globals.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
+                Globals.Core.RenderFrame += Core_RenderFrame;
+                evaluate_tags_time = DateTime.MinValue;
+            }
+        }
+        private static void CharacterFilter_Login(object sender, LoginEventArgs e) {
+            Globals.Core.CharacterFilter.Login -= CharacterFilter_Login;
+            EnableReal();
+        }
+
         public static void Dispose() {
             Globals.Settings.Nametags.PropertyChanged -= Nametags_PropertyChanged;
             if (enabled) Disable();
