@@ -70,6 +70,8 @@ namespace UtilityBelt {
         internal MapView MapView;
         internal Settings Settings;
 
+        internal List<ToolBase> LoadedTools = new List<ToolBase>();
+
         #region Tools
         public Assessor Assessor { get; private set; }
         public AutoSalvage AutoSalvage { get; private set; }
@@ -174,13 +176,13 @@ namespace UtilityBelt {
             MainView = new MainView(this);
             MapView = new MapView(this);
 
+            LoadTools();
+            Settings.Load();
             InitTools();
             InitCommands();
 
             MainView.Init();
             MapView.Init();
-
-            Settings.Load();
 
             Logger.Debug($"UB Initialized {DateTime.UtcNow} v{Util.GetVersion(true)}.");
 
@@ -190,10 +192,22 @@ namespace UtilityBelt {
         }
 
         /// <summary>
+        /// Called once all tools and settings have been loaded, this calls Init() on each tool.
+        /// </summary>
+        private void InitTools() {
+            foreach (var tool in LoadedTools) {
+                try {
+                    tool.Init();
+                }
+                catch (Exception ex) { Logger.LogException(ex); }
+            }
+        }
+
+        /// <summary>
         ///  Called once on CharacterFiler_Login (or on a hot reload), this will iterate over all properties in the
         ///  class and automatically populate properties that inherit from ToolBase with a newly created instance.
         /// </summary>
-        private void InitTools() {
+        private void LoadTools() {
             var toolProps = GetToolProps();
 
             foreach (var toolProp in toolProps) {
@@ -201,11 +215,13 @@ namespace UtilityBelt {
                     var nameAttrs = toolProp.PropertyType.GetCustomAttributes(typeof(NameAttribute), true);
 
                     if (nameAttrs.Length == 1) {
-                        //Logger.Debug($"Loading toolProp: {toolProp.PropertyType} with name {((NameAttribute)nameAttrs[0]).Name}");
-                        toolProp.SetValue(this, Activator.CreateInstance(toolProp.PropertyType, new object[] {
+                        var tool = Activator.CreateInstance(toolProp.PropertyType, new object[] {
                             this,
                             ((NameAttribute)nameAttrs[0]).Name
-                        }), null);
+                        });
+
+                        toolProp.SetValue(this, tool, null);
+                        LoadedTools.Add((ToolBase)tool);
 
                         Settings.SetupSection((SectionBase)toolProp.GetValue(this, null)); 
                     }
@@ -333,15 +349,11 @@ namespace UtilityBelt {
             try {
                 Core.CommandLineText -= Core_CommandLineText;
 
-                var toolProps = GetToolProps();
-                foreach (var toolProp in toolProps) {
+                foreach (var tool in LoadedTools) {
                     try {
-                        if (toolProp.GetValue(this, null) == null) return;
-
-                        MethodInfo disposeMethod = toolProp.PropertyType.GetMethod("Dispose");
-                        disposeMethod.Invoke(toolProp.GetValue(this, null), null);
+                        tool.Dispose();
                     }
-                    catch(Exception ex) { Logger.LogException(ex); }
+                    catch (Exception ex) { Logger.LogException(ex); }
                 }
 
                 MainView.Dispose();

@@ -15,6 +15,10 @@ namespace UtilityBelt.Lib {
             Name = name;
         }
 
+        public virtual void Init() {
+        
+        }
+
         protected void LogDebug(string message) {
             Logger.Debug(Name + ": " + message);
         }

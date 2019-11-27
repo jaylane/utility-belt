@@ -175,6 +175,10 @@ namespace UtilityBelt.Tools {
 
         public VisualNav(UtilityBeltPlugin ub, string name) : base(ub, name) {
             Display = new VisualNavDisplayOptions(this);
+        }
+
+        public override void Init() {
+            base.Init();
             UB.Core.CharacterFilter.ChangePortalMode += CharacterFilter_ChangePortalMode;
 
             var server = UB.Core.CharacterFilter.Server;
@@ -186,13 +190,16 @@ namespace UtilityBelt.Tools {
                 profilesWatcher.Filter = $"{server}_{character}.cdf";
                 profilesWatcher.Changed += Profiles_Changed;
                 profilesWatcher.EnableRaisingEvents = true;
-            } else {
+            }
+            else {
                 LogError($"{Util.GetVTankProfilesDirectory()} does not exist!");
                 return;
             }
 
+            UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
+
             Display.PropertyChanged += (s, e) => { needsDraw = true; };
-            //DrawCurrentRoute();
+            DrawCurrentRoute();
 
             uTank2.PluginCore.PC.NavRouteChanged += PC_NavRouteChanged;
 
@@ -202,6 +209,15 @@ namespace UtilityBelt.Tools {
                     DrawCurrentRoute();
                 }
             };
+        }
+
+        private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
+            try {
+                UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
+
+                DrawCurrentRoute();
+            }
+            catch(Exception ex) { Logger.LogException(ex); }
         }
 
         private void PC_NavRouteChanged() {
