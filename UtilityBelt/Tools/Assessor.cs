@@ -43,11 +43,11 @@ namespace UtilityBelt.Tools {
                 int thisid;
                 tryagain:
                 thisid = IdentQueue.Dequeue();
-                if (Globals.Core.WorldFilter[thisid] != null && !Globals.Core.WorldFilter[thisid].HasIdData) {
+                if (Globals.Core.WorldFilter[thisid] != null) {
                     lastIdentLimit = DateTime.UtcNow;
                     m(thisid);
                 } else {
-                    Logger.Debug($"Assessor: 0x{thisid} Failed");
+                    Logger.Debug($"Assessor: 0x{thisid:X8} Failed");
                     if (IdentQueue.Count > 0)
                         goto tryagain;
                 }
