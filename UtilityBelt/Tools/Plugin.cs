@@ -326,7 +326,24 @@ namespace UtilityBelt.Tools {
         [Usage("/ub autostack")]
         [CommandPattern("autostack", @"^$")]
         public void DoAutoStack(string command, Match args) {
-            UBHelper.InventoryManager.AutoStack();
+            if (UBHelper.InventoryManager.AutoStack()) {
+                Util.WriteToChat("AutoStack did something!");
+            } else {
+                Util.WriteToChat("AutoStack did nothing");
+            }
+        }
+        #endregion
+        #region /ub autocram
+        [Summary("Insta-Auto Cram dev test.")]
+        [Usage("/ub autocram")]
+        [CommandPattern("autocram", @"^$")]
+        public void DoAutoCram(string command, Match args) {
+            if (UBHelper.InventoryManager.AutoCram()) {
+                Util.WriteToChat("AutoCram did something!");
+            }
+            else {
+                Util.WriteToChat("AutoCram did nothing");
+            }
         }
         #endregion
         #region /ub unstack
