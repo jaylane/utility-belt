@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilityBelt", "UtilityBelt\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2785F013-4EB4-4F1D-A219-B7C2A07BB726}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
 		.gitlab-ci.yml = .gitlab-ci.yml
 		Changelog.md = Changelog.md
 		Installer\Install.nsi = Installer\Install.nsi
