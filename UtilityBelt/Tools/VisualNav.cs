@@ -130,9 +130,9 @@ namespace UtilityBelt.Tools {
 
     public class VisualNav : ToolBase {
         private string currentRoutePath = "";
-        public VTNavRoute currentRoute = null;
+        internal VTNavRoute currentRoute = null;
         private bool forceUpdate = false;
-        public bool needsDraw = false;
+        internal bool needsDraw = false;
 
         FileSystemWatcher navFileWatcher = null;
         FileSystemWatcher profilesWatcher = null;
@@ -192,7 +192,7 @@ namespace UtilityBelt.Tools {
             }
 
             Display.PropertyChanged += (s, e) => { needsDraw = true; };
-            DrawCurrentRoute();
+            //DrawCurrentRoute();
 
             uTank2.PluginCore.PC.NavRouteChanged += PC_NavRouteChanged;
 

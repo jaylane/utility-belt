@@ -318,7 +318,7 @@ namespace UtilityBelt.Tools {
         [Example("/ub vendor opencancel", "Quietly cancels the last /ub vendor open* command")]
         [CommandPattern("vendor", @"^ *(?<params>(openp? .+|buy(all)?|sell(all)?|clearbuy|clearsell|opencancel)) *$")]
         public void DoVendor(string command, Match args) {
-            UB_vendor(command + " " + args.Groups["params"].Value);
+            UB_vendor(args.Groups["params"].Value);
         }
         #endregion
         #endregion
@@ -464,6 +464,7 @@ namespace UtilityBelt.Tools {
                 Util.WriteToChat("Usage: /ub vendor {open[p] [vendorname,vendorid,vendorhex],opencancel,buyall,sellall,clearbuy,clearsell}");
                 return;
             }
+
             switch (parameter[0]) {
                 case "buy":
                 case "buyall":
