@@ -5,9 +5,11 @@ using System.Text;
 using System.Runtime.InteropServices;
 using Decal.Adapter.Wrappers;
 using UtilityBelt.Lib.Constants;
+using UtilityBelt.Lib;
 
 namespace UtilityBelt.Tools {
-    public class Assessor : IDisposable {
+    [Name("Assessor")]
+    public class Assessor : ToolBase {
         private bool disposed = false;
         private static DateTime lastIdentLimit = DateTime.MinValue;
         private static readonly Queue<int> IdentQueue = new Queue<int>();
@@ -35,15 +37,18 @@ namespace UtilityBelt.Tools {
             ObjectClass.Key
         };
 
-        public Assessor() : base() {
+        public Assessor(UtilityBeltPlugin ub, string name) : base(ub, name) {
             m = (r)Marshal.GetDelegateForFunctionPointer((IntPtr)(mask<<4), typeof(r));
+
+            UB.Core.RenderFrame += Core_RenderFrame;
         }
-        public unsafe void Think() {
+
+        private void Core_RenderFrame(object sender, EventArgs e) {
             if (IdentQueue.Count > 0 && DateTime.UtcNow - lastIdentLimit > TimeSpan.FromMilliseconds(50)) {
                 int thisid;
                 tryagain:
                 thisid = IdentQueue.Dequeue();
-                if (Globals.Core.WorldFilter[thisid] != null) {
+                if (UB.Core.WorldFilter[thisid] != null) {
                     lastIdentLimit = DateTime.UtcNow;
                     m(thisid);
                 } else {
@@ -53,6 +58,7 @@ namespace UtilityBelt.Tools {
                 }
             }
         }
+
         public void Queue(int f) {
             if (f != 0 && !IdentQueue.Contains(f))
                 IdentQueue.Enqueue(f);
@@ -63,7 +69,7 @@ namespace UtilityBelt.Tools {
             var itemsNeedingData = 0;
 
             foreach (var id in items) {
-                var wo = Globals.Core.WorldFilter[id];
+                var wo = UB.Core.WorldFilter[id];
                 if (wo != null && !wo.HasIdData && ItemNeedsIdData(wo)) {
                     needsData = true;
                     itemsNeedingData++;
@@ -82,7 +88,7 @@ namespace UtilityBelt.Tools {
         public int GetNeededIdCount(IEnumerable<int> items) {
             var itemsNeedingData = 0;
             foreach (var id in items) {
-                var wo = Globals.Core.WorldFilter[id];
+                var wo = UB.Core.WorldFilter[id];
                 if (wo != null && !wo.HasIdData && ItemNeedsIdData(wo)) {
                     itemsNeedingData++;
                 }
@@ -95,7 +101,7 @@ namespace UtilityBelt.Tools {
             var itemsNeedingData = 0;
 
             foreach (var id in items) {
-                var wo = Globals.Core.WorldFilter[id];
+                var wo = UB.Core.WorldFilter[id];
 
                 if (wo != null && !wo.HasIdData && ItemNeedsIdData(wo)) {
                     Queue(wo.Id);
@@ -111,14 +117,15 @@ namespace UtilityBelt.Tools {
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private delegate bool r(int a);
         private readonly r m = null;
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
 
-        protected virtual void Dispose(bool disposing) {
+        //
+
+        protected override void Dispose(bool disposing) {
+            base.Dispose(disposing);
+
             if (!disposed) {
                 if (disposing) {
+                    UB.Core.RenderFrame -= Core_RenderFrame;
                 }
                 disposed = true;
             }

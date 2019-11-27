@@ -96,9 +96,9 @@ namespace UtilityBelt.Lib.Settings
 
             var prop = GetType().GetProperty(propName);
 
-            if (direct && prop != null && Globals.Settings != null && Globals.Settings.ShouldSave) {
+            if (direct && prop != null && UtilityBeltPlugin.Instance.Settings != null && UtilityBeltPlugin.Instance.Settings.ShouldSave) {
                 var name = $"{GetAncestry()}{propName}";
-                Logger.Debug($"{name} = {Globals.Settings.DisplayValue(name, true)}");
+                Logger.Debug($"{name} = {UtilityBeltPlugin.Instance.Settings.DisplayValue(name, true)}");
             }
 
             if (parent != null) parent.OnPropertyChanged(Name, false);

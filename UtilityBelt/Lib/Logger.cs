@@ -20,8 +20,8 @@ namespace UtilityBelt {
 
         public static void Debug(string message) {
             try {
-                if (Globals.Settings != null && Globals.Settings.Plugin.Debug) {
-                    Globals.Host.Actions.AddChatText("[UB] " + message, 5);
+                if (UtilityBeltPlugin.Instance != null && UtilityBeltPlugin.Instance.Plugin != null && UtilityBeltPlugin.Instance.Plugin.Debug) {
+                    Util.WriteToChat(message);
                 }
                 Util.WriteToDebugLog(message);
             }
@@ -30,8 +30,8 @@ namespace UtilityBelt {
 
         internal static void Error(string message) {
             try {
-                Globals.Host.Actions.AddChatText("[UB] Error: " + message, 2);
                 Util.WriteToDebugLog(message);
+                Util.WriteToChat("Error: " + message, 15);
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

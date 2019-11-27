@@ -5,12 +5,11 @@ using System.Linq;
 using Decal.Adapter;
 using Decal.Adapter.Wrappers;
 using System.Text.RegularExpressions;
+using UtilityBelt.Lib;
 
 namespace UtilityBelt.Tools {
-    class Counter : IDisposable {
-
-
-        private bool disposed = false;
+    [Name("Counter")]
+    public class Counter : ToolBase {
         string utlProfile = "";
         private object lootProfile;
         List<WorldObject> idItems = new List<WorldObject>();
@@ -23,145 +22,137 @@ namespace UtilityBelt.Tools {
         bool doThink;
         bool doDebug;
 
-        public Counter() {
-            CoreManager.Current.CommandLineText += new EventHandler<ChatParserInterceptEventArgs>(Current_CommandLineText);
+        #region Commands
+        #region /ub count
+        [Summary("Count items in your inventory based on a name or profile.")]
+        [Usage("/ub count {item <name> | profile <lootProfile> | player <range>} [debug] [think]")]
+        [Example("/ub count Prismatic Taper", "Counts the total number of Prismatic Tapers in your inventory.")]
+        [Example("/ub count recomp.utl", "Counts the number of items matching recomp.utl in your inventory, thinking to yourself when finished")]
+        [CommandPattern("count", @"^ *(?<Command>(item|profile|player)) (?<Name>.*?) ?(?<Options>(debug|think|\s)*)$")]
+        public void DoCount(string command, Match args) {
+            if (args.Groups["Command"].Value.ToLower() == "item") {
+                string item = args.Groups["Name"].Value;
+                if (args.Groups["Options"].Value.ToLower().Contains("think")) {
+                    doThink = true;
+                }
+                if (args.Groups["Options"].Value.ToLower().Contains("debug")) {
+                    doDebug = true;
+                }
+
+                Regex searchRegex = new Regex(item, RegexOptions.IgnoreCase);
+                if (doDebug) Util.ThinkOrWrite("Regex String: " + searchRegex);
+                int stackCount = 0;
+                int totalCount = 0;
+                foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetInventory()) {
+                    string itemName = Util.GetObjectName(wo.Id);
+                    if (searchRegex.IsMatch(itemName)) {
+                        if (doDebug) Util.ThinkOrWrite("Matched Item: " + itemName);
+                        stackCount = wo.Values(LongValueKey.StackCount, 1);
+                        if (!itemList.ContainsKey(itemName)) {
+                            itemList[itemName] = stackCount;
+                            totalCount += stackCount;
+                            if (doDebug) Util.ThinkOrWrite("Count In Progress: " + itemName + " - " + stackCount);
+                        }
+                        else if (itemList[itemName] > 0) {
+                            itemList[itemName] += stackCount;
+                            totalCount += stackCount;
+                            if (doDebug) Util.ThinkOrWrite("Count In Progress: " + itemName + " - " + stackCount);
+                        }
+                        else {
+                            continue;
+                        }
+                    }
+                    else {
+                        //Util.WriteToChat("no match for " + item);
+                    }
+                }
+                foreach (KeyValuePair<string, int> entry in itemList) {
+                    Util.ThinkOrWrite("Item Count: " + entry.Key + " - " + entry.Value.ToString(), doThink);
+                }
+
+                Util.ThinkOrWrite("Total Item Count: " + totalCount.ToString(), doThink);
+
+                itemList.Clear();
+                doThink = false;
+                doDebug = false;
+            }
+            else if (args.Groups["Command"].Value.ToLower() == "profile") {
+                utlProfile = args.Groups["Name"].Value.Trim();
+
+                Util.WriteToChat(utlProfile);
+
+                var pluginPath = Path.Combine(Util.GetPluginDirectory(), @"itemgiver");
+                var profilePath = Path.Combine(pluginPath, utlProfile);
+
+                if (!File.Exists(profilePath)) {
+                    WriteToChat("utl path: " + profilePath);
+                    WriteToChat("Profile does not exist: " + utlProfile.ToString());
+                    return;
+                }
+
+                var hasLootCore = false;
+                if (lootProfile == null) {
+                    try {
+                        lootProfile = new VTClassic.LootCore();
+                        hasLootCore = true;
+                    }
+                    catch (Exception ex) { Logger.LogException(ex); }
+
+                    if (!hasLootCore) {
+                        LogError("Unable to load VTClassic, something went wrong.");
+                        return;
+                    }
+                }
+                ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
+                isRunning = true;
+                lastScanUpdate = DateTime.UtcNow;
+                matchedWOList = CountItems();
+            }
+            else if (args.Groups["Command"].Value.ToLower() == "player") {
+                int playerCount = 0;
+                string rangeString = args.Groups["Name"].Value;
+
+                if (!Int32.TryParse(rangeString, out int rangeInt)) {
+                    LogError("bad player count range: " + rangeString);
+                    return;
+                }
+
+                foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetLandscape()) {
+                    if (wo.Type == 1 && (CoreManager.Current.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, wo.Id) * 240) < rangeInt) {
+                        Util.WriteToChat("object : " + wo.Name + " id: " + wo.Id + " type: " + wo.Type);
+                        playerCount++;
+                    }
+                }
+                Util.Think("Player Count: " + " " + playerCount.ToString());
+            }
+
+        }
+        #endregion
+        #endregion
+
+        public Counter(UtilityBeltPlugin ub, string name) : base(ub, name) {
+            UB.Core.RenderFrame += Core_RenderFrame;
         }
 
-        public void Think() {
+        public void Core_RenderFrame(object sender, EventArgs e) {
             try {
-                if (DateTime.UtcNow - lastScanUpdate > TimeSpan.FromSeconds(10) && isRunning) {
+                if (isRunning && DateTime.UtcNow - lastScanUpdate > TimeSpan.FromSeconds(10)) {
                     lastScanUpdate = DateTime.UtcNow;
                     matchedWOList = CountItems();
-                    Util.WriteToChat("Items remaining to ID: " + idItems.Count());
+                    WriteToChat("Items remaining to ID: " + idItems.Count());
                     if (idItems.Count == 0 && isRunning) {
-                        Util.WriteToChat("Finished IDing Items");
+                        WriteToChat("Finished IDing Items");
                         scanComplete = true;
                     }
                     if (scanComplete && idItems.Count == 0) {
-                        foreach (KeyValuePair<string,int> entry in matchedRule) {
-                            
-                            Util.WriteToChat("Matched Rule: " + entry.Key + " ---- " + entry.Value);
+                        foreach (KeyValuePair<string, int> entry in matchedRule) {
+                            WriteToChat("Matched Rule: " + entry.Key + " ---- " + entry.Value);
                             scanComplete = false;
                             isRunning = false;
 
                         }
-                    matchedWOList.Clear();
-                    matchedRule.Clear();
-                    }
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-
-
-        private void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
-            try {
-                Regex itemRegex = new Regex(@"^\/ub count item (?<name>.*?)(?<options>(debug|think|\s)*)$");
-                Match itemMatch = itemRegex.Match(e.Text);
-                Regex profileRegex = new Regex(@"^\/ub count profile (?<item>\S+) ?(?<think>.*)$");
-                Match profileMatch = profileRegex.Match(e.Text);
-
-                if (e.Text.StartsWith("/ub count")) {
-                    e.Eat = true;
-                    if (itemMatch.Success) {
-                        string item = itemMatch.Groups["name"].Value;
-                        if (e.Text.Contains("think")) {
-                            doThink = true;
-                        }
-                        if (e.Text.Contains("debug")) {
-                            doDebug = true;
-                        }
-                        //string item = e.Text.Replace("/ub count item", "").Trim();
-                        Regex searchRegex = new Regex(item, RegexOptions.IgnoreCase);
-                        if (doDebug) Util.ThinkOrWrite("Regex String: " + searchRegex);
-                        int stackCount = 0;
-                        int totalCount = 0;
-                        foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetInventory()) {
-                            string itemName = Util.GetObjectName(wo.Id);
-                            if (searchRegex.IsMatch(itemName)) {
-                                if (doDebug) Util.ThinkOrWrite("Matched Item: " + itemName);
-                                stackCount = wo.Values(LongValueKey.StackCount, 1);
-                                if (!itemList.ContainsKey(itemName)) {
-                                    itemList[itemName] = stackCount;
-                                    totalCount += stackCount;
-                                    if (doDebug) Util.ThinkOrWrite("Count In Progress: " + itemName + " - " + stackCount);
-                                }
-                                else if (itemList[itemName] > 0) {
-                                    itemList[itemName] += stackCount;
-                                    totalCount += stackCount;
-                                    if (doDebug) Util.ThinkOrWrite("Count In Progress: " + itemName + " - " + stackCount);
-                                }
-                                else {
-                                    continue;
-                                }
-                            }
-                            else {
-                                //Util.WriteToChat("no match for " + item);
-                            }
-                        }
-                        foreach (KeyValuePair<string, int> entry in itemList) {
-                            Util.ThinkOrWrite("Item Count: " + entry.Key + " - " + entry.Value.ToString(), doThink);
-                        }
-
-                        Util.ThinkOrWrite("Total Item Count: " + totalCount.ToString(), doThink);
-
-                        itemList.Clear();
-                        doThink = false;
-                        doDebug = false;
-                    }
-                    else if (e.Text.Contains("profile")) {
-                        utlProfile = e.Text.Replace("/ub count profile ", "").Trim();
-                        e.Eat = true;
-
-                        Util.WriteToChat(utlProfile);
-
-                        var pluginPath = Path.Combine(Util.GetPluginDirectory(), @"itemgiver");
-                        var profilePath = Path.Combine(pluginPath, utlProfile);
-                        Util.WriteToChat(profilePath.ToString());
-
-                        if (!File.Exists(profilePath)) {
-                            Util.WriteToChat("utl path: " + profilePath);
-                            Util.WriteToChat("Profile does not exist: " + utlProfile.ToString());
-                            return;
-                        }
-
-                        var hasLootCore = false;
-                        if (lootProfile == null) {
-                            try {
-                                lootProfile = new VTClassic.LootCore();
-                                hasLootCore = true;
-                            }
-                            catch (Exception ex) { Logger.LogException(ex); }
-
-                            if (!hasLootCore) {
-                                Util.WriteToChat("Unable to load VTClassic, something went wrong.");
-                                return;
-                            }
-                        }
-                        ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
-                        isRunning = true;
-                        lastScanUpdate = DateTime.UtcNow;
-                        matchedWOList = CountItems();
-                    }
-                    else if (e.Text.Contains("player ")) {
-                        int playerCount = 0;
-                        string rangeString = e.Text.Replace("/ub count player ", "").Trim();
-                        int rangeInt = 0;
-                        if (Int32.TryParse(rangeString, out rangeInt)) {
-                            // success parse
-                        }
-                        else {
-                            Util.WriteToChat("bad player count range: " + rangeString);
-                        }
-
-                        foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetLandscape()) {
-                            if (wo.Type == 1 && (CoreManager.Current.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, wo.Id) * 240) < rangeInt) {
-                                Util.WriteToChat("object : " + wo.Name + " id: " + wo.Id + " type: " + wo.Type);
-                                playerCount++;
-                            }
-                        }
-                        Util.Think("Player Count: " + " " + playerCount.ToString());
+                        matchedWOList.Clear();
+                        matchedRule.Clear();
                     }
                 }
             }
@@ -187,7 +178,7 @@ namespace UtilityBelt.Tools {
                     }
 
                     if (((VTClassic.LootCore)lootProfile).DoesPotentialItemNeedID(itemInfo)) {
-                        Globals.Assessor.Queue(item.Id);
+                        UB.Assessor.Queue(item.Id);
                         if (!idItems.Contains(item)) {
                             idItems.Add(item);
                         }
@@ -202,7 +193,7 @@ namespace UtilityBelt.Tools {
                     if (!result.IsKeep && !result.IsKeepUpTo) {
                         continue;
                     }
-                    
+
                     //Util.WriteToChat("matched keep up to...");
                     if (!matchedRule.ContainsKey(result.RuleName)) {
                         matchedRule[result.RuleName] = 1;
@@ -215,26 +206,20 @@ namespace UtilityBelt.Tools {
                     else {
                         continue;
                     }
-                matchedWOList.Add(item);
+                    matchedWOList.Add(item);
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
-        return matchedWOList;
+            return matchedWOList;
         }
 
-
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-
-        }
-
-        protected virtual void Dispose(bool disposing) {
-            if (!disposed) {
+        protected override void Dispose(bool disposing) {
+            if (!disposedValue) {
                 if (disposing) {
-                    CoreManager.Current.CommandLineText -= new EventHandler<ChatParserInterceptEventArgs>(Current_CommandLineText);
+                    UB.Core.RenderFrame -= Core_RenderFrame;
+                    base.Dispose(disposing);
                 }
-                disposed = true;
+                disposedValue = true;
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using Decal.Adapter.Wrappers;
+﻿using Decal.Adapter;
+using Decal.Adapter.Wrappers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -10,6 +11,9 @@ namespace UtilityBelt.Lib.VTNav {
 
     public class VTNavRoute : IDisposable {
         private bool disposed = false;
+
+        public UtilityBeltPlugin UB { get; }
+
         public string NavPath;
         public string Header = "uTank2 NAV 1.2";
         public int RecordCount = 0;
@@ -26,12 +30,13 @@ namespace UtilityBelt.Lib.VTNav {
         public List<D3DObj> shapes = new List<D3DObj>();
         private D3DObj currentNavShape = null;
 
-        public VTNavRoute(string navPath) {
+        public VTNavRoute(string navPath, UtilityBeltPlugin ub) {
+            UB = ub;
             NavPath = navPath;
 
             uTank2.PluginCore.PC.NavWaypointChanged += PC_NavWaypointChanged;
-            Globals.Settings.VisualNav.Display.CurrentWaypoint.PropertyChanged += (s, e) => { UpdateCurrentWaypoint(); };
-            Globals.Settings.VisualNav.PropertyChanged += (s, e) => { UpdateCurrentWaypoint(); };
+            UB.VisualNav.Display.CurrentWaypoint.PropertyChanged += (s, e) => { UpdateCurrentWaypoint(); };
+            UB.VisualNav.PropertyChanged += (s, e) => { UpdateCurrentWaypoint(); };
         }
 
         public void AddOffset(double ns, double ew, double offset) {
@@ -82,8 +87,8 @@ namespace UtilityBelt.Lib.VTNav {
                             return false;
                         }
 
-                        Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
-                        Globals.Core.WorldFilter.ReleaseObject += WorldFilter_ReleaseObject;
+                        CoreManager.Current.WorldFilter.CreateObject += WorldFilter_CreateObject;
+                        CoreManager.Current.WorldFilter.ReleaseObject += WorldFilter_ReleaseObject;
 
                         return true;
                     }
@@ -182,13 +187,13 @@ namespace UtilityBelt.Lib.VTNav {
         private void WorldFilter_ReleaseObject(object sender, ReleaseObjectEventArgs e) {
             try {
                 if (NavType != eNavType.Target) {
-                    Globals.Core.WorldFilter.ReleaseObject -= WorldFilter_ReleaseObject;
+                    CoreManager.Current.WorldFilter.ReleaseObject -= WorldFilter_ReleaseObject;
                     return;
                 }
 
                 if (e.Released.Id == TargetId) {
-                    Globals.Core.WorldFilter.ReleaseObject -= WorldFilter_ReleaseObject;
-                    Globals.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
+                    CoreManager.Current.WorldFilter.ReleaseObject -= WorldFilter_ReleaseObject;
+                    CoreManager.Current.WorldFilter.CreateObject += WorldFilter_CreateObject;
                     foreach (var shape in shapes) {
                         try {
                             shape.Visible = false;
@@ -206,12 +211,12 @@ namespace UtilityBelt.Lib.VTNav {
         private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
             try {
                 if (NavType != eNavType.Target) {
-                    Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                    CoreManager.Current.WorldFilter.CreateObject -= WorldFilter_CreateObject;
                     return;
                 }
 
                 if (e.New.Id == TargetId) {
-                    Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                    CoreManager.Current.WorldFilter.CreateObject -= WorldFilter_CreateObject;
                     Draw();
                 }
             }
@@ -239,7 +244,7 @@ namespace UtilityBelt.Lib.VTNav {
             try {
                 var routeFinished = VTankControl.vTankInstance.NavCurrent > VTankControl.vTankInstance.NavNumPoints - 1;
                 var isWaypointRoute = NavType != eNavType.Target;
-                var isEnabled = Globals.Settings.VisualNav.Display.CurrentWaypoint.Enabled;
+                var isEnabled = UB.VisualNav.Display.CurrentWaypoint.Enabled;
                 var isValidPointOffset = NavOffset + VTankControl.vTankInstance.NavCurrent < points.Count;
 
                 if (isEnabled && isWaypointRoute && !routeFinished && isValidPointOffset) {
@@ -247,7 +252,7 @@ namespace UtilityBelt.Lib.VTNav {
                     var current = points[NavOffset + VTankControl.vTankInstance.NavCurrent];
 
                     if (currentNavShape == null) {
-                        currentNavShape = Globals.Core.D3DService.MarkCoordsWithShape(0f, 0f, 0f, D3DShape.Ring, Color.Red.ToArgb());
+                        currentNavShape = CoreManager.Current.D3DService.MarkCoordsWithShape(0f, 0f, 0f, D3DShape.Ring, Color.Red.ToArgb());
                     }
 
                     // this is dumb, i cant get it to convert straight to a float
@@ -255,16 +260,16 @@ namespace UtilityBelt.Lib.VTNav {
 
                     if (float.TryParse(navCloseStopRangeStr, out float navCloseStopRange)) {
                         currentNavShape.Visible = true;
-                        if (Globals.Settings.VisualNav.ScaleCurrentWaypoint) {
+                        if (UB.VisualNav.ScaleCurrentWaypoint) {
                             currentNavShape.ScaleX = (float)navCloseStopRange * 240f;
                             currentNavShape.ScaleY = (float)navCloseStopRange * 240f;
-                            currentNavShape.Anchor((float)current.NS, (float)current.EW, (float)(current.Z * 240f) + Globals.Settings.VisualNav.LineOffset);
+                            currentNavShape.Anchor((float)current.NS, (float)current.EW, (float)(current.Z * 240f) + UB.VisualNav.LineOffset);
                         }
                         else {
                             currentNavShape.Scale(0.3f);
-                            currentNavShape.Anchor((float)current.NS, (float)current.EW, (float)(current.Z * 240f) + Globals.Settings.VisualNav.LineOffset + 0.2f);
+                            currentNavShape.Anchor((float)current.NS, (float)current.EW, (float)(current.Z * 240f) + UB.VisualNav.LineOffset + 0.2f);
                         }
-                        currentNavShape.Color = Globals.Settings.VisualNav.Display.CurrentWaypoint.Color;
+                        currentNavShape.Color = UB.VisualNav.Display.CurrentWaypoint.Color;
                         return;
                     }
                 }
@@ -282,13 +287,13 @@ namespace UtilityBelt.Lib.VTNav {
         }
 
         public void Draw() {
-            if (NavType == eNavType.Target && Globals.Settings.VisualNav.Display.FollowArrow.Enabled) {
-                if (TargetId != 0 && TargetId != Globals.Core.CharacterFilter.Id) {
-                    var wo = Globals.Core.WorldFilter[TargetId];
+            if (NavType == eNavType.Target && UB.VisualNav.Display.FollowArrow.Enabled) {
+                if (TargetId != 0 && TargetId != CoreManager.Current.CharacterFilter.Id) {
+                    var wo = CoreManager.Current.WorldFilter[TargetId];
 
                     if (wo != null) {
-                        var color = Globals.Settings.VisualNav.Display.FollowArrow.Color;
-                        var shape = Globals.Core.D3DService.PointToObject(TargetId, color);
+                        var color = UB.VisualNav.Display.FollowArrow.Color;
+                        var shape = CoreManager.Current.D3DService.PointToObject(TargetId, color);
                         shape.Scale(0.6f);
                         shapes.Add(shape);
                     }
@@ -304,8 +309,8 @@ namespace UtilityBelt.Lib.VTNav {
         }
 
         public static bool IsPretendNoneNav() {
-            var server = Globals.Core.CharacterFilter.Server;
-            var character = Globals.Core.CharacterFilter.Name;
+            var server = CoreManager.Current.CharacterFilter.Server;
+            var character = CoreManager.Current.CharacterFilter.Name;
             var path = Path.Combine(Util.GetVTankProfilesDirectory(), $"{server}_{character}.cdf");
 
             var contents = File.ReadAllLines(path);
@@ -319,8 +324,8 @@ namespace UtilityBelt.Lib.VTNav {
         }
 
         public static string GetLoadedNavigationProfile() {
-            var server = Globals.Core.CharacterFilter.Server;
-            var character = Globals.Core.CharacterFilter.Name;
+            var server = CoreManager.Current.CharacterFilter.Server;
+            var character = CoreManager.Current.CharacterFilter.Name;
             var path = Path.Combine(Util.GetVTankProfilesDirectory(), $"{server}_{character}.cdf");
 
             var contents = File.ReadAllLines(path);
@@ -344,9 +349,9 @@ namespace UtilityBelt.Lib.VTNav {
 
         protected virtual void Dispose(bool disposing) {
             if (!disposed) {
-                if (Globals.Core != null && Globals.Core.WorldFilter != null) {
-                    Globals.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
-                    Globals.Core.WorldFilter.ReleaseObject -= WorldFilter_ReleaseObject;
+                if (CoreManager.Current != null && CoreManager.Current.WorldFilter != null) {
+                    CoreManager.Current.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                    CoreManager.Current.WorldFilter.ReleaseObject -= WorldFilter_ReleaseObject;
                 }
 
                 if (uTank2.PluginCore.PC != null) {

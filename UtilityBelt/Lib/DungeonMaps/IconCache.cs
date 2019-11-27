@@ -1,4 +1,5 @@
-﻿using Decal.Filters;
+﻿using Decal.Adapter;
+using Decal.Filters;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -23,7 +24,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
 
         private static Bitmap TryGetIcon(int id) {
             try {
-                FileService service = Globals.Core.Filter<FileService>();
+                FileService service = CoreManager.Current.Filter<FileService>();
                 byte[] portalFile = service.GetPortalFile(0x06000000 + id);
                 byte[] bytes = portalFile.Skip(28).Take(4096).ToArray();
 

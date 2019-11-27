@@ -25,8 +25,8 @@ namespace UtilityBelt.Lib.Settings {
             Type = type;
 
             if (Type == null) {
-                Value = Globals.Settings.Get(setting);
-                Type = Globals.Settings.GetOptionProperty(Setting).Object.GetType();
+                Value = UtilityBeltPlugin.Instance.Settings.Get(setting);
+                Type = UtilityBeltPlugin.Instance.Settings.GetOptionProperty(Setting).Object.GetType();
             }
             else {
                 Value = "";
@@ -88,11 +88,11 @@ namespace UtilityBelt.Lib.Settings {
                 return DrawBooleanSettingsForm(settingsForm, setting);
             }
             else if (Type.IsEnum) {
-                var prop = Globals.Settings.GetOptionProperty(setting);
+                var prop = UtilityBeltPlugin.Instance.Settings.GetOptionProperty(setting);
                 var supportsFlagsAttributes = prop.Property.GetCustomAttributes(typeof(SupportsFlagsAttribute), true);
 
                 if (supportsFlagsAttributes.Length > 0) {
-                    new EnumFlagEditor(Globals.MainView.view, setting);
+                    new EnumFlagEditor(UtilityBeltPlugin.Instance.MainView.view, setting);
                 }
                 else {
                     return DrawEnumSettingsForm(settingsForm, setting);
@@ -108,7 +108,7 @@ namespace UtilityBelt.Lib.Settings {
                 return DrawStringSettingsForm(settingsForm, setting);
             }
             else if (Type.GetInterfaces().Contains(typeof(IEnumerable))) {
-                new ListEditor(Globals.MainView, setting);
+                new ListEditor(UtilityBeltPlugin.Instance.MainView, setting);
             }
 
             return new List<HudControl>();
@@ -208,9 +208,9 @@ namespace UtilityBelt.Lib.Settings {
             pickerButton.Text = "Color Picker";
             pickerButton.Hit += (sender, evt) => {
                 var originalColor = Color.FromArgb((int)Value);
-                var picker = new ColorPicker(Globals.MainView, "Test", originalColor);
+                var picker = new ColorPicker(UtilityBeltPlugin.Instance.MainView, "Test", originalColor);
 
-                Globals.Settings.DisableSaving();
+                UtilityBeltPlugin.Instance.Settings.DisableSaving();
 
                 picker.RaiseColorPickerCancelEvent += (s, e) => {
                     // restore color
@@ -219,12 +219,12 @@ namespace UtilityBelt.Lib.Settings {
                     Changed?.Invoke(this, null);
                     colorPickerPreview.Clear();
                     colorPickerPreview.Add(colorPickerRect, GetColorIcon(originalColor.ToArgb()));
-                    Globals.Settings.EnableSaving();
+                    UtilityBeltPlugin.Instance.Settings.EnableSaving();
                     picker.Dispose();
                 };
 
                 picker.RaiseColorPickerSaveEvent += (s, e) => {
-                    Globals.Settings.EnableSaving();
+                    UtilityBeltPlugin.Instance.Settings.EnableSaving();
                     Value = e.Color.ToArgb();
                     Changed?.Invoke(this, null);
                     picker.Dispose();
@@ -245,7 +245,7 @@ namespace UtilityBelt.Lib.Settings {
                     Changed?.Invoke(this, null);
                     colorPickerPreview.Clear();
                     colorPickerPreview.Add(colorPickerRect, GetColorIcon(originalColor.ToArgb()));
-                    Globals.Settings.EnableSaving();
+                    UtilityBeltPlugin.Instance.Settings.EnableSaving();
                     if (!picker.view.Visible) {
                         picker.Dispose();
                     }

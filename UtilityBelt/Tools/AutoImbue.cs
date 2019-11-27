@@ -9,22 +9,24 @@ using Decal.Filters;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using UtilityBelt.Lib;
 
 namespace UtilityBelt.Tools {
-    class AutoImbue : IDisposable {
+    [Name("AutoImbue")]
+    class AutoImbue : ToolBase {
 
-        HudList AutoImbueList { get; set; }
-        HudButton ClearList { get; set; }
-        HudButton PopulateList { get; set; }
-        HudButton AutoImbueStartButton { get; set; }
-        HudButton AutoImbueStopButton { get; set; }
-        HudButton PopulateListButton { get; set; }
-        HudStaticText AutoImbueItemLabel { get; set; }
-        HudStaticText AutoImbueItemNameLabel { get; set; }
-        HudCombo AutoImbueSalvageCombo { get; set; }
-        HudCombo AutoImbueDmgTypeCombo { get; set; }
-        HudTextBox AutoImbueMinPercentTextBox { get; set; }
-        public HudButton AutoImbueRefreshListButton { get; }
+        HudList AutoImbueList;
+        HudButton ClearList;
+        HudButton PopulateList;
+        HudButton AutoImbueStartButton;
+        HudButton AutoImbueStopButton;
+        HudButton PopulateListButton;
+        HudStaticText AutoImbueItemLabel;
+        HudStaticText AutoImbueItemNameLabel;
+        HudCombo AutoImbueSalvageCombo;
+        HudCombo AutoImbueDmgTypeCombo;
+        HudTextBox AutoImbueMinPercentTextBox;
+        HudButton AutoImbueRefreshListButton;
 
         private DateTime lastThought = DateTime.MinValue;
         private FakeItem fakeItem = new FakeItem();
@@ -34,7 +36,6 @@ namespace UtilityBelt.Tools {
         private DateTime startTime = DateTime.MinValue;
         private DateTime endTime = DateTime.MinValue;
         private int lastIdCount;
-        private bool disposed;
         private bool tinking = false;
         private readonly List<int> itemsToId = new List<int>();
         int targetSalvage;
@@ -54,26 +55,26 @@ namespace UtilityBelt.Tools {
         Dictionary<int, double> PotentialWeaponList = new Dictionary<int, double>();
         Dictionary<string, int> DefaultImbueList = new Dictionary<string, int>();
 
-        public AutoImbue() {
+        public AutoImbue(UtilityBeltPlugin ub, string name) : base(ub, name) {
             try {
-                Globals.Core.ChatBoxMessage += Current_ChatBoxMessage;
+                CoreManager.Current.ChatBoxMessage += Current_ChatBoxMessage;
 
-                AutoImbueList = (HudList)Globals.MainView.view["AutoImbueList"];
+                AutoImbueList = (HudList)UB.MainView.view["AutoImbueList"];
                 AutoImbueList.Click += AutoImbueList_Click;
 
-                AutoImbueSalvageCombo = (HudCombo)Globals.MainView.view["AutoImbueSalvageCombo"];
+                AutoImbueSalvageCombo = (HudCombo)UB.MainView.view["AutoImbueSalvageCombo"];
                 AutoImbueSalvageCombo.Change += AutoImbueSalvageCombo_Change;
 
-                AutoImbueDmgTypeCombo = (HudCombo)Globals.MainView.view["AutoImbueDmgTypeCombo"];
+                AutoImbueDmgTypeCombo = (HudCombo)UB.MainView.view["AutoImbueDmgTypeCombo"];
                 AutoImbueDmgTypeCombo.Change += AutoImbueDmgTypeCombo_Change;
 
-                AutoImbueStartButton = (HudButton)Globals.MainView.view["AutoImbueStartButton"];
+                AutoImbueStartButton = (HudButton)UB.MainView.view["AutoImbueStartButton"];
                 AutoImbueStartButton.Hit += AutoImbueStartButton_Hit;
 
-                AutoImbueStopButton = (HudButton)Globals.MainView.view["AutoImbueStopButton"];
+                AutoImbueStopButton = (HudButton)UB.MainView.view["AutoImbueStopButton"];
                 AutoImbueStopButton.Hit += AutoImbueStopButton_Hit;
 
-                AutoImbueRefreshListButton = (HudButton)Globals.MainView.view["AutoImbueRefreshListButton"];
+                AutoImbueRefreshListButton = (HudButton)UB.MainView.view["AutoImbueRefreshListButton"];
                 AutoImbueRefreshListButton.Hit += AutoImbueRefreshListButton_Hit;
 
                 PopulateAutoImbueSalvageCombo();
@@ -89,10 +90,10 @@ namespace UtilityBelt.Tools {
         public void Think() {
             try {
                     if (waitingForIds) {
-                        if (Globals.Assessor.NeedsInventoryData(itemsToId)) {
+                        if (UB.Assessor.NeedsInventoryData(itemsToId)) {
                             if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15)) {
                                 lastIdSpam = DateTime.UtcNow;
-                                var thisIdCount = Globals.Assessor.GetNeededIdCount(itemsToId);
+                                var thisIdCount = UB.Assessor.GetNeededIdCount(itemsToId);
                                 Util.WriteToChat(string.Format("AutoImbue waiting to id {0} items, this will take approximately {0} seconds.", thisIdCount));
                                 if (lastIdCount != thisIdCount) { // if count has changed, reset bail timer
                                     lastIdCount = thisIdCount;
@@ -114,7 +115,7 @@ namespace UtilityBelt.Tools {
         }
 
         private void NextTink() {
-            Globals.Core.Actions.RequestId(currentItemID);
+            CoreManager.Current.Actions.RequestId(currentItemID);
             AutoImbueList.RemoveRow(0);
             tinking = false;
             DoTinks();
@@ -125,7 +126,7 @@ namespace UtilityBelt.Tools {
                 HudList.HudListRowAccessor imbueListRow = AutoImbueList[row];
                 HudStaticText itemID = (HudStaticText)imbueListRow[5];
                 int.TryParse(itemID.Text.ToString(), out int item);
-                Globals.Core.Actions.SelectItem(item);
+                CoreManager.Current.Actions.SelectItem(item);
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -133,7 +134,7 @@ namespace UtilityBelt.Tools {
         public void Current_ChatBoxMessage(object sender, ChatTextInterceptEventArgs e) {
             try {
                 if (tinking) {
-                    string characterName = Globals.Core.CharacterFilter.Name;
+                    string characterName = CoreManager.Current.CharacterFilter.Name;
 
                     Regex CraftSuccess = new Regex("^" + characterName + @" successfully applies the (?<salvage>[\w\s\-]+) Salvage(\s?\(100\))?\s\(workmanship (?<workmanship>\d+\.\d+)\) to the (?<item>[\w\s\-]+)\.$");
                     Regex CraftFailure = new Regex("^" + characterName + @" fails to apply the (?<salvage>[\w\s\-]+) Salvage(\s?\(100\))?\s\(workmanship (?<workmanship>\d+\.\d+)\) to the (?<item>[\w\s\-]+).\s?The target is destroyed\.$");
@@ -200,7 +201,7 @@ namespace UtilityBelt.Tools {
         }
 
         private void SelectDefaultSalvage(string dmgType) {
-            FileService service = Globals.Core.Filter<FileService>();
+            FileService service = CoreManager.Current.Filter<FileService>();
 
             foreach (KeyValuePair<string, int> row in DefaultImbueList) {
                 if (dmgType == row.Key.ToString()) {
@@ -231,7 +232,7 @@ namespace UtilityBelt.Tools {
         }
 
         private void PopulateAutoImbueSalvageCombo() {
-            FileService service = Globals.Core.Filter<FileService>();
+            FileService service = CoreManager.Current.Filter<FileService>();
             for (int i = 0; i < service.MaterialTable.Length; i++) {
                 var material = service.MaterialTable[i];
                 if (TinkerType.SalvageType(i) == 2) {
@@ -277,18 +278,18 @@ namespace UtilityBelt.Tools {
                 dmgTypeID = (uint)Enum.Parse(typeof(DamageTypes), dmgTypeString.Trim());
 
 
-                foreach (var item in Globals.Core.WorldFilter.GetInventory()) {
+                foreach (var item in CoreManager.Current.WorldFilter.GetInventory()) {
                         itemsToId.Add(item.Id);
                 }
 
-                if (Globals.Assessor.NeedsInventoryData(itemsToId)) {
-                    Globals.Assessor.RequestAll(itemsToId);
+                if (UB.Assessor.NeedsInventoryData(itemsToId)) {
+                    UB.Assessor.RequestAll(itemsToId);
                     waitingForIds = true;
                     lastIdSpam = DateTime.UtcNow;
                     startTime = DateTime.UtcNow;
                 }
 
-                foreach (WorldObject wo in Globals.Core.WorldFilter.GetInventory()) {
+                foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetInventory()) {
                     if (wo.Values(LongValueKey.Material) == materialID && wo.Values(LongValueKey.UsesRemaining) == 100) {
                         if (!PotentialSalvageList.ContainsKey(wo.Id)) {
                             PotentialSalvageList.Add(wo.Id, wo.Values(DoubleValueKey.SalvageWorkmanship));
@@ -296,7 +297,7 @@ namespace UtilityBelt.Tools {
                     }
                 }
 
-                foreach (WorldObject wo in Globals.Core.WorldFilter.GetInventory()) {
+                foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetInventory()) {
 
                     if (!wo.HasIdData) {
                         continue;
@@ -348,7 +349,7 @@ namespace UtilityBelt.Tools {
                         imbueCount++;
                         targetItem = PotentialWeaponList.First().Key;
                         targetSalvage = PotentialSalvageList.First().Key;
-                        imbueChance = tinkerCalc.DoCalc(targetSalvage, Globals.Core.WorldFilter[targetItem], Globals.Core.WorldFilter[targetItem].Values(LongValueKey.NumberTimesTinkered));
+                        imbueChance = tinkerCalc.DoCalc(targetSalvage, CoreManager.Current.WorldFilter[targetItem], CoreManager.Current.WorldFilter[targetItem].Values(LongValueKey.NumberTimesTinkered));
                         UpdateImbueList();
                         PotentialWeaponList.Remove(targetItem);
                         PotentialSalvageList.Remove(targetSalvage);
@@ -361,8 +362,8 @@ namespace UtilityBelt.Tools {
         private void UpdateImbueList() {
             HudList.HudListRowAccessor newRow = AutoImbueList.AddRow();
             ((HudStaticText)newRow[0]).Text = imbueCount.ToString();
-            ((HudStaticText)newRow[1]).Text = Globals.Core.WorldFilter[targetItem].Name.ToString();
-            ((HudStaticText)newRow[2]).Text = Util.GetObjectName(targetSalvage) + " w" + Math.Round(Globals.Core.WorldFilter[targetSalvage].Values(DoubleValueKey.SalvageWorkmanship), 2, MidpointRounding.AwayFromZero).ToString("0.00");
+            ((HudStaticText)newRow[1]).Text = CoreManager.Current.WorldFilter[targetItem].Name.ToString();
+            ((HudStaticText)newRow[2]).Text = Util.GetObjectName(targetSalvage) + " w" + Math.Round(CoreManager.Current.WorldFilter[targetSalvage].Values(DoubleValueKey.SalvageWorkmanship), 2, MidpointRounding.AwayFromZero).ToString("0.00");
             ((HudStaticText)newRow[3]).Text = imbueChance.ToString("P");
             ((HudStaticText)newRow[4]).Text = targetSalvage.ToString();
             ((HudStaticText)newRow[5]).Text = targetItem.ToString();
@@ -393,18 +394,18 @@ namespace UtilityBelt.Tools {
             }
 
             if (intSalvId != 0) {
-                currentSalvageWK = Math.Round(Globals.Core.WorldFilter[intSalvId].Values(DoubleValueKey.SalvageWorkmanship), 2, MidpointRounding.AwayFromZero);
+                currentSalvageWK = Math.Round(CoreManager.Current.WorldFilter[intSalvId].Values(DoubleValueKey.SalvageWorkmanship), 2, MidpointRounding.AwayFromZero);
                 currentSalvage = Util.GetObjectName(intSalvId).Replace(" Salvage","").Replace(" (100)","");
             }
 
             if (!tinking) {
-                Globals.Core.Actions.SelectItem(intSalvId);
-                if (Globals.Core.Actions.CurrentSelection == intSalvId) {
+                CoreManager.Current.Actions.SelectItem(intSalvId);
+                if (CoreManager.Current.Actions.CurrentSelection == intSalvId) {
                     //CoreManager.Current.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
                     UBHelper.ConfirmationRequest.ConfirmationRequestEvent += UBHelper_ConfirmationRequest;
 
-                    //Globals.Core.WorldFilter.ReleaseObject += Current_ReleaseObject;
-                    Globals.Core.Actions.ApplyItem(intSalvId, intItemId);
+                    //CoreManager.Current.WorldFilter.ReleaseObject += Current_ReleaseObject;
+                    CoreManager.Current.Actions.ApplyItem(intSalvId, intItemId);
                     tinking = true;
                 }
             }
@@ -413,7 +414,7 @@ namespace UtilityBelt.Tools {
         public void ClearAllTinks() {
             UBHelper.ConfirmationRequest.ConfirmationRequestEvent -= UBHelper_ConfirmationRequest;
 
-            Globals.Core.Actions.RequestId(currentItemID);
+            CoreManager.Current.Actions.RequestId(currentItemID);
 
             tinking = false;
             targetSalvage = 0;
@@ -433,19 +434,14 @@ namespace UtilityBelt.Tools {
                 UBHelper.ConfirmationRequest.ConfirmationRequestEvent -= UBHelper_ConfirmationRequest;
             }
         }
-
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing) {
-            if (!disposed) {
+        protected override void Dispose(bool disposing) {
+            if (!disposedValue) {
                 if (disposing) {
-                    //Globals.Core.CommandLineText -= Current_CommandLineText;
-                    Globals.Core.ChatBoxMessage -= Current_ChatBoxMessage;
+                    //CoreManager.Current.CommandLineText -= Current_CommandLineText;
+                    CoreManager.Current.ChatBoxMessage -= Current_ChatBoxMessage;
+                    base.Dispose(disposing);
                 }
-                disposed = true;
+                disposedValue = true;
             }
         }
     }

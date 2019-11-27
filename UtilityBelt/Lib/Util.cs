@@ -18,7 +18,9 @@ namespace UtilityBelt
 {
 	public static class Util {
         private static string pluginDirectory;
-        public static void Init(string assemblyLocation, string storagePath) {
+        private static UtilityBeltPlugin UB;
+        public static void Init(UtilityBeltPlugin ub, string assemblyLocation, string storagePath) {
+            UB = ub;
             AssemblyLocation = assemblyLocation;
             pluginDirectory = storagePath;
         }
@@ -51,12 +53,12 @@ namespace UtilityBelt
         }
 
         public static string GetServerDirectory() {
-            return Path.Combine(GetPluginDirectory(), Globals.ServerName);
+            return Path.Combine(GetPluginDirectory(), UB.ServerName);
         }
 
         public static string GetCharacterDirectory() {
-            String path = Path.Combine(GetPluginDirectory(), Globals.ServerName);
-            path = Path.Combine(path, Globals.CharacterName);
+            String path = Path.Combine(GetPluginDirectory(), UB.ServerName);
+            path = Path.Combine(path, UB.CharacterName);
             return path;
         }
 
@@ -98,7 +100,7 @@ namespace UtilityBelt
         }
 
         internal static int GetChatId() {
-            return Globals.PluginName.GetHashCode() & int.MaxValue;
+            return UB.PluginName.GetHashCode() & int.MaxValue;
         }
 
         public static Object GetPropValue(this Object obj, String name) {
@@ -143,17 +145,17 @@ namespace UtilityBelt
             return (T)retval;
         }
 
-        public static void WriteToChat(string message) {
+        public static void WriteToChat(string message, int color=5) {
 			try
 			{
-				Globals.Host.Actions.AddChatText("[UB] " + message, 5);
+				UB.Host.Actions.AddChatText("[UB] " + message, color);
                 Util.WriteToDebugLog(message);
             }
 			catch (Exception ex) { Logger.LogException(ex); }
 		}
 
         public static int GetFreeMainPackSpace() {
-            WorldObject mainPack = Globals.Core.WorldFilter[Globals.Core.CharacterFilter.Id];
+            WorldObject mainPack = UB.Core.WorldFilter[CoreManager.Current.CharacterFilter.Id];
 
             return GetFreePackSpace(mainPack);
         }
@@ -162,12 +164,12 @@ namespace UtilityBelt
             int packSlots = container.Values(LongValueKey.ItemSlots, 0);
 
             // side pack count
-            if (container.Id != Globals.Core.CharacterFilter.Id) {
-                return packSlots - Globals.Core.WorldFilter.GetByContainer(container.Id).Count;
+            if (container.Id != UB.Core.CharacterFilter.Id) {
+                return packSlots - UB.Core.WorldFilter.GetByContainer(container.Id).Count;
             }
 
             // main pack count
-            foreach (var wo in Globals.Core.WorldFilter.GetByContainer(container.Id)) {
+            foreach (var wo in UB.Core.WorldFilter.GetByContainer(container.Id)) {
                 if (wo != null) {
                     // skip packs
                     if (wo.ObjectClass == ObjectClass.Container) continue;
@@ -189,27 +191,27 @@ namespace UtilityBelt
         }
 
         public static int GetOverallSlot(WorldObject wo) { //Just for sorting for now. TODO: math real numbers, based on actual pack slots
-            if (wo.Container == Globals.Core.CharacterFilter.Id)
+            if (wo.Container == UB.Core.CharacterFilter.Id)
                 return wo.Values(LongValueKey.Slot, 0);
-            if (wo.Container == 0 || Globals.Core.WorldFilter[wo.Container] == null)
+            if (wo.Container == 0 || UB.Core.WorldFilter[wo.Container] == null)
                 return int.MaxValue;
-            return wo.Values(LongValueKey.Slot, 0) + 1000 + (100 * Globals.Core.WorldFilter[wo.Container].Values(LongValueKey.Slot, 0));
+            return wo.Values(LongValueKey.Slot, 0) + 1000 + (100 * UB.Core.WorldFilter[wo.Container].Values(LongValueKey.Slot, 0));
         }
         public static string GetItemLocation(int id) {
-            if (id == 0 || Globals.Core.WorldFilter[id] == null)
+            if (id == 0 || UB.Core.WorldFilter[id] == null)
                 return "Does Not Exist";
-            WorldObject wo = Globals.Core.WorldFilter[id];
+            WorldObject wo = UB.Core.WorldFilter[id];
             if (wo.Container == 0)
                 return wo.Coordinates().ToString();
             string location = "";
-            if (wo.Container == Globals.Core.CharacterFilter.Id)
+            if (wo.Container == UB.Core.CharacterFilter.Id)
                 return $"Main Pack";
-            wo = Globals.Core.WorldFilter[wo.Container];
+            wo = UB.Core.WorldFilter[wo.Container];
             if (wo != null && wo.Container != 0) {
                 location = $"{wo.Name} #{1 + wo.Values(LongValueKey.Slot, 0)} => {location}";
-                wo = Globals.Core.WorldFilter[wo.Container];
+                wo = UB.Core.WorldFilter[wo.Container];
             }
-            if (wo != null && wo.Id != Globals.Core.CharacterFilter.Id)
+            if (wo != null && wo.Id != UB.Core.CharacterFilter.Id)
                 location = $"{wo.Name}[{wo.Coordinates().ToString()}] => {location}";
             return location.Substring(0, location.Length - 4);
         }
@@ -237,13 +239,13 @@ namespace UtilityBelt
 
         internal static void StackItem(WorldObject stackThis) {
             // try to stack in side pack
-            foreach (var container in Globals.Core.WorldFilter.GetInventory()) {
+            foreach (var container in UB.Core.WorldFilter.GetInventory()) {
                 if (container.ObjectClass == ObjectClass.Container && container.Values(LongValueKey.Slot, -1) >= 0) {
-                    foreach (var wo in Globals.Core.WorldFilter.GetByContainer(container.Id)) {
+                    foreach (var wo in UB.Core.WorldFilter.GetByContainer(container.Id)) {
                         if (wo.Name == stackThis.Name && wo.Id != stackThis.Id) {
                             if (wo.Values(LongValueKey.StackCount, 1) + stackThis.Values(LongValueKey.StackCount, 1) <= wo.Values(LongValueKey.StackMax)) {
-                                Globals.Core.Actions.SelectItem(stackThis.Id);
-                                Globals.Core.Actions.MoveItem(stackThis.Id, container.Id, container.Values(LongValueKey.Slot), true);
+                                UB.Core.Actions.SelectItem(stackThis.Id);
+                                UB.Core.Actions.MoveItem(stackThis.Id, container.Id, container.Values(LongValueKey.Slot), true);
                                 return;
                             }
                         }
@@ -252,12 +254,12 @@ namespace UtilityBelt
             }
 
             // try to stack in main pack
-            foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
-                if (wo.Container == Globals.Core.CharacterFilter.Id) {
+            foreach (var wo in UB.Core.WorldFilter.GetInventory()) {
+                if (wo.Container == UB.Core.CharacterFilter.Id) {
                     if (wo.Name == stackThis.Name && wo.Id != stackThis.Id) {
                         if (wo.Values(LongValueKey.StackCount, 1) + stackThis.Values(LongValueKey.StackCount, 1) <= wo.Values(LongValueKey.StackMax)) {
-                            Globals.Core.Actions.SelectItem(stackThis.Id);
-                            Globals.Core.Actions.MoveItem(stackThis.Id, Globals.Core.CharacterFilter.Id, 0, true);
+                            UB.Core.Actions.SelectItem(stackThis.Id);
+                            UB.Core.Actions.MoveItem(stackThis.Id, UB.Core.CharacterFilter.Id, 0, true);
                             return;
                         }
                     }
@@ -268,7 +270,7 @@ namespace UtilityBelt
         internal static int GetItemCountInInventoryByName(string name) {
             int count = 0;
 
-            foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
+            foreach (var wo in UB.Core.WorldFilter.GetInventory()) {
                 if (wo.Name == name) {
                     if (wo.Values(LongValueKey.StackCount, 0) > 0) {
                         count += wo.Values(LongValueKey.StackCount);
@@ -282,7 +284,7 @@ namespace UtilityBelt
             return count;
         }
         internal static bool IsItemSafeToGetRidOf(int id) {
-            return IsItemSafeToGetRidOf(CoreManager.Current.WorldFilter[id]);
+            return IsItemSafeToGetRidOf(UB.Core.WorldFilter[id]);
         }
 
         internal static bool IsItemSafeToGetRidOf(WorldObject wo) {
@@ -321,7 +323,7 @@ namespace UtilityBelt
         internal static int PyrealCount() {
             int total = 0;
 
-            foreach (var wo in Globals.Core.WorldFilter.GetInventory()) {
+            foreach (var wo in CoreManager.Current.WorldFilter.GetInventory()) {
                 if (wo.Values(LongValueKey.Type, 0) == 273/* pyreals */) {
                     total += wo.Values(LongValueKey.StackCount, 1);
                 }
@@ -353,7 +355,7 @@ namespace UtilityBelt
         /// <param name="cmd"></param>
         public static void DispatchChatToBoxWithPluginIntercept(string cmd) {
             if (!Decal_DispatchOnChatCommand(cmd))
-                Globals.Core.Actions.InvokeChatParser(cmd);
+                CoreManager.Current.Actions.InvokeChatParser(cmd);
         }
 
         internal static string GetTilePath() {
@@ -362,7 +364,7 @@ namespace UtilityBelt
 
         internal static void Think(string message) {
             try {
-                DispatchChatToBoxWithPluginIntercept(string.Format("/tell {0}, {1}", Globals.Core.CharacterFilter.Name, message));
+                DispatchChatToBoxWithPluginIntercept(string.Format("/tell {0}, {1}", UB.Core.CharacterFilter.Name, message));
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -370,7 +372,7 @@ namespace UtilityBelt
         internal static void ThinkOrWrite(string message, bool think=false) {
             try {
                 if (think) {
-                    DispatchChatToBoxWithPluginIntercept(string.Format("/tell {0}, {1}", Globals.Core.CharacterFilter.Name, message));
+                    DispatchChatToBoxWithPluginIntercept(string.Format("/tell {0}, {1}", UB.Core.CharacterFilter.Name, message));
                 }
                 else {
                     Util.WriteToChat(string.Format("{0}", message));
@@ -380,15 +382,15 @@ namespace UtilityBelt
         }
 
         public static string GetObjectName(int id) {
-            if (!Globals.Core.Actions.IsValidObject(id)) {
+            if (!UB.Core.Actions.IsValidObject(id)) {
                 return string.Format("<{0}>", id);
             }
-            var wo = Globals.Core.WorldFilter[id];
+            var wo = CoreManager.Current.WorldFilter[id];
 
             if (wo == null) return string.Format("<{0}>", id);
 
             if (wo.Values(LongValueKey.Material, 0) > 0) {
-                FileService service = Globals.Core.Filter<FileService>();
+                FileService service = UB.Core.Filter<FileService>();
                 var material = service.MaterialTable.GetById(wo.Values(LongValueKey.Material, 0));
 
                 // this accounts for gems, where the material is the same as the name.  That way we don't
@@ -465,6 +467,34 @@ namespace UtilityBelt
                 return true;
             }
             return false;
+        }
+
+        public static int GetDamerauLevenshteinDistance(string one, string two) {
+            var bounds = new { Height = one.Length + 1, Width = two.Length + 1 };
+
+            int[,] matrix = new int[bounds.Height, bounds.Width];
+
+            for (int height = 0; height < bounds.Height; height++) { matrix[height, 0] = height; };
+            for (int width = 0; width < bounds.Width; width++) { matrix[0, width] = width; };
+
+            for (int height = 1; height < bounds.Height; height++) {
+                for (int width = 1; width < bounds.Width; width++) {
+                    int cost = (one[height - 1] == two[width - 1]) ? 0 : 1;
+                    int insertion = matrix[height, width - 1] + 1;
+                    int deletion = matrix[height - 1, width] + 1;
+                    int substitution = matrix[height - 1, width - 1] + cost;
+
+                    int distance = Math.Min(insertion, Math.Min(deletion, substitution));
+
+                    if (height > 1 && width > 1 && one[height - 1] == two[width - 2] && one[height - 2] == two[width - 1]) {
+                        distance = Math.Min(distance, matrix[height - 2, width - 2] + cost);
+                    }
+
+                    matrix[height, width] = distance;
+                }
+            }
+
+            return matrix[bounds.Height - 1, bounds.Width - 1];
         }
     }
 }

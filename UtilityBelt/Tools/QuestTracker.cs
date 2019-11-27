@@ -10,30 +10,66 @@ using System.Xml;
 using System.IO;
 using System.Windows.Forms;
 using UtilityBelt.Lib.Quests;
+using UtilityBelt.Lib;
 
 namespace UtilityBelt.Tools {
-    class QuestTracker : IDisposable {
+    [Name("QuestTracker")]
+    public class QuestTracker : ToolBase {
         DateTime lastMyQuestsRequest = DateTime.MinValue;
 
-        HudTextBox UIQuestsListFilter { get; set; }
-        HudTabView UIQuestListNotebook { get; set; }
-        HudButton UIQuestListRefresh { get; set; }
+        HudTextBox UIQuestsListFilter;
+        HudTabView UIQuestListNotebook;
+        HudButton UIQuestListRefresh;
 
-        HudList UITimedQuestList { get; set; }
-        HudList UIKillTaskQuestList { get; set; }
-        HudList UIOnceQuestList { get; set; }
+        HudList UITimedQuestList;
+        HudList UIKillTaskQuestList;
+        HudList UIOnceQuestList;
 
         Timer questRedrawTimer = new Timer();
         Dictionary<string, QuestFlag> questFlags = new Dictionary<string, QuestFlag>();
 
-        public QuestTracker() {
-            UIQuestsListFilter = (HudTextBox)Globals.MainView.view["QuestsListFilter"];
-            UIQuestListNotebook = (HudTabView)Globals.MainView.view["QuestListNotebook"];
-            UIQuestListRefresh = (HudButton)Globals.MainView.view["QuestListRefresh"];
+        #region Commands
+        #region /ub quests
+        [Summary("Checks quest flags, and thinks to yourself with the status.  To find a quest flag, open quest tracker and click on something to print the name to the chatbox.")]
+        [Usage("/ub quests check <questFlag>")]
+        [Example("/ub quests check bella", "Think to yourself with the status of all quest flags matching bella")]
+        [CommandPattern("quests", @"^ *check +(?<QuestFlag>.+)$")]
+        public void DoAutoVendor(string command, Match args) {
+            var searchText = args.Groups["QuestFlag"].Value;
+            var searchRe = new Regex(searchText, RegexOptions.IgnoreCase);
+            var thoughts = 0;
 
-            UITimedQuestList = (HudList)Globals.MainView.view["TimedQuestList"];
-            UIKillTaskQuestList = (HudList)Globals.MainView.view["KillTaskQuestList"];
-            UIOnceQuestList = (HudList)Globals.MainView.view["OnceQuestList"];
+            var keys = new List<string>(questFlags.Keys);
+            keys.AddRange(new List<string>(QuestFlag.FriendlyNamesLookup.Keys));
+            keys = new List<string>(keys.Distinct());
+
+            foreach (var key in keys) {
+                if (searchRe.IsMatch(key)) {
+                    ThinkQuestFlag(key);
+                    thoughts++;
+
+                    if (thoughts >= 5) {
+                        Util.WriteToChat("Quests output has been truncated to the first 5 matching quest flags.");
+                        return;
+                    }
+                }
+            }
+
+            if (thoughts == 0) {
+                Util.Think($"Quest: {searchText} has not been completed");
+            }
+        }
+        #endregion
+        #endregion
+
+        public QuestTracker(UtilityBeltPlugin ub, string name) : base(ub, name) {
+            UIQuestsListFilter = (HudTextBox)UB.MainView.view["QuestsListFilter"];
+            UIQuestListNotebook = (HudTabView)UB.MainView.view["QuestListNotebook"];
+            UIQuestListRefresh = (HudButton)UB.MainView.view["QuestListRefresh"];
+
+            UITimedQuestList = (HudList)UB.MainView.view["TimedQuestList"];
+            UIKillTaskQuestList = (HudList)UB.MainView.view["KillTaskQuestList"];
+            UIOnceQuestList = (HudList)UB.MainView.view["OnceQuestList"];
 
             UIQuestsListFilter.Change += (s, e) => { DrawQuestLists(); };
 
@@ -43,51 +79,18 @@ namespace UtilityBelt.Tools {
             UIKillTaskQuestList.Click += (s, r, c) => { HandleRowClicked(UIKillTaskQuestList, r, c); };
             UIOnceQuestList.Click += (s, r, c) => { HandleRowClicked(UIOnceQuestList, r, c); };
 
-            Globals.MainView.view.VisibleChanged += MainView_VisibleChanged;
+            UB.MainView.view.VisibleChanged += MainView_VisibleChanged;
             questRedrawTimer.Tick += QuestRedrawTimer_Tick;
             questRedrawTimer.Interval = 1000;
 
-            Globals.Core.ChatBoxMessage += Current_ChatBoxMessage;
-            Globals.Core.CommandLineText += Core_CommandLineText;
+            UB.Core.ChatBoxMessage += Current_ChatBoxMessage;
             
             GetMyQuestsList();
         }
 
-        private void Core_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
-            try {
-                if (e.Text.StartsWith("/ub quests check ")) {
-                    e.Eat = true;
-                    var searchText = e.Text.Replace("/ub quests check ", "");
-                    var searchRe = new Regex(searchText, RegexOptions.IgnoreCase);
-                    var thoughts = 0;
-
-                    var keys = new List<string>(questFlags.Keys);
-                    keys.AddRange(new List<string>(QuestFlag.FriendlyNamesLookup.Keys));
-                    keys = new List<string>(keys.Distinct());
-
-                    foreach (var key in keys) {
-                        if (searchRe.IsMatch(key)) {
-                            ThinkQuestFlag(key);
-                            thoughts++;
-
-                            if (thoughts >= 5) {
-                                Util.WriteToChat("Quests output has been truncated to the first 5 matching quest flags.");
-                                return;
-                            }
-                        }
-                    }
-
-                    if (thoughts == 0) {
-                        Util.Think($"Quest: {searchText} has not been completed");
-                    }
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
         private void QuestRedrawTimer_Tick(object sender, EventArgs e) {
             try {
-                if (Globals.MainView.view.Visible) {
+                if (UB.MainView.view.Visible) {
                     DrawQuestLists();
                 }
             }
@@ -96,7 +99,7 @@ namespace UtilityBelt.Tools {
 
         private void MainView_VisibleChanged(object sender, EventArgs e) {
             try {
-                if (Globals.MainView.view.Visible) {
+                if (UB.MainView.view.Visible) {
                     questRedrawTimer.Start();
                 }
                 else {
@@ -263,29 +266,24 @@ namespace UtilityBelt.Tools {
         private void GetMyQuestsList() {
             try {
                 lastMyQuestsRequest = DateTime.UtcNow;
-                Globals.Core.Actions.InvokeChatParser("/myquests");
+                UB.Core.Actions.InvokeChatParser("/myquests");
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private bool disposed = false;
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing) {
-            if (!disposed) {
+        protected override void Dispose(bool disposing) {
+            if (!disposedValue) {
                 if (disposing) {
-                    Globals.Core.ChatBoxMessage -= Current_ChatBoxMessage;
-                    Globals.Core.CommandLineText -= Core_CommandLineText;
+                    UB.Core.ChatBoxMessage -= Current_ChatBoxMessage;
 
                     if (questRedrawTimer != null) {
                         questRedrawTimer.Stop();
                         questRedrawTimer.Dispose();
                     }
+
+                    base.Dispose(disposing);
                 }
-                disposed = true;
+                disposedValue = true;
             }
         }
     }

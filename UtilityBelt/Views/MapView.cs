@@ -12,27 +12,30 @@ using VirindiViewService.XMLParsers;
 
 namespace UtilityBelt.Views {
     public class MapView : BaseView {
-        public MapView() {
+        public MapView(UtilityBeltPlugin ub) : base(ub) {
+            CreateFromXMLResource("UtilityBelt.Views.MapView.xml");
+        }
+
+        public void Init() {
             try {
-                CreateFromXMLResource("UtilityBelt.Views.MapView.xml");
                 view.Icon = GetIcon();
                 view.UserResizeable = true;
 
                 view.Location = new Point(
-                    Globals.Settings.DungeonMaps.MapWindowX,
-                    Globals.Settings.DungeonMaps.MapWindowY
+                    UB.DungeonMaps.MapWindowX,
+                    UB.DungeonMaps.MapWindowY
                 );
-                view.Width = Globals.Settings.DungeonMaps.MapWindowWidth;
-                view.Height = Globals.Settings.DungeonMaps.MapWindowHeight;
+                view.Width = UB.DungeonMaps.MapWindowWidth;
+                view.Height = UB.DungeonMaps.MapWindowHeight;
 
                 var timer = new Timer();
                 timer.Interval = 2000; // save the window position 2 seconds after it has stopped moving
                 timer.Tick += (s, e) => {
                     timer.Stop();
-                    Globals.Settings.DungeonMaps.MapWindowX = view.Location.X;
-                    Globals.Settings.DungeonMaps.MapWindowY = view.Location.Y;
-                    Globals.Settings.DungeonMaps.MapWindowWidth = view.Width;
-                    Globals.Settings.DungeonMaps.MapWindowHeight = view.Height;
+                    UB.DungeonMaps.MapWindowX = view.Location.X;
+                    UB.DungeonMaps.MapWindowY = view.Location.Y;
+                    UB.DungeonMaps.MapWindowWidth = view.Width;
+                    UB.DungeonMaps.MapWindowHeight = view.Height;
                 };
 
                 view.Moved += (s, e) => {

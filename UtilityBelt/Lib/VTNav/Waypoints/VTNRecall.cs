@@ -1,4 +1,5 @@
-﻿using Decal.Adapter.Wrappers;
+﻿using Decal.Adapter;
+using Decal.Adapter.Wrappers;
 using Decal.Filters;
 using System;
 using System.Collections.Generic;
@@ -29,14 +30,14 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
         }
 
         public override void Draw() {
-            FileService service = Globals.Core.Filter<FileService>();
+            FileService service = CoreManager.Current.Filter<FileService>();
             var spell = service.SpellTable.GetById(RecallSpellId);
 
             VTNPoint rp = GetPreviousPoint();
-            var color = Color.FromArgb(Globals.Settings.VisualNav.Display.Recall.Color);
+            var color = Color.FromArgb(UtilityBeltPlugin.Instance.VisualNav.Display.Recall.Color);
             VTNPoint point = rp == null ? this : rp;
 
-            if (Globals.Settings.VisualNav.Display.Recall.Enabled) {
+            if (UtilityBeltPlugin.Instance.VisualNav.Display.Recall.Enabled) {
                 DrawText(spell.Name, point, 0.25f, color);
                 DrawIcon(spell.IconId, 0.35f, point);
             }

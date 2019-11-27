@@ -1,4 +1,5 @@
-﻿using Decal.Filters;
+﻿using Decal.Adapter;
+using Decal.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,7 +41,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
                 return isDungeon;
             }
 
-            FileService service = Globals.Core.Filter<FileService>();
+            FileService service = CoreManager.Current.Filter<FileService>();
             byte[] dungeonBlock = service.GetCellFile((int)LandCellId);
 
             if (dungeonBlock == null || dungeonBlock.Length < 5) {

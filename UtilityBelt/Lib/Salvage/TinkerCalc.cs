@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data;
+using Decal.Adapter;
 
 namespace UtilityBelt.Lib.Salvage {
     class TinkerCalc {
@@ -35,7 +36,7 @@ namespace UtilityBelt.Lib.Salvage {
 
         public double DoCalc(int salvageID, WorldObject targetItem, int tinkeredCount) {
             try {
-                var targetSalvage = Globals.Core.WorldFilter[salvageID];
+                var targetSalvage = CoreManager.Current.WorldFilter[salvageID];
                 TinkerType tinkerType = new TinkerType();
                 var salvageMod = TinkerType.GetMaterialMod(targetSalvage.Values(LongValueKey.Material));
                 var salvageWorkmanship = targetSalvage.Values(DoubleValueKey.SalvageWorkmanship);
@@ -53,7 +54,7 @@ namespace UtilityBelt.Lib.Salvage {
 
                 if(TinkerType.SalvageType(targetSalvage.Values(LongValueKey.Material)) == 2){
                     successChance /= 3.0f;
-                    if (Globals.Core.CharacterFilter.GetCharProperty((int)Augmentations.CharmedSmith) == 1) {
+                    if (CoreManager.Current.CharacterFilter.GetCharProperty((int)Augmentations.CharmedSmith) == 1) {
                         successChance += 0.05f;
                     }
                 }

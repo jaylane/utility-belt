@@ -22,7 +22,7 @@ namespace UtilityBelt.Views {
 
         public EnumFlagEditor(HudView parentView, string setting) {
             this.parentView = parentView;
-            this.prop = Globals.Settings.GetOptionProperty(setting);
+            this.prop = UtilityBeltPlugin.Instance.Settings.GetOptionProperty(setting);
 
             VirindiViewService.XMLParsers.Decal3XMLParser parser = new VirindiViewService.XMLParsers.Decal3XMLParser();
             parser.ParseFromResource("UtilityBelt.Views.EnumFlagEditor.xml", out properties, out controls);

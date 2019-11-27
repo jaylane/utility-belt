@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using UtilityBelt.Lib.Constants;
 
 namespace UtilityBelt.Lib.ChatLog
 {
