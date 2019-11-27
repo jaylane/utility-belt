@@ -623,6 +623,7 @@ namespace UtilityBelt.Tools {
             if (wo == null) return false;
             if (wo.Values(LongValueKey.Value, 0) <= 0) return false; // skip 0 value
             if (wo.Values(BoolValueKey.CanBeSold, true) == false) return false; // sellable?
+            if (wo.Values(LongValueKey.IconUnderlay, 0) == 23308) return false; // rares
             if (Globals.Settings.AutoVendor.OnlyFromMainPack == true && wo.Container != Globals.Core.CharacterFilter.Id)
                 return false; // bail if we are only selling from main pack and this isnt in there
             return Util.IsItemSafeToGetRidOf(wo);
