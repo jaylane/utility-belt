@@ -346,6 +346,14 @@ namespace UtilityBelt.Tools {
             }
         }
         #endregion
+        #region /ub testitem
+        [Summary("dev test.")]
+        [Usage("/ub testitem")]
+        [CommandPattern("testitem", @"^$")]
+        public void TestItem(string command, Match args) {
+            UBHelper.InventoryManager.TestItem(UB.Core.Actions.CurrentSelection);
+        }
+        #endregion
         #region /ub unstack
         [Summary("Insta-UnStack dev test.")]
         [Usage("/ub unstack")]
