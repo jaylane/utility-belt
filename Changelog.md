@@ -11,6 +11,7 @@
 - Add setting `InventoryManager.TreatStackAsSingleItem` (currently only used in itemgiver)
 - Add `/ub playsounds` to play mp3 files from command line
 - Add `/ub pcap` to export pcap files from a rolling buffer
+- Add ability to auto-generate equip profile based on currently equipped items
 
 ## 0.0.14 (2019-11-15) [UtilityBeltInstaller-0.0.14.exe](/uploads/0d29c14ccc27377941cb5f92c37ffaef/UtilityBeltInstaller-0.0.14.exe)
 - Added VisualNav.Enabled setting
