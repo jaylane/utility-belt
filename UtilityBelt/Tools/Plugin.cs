@@ -156,7 +156,7 @@ namespace UtilityBelt.Tools {
         [Example("/ub delay 5000 /say hello", "Runs \"/say hello\" after a 3000ms delay (3 seconds)")]
         [CommandPattern("delay", @"^ *(?<params>\d+ .+) *$")]
         public void DoDelay(string command, Match args) {
-            UB_delay(command + " " + args.Groups["params"].Value);
+            UB_delay(args.Groups["params"].Value);
         }
         #endregion
         #region /ub help
@@ -267,14 +267,14 @@ namespace UtilityBelt.Tools {
         [Summary("Disables rendering of the 3d world to conserve CPU")]
         [Usage("/ub playeroption <option> {on | true | off | false}")]
         [Example("/ub playeroption AutoRepeatAttack on", "Enables the AutoRepeatAttack player option.")]
-        [CommandPattern("playeroption", @"^ *(?<params>\s+ (on|off|true|false)) *$")]
+        [CommandPattern("playeroption", @"^ *(?<params>.+ (on|off|true|false)) *$")]
         public void DoPlayerOption(string command, Match args) {
             UB_playeroption(args.Groups["params"].Value);
         }
         #endregion
         #region /ub playsound
         [Summary("Play a sound from the client")]
-        [Usage("/ub pcap [volume] <filepath>")]
+        [Usage("/ub playsound [volume] <filepath>")]
         [Example("/ub playsound 100 C:\test.wav", "Plays absolute path to music file at 100% volume")]
         [Example("/ub playsound 50 test.wav", "Plays test.wav from the UB plugin storage directory at 50% volume")]
         [CommandPattern("playsound", @"^ *(?<params>(\d+ )?.+) *$")]
@@ -284,7 +284,7 @@ namespace UtilityBelt.Tools {
         #endregion
         #region /ub pcap
         [Summary("Manage packet captures")]
-        [Usage("pcap {enable [bufferDepth] | disable | print}")]
+        [Usage("/ub pcap {enable [bufferDepth] | disable | print}")]
         [Example("/ub pcap enable", "Enable pcap functionality (nothing will be saved until you call /ub pcap print)")]
         [Example("/ub pcap print", "Saves the current pcap buffer to a new file in your plugin storage directory.")]
         [CommandPattern("pcap", @"^ *(?<params>(enable( \d+)?|disable|print)) *$")]
@@ -318,7 +318,7 @@ namespace UtilityBelt.Tools {
         [Example("/ub videopatch toggle", "Toggles the video patch")]
         [CommandPattern("videopatch", @"^ *(?<params>(enable|disable|toggle)) *$")]
         public void DoVideoPatch(string command, Match args) {
-            UB_delay(command + " " + args.Groups["params"].Value);
+            UB_video(args.Groups["params"].Value);
         }
         #endregion
         #endregion
@@ -437,6 +437,10 @@ namespace UtilityBelt.Tools {
             string[] parameter = parameters.Split(stringSplit, 2);
             switch (parameter[0]) {
                 case "enable":
+                    if (parameter.Length == 2 && Int32.TryParse(parameter[1], out int parsedBufferDepth)) {
+                        PCapBufferDepth = parsedBufferDepth;
+                    }
+
                     if (PCapBufferDepth > 65535)
                         Util.WriteToChat($"WARNING: Large buffers can have negative performance impacts on the game. Buffer depths between 1000 and 20000 are recommended.");
                     Util.WriteToChat($"Enabled rolling PCap logger with a bufferDepth of {PCapBufferDepth:n0}. This will consume {(PCapBufferDepth * 505):n0} bytes of memory.");
