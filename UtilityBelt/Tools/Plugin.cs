@@ -195,6 +195,14 @@ namespace UtilityBelt.Tools {
             UB_portal("", true);
         }
         #endregion
+        #region /ub fixbusy
+        [Summary("Fixes busystate bugs on the client side.")]
+        [Usage("/ub fixbusy")]
+        [CommandPattern("fixbusy", @"^$")]
+        public void DoFixBusy(string command, Match args) {
+            UB_fixbusy();
+        }
+        #endregion
         #region /ub follow
         [Summary("Follow player commands")]
         [Usage("/ub follow[p] <name>")]
@@ -255,25 +263,6 @@ namespace UtilityBelt.Tools {
             UB_propertydump();
         }
         #endregion
-        #region /ub vitae
-        [Summary("Thinks to yourself with your current vitae percentage")]
-        [Usage("/ub vitae")]
-        [CommandPattern("vitae", @"^$")]
-        public void DoVitae(string command, Match args) {
-            UB_vitae();
-        }
-        #endregion
-        #region /ub videopatch
-        [Summary("Disables rendering of the 3d world to conserve CPU")]
-        [Usage("/ub videopatch {enable | disable | toggle}")]
-        [Example("/ub videopatch enable", "Enables the video patch")]
-        [Example("/ub videopatch disable", "Disables the video patch")]
-        [Example("/ub videopatch toggle", "Toggles the video patch")]
-        [CommandPattern("videopatch", @"^ *(?<params>(enable|disable|toggle)) *$")]
-        public void DoVideoPatch(string command, Match args) {
-            UB_delay(command + " " + args.Groups["params"].Value);
-        }
-        #endregion
         #region /ub playeroption
         [Summary("Disables rendering of the 3d world to conserve CPU")]
         [Usage("/ub playeroption <option> {on | true | off | false}")]
@@ -303,14 +292,6 @@ namespace UtilityBelt.Tools {
             UB_pcap(args.Groups["params"].Value);
         }
         #endregion
-        #region /ub fixbusy
-        [Summary("Fixes busystate bugs on the client side.")]
-        [Usage("/ub fixbusy")]
-        [CommandPattern("fixbusy", @"^$")]
-        public void DoFixBusy(string command, Match args) {
-            UB_fixbusy();
-        }
-        #endregion
         #region /ub vendor
         [Summary("Vendor commands, with build in VTank pausing.")]
         [Usage("/ub vendor {open[p] <vendorname,vendorid,vendorhex> | buyall | sellall | clearbuy | clearsell | opencancel}")]
@@ -319,6 +300,25 @@ namespace UtilityBelt.Tools {
         [CommandPattern("vendor", @"^ *(?<params>(openp? .+|buy(all)?|sell(all)?|clearbuy|clearsell|opencancel)) *$")]
         public void DoVendor(string command, Match args) {
             UB_vendor(args.Groups["params"].Value);
+        }
+        #endregion
+        #region /ub vitae
+        [Summary("Thinks to yourself with your current vitae percentage")]
+        [Usage("/ub vitae")]
+        [CommandPattern("vitae", @"^$")]
+        public void DoVitae(string command, Match args) {
+            UB_vitae();
+        }
+        #endregion
+        #region /ub videopatch
+        [Summary("Disables rendering of the 3d world to conserve CPU")]
+        [Usage("/ub videopatch {enable | disable | toggle}")]
+        [Example("/ub videopatch enable", "Enables the video patch")]
+        [Example("/ub videopatch disable", "Disables the video patch")]
+        [Example("/ub videopatch toggle", "Toggles the video patch")]
+        [CommandPattern("videopatch", @"^ *(?<params>(enable|disable|toggle)) *$")]
+        public void DoVideoPatch(string command, Match args) {
+            UB_delay(command + " " + args.Groups["params"].Value);
         }
         #endregion
         #endregion

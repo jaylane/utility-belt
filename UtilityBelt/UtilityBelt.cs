@@ -73,8 +73,11 @@ namespace UtilityBelt {
         internal List<ToolBase> LoadedTools = new List<ToolBase>();
 
         #region Tools
+        public Plugin Plugin { get; private set; }
         public Assessor Assessor { get; private set; }
+        public AutoImbue AutoImbue { get; private set; }
         public AutoSalvage AutoSalvage { get; private set; }
+        public AutoTinker AutoTinker { get; private set; }
         public AutoTrade AutoTrade { get; private set; }
         public AutoVendor AutoVendor { get; private set; }
         public ChatLogger ChatLogger { get; private set; }
@@ -85,7 +88,6 @@ namespace UtilityBelt {
         public InventoryManager InventoryManager { get; private set; }
         public Jumper Jumper { get; private set; }
         public Nametags Nametags { get; private set; }
-        public Plugin Plugin { get; private set; }
         public QuestTracker QuestTracker { get; private set; }
         public VisualNav VisualNav { get; private set; }
         public VTankControl VTank { get; private set; }

@@ -6,7 +6,7 @@ using System.Text;
 using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Lib {
-    public class ToolBase : SectionBase {
+    public class ToolBase : DisplaySectionBase {
         protected Dictionary<string, object> propValues = new Dictionary<string, object>();
         protected UtilityBeltPlugin UB;
 
