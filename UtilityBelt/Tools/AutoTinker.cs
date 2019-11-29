@@ -15,20 +15,16 @@ using System.ComponentModel;
 namespace UtilityBelt.Tools {
     [Name("AutoTinker")]
     public class AutoTinker : ToolBase {
-        HudButton AutoTinkAddSelectedButton;
-        HudButton selectSalvage;
-        HudList AutoTinkerList;
-        HudButton ClearList;
-        HudButton PopulateList;
-        HudButton AutoTinkStartButton;
-        HudButton AutoTinkStopButton;
-        HudButton PopulateListButton;
-        HudStaticText AutoTinkItemLabel;
-        HudStaticText AutoTinkItemNameLabel;
-        HudCombo AutoTinkCombo;
-        HudTextBox AutoTinkMinPercentTextBox;
+        readonly HudButton AutoTinkAddSelectedButton;
+        readonly HudList AutoTinkerList;
+        readonly HudButton AutoTinkStartButton;
+        readonly HudButton AutoTinkStopButton;
+        readonly HudButton PopulateListButton;
+        readonly HudStaticText AutoTinkItemNameLabel;
+        readonly HudCombo AutoTinkCombo;
+        readonly HudTextBox AutoTinkMinPercentTextBox;
 
-        private FakeItem fakeItem = new FakeItem();
+        private readonly FakeItem fakeItem = new FakeItem();
         public DataTable tinkerDT = new DataTable();
         private bool waitingForIds = false;
         private DateTime lastIdSpam = DateTime.MinValue;
@@ -44,12 +40,10 @@ namespace UtilityBelt.Tools {
         private bool tinking = false;
         WorldObject targetSalvage;
         WorldObject itemWO;
-        TinkerCalc tinkerCalc = new TinkerCalc();
-        TinkerType tinkerType = new TinkerType();
-
-        Dictionary<string, int> SalvageList = new Dictionary<string, int>();
-        Dictionary<int, double> PotentialSalvageList = new Dictionary<int, double>();
-        List<string> ComboBoxList = new List<string>();
+        readonly TinkerCalc tinkerCalc = new TinkerCalc();
+        readonly Dictionary<string, int> SalvageList = new Dictionary<string, int>();
+        readonly Dictionary<int, double> PotentialSalvageList = new Dictionary<int, double>();
+        readonly List<string> ComboBoxList = new List<string>();
 
         #region Config
         [Summary("Minimum percentage required to perform tinker")]
@@ -71,8 +65,6 @@ namespace UtilityBelt.Tools {
                 AutoTinkerList.Click += AutoTinkerList_Click;
 
                 AutoTinkCombo = (HudCombo)UB.MainView.view["AutoTinkCombo"];
-
-                AutoTinkCombo.Change += AutoTinkCombo_Change;
 
                 AutoTinkAddSelectedButton = (HudButton)UB.MainView.view["AutoTinkAddSelectedButton"];
                 AutoTinkAddSelectedButton.Hit += AutoTinkAddSelectedButton_Hit;
@@ -187,7 +179,6 @@ namespace UtilityBelt.Tools {
         }
 
         public void AutoImbueSalvageCombo_Change(object sender, EventArgs e) {
-            HudStaticText c = (HudStaticText)(AutoTinkCombo[AutoTinkCombo.Current]);
             ClearAllTinks();
             DoPopulateList();
         }
@@ -251,9 +242,6 @@ namespace UtilityBelt.Tools {
             }
 
             MinPercentage = f;
-        }
-        public void AutoTinkCombo_Change(object sender, EventArgs e) {
-            HudStaticText c = (HudStaticText)(AutoTinkCombo[AutoTinkCombo.Current]);
         }
 
         private void DoPopulateList() {
@@ -478,14 +466,6 @@ namespace UtilityBelt.Tools {
             AutoTinkCombo.AddItem("Granite/Iron", null);
         }
 
-        public void GetMaterialList() {
-            FileService service = CoreManager.Current.Filter<FileService>();
-            for (var i = 0; i < service.MaterialTable.Length; i++) {
-                var material = service.MaterialTable[i];
-            }
-
-        }
-
         public void CreateDataTable() {
             try {
                 tinkerDT.Columns.Add("tinkeredCount", typeof(int));
@@ -544,7 +524,6 @@ namespace UtilityBelt.Tools {
                 fakeItem.tinkeredCount = itemWO.Values(LongValueKey.NumberTimesTinkered);
             }
             fakeItem.successPercent = tinkerCalc.DoCalc(targetSalvage.Id, targetWO, fakeItem.tinkeredCount);
-            var enchantments = CoreManager.Current.CharacterFilter.Enchantments;
         }
 
         protected override void Dispose(bool disposing) {

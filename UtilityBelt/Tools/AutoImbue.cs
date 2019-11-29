@@ -14,22 +14,12 @@ using UtilityBelt.Lib;
 namespace UtilityBelt.Tools {
     [Name("AutoImbue")]
     public class AutoImbue : ToolBase {
-
-        HudList AutoImbueList;
-        HudButton ClearList;
-        HudButton PopulateList;
-        HudButton AutoImbueStartButton;
-        HudButton AutoImbueStopButton;
-        HudButton PopulateListButton;
-        HudStaticText AutoImbueItemLabel;
-        HudStaticText AutoImbueItemNameLabel;
-        HudCombo AutoImbueSalvageCombo;
-        HudCombo AutoImbueDmgTypeCombo;
-        HudTextBox AutoImbueMinPercentTextBox;
-        HudButton AutoImbueRefreshListButton;
-
-        private DateTime lastThought = DateTime.MinValue;
-        private FakeItem fakeItem = new FakeItem();
+        readonly HudList AutoImbueList;
+        readonly HudButton AutoImbueStartButton;
+        readonly HudButton AutoImbueStopButton;
+        readonly HudCombo AutoImbueSalvageCombo;
+        readonly HudCombo AutoImbueDmgTypeCombo;
+        readonly HudButton AutoImbueRefreshListButton;
         public DataTable tinkerDT = new DataTable();
         private bool waitingForIds = false;
         private DateTime lastIdSpam = DateTime.MinValue;
@@ -46,14 +36,12 @@ namespace UtilityBelt.Tools {
         double imbueChance;
         int targetItem;
         int imbueCount;
-        TinkerCalc tinkerCalc = new TinkerCalc();
-        TinkerType tinkerType = new TinkerType();
-
-        Dictionary<string, int> SalvageList = new Dictionary<string, int>();
-        List<string> dmgList = new List<string>();
-        Dictionary<int, double> PotentialSalvageList = new Dictionary<int, double>();
-        Dictionary<int, double> PotentialWeaponList = new Dictionary<int, double>();
-        Dictionary<string, int> DefaultImbueList = new Dictionary<string, int>();
+        readonly TinkerCalc tinkerCalc = new TinkerCalc();
+        readonly Dictionary<string, int> SalvageList = new Dictionary<string, int>();
+        readonly List<string> dmgList = new List<string>();
+        readonly Dictionary<int, double> PotentialSalvageList = new Dictionary<int, double>();
+        readonly Dictionary<int, double> PotentialWeaponList = new Dictionary<int, double>();
+        readonly Dictionary<string, int> DefaultImbueList = new Dictionary<string, int>();
 
         public AutoImbue(UtilityBeltPlugin ub, string name) : base(ub, name) {
             try {
@@ -188,7 +176,6 @@ namespace UtilityBelt.Tools {
         }
 
         public void AutoImbueSalvageCombo_Change(object sender, EventArgs e) {
-            HudStaticText c = (HudStaticText)(AutoImbueSalvageCombo[AutoImbueSalvageCombo.Current]);
             ClearAllTinks();
             GetPotentialItems();
         }

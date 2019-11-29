@@ -24,9 +24,7 @@ namespace UtilityBelt.Views {
         private HudFixedLayout FormLayout = null;
         private HudButton CheckForUpdate;
         internal HudButton ExportPCap;
-
-        private List<HudButton> toggleButtons = new List<HudButton>();
-
+        Timer timer;
         private const int descriptionHeight = 40;
 
         private readonly Dictionary<string, string> buttons = new Dictionary<string, string>() {
@@ -53,8 +51,9 @@ namespace UtilityBelt.Views {
                     UB.Plugin.WindowPositionY
                 );
 
-                var timer = new Timer();
-                timer.Interval = 2000; // save the window position 2 seconds after it has stopped moving
+                timer = new Timer {
+                    Interval = 2000 // save the window position 2 seconds after it has stopped moving
+                };
                 timer.Tick += (s, e) => {
                     timer.Stop();
                     UB.Plugin.WindowPositionX = view.Location.X;
@@ -190,7 +189,6 @@ namespace UtilityBelt.Views {
         }
 
         private void PopulateSettings(object obj, string history) {
-            var results = "";
             obj = obj ?? UB;
 
             if (string.IsNullOrEmpty(history)) {
@@ -270,6 +268,9 @@ namespace UtilityBelt.Views {
 
         internal override ACImage GetIcon() {
             return GetIcon("UtilityBelt.Resources.icons.utilitybelt.png");
+        }
+        ~MainView() {
+            if (timer != null) timer.Dispose();
         }
     }
 }

@@ -143,7 +143,7 @@ namespace UtilityBelt.Tools {
         [Usage("/ub")]
         [Example("/ub", "Prints current build version to chat")]
         [CommandPattern("", @"^$")]
-        public void ShowVersion(string command, Match args) {
+        public void ShowVersion(string _, Match _1) {
             Util.WriteToChat("UtilityBelt Version v" + Util.GetVersion(true) + "\n Type `/ub help` or `/ub help <command>` for help.");
         }
         #endregion
@@ -152,7 +152,7 @@ namespace UtilityBelt.Tools {
         [Usage("/ub delay <millisecondDelay> <command>")]
         [Example("/ub delay 5000 /say hello", "Runs \"/say hello\" after a 3000ms delay (3 seconds)")]
         [CommandPattern("delay", @"^ *(?<params>\d+ .+) *$")]
-        public void DoDelay(string command, Match args) {
+        public void DoDelay(string _, Match args) {
             UB_delay(args.Groups["params"].Value);
         }
         private void UB_delay(string theRest) {
@@ -192,7 +192,7 @@ namespace UtilityBelt.Tools {
         [Example("/ub help", "Prints out all available UB commands")]
         [Example("/ub help printcolors", "Prints out help and usage information for the printcolors command")]
         [CommandPattern("help", @"^(?<Command>\S+)?$")]
-        public void PrintHelp(string command, Match args) {
+        public void PrintHelp(string _, Match args) {
             var argCommand = args.Groups["Command"].Value;
 
             if (!string.IsNullOrEmpty(argCommand) && UB.RegisteredCommands.ContainsKey(argCommand)) {
@@ -218,7 +218,7 @@ namespace UtilityBelt.Tools {
         [Usage("/ub closestportal")]
         [Example("/ub closestportal", "Uses the closest portal")]
         [CommandPattern("closestportal", @"^$")]
-        public void DoClosestPortal(string command, Match args) {
+        public void DoClosestPortal(string _, Match _1) {
             UB_portal("", true);
         }
         [Summary("Portal commands, with build in VTank pausing.")]
@@ -288,7 +288,7 @@ namespace UtilityBelt.Tools {
         [Summary("Fixes busystate bugs on the client side.")]
         [Usage("/ub fixbusy")]
         [CommandPattern("fixbusy", @"^$")]
-        public void DoFixBusy(string command, Match args) {
+        public void DoFixBusy(string _, Match _1) {
             UB_fixbusy();
         }
         #endregion
@@ -341,7 +341,7 @@ namespace UtilityBelt.Tools {
         [Example("/ub get Plugin.Debug", "Gets the current value for the \"Plugin.Debug\" setting")]
         [Example("/ub set Plugin.Debug true", "Sets the \"Plugin.Debug\" setting to True")]
         [CommandPattern("opt", @"^ *(?<params>(list|get \S+|set \S+ \S+)) *$")]
-        public void DoOpt(string command, Match args) {
+        public void DoOpt(string _, Match args) {
             UB_opt(args.Groups["params"].Value);
         }
 
@@ -455,7 +455,7 @@ namespace UtilityBelt.Tools {
         [Summary("Prints position information for the currently selected object")]
         [Usage("/ub pos")]
         [CommandPattern("pos", @"^$")]
-        public void DoPos(string command, Match args) {
+        public void DoPos(string _, Match _1) {
             UB_pos();
         }
         private void UB_pos() {
@@ -488,7 +488,7 @@ namespace UtilityBelt.Tools {
         [Usage("/ub printcolors")]
         [Example("/ub printcolors", "Prints out all available chat colors")]
         [CommandPattern("printcolors", @"^$")]
-        public void PrintChatColors(string command, Match args) {
+        public void PrintChatColors(string _, Match _1) {
             foreach (var type in Enum.GetValues(typeof(ChatMessageType)).Cast<ChatMessageType>()) {
                 WriteToChat($"{type} ({(int)type})", (int)type);
             }
@@ -498,7 +498,7 @@ namespace UtilityBelt.Tools {
         [Summary("Prints information for the currently selected object")]
         [Usage("/ub propertydump")]
         [CommandPattern("propertydump", @"^$")]
-        public void DoPropertyDump(string command, Match args) {
+        public void DoPropertyDump(string _, Match _1) {
             UB_propertydump();
         }
         private void UB_propertydump() {
@@ -603,7 +603,7 @@ namespace UtilityBelt.Tools {
         [Usage("/ub playeroption <option> {on | true | off | false}")]
         [Example("/ub playeroption AutoRepeatAttack on", "Enables the AutoRepeatAttack player option.")]
         [CommandPattern("playeroption", @"^ *(?<params>.+ (on|off|true|false)) *$")]
-        public void DoPlayerOption(string command, Match args) {
+        public void DoPlayerOption(string _, Match args) {
             UB_playeroption(args.Groups["params"].Value);
         }
         public void UB_playeroption(string parameters) {
@@ -635,7 +635,7 @@ namespace UtilityBelt.Tools {
         [Example("/ub playsound 100 C:\test.wav", "Plays absolute path to music file at 100% volume")]
         [Example("/ub playsound 50 test.wav", "Plays test.wav from the UB plugin storage directory at 50% volume")]
         [CommandPattern("playsound", @"^ *(?<params>(\d+ )?.+) *$")]
-        public void DoPlaySound(string command, Match args) {
+        public void DoPlaySound(string _, Match args) {
             UB_playsound(args.Groups["params"].Value);
         }
         private static readonly Regex PlaySoundParamRegex = new Regex(@"^(?<volume>\d*)?\s*(?<path>.*)$");
@@ -679,7 +679,7 @@ namespace UtilityBelt.Tools {
         [Example("/ub pcap enable", "Enable pcap functionality (nothing will be saved until you call /ub pcap print)")]
         [Example("/ub pcap print", "Saves the current pcap buffer to a new file in your plugin storage directory.")]
         [CommandPattern("pcap", @"^ *(?<params>(enable( \d+)?|disable|print)) *$")]
-        public void DoPcap(string command, Match args) {
+        public void DoPcap(string _, Match args) {
             UB_pcap(args.Groups["params"].Value);
         }
         public void UB_pcap(string parameters) {
@@ -718,7 +718,7 @@ namespace UtilityBelt.Tools {
         [Summary("Thinks to yourself with your current vitae percentage")]
         [Usage("/ub vitae")]
         [CommandPattern("vitae", @"^$")]
-        public void DoVitae(string command, Match args) {
+        public void DoVitae(string _, Match _1) {
             UB_vitae();
         }
         private void UB_vitae() {
@@ -732,7 +732,7 @@ namespace UtilityBelt.Tools {
         [Example("/ub videopatch disable", "Disables the video patch")]
         [Example("/ub videopatch toggle", "Toggles the video patch")]
         [CommandPattern("videopatch", @"^ *(?<params>(enable|disable|toggle)) *$")]
-        public void DoVideoPatch(string command, Match args) {
+        public void DoVideoPatch(string _, Match args) {
             UB_video(args.Groups["params"].Value);
         }
         public void UB_video(string parameters) {
