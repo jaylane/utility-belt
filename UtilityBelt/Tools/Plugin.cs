@@ -321,6 +321,44 @@ namespace UtilityBelt.Tools {
             UB_video(args.Groups["params"].Value);
         }
         #endregion
+        #region /ub autostack
+        [Summary("Auto Stack your inventory")]
+        [Usage("/ub autostack")]
+        [CommandPattern("autostack", @"^$")]
+        public void DoAutoStack(string command, Match args) {
+            if (UBHelper.InventoryManager.AutoStack()) {
+                UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_AutoStack;
+                Util.WriteToChat("AutoStack running");
+            }
+            else {
+                Util.WriteToChat("AutoStack - nothing to do");
+            }
+        }
+
+        private void ActionQueue_InventoryEvent_AutoStack(object sender, EventArgs e) {
+            Util.WriteToChat("AutoStack complete.");
+            UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoStack;
+        }
+        #endregion
+        #region /ub autocram
+        [Summary("Auto Cram into side packs")]
+        [Usage("/ub autocram")]
+        [CommandPattern("autocram", @"^$")]
+        public void DoAutoCram(string command, Match args) {
+            if (UBHelper.InventoryManager.AutoCram()) {
+                UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_AutoCram;
+                Util.WriteToChat("AutoCram running");
+            }
+            else {
+                Util.WriteToChat("AutoCram - nothing to do");
+            }
+        }
+
+        private void ActionQueue_InventoryEvent_AutoCram(object sender, EventArgs e) {
+            Util.WriteToChat("AutoCram complete.");
+            UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoCram;
+        }
+        #endregion
         #endregion
 
         public Plugin(UtilityBeltPlugin ub, string name) : base(ub, name) {
