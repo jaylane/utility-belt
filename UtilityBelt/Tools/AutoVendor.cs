@@ -347,6 +347,7 @@ namespace UtilityBelt.Tools {
                 LogDebug("vendor " + vendor.Name + " opened successfully");
                 vendor = null;
                 vendorOpening = 0;
+                UB.Core.RenderFrame -= Core_RenderFrame_OpenVendor;
                 // VTankControl.Nav_UnBlock(); Let it bleed over into AutoVendor; odds are there's a reason this vendor was opened, and letting vtank run off prolly isn't it.
             }
             try {
