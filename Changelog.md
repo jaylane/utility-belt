@@ -12,6 +12,9 @@
 - Add `/ub playsounds` to play mp3 files from command line
 - Add `/ub pcap` to export pcap files from a rolling buffer
 - Add ability to auto-generate equip profile based on currently equipped items
+- Add `/ub autostack` to quickly:tm: stack all of the things
+- Add `/ub autocram` to quickly:tm: cram all of the things in packs other than your main pack
+- Re-enable autostack and autocram while vendoring, if enabled with AutoVendor.AutoStack and AutoVendor.AutoCram
 
 ## 0.0.14 (2019-11-15) [UtilityBeltInstaller-0.0.14.exe](/uploads/0d29c14ccc27377941cb5f92c37ffaef/UtilityBeltInstaller-0.0.14.exe)
 - Added VisualNav.Enabled setting
