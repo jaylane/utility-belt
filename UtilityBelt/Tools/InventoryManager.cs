@@ -25,9 +25,8 @@ namespace UtilityBelt.Tools {
         private bool isForced = false;
         private DateTime lastThought = DateTime.MinValue;
         private int movingObjectId = 0;
-        private int tryCount = 0;
-        private Dictionary<int, DateTime> blacklistedItems = new Dictionary<int, DateTime>();
-        private Dictionary<int, DateTime> blacklistedContainers = new Dictionary<int, DateTime>();
+        private readonly Dictionary<int, DateTime> blacklistedItems = new Dictionary<int, DateTime>();
+        private readonly Dictionary<int, DateTime> blacklistedContainers = new Dictionary<int, DateTime>();
 
         private static readonly Dictionary<int, int> giveObjects = new Dictionary<int, int>();
         private static readonly List<int> idItems = new List<int>();
@@ -134,7 +133,7 @@ namespace UtilityBelt.Tools {
         [Summary("Auto Stack your inventory")]
         [Usage("/ub autostack")]
         [CommandPattern("autostack", @"^$")]
-        public void DoAutoStack(string command, Match args) {
+        public void DoAutoStack(string _, Match _1) {
             if (UBHelper.InventoryManager.AutoStack()) {
                 UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_AutoStack;
                 Util.WriteToChat("AutoStack running");
@@ -153,7 +152,7 @@ namespace UtilityBelt.Tools {
         [Summary("Auto Cram into side packs")]
         [Usage("/ub autocram")]
         [CommandPattern("autocram", @"^$")]
-        public void DoAutoCram(string command, Match args) {
+        public void DoAutoCram(string _, Match _1) {
             if (UBHelper.InventoryManager.AutoCram()) {
                 UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_AutoCram;
                 Util.WriteToChat("AutoCram running");
@@ -201,12 +200,13 @@ namespace UtilityBelt.Tools {
                 profilesWatcher.Dispose();
             if (enabled) {
                 string loadedProfile = VTankControl.vTankInstance.GetLootProfile();
-                profilesWatcher = new FileSystemWatcher();
-                profilesWatcher.NotifyFilter = NotifyFilters.LastWrite;
+                profilesWatcher = new FileSystemWatcher {
+                    NotifyFilter = NotifyFilters.LastWrite,
+                    Filter = loadedProfile,
+                    Path = profilePath,
+                    EnableRaisingEvents = true
+                };
                 profilesWatcher.Changed += LootProfile_Changed;
-                profilesWatcher.Filter = loadedProfile;
-                profilesWatcher.Path = profilePath;
-                profilesWatcher.EnableRaisingEvents = true;
                 uTank2.PluginCore.PC.LootProfileChanged += PC_LootProfileChanged;
                 LogDebug($"FileSystemWatcher enabled on Path={profilePath},Filter={loadedProfile}");
             } else {
@@ -235,7 +235,6 @@ namespace UtilityBelt.Tools {
                 if (e.Change != WorldChangeType.StorageChange) return;
 
                 if (movingObjectId == e.Changed.Id) {
-                    tryCount = 0;
                     movingObjectId = 0;
                 }
                 else if (e.Changed.Container == UB.Core.CharacterFilter.Id && !isRunning) {
@@ -260,7 +259,6 @@ namespace UtilityBelt.Tools {
             isPaused = false;
             isForced = force;
             movingObjectId = 0;
-            tryCount = 0;
 
             LogDebug("Started");
 
@@ -271,7 +269,6 @@ namespace UtilityBelt.Tools {
             isForced = false;
             isRunning = false;
             movingObjectId = 0;
-            tryCount = 0;
 
             ChatThink("Finished.");
             LogDebug("Finished");

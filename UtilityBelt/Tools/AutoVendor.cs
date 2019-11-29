@@ -105,7 +105,7 @@ namespace UtilityBelt.Tools {
         [Example("/ub autovendor", "Loads VendorName.utl and starts the AutoVendor process.")]
         [Example("/ub autovendor recomp.utl", "Loads recomp.utl and starts the AutoVendor process.")]
         [CommandPattern("autovendor", @"^ *(?<LootProfile>.*)$")]
-        public void DoAutoVendor(string command, Match args) {
+        public void DoAutoVendor(string _, Match args) {
             Start(0, args.Groups["LootProfile"].Value);
         }
         #endregion
@@ -115,7 +115,7 @@ namespace UtilityBelt.Tools {
         [Example("/ub vendor open Tunlok Weapons Master", "Opens vendor with name \"Tunlok Weapons Master\"")]
         [Example("/ub vendor opencancel", "Quietly cancels the last /ub vendor open* command")]
         [CommandPattern("vendor", @"^ *(?<params>(openp? .+|buy(all)?|sell(all)?|clearbuy|clearsell|opencancel)) *$")]
-        public void DoVendor(string command, Match args) {
+        public void DoVendor(string _, Match args) {
             UB_vendor(args.Groups["params"].Value);
         }
         private DateTime vendorTimestamp = DateTime.MinValue;
