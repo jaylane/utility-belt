@@ -195,6 +195,14 @@ namespace UtilityBelt.Tools {
             UB_portal("", true);
         }
         #endregion
+        #region /ub fixbusy
+        [Summary("Fixes busystate bugs on the client side.")]
+        [Usage("/ub fixbusy")]
+        [CommandPattern("fixbusy", @"^$")]
+        public void DoFixBusy(string command, Match args) {
+            UB_fixbusy();
+        }
+        #endregion
         #region /ub follow
         [Summary("Follow player commands")]
         [Usage("/ub follow[p] <name>")]
@@ -255,25 +263,6 @@ namespace UtilityBelt.Tools {
             UB_propertydump();
         }
         #endregion
-        #region /ub vitae
-        [Summary("Thinks to yourself with your current vitae percentage")]
-        [Usage("/ub vitae")]
-        [CommandPattern("vitae", @"^$")]
-        public void DoVitae(string command, Match args) {
-            UB_vitae();
-        }
-        #endregion
-        #region /ub videopatch
-        [Summary("Disables rendering of the 3d world to conserve CPU")]
-        [Usage("/ub videopatch {enable | disable | toggle}")]
-        [Example("/ub videopatch enable", "Enables the video patch")]
-        [Example("/ub videopatch disable", "Disables the video patch")]
-        [Example("/ub videopatch toggle", "Toggles the video patch")]
-        [CommandPattern("videopatch", @"^ *(?<params>(enable|disable|toggle)) *$")]
-        public void DoVideoPatch(string command, Match args) {
-            UB_delay(command + " " + args.Groups["params"].Value);
-        }
-        #endregion
         #region /ub playeroption
         [Summary("Disables rendering of the 3d world to conserve CPU")]
         [Usage("/ub playeroption <option> {on | true | off | false}")]
@@ -303,14 +292,6 @@ namespace UtilityBelt.Tools {
             UB_pcap(args.Groups["params"].Value);
         }
         #endregion
-        #region /ub fixbusy
-        [Summary("Fixes busystate bugs on the client side.")]
-        [Usage("/ub fixbusy")]
-        [CommandPattern("fixbusy", @"^$")]
-        public void DoFixBusy(string command, Match args) {
-            UB_fixbusy();
-        }
-        #endregion
         #region /ub vendor
         [Summary("Vendor commands, with build in VTank pausing.")]
         [Usage("/ub vendor {open[p] <vendorname,vendorid,vendorhex> | buyall | sellall | clearbuy | clearsell | opencancel}")]
@@ -321,64 +302,23 @@ namespace UtilityBelt.Tools {
             UB_vendor(args.Groups["params"].Value);
         }
         #endregion
-        #region /ub autostack
-        [Summary("Insta-Auto Stack dev test.")]
-        [Usage("/ub autostack")]
-        [CommandPattern("autostack", @"^$")]
-        public void DoAutoStack(string command, Match args) {
-            UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_AutoStack;
-            if (UBHelper.InventoryManager.AutoStack()) {
-                Util.WriteToChat("AutoStack did something!");
-            } else {
-                Util.WriteToChat("AutoStack did nothing");
-            }
-        }
-
-        private void ActionQueue_InventoryEvent_AutoStack(object sender, EventArgs e) {
-            Util.WriteToChat("AutoStack complete.");
-            UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoStack;
+        #region /ub vitae
+        [Summary("Thinks to yourself with your current vitae percentage")]
+        [Usage("/ub vitae")]
+        [CommandPattern("vitae", @"^$")]
+        public void DoVitae(string command, Match args) {
+            UB_vitae();
         }
         #endregion
-        #region /ub autocram
-        [Summary("Insta-Auto Cram dev test.")]
-        [Usage("/ub autocram")]
-        [CommandPattern("autocram", @"^$")]
-        public void DoAutoCram(string command, Match args) {
-            UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_AutoCram;
-            if (UBHelper.InventoryManager.AutoCram()) {
-                Util.WriteToChat("AutoCram did something!");
-            }
-            else {
-                Util.WriteToChat("AutoCram did nothing");
-            }
-        }
-
-        private void ActionQueue_InventoryEvent_AutoCram(object sender, EventArgs e) {
-            Util.WriteToChat("AutoCram complete.");
-            UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoCram;
-        }
-        #endregion
-        #region /ub testitem
-        [Summary("dev test.")]
-        [Usage("/ub testitem")]
-        [CommandPattern("testitem", @"^$")]
-        public void TestItem(string command, Match args) {
-            UBHelper.InventoryManager.TestItem(UB.Core.Actions.CurrentSelection);
-        }
-
-        #endregion
-        #region /ub unstack
-        [Summary("Insta-UnStack dev test.")]
-        [Usage("/ub unstack")]
-        [CommandPattern("unstack", @"^$")]
-        public void DoUnStack(string command, Match args) {
-            UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_Unstack;
-            UBHelper.InventoryManager.UnStack();
-        }
-
-        private void ActionQueue_InventoryEvent_Unstack(object sender, EventArgs e) {
-            Util.WriteToChat("UnStack complete");
-            UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_Unstack;
+        #region /ub videopatch
+        [Summary("Disables rendering of the 3d world to conserve CPU")]
+        [Usage("/ub videopatch {enable | disable | toggle}")]
+        [Example("/ub videopatch enable", "Enables the video patch")]
+        [Example("/ub videopatch disable", "Disables the video patch")]
+        [Example("/ub videopatch toggle", "Toggles the video patch")]
+        [CommandPattern("videopatch", @"^ *(?<params>(enable|disable|toggle)) *$")]
+        public void DoVideoPatch(string command, Match args) {
+            UB_delay(command + " " + args.Groups["params"].Value);
         }
         #endregion
         #endregion

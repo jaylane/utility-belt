@@ -97,6 +97,7 @@ namespace UtilityBelt.Tools {
                 UB.Core.WorldFilter.AddTradeItem += WorldFilter_AddTradeItem;
                 UB.Core.WorldFilter.FailToAddTradeItem += WorldFilter_FailToAddTradeItem;
                 UB.Core.WorldFilter.AcceptTrade += WorldFilter_AcceptTrade;
+                UB.Core.RenderFrame += Core_RenderFrame;
 
                 AutoAcceptChars.CollectionChanged += AutoAcceptChars_CollectionChanged;
             }
@@ -221,7 +222,7 @@ namespace UtilityBelt.Tools {
             VTankControl.Nav_Block(30000, UB.Plugin.Debug);
         }
 
-        public void Core_RenerFrame() {
+        public void Core_RenderFrame(object sender, EventArgs e) {
             if (!running || !Enabled)
                 return;
 
@@ -464,6 +465,7 @@ namespace UtilityBelt.Tools {
                     UB.Core.WorldFilter.AddTradeItem -= WorldFilter_AddTradeItem;
                     UB.Core.WorldFilter.FailToAddTradeItem -= WorldFilter_FailToAddTradeItem;
                     UB.Core.WorldFilter.AcceptTrade -= WorldFilter_AcceptTrade;
+                    UB.Core.RenderFrame -= Core_RenderFrame;
 
                     base.Dispose(disposing);
                 }

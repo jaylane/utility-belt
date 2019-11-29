@@ -9,6 +9,7 @@ namespace UtilityBelt.Lib.Settings {
     public class ColorToggleOption : SectionBase {
         private bool enabled;
         [DefaultValue(true)]
+        [Summary("Enabled / Disabled")]
         public bool Enabled {
             get { return enabled; }
             set {
@@ -20,6 +21,7 @@ namespace UtilityBelt.Lib.Settings {
         
         private int color;
         [DefaultValue(-1)]
+        [Summary("Color")]
         public int Color {
             get { return color; }
             set {
