@@ -13,7 +13,7 @@ using UtilityBelt.Lib;
 
 namespace UtilityBelt.Tools {
     [Name("AutoImbue")]
-    class AutoImbue : ToolBase {
+    public class AutoImbue : ToolBase {
 
         HudList AutoImbueList;
         HudButton ClearList;
