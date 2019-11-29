@@ -326,11 +326,17 @@ namespace UtilityBelt.Tools {
         [Usage("/ub autostack")]
         [CommandPattern("autostack", @"^$")]
         public void DoAutoStack(string command, Match args) {
+            UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_AutoStack;
             if (UBHelper.InventoryManager.AutoStack()) {
                 Util.WriteToChat("AutoStack did something!");
             } else {
                 Util.WriteToChat("AutoStack did nothing");
             }
+        }
+
+        private void ActionQueue_InventoryEvent_AutoStack(object sender, EventArgs e) {
+            Util.WriteToChat("AutoStack complete.");
+            UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoStack;
         }
         #endregion
         #region /ub autocram
@@ -338,12 +344,18 @@ namespace UtilityBelt.Tools {
         [Usage("/ub autocram")]
         [CommandPattern("autocram", @"^$")]
         public void DoAutoCram(string command, Match args) {
+            UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_AutoCram;
             if (UBHelper.InventoryManager.AutoCram()) {
                 Util.WriteToChat("AutoCram did something!");
             }
             else {
                 Util.WriteToChat("AutoCram did nothing");
             }
+        }
+
+        private void ActionQueue_InventoryEvent_AutoCram(object sender, EventArgs e) {
+            Util.WriteToChat("AutoCram complete.");
+            UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoCram;
         }
         #endregion
         #region /ub testitem
@@ -353,13 +365,20 @@ namespace UtilityBelt.Tools {
         public void TestItem(string command, Match args) {
             UBHelper.InventoryManager.TestItem(UB.Core.Actions.CurrentSelection);
         }
+
         #endregion
         #region /ub unstack
         [Summary("Insta-UnStack dev test.")]
         [Usage("/ub unstack")]
         [CommandPattern("unstack", @"^$")]
         public void DoUnStack(string command, Match args) {
+            UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_Unstack;
             UBHelper.InventoryManager.UnStack();
+        }
+
+        private void ActionQueue_InventoryEvent_Unstack(object sender, EventArgs e) {
+            Util.WriteToChat("UnStack complete");
+            UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_Unstack;
         }
         #endregion
         #endregion
