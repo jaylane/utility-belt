@@ -33,6 +33,9 @@ namespace UtilityBelt.Tools {
         private float vendorSellRate = 1;
         private float vendorBuyRate = 1;
         private bool waitingForIds = false;
+        private bool waitingForAutoStackCram = false;
+        private bool shouldAutoStackCram = false;
+        private bool showMerchantInfoCooldown = false;
         private DateTime lastIdSpam = DateTime.MinValue;
         private int lastIdCount;
         private readonly List<int> itemsToId = new List<int>();
@@ -143,8 +146,10 @@ namespace UtilityBelt.Tools {
             }
         }
         private void CheckDone() {
-            if (Math.Abs(expectedPyreals) < 50 && pendingSell.Count() == 0 && pendingBuy.Count() == 0)
+            if (Math.Abs(expectedPyreals) < 50 && pendingSell.Count() == 0 && pendingBuy.Count() == 0) {
                 lastEvent = DateTime.MinValue;
+                shouldAutoStackCram = true;
+            }
             else
                 lastEvent = DateTime.UtcNow;
             bailTimer = DateTime.UtcNow;
@@ -249,8 +254,11 @@ namespace UtilityBelt.Tools {
                     vendorBuyRate = e.Vendor.BuyRate;
                     vendorOpened = DateTime.UtcNow;
                     var vendorInfo = $"{UB.Core.WorldFilter[e.Vendor.MerchantId].Name}[0x{e.Vendor.MerchantId:X8}]: BuyRate: {e.Vendor.BuyRate * 100:n0}% SellRate: {e.Vendor.SellRate * 100:n0}% MaxValue: {e.Vendor.MaxValue:n0}";
-                    if (ShowMerchantInfo)
+                    if (!showMerchantInfoCooldown && ShowMerchantInfo) {
+                        showMerchantInfoCooldown = true;
+                        UB.Core.RenderFrame += Core_RenderFrame_VendorSpam;
                         Util.WriteToChat(vendorInfo);
+                    }
                     else
                         LogDebug(vendorInfo);
                 }
@@ -361,6 +369,7 @@ namespace UtilityBelt.Tools {
 
             UB.InventoryManager.Pause();
 
+            waitingForAutoStackCram = false;
             UBHelper.Vendor.VendorClosed += UBHelper_VendorClosed;
             UB.Core.RenderFrame += Core_RenderFrame;
             isRunning = true;
@@ -391,14 +400,20 @@ namespace UtilityBelt.Tools {
             VTankControl.Item_UnBlock();
         }
 
-        public void Core_RenderFrame(object sender, EventArgs e) {
+        public void Core_RenderFrame_VendorSpam(object sender, EventArgs e) {
             //if Merchant info is displayed, does not need vendoring, vendorId is set, and it's been over 5 minutes since the vendor was opened; reset vendorId.
-            if (ShowMerchantInfo && !isRunning && vendorId > 0 && DateTime.UtcNow - vendorOpened > TimeSpan.FromMinutes(5)) {
-                vendorId = 0;
-                vendorOpened = DateTime.MinValue;
+            if (DateTime.UtcNow - vendorOpened > TimeSpan.FromSeconds(15)) {
+                showMerchantInfoCooldown = false;
+                UB.Core.RenderFrame -= Core_RenderFrame_VendorSpam;
+                if (!Enabled)
+                    vendorId = 0;
             }
-            if (!isRunning)
+        }
+            public void Core_RenderFrame(object sender, EventArgs e) {
+            if (!isRunning) {
+                UB.Core.RenderFrame -= Core_RenderFrame;
                 return;
+            }
 
             try {
                 if (UB.Core.Actions.BusyState == 0 && DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(250)) {
@@ -415,7 +430,7 @@ namespace UtilityBelt.Tools {
                             if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15)) {
                                 lastIdSpam = DateTime.UtcNow;
                                 var thisIdCount = UB.Assessor.GetNeededIdCount(itemsToId);
-                                WriteToChat(string.Format("waiting to id {0} items, this will take approximately {0} seconds.", thisIdCount));
+                                WriteToChat($"waiting to id {thisIdCount} items, this will take approximately {(thisIdCount/50):n3} seconds.");
                                 if (lastIdCount != thisIdCount) { // if count has changed, reset bail timer
                                     lastIdCount = thisIdCount;
                                     bailTimer = DateTime.UtcNow;
@@ -429,6 +444,14 @@ namespace UtilityBelt.Tools {
                     if (TestMode) {
                         DoTestMode();
                         Stop();
+                        return;
+                    }
+                    if (waitingForAutoStackCram) return;
+
+                    if (shouldAutoStackCram && (UB.InventoryManager.AutoStack && UBHelper.InventoryManager.AutoStack())||(UB.InventoryManager.AutoStack && UBHelper.InventoryManager.AutoCram())) {
+                        UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent;
+                        waitingForAutoStackCram = true;
+                        shouldAutoStackCram = false;
                         return;
                     }
 
@@ -456,6 +479,11 @@ namespace UtilityBelt.Tools {
                     Stop();
                 }
             } catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void ActionQueue_InventoryEvent(object sender, EventArgs e) {
+            waitingForAutoStackCram = false;
+            UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent;
         }
 
         private void DoVendoring() {
