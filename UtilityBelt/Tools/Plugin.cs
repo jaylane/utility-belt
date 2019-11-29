@@ -359,28 +359,6 @@ namespace UtilityBelt.Tools {
             UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoCram;
         }
         #endregion
-        #region /ub testitem
-        [Summary("Dump some info about the selected item")]
-        [Usage("/ub testitem")]
-        [CommandPattern("testitem", @"^$")]
-        public void TestItem(string command, Match args) {
-            UBHelper.InventoryManager.TestItem(UB.Core.Actions.CurrentSelection);
-        }
-        #endregion
-        #region /ub unstack
-        [Summary("Insta-UnStack dev test. Remove for production!")]
-        [Usage("/ub unstack")]
-        [CommandPattern("unstack", @"^$")]
-        public void DoUnStack(string command, Match args) {
-            UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_Unstack;
-            UBHelper.InventoryManager.UnStack();
-        }
-
-        private void ActionQueue_InventoryEvent_Unstack(object sender, EventArgs e) {
-            Util.WriteToChat("UnStack complete");
-            UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_Unstack;
-        }
-        #endregion
         #endregion
 
         public Plugin(UtilityBeltPlugin ub, string name) : base(ub, name) {
