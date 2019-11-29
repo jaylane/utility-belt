@@ -546,7 +546,7 @@ namespace UtilityBelt.Tools {
             }
             isRegex = flags.Contains("r");
             givePartialItem = flags.Contains("P");
-            int.TryParse(giveMatch.Groups["giveCount"].Value, out maxGive);
+            int.TryParse(giveMatch.Groups["Count"].Value, out maxGive);
             if (maxGive < 1)
                 maxGive = int.MaxValue;
 
