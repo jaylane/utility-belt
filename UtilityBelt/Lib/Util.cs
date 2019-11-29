@@ -407,6 +407,62 @@ namespace UtilityBelt
             }
         }
 
+        //Do not use this in a loop, it gets an F for eFFiciency.
+        public static WorldObject FindName(string searchname, bool partial, ObjectClass[] oc) {
+
+            //try int id
+            if (int.TryParse(searchname, out int id)) {
+                if (UB.Core.WorldFilter[id] != null && CheckObjectClassArray(UB.Core.WorldFilter[id].ObjectClass, oc)) {
+                    // Util.WriteToChat("Found by id");
+                    return UB.Core.WorldFilter[id];
+                }
+            }
+            //try hex...
+            try {
+                int intValue = Convert.ToInt32(searchname, 16);
+                if (UB.Core.WorldFilter[intValue] != null && CheckObjectClassArray(UB.Core.WorldFilter[intValue].ObjectClass, oc)) {
+                    // Util.WriteToChat("Found vendor by hex");
+                    return UB.Core.WorldFilter[intValue];
+                }
+            }
+            catch { }
+
+            searchname = searchname.ToLower();
+
+            //try "selected"
+            if (searchname.Equals("selected") && UB.Core.Actions.CurrentSelection != 0 && UB.Core.WorldFilter[UB.Core.Actions.CurrentSelection] != null && CheckObjectClassArray(UB.Core.WorldFilter[UB.Core.Actions.CurrentSelection].ObjectClass, oc)) {
+                return UB.Core.WorldFilter[UB.Core.Actions.CurrentSelection];
+            }
+            //try slow search...
+            WorldObject found = null;
+
+            double lastDistance = double.MaxValue;
+            double thisDistance;
+            foreach (WorldObject thisOne in CoreManager.Current.WorldFilter.GetLandscape()) {
+                if (!CheckObjectClassArray(thisOne.ObjectClass, oc)) continue;
+                thisDistance = UB.Core.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, thisOne.Id);
+                if (thisOne.Id != UB.Core.CharacterFilter.Id && (found == null || lastDistance > thisDistance)) {
+                    string thisLowerName = thisOne.Name.ToLower();
+                    if (partial && thisLowerName.Contains(searchname) && CheckObjectClassArray(thisOne.ObjectClass, oc)) {
+                        found = thisOne;
+                        lastDistance = thisDistance;
+                    }
+                    else if (thisLowerName.Equals(searchname) && CheckObjectClassArray(thisOne.ObjectClass, oc)) {
+                        found = thisOne;
+                        lastDistance = thisDistance;
+                    }
+                }
+            }
+            return found;
+        }
+        private static bool CheckObjectClassArray(ObjectClass needle, ObjectClass[] haystack) {
+            if (haystack.Length == 0) return true;
+            foreach (ObjectClass o in haystack)
+                if (needle == o) return true;
+            return false;
+        }
+
+
         public static DateTime UnixTimeStampToDateTime(double unixTimeStamp) {
             DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             dtDateTime = dtDateTime.AddSeconds(unixTimeStamp);

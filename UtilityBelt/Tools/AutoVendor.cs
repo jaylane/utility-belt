@@ -99,6 +99,7 @@ namespace UtilityBelt.Tools {
         #endregion
 
         #region Commands
+        #region /ub autovendor <lootProfile>
         [Summary("Auto buy/sell from vendors.")]
         [Usage("/ub autovendor <lootProfile>")]
         [Example("/ub autovendor", "Loads VendorName.utl and starts the AutoVendor process.")]
@@ -107,6 +108,110 @@ namespace UtilityBelt.Tools {
         public void DoAutoVendor(string command, Match args) {
             Start(0, args.Groups["LootProfile"].Value);
         }
+        #endregion
+        #region /ub vendor {open[p] [vendorname,vendorid,vendorhex],opencancel,buyall,sellall,clearbuy,clearsell}
+        [Summary("Vendor commands, with build in VTank pausing.")]
+        [Usage("/ub vendor {open[p] <vendorname,vendorid,vendorhex> | buyall | sellall | clearbuy | clearsell | opencancel}")]
+        [Example("/ub vendor open Tunlok Weapons Master", "Opens vendor with name \"Tunlok Weapons Master\"")]
+        [Example("/ub vendor opencancel", "Quietly cancels the last /ub vendor open* command")]
+        [CommandPattern("vendor", @"^ *(?<params>(openp? .+|buy(all)?|sell(all)?|clearbuy|clearsell|opencancel)) *$")]
+        public void DoVendor(string command, Match args) {
+            UB_vendor(args.Groups["params"].Value);
+        }
+        private DateTime vendorTimestamp = DateTime.MinValue;
+        private int vendorOpening = 0;
+        private static WorldObject vendor = null;
+        public void UB_vendor(string parameters) {
+            char[] stringSplit = { ' ' };
+            string[] parameter = parameters.Split(stringSplit, 2);
+            if (parameter.Length == 0) {
+                Util.WriteToChat("Usage: /ub vendor {open[p] [vendorname,vendorid,vendorhex],opencancel,buyall,sellall,clearbuy,clearsell}");
+                return;
+            }
+
+            switch (parameter[0]) {
+                case "buy":
+                case "buyall":
+                    CoreManager.Current.Actions.VendorBuyAll();
+                    break;
+
+                case "sell":
+                case "sellall":
+                    CoreManager.Current.Actions.VendorSellAll();
+                    break;
+
+                case "clearbuy":
+                    CoreManager.Current.Actions.VendorClearBuyList();
+                    break;
+
+                case "clearsell":
+                    CoreManager.Current.Actions.VendorClearSellList();
+                    break;
+
+                case "open":
+                    if (parameter.Length != 2)
+                        UB_vendor_open("", true);
+                    else
+                        UB_vendor_open(parameter[1], false);
+                    break;
+
+                case "openp":
+                    if (parameter.Length != 2)
+                        UB_vendor_open("", true);
+                    else
+                        UB_vendor_open(parameter[1], true);
+                    break;
+                case "opencancel":
+                    UB.Core.Actions.FaceHeading(UB.Core.Actions.Heading - 1, true);
+                    vendor = null;
+                    vendorOpening = 0;
+                    VTankControl.Nav_UnBlock();
+                    break;
+            }
+        }
+        private void UB_vendor_open(string vendorname, bool partial) {
+            vendor = Util.FindName(vendorname, partial, new ObjectClass[] { ObjectClass.Vendor });
+            if (vendor != null) {
+                OpenVendor();
+                return;
+            }
+            Util.ThinkOrWrite("AutoVendor failed to open vendor", UB.AutoVendor.Think);
+        }
+        private void OpenVendor() {
+            VTankControl.Nav_Block(500 + UB.AutoVendor.TriesTime, false);
+            vendorOpening = 1;
+            UB.Core.RenderFrame += Core_RenderFrame_OpenVendor;
+            vendorTimestamp = DateTime.UtcNow - TimeSpan.FromMilliseconds(UB.AutoVendor.TriesTime - 250); // fudge timestamp so next think hits in 500ms
+            UB.Core.Actions.SetAutorun(false);
+            LogDebug("Attempting to open vendor " + vendor.Name);
+
+        }
+        public void Core_RenderFrame_OpenVendor(object sender, EventArgs e) {
+            try {
+                if (DateTime.UtcNow - vendorTimestamp > TimeSpan.FromMilliseconds(UB.AutoVendor.TriesTime)) {
+
+                    if (vendorOpening <= UB.AutoVendor.Tries) {
+                        if (vendorOpening > 1)
+                            Logger.Debug("Vendor Open Timed out, trying again");
+
+                        VTankControl.Nav_Block(500 + UB.AutoVendor.TriesTime, false);
+                        vendorOpening++;
+                        vendorTimestamp = DateTime.UtcNow;
+                        CoreManager.Current.Actions.UseItem(vendor.Id, 0);
+                    }
+                    else {
+                        UB.Core.Actions.FaceHeading(UB.Core.Actions.Heading - 1, true); // Cancel the previous useitem call (don't ask)
+                        Util.ThinkOrWrite("AutoVendor failed to open vendor", UB.AutoVendor.Think);
+                        vendor = null;
+                        vendorOpening = 0;
+                        UB.Core.RenderFrame -= Core_RenderFrame_OpenVendor;
+                        VTankControl.Nav_UnBlock();
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+        #endregion
         #endregion
 
         public AutoVendor(UtilityBeltPlugin ub, string name) : base(ub, name) {
@@ -238,6 +343,12 @@ namespace UtilityBelt.Tools {
             } catch { }
         }
         private void WorldFilter_ApproachVendor(object sender, ApproachVendorEventArgs e) {
+            if (vendorOpening > 0 && e.Vendor.MerchantId == vendor.Id) {
+                LogDebug("vendor " + vendor.Name + " opened successfully");
+                vendor = null;
+                vendorOpening = 0;
+                // VTankControl.Nav_UnBlock(); Let it bleed over into AutoVendor; odds are there's a reason this vendor was opened, and letting vtank run off prolly isn't it.
+            }
             try {
                 if (isRunning) return;
 

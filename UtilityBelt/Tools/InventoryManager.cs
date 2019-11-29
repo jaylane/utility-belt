@@ -115,7 +115,6 @@ namespace UtilityBelt.Tools {
             }
         }
         #endregion
-
         #region /ub ig
         [Summary("Gives items matching the provided loot profile to a player.")]
         [Usage("/ub ig[p] <lootProfile> to <target>")]
@@ -129,6 +128,44 @@ namespace UtilityBelt.Tools {
             else {
                 StartIG(command, args);
             }
+        }
+        #endregion
+        #region /ub autostack
+        [Summary("Auto Stack your inventory")]
+        [Usage("/ub autostack")]
+        [CommandPattern("autostack", @"^$")]
+        public void DoAutoStack(string command, Match args) {
+            if (UBHelper.InventoryManager.AutoStack()) {
+                UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_AutoStack;
+                Util.WriteToChat("AutoStack running");
+            }
+            else {
+                Util.WriteToChat("AutoStack - nothing to do");
+            }
+        }
+
+        private void ActionQueue_InventoryEvent_AutoStack(object sender, EventArgs e) {
+            Util.WriteToChat("AutoStack complete.");
+            UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoStack;
+        }
+        #endregion
+        #region /ub autocram
+        [Summary("Auto Cram into side packs")]
+        [Usage("/ub autocram")]
+        [CommandPattern("autocram", @"^$")]
+        public void DoAutoCram(string command, Match args) {
+            if (UBHelper.InventoryManager.AutoCram()) {
+                UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_AutoCram;
+                Util.WriteToChat("AutoCram running");
+            }
+            else {
+                Util.WriteToChat("AutoCram - nothing to do");
+            }
+        }
+
+        private void ActionQueue_InventoryEvent_AutoCram(object sender, EventArgs e) {
+            Util.WriteToChat("AutoCram complete.");
+            UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoCram;
         }
         #endregion
         #endregion
@@ -201,7 +238,7 @@ namespace UtilityBelt.Tools {
                     tryCount = 0;
                     movingObjectId = 0;
                 }
-                else if (e.Changed.Container == UB.Core.CharacterFilter.Id && !IsRunning()) {
+                else if (e.Changed.Container == UB.Core.CharacterFilter.Id && !isRunning) {
                     //Start();
                 }
             }
@@ -211,7 +248,7 @@ namespace UtilityBelt.Tools {
         private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
             try {
                 // created in main backpack?
-                if (e.New.Container == UB.Core.CharacterFilter.Id && !IsRunning()) {
+                if (e.New.Container == UB.Core.CharacterFilter.Id && !isRunning) {
                     //Start();
                 }
             }
@@ -240,15 +277,15 @@ namespace UtilityBelt.Tools {
             LogDebug("Finished");
         }
 
-        public void Pause() {
-            if (!isPaused && (AutoCram || AutoStack))
-                LogDebug("Paused");
+        public void Pause() { // commented until autocram/autostack are actually enabled globally.
+            //if (!isPaused && (AutoCram || AutoStack))
+            //    LogDebug("Paused");
             isPaused = true;
         }
 
-        public void Resume() {
-            if (isPaused && (AutoCram || AutoStack))
-                LogDebug("Resumed");
+        public void Resume() { // commented until autocram/autostack are actually enabled globally.
+            //if (isPaused && (AutoCram || AutoStack))
+            //    LogDebug("Resumed");
             isPaused = false;
         }
 
@@ -271,58 +308,6 @@ namespace UtilityBelt.Tools {
             }
         }
 
-        public bool DoAutoCram(List<int> excludeList = null, bool excludeMoney=true) {
-            LogDebug("AutoCram started");
-
-            foreach (var wo in UB.Core.WorldFilter.GetInventory()) {
-                if (excludeMoney && (wo.Values(LongValueKey.Type, 0) == 273/* pyreals */ || wo.ObjectClass == Decal.Adapter.Wrappers.ObjectClass.TradeNote)) continue;
-                if (excludeList != null && excludeList.Contains(wo.Id)) continue;
-                if (blacklistedItems.ContainsKey(wo.Id)) continue;
-
-                if (ShouldCramItem(wo) && wo.Values(LongValueKey.Container) == UB.Core.CharacterFilter.Id) {
-                    if (TryCramItem(wo)) return true;
-                }
-            }
-
-            return false;
-        }
-
-        public bool DoAutoStack(List<int> excludeList = null) {
-            LogDebug("AutoStack started");
-
-            foreach (var wo in UB.Core.WorldFilter.GetInventory()) {
-                if (excludeList != null && excludeList.Contains(wo.Id)) continue;
-
-                if (wo != null && wo.Values(LongValueKey.StackMax, 1) > 1) {
-                    if (TryStackItem(wo)) return true;
-                }
-            }
-
-            return false;
-        }
-
-        public bool IsRunning() {
-            return isRunning;
-        }
-
-        internal static bool ShouldCramItem(WorldObject wo) {
-            if (wo == null) return false;
-
-            // skip packs
-            if (wo.ObjectClass == Decal.Adapter.Wrappers.ObjectClass.Container) return false;
-
-            // skip foci
-            if (wo.ObjectClass == Decal.Adapter.Wrappers.ObjectClass.Foci) return false;
-
-            // skip equipped
-            if (wo.Values(LongValueKey.EquippedSlots, 0) > 0) return false;
-
-            // skip wielded
-            if (wo.Values(LongValueKey.Slot, -1) == -1) return false;
-
-            return true;
-        }
-
         public void Core_RenderFrame(object sender, EventArgs e) {
             if (DateTime.UtcNow - lastThought > TimeSpan.FromMilliseconds(THINK_INTERVAL)) {
                 lastThought = DateTime.UtcNow;
@@ -332,8 +317,8 @@ namespace UtilityBelt.Tools {
 
                 if ((!isRunning || isPaused) && !isForced) return;
 
-                if (AutoCram == true && DoAutoCram()) return;
-                if (AutoStack == true && DoAutoStack()) return;
+                //if (AutoCram == true && DoAutoCram()) return;
+                //if (AutoStack == true && DoAutoStack()) return;
 
                 Stop();
             }
@@ -414,110 +399,6 @@ namespace UtilityBelt.Tools {
             } catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        public bool TryCramItem(WorldObject stackThis) {
-            // try to cram in side pack
-            foreach (var container in UB.Core.WorldFilter.GetInventory()) {
-                int slot = container.Values(LongValueKey.Slot, -1);
-                if (container.ObjectClass == Decal.Adapter.Wrappers.ObjectClass.Container && slot >= 0 && !blacklistedContainers.ContainsKey(container.Id)) {
-                    int freePackSpace = Util.GetFreePackSpace(container);
-
-                    if (freePackSpace <= 0) continue;
-
-                    LogDebug(string.Format("AutoCram: trying to move {0} to {1}({2}) because it has {3} slots open",
-                            Util.GetObjectName(stackThis.Id), container.Name, slot, freePackSpace));
-                    
-                    // blacklist this container
-                    if (tryCount > 10) {
-                        tryCount = 0;
-                        blacklistedContainers.Add(container.Id, DateTime.UtcNow);
-                        continue;
-                    }
-
-                    movingObjectId = stackThis.Id;
-                    tryCount++;
-
-                    UB.Core.Actions.MoveItem(stackThis.Id, container.Id, slot, false);
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public bool TryStackItem(WorldObject stackThis) {
-            int stackThisSize = stackThis.Values(LongValueKey.StackCount, 1);
-
-            // try to stack in side pack
-            foreach (var container in UB.Core.WorldFilter.GetInventory()) {
-                if (container.ObjectClass == Decal.Adapter.Wrappers.ObjectClass.Container && container.Values(LongValueKey.Slot, -1) >= 0) {
-                    if (blacklistedContainers.ContainsKey(container.Id)) continue;
-
-                    foreach (var wo in UB.Core.WorldFilter.GetByContainer(container.Id)) {
-                        if (blacklistedItems.ContainsKey(stackThis.Id)) continue;
-                        if (TryStackItemTo(wo, stackThis, container.Values(LongValueKey.Slot))) return true;
-                    }
-                }
-            }
-
-            // try to stack in main pack
-            foreach (var wo in UB.Core.WorldFilter.GetInventory()) {
-                if (TryStackItemTo(wo, stackThis, 0)) return true;
-            }
-
-            return false;
-        }
-
-        public bool TryStackItemTo(WorldObject wo, WorldObject stackThis, int slot=0) {
-            int woStackCount = wo.Values(LongValueKey.StackCount, 1);
-            int woStackMax = wo.Values(LongValueKey.StackMax, 1);
-            int stackThisCount = stackThis.Values(LongValueKey.StackCount, 1);
-
-            // not stackable?
-            if (woStackMax <= 1 || stackThis.Values(LongValueKey.StackMax, 1) <= 1) return false;
-
-            if (wo.Name == stackThis.Name && wo.Id != stackThis.Id && stackThisCount < woStackMax) {
-                // blacklist this item
-                if (tryCount > 10) {
-                    tryCount = 0;
-                    if (!blacklistedItems.ContainsKey(stackThis.Id)) {
-                        blacklistedItems.Add(stackThis.Id, DateTime.UtcNow);
-                    }
-                    return false;
-                }
-
-                if (woStackCount + stackThisCount <= woStackMax) {
-                    LogDebug(string.Format("AutoStack stack {0}({1}) on {2}({3})",
-                            Util.GetObjectName(stackThis.Id),
-                            stackThisCount,
-                            Util.GetObjectName(wo.Id),
-                            woStackCount));
-
-                    UB.Core.Actions.SelectItem(stackThis.Id);
-                    UB.Core.Actions.MoveItem(stackThis.Id, wo.Container, slot, true);
-                }
-                else if (woStackMax - woStackCount == 0) {
-                    return false;
-                }
-                else {
-                    LogDebug(string.Format("AutoStack stack {0}({1}/{2}) on {3}({4})",
-                            Util.GetObjectName(stackThis.Id),
-                            woStackMax - woStackCount,
-                            stackThisCount,
-                            Util.GetObjectName(wo.Id),
-                            woStackCount));
-
-                    UB.Core.Actions.SelectItem(stackThis.Id);
-                    UB.Core.Actions.SelectedStackCount = woStackMax - woStackCount;
-                    UB.Core.Actions.MoveItem(stackThis.Id, wo.Container, slot, true);
-                }
-
-                tryCount++;
-                movingObjectId = stackThis.Id;
-                return true;
-            }
-
-            return false;
-        }
         private void StartGive(string command, Match giveMatch) {
             if (igRunning) {
                 LogError("Already running.  Please wait until it completes or use /ub give stop to quit previous session");
@@ -526,7 +407,7 @@ namespace UtilityBelt.Tools {
             var flags = command.Replace("give", "");
             VTankControl.Nav_Block(1000, false); // quick block to keep vtank from truckin' off before the profile loads, but short enough to not matter if it errors out and doesn't unlock
             targetPlayer = giveMatch.Groups["Target"].Value;
-            var destination = UB.Plugin.FindName(targetPlayer, flags.Contains("p"), new Decal.Adapter.Wrappers.ObjectClass[] { Decal.Adapter.Wrappers.ObjectClass.Player, Decal.Adapter.Wrappers.ObjectClass.Npc });
+            var destination = Util.FindName(targetPlayer, flags.Contains("p"), new Decal.Adapter.Wrappers.ObjectClass[] { Decal.Adapter.Wrappers.ObjectClass.Player, Decal.Adapter.Wrappers.ObjectClass.Npc });
 
             if (destination == null) {
                 LogError($"player {targetPlayer} not found");
@@ -575,7 +456,7 @@ namespace UtilityBelt.Tools {
             VTankControl.Nav_Block(1000, false); // quick block to keep vtank from truckin' off before the profile loads, but short enough to not matter if it errors out and doesn't unlock
             targetPlayer = igMatch.Groups["Target"].Value;
 
-            var destination = UB.Plugin.FindName(targetPlayer, flags.Equals("p"), new Decal.Adapter.Wrappers.ObjectClass[] { Decal.Adapter.Wrappers.ObjectClass.Player, Decal.Adapter.Wrappers.ObjectClass.Npc });
+            var destination = Util.FindName(targetPlayer, flags.Equals("p"), new Decal.Adapter.Wrappers.ObjectClass[] { Decal.Adapter.Wrappers.ObjectClass.Player, Decal.Adapter.Wrappers.ObjectClass.Npc });
 
             if (destination == null) {
                 LogError($"player {targetPlayer} not found");
