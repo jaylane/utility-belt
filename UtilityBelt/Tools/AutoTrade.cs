@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
-using VirindiViewService.Controls;
 
 namespace UtilityBelt.Tools {
     [Name("AutoTrade")]
@@ -29,7 +28,7 @@ namespace UtilityBelt.Tools {
         private DateTime bailTimer = DateTime.MinValue;
 
         #region Config
-        [Summary("AutoTrade Enabled")]
+        [Summary("Enable AutoTrade when Trade Window is Opened")]
         [DefaultValue(false)]
         public bool Enabled {
             get { return (bool)GetSetting("Enabled"); }
@@ -81,6 +80,7 @@ namespace UtilityBelt.Tools {
         [Example("/ub autotrade mfk.utl", "Adds all items matching mfk.utl to the currently open trade window")]
         [CommandPattern("autotrade", @"^ *(?<LootProfile>.*) *$")]
         public void DoAutoTrade(string command, Match args) {
+            LogDebug($"Starting autotrade with profile: {args.Groups["LootProfile"].Value}");
             Start(traderId, args.Groups["LootProfile"].Value);
         }
         #endregion
@@ -174,6 +174,7 @@ namespace UtilityBelt.Tools {
                 return;
             }
 
+            LogDebug("Loading LootCore");
             var hasLootCore = false;
             if (lootProfile == null) {
                 try {
@@ -195,11 +196,13 @@ namespace UtilityBelt.Tools {
                 WriteToChat("No auto trade profile exists: " + profilePath);
                 Stop(false);
                 return;
+
             }
 
             VTankControl.Nav_Block(1000, false); // quick block to keep vtank from truckin' off before the profile loads, but short enough to not matter if it errors out and doesn't unlock
 
             // Load our loot profile
+            LogDebug($"Loading loot profile at {profilePath}");
             ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
 
             itemsToId.Clear();
@@ -218,12 +221,13 @@ namespace UtilityBelt.Tools {
                 lastIdSpam = DateTime.UtcNow;
             }
 
+            LogDebug("Blocking VTank nav/stack");
             VTankControl.Item_Block(30000, false);
             VTankControl.Nav_Block(30000, UB.Plugin.Debug);
         }
 
         public void Core_RenderFrame(object sender, EventArgs e) {
-            if (!running || !Enabled)
+            if (!running)
                 return;
 
             try {
