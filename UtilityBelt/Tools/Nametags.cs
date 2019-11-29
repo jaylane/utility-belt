@@ -143,8 +143,8 @@ namespace UtilityBelt.Tools {
                     colors[ObjectClass.Vendor] = Vendor.Color;
                     break;
                 case "Monster":
-                    enabled_types[ObjectClass.Player] = Monster.Enabled;
-                    colors[ObjectClass.Player] = Monster.Color;
+                    enabled_types[ObjectClass.Monster] = Monster.Enabled;
+                    colors[ObjectClass.Monster] = Monster.Color;
                     break;
             }
             evaluate_tags_time = DateTime.UtcNow + TimeSpan.FromMilliseconds(250);
