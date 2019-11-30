@@ -23,14 +23,15 @@ namespace UtilityBelt {
                 if (UtilityBeltPlugin.Instance != null && UtilityBeltPlugin.Instance.Plugin != null && UtilityBeltPlugin.Instance.Plugin.Debug) {
                     Util.WriteToChat(message);
                 }
-                Util.WriteToDebugLog(message);
+                else {
+                    Util.WriteToDebugLog(message);
+                }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
         internal static void Error(string message) {
             try {
-                Util.WriteToDebugLog(message);
                 Util.WriteToChat("Error: " + message, 15);
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -50,8 +51,7 @@ namespace UtilityBelt {
                     var fName = file.Split('\\').Last();
                     var match = logFileRe.Match(fName);
                     if (match.Success) {
-                        DateTime logDate;
-                        DateTime.TryParse(match.Groups["date"].ToString(), out logDate);
+                        DateTime.TryParse(match.Groups["date"].ToString(), out DateTime logDate);
 
                         if (logDate != null && (DateTime.Now - logDate).TotalDays > MAX_LOG_AGE) {
                             File.Delete(file);
