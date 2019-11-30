@@ -2,7 +2,7 @@
 title: Reporting Bugs
 ---
 
-You can report bugs on the [Gitlab](https://gitlab.com/trevis/utilitybelt) page or on the [ACPluginsDev Discord](https://discord.gg/c75pPaz) in \#utilitybelt
+You can report bugs on the [UtilityBelt issues](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/issues) page or on the [ACPluginsDev Discord](https://discord.gg/c75pPaz) in \#utilitybelt
 
 ### Logs Files
 You may be asked to provide logs, which can be found in the following directories:

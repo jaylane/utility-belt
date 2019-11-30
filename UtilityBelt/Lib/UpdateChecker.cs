@@ -64,8 +64,9 @@ namespace UtilityBelt.Lib {
 
                         foreach (var tag in tags) {
                             try {
-                                Version releaseVersion = new Version(tag.tag_name.Replace("release-", ""));
-                                if (releaseVersion.CompareTo(version) >= 1) {
+                                Version releaseVersion = new Version(tag.tag_name.Replace("release-", "") + ".0");
+
+                                if (releaseVersion.CompareTo(version) >= 1 || (releaseVersion.CompareTo(version) == 0 && !Util.IsReleaseVersion())) {
                                     var lines = new List<string>(tag.description.Split('\r'));
                                     lines.RemoveAt(0);
                                     lines = lines.Where(s => !string.IsNullOrEmpty(s.Trim())).Distinct().ToList();

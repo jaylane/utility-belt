@@ -40,3 +40,15 @@ deploy staging:
       - '.\public\$env:CI_COMMIT_REF_NAME\'
   except:
     - release
+
+pages:
+  stage: .post
+  script:
+  - 'Remove-Item -Force ".\public" -Recurse -ErrorAction Ignore; echo 1'
+  - '& "$env:BUILD_PATH\UBDocsGen.exe"'
+  - '& "$env:HUGO_PATH" --themesDir .\Site\themes\'
+  artifacts:
+    paths:
+    - public
+  only:
+  - tags

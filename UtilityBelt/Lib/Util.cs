@@ -28,7 +28,7 @@ namespace UtilityBelt
         public static string AssemblyLocation = "";
         public static string AssemblyDirectory  { get { return System.IO.Path.GetDirectoryName(AssemblyLocation); } }
 
-        private static readonly Regex releaseBranchVersion = new Regex(@"^\d+\.\d+.\d+\.(release)[\.\-]");
+        private static readonly Regex releaseBranchVersion = new Regex(@"^\d+\.\d+.\d+\.release");
         public static string GetVersion(bool includeGitExtras=false) {
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetAssembly(typeof(UtilityBeltPlugin));
 
@@ -46,6 +46,17 @@ namespace UtilityBelt
             }
 
             return "0.0.0";
+        }
+
+        public static bool IsReleaseVersion() {
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetAssembly(typeof(UtilityBeltPlugin));
+
+            if (assembly != null) {
+                var productVersion = FileVersionInfo.GetVersionInfo(AssemblyLocation).ProductVersion;
+                return releaseBranchVersion.IsMatch(productVersion);
+            }
+
+            return false;
         }
 
         public static string GetPluginDirectory() {

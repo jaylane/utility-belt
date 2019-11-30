@@ -2,19 +2,21 @@
 - Added AutoTinker and AutoImbue (thanks Schneebly)
 - Added `VisualNav.ScaleCurrentWaypoint` option to enable/disable scaling current waypoint using vTankMinNavDistance
 - Added `/ub fixbusy` command to reset the client's Busy State and Busy Count both to 0.
-- Beta builds are now available in #utilitybelt on https://discord.gg/c75pPaz
-- Add resiliency to auto trade
-- New UI!
+- Added Beta builds are now available in #utilitybelt on https://discord.gg/c75pPaz
+- Added resiliency to auto trade
+- Added New UI!
 - Added `Plugin.VideoPatch` setting to ammend/replace `/ub videopatch` command
-- Add Equipment Manager for all your equipping needs
-- Add negative Keep # functionality (gives away all but {Keep#} count items)
-- Add setting `InventoryManager.TreatStackAsSingleItem` (currently only used in itemgiver)
-- Add `/ub playsounds` to play mp3 files from command line
-- Add `/ub pcap` to export pcap files from a rolling buffer
-- Add ability to auto-generate equip profile based on currently equipped items
-- Add `/ub autostack` to quickly:tm: stack all of the things
-- Add `/ub autocram` to quickly:tm: cram all of the things in packs other than your main pack
-- Re-enable autostack and autocram while vendoring, if enabled with AutoVendor.AutoStack and AutoVendor.AutoCram
+- Added Equipment Manager for all your equipping needs
+- Added negative Keep # functionality (gives away all but {Keep#} count items)
+- Added setting `InventoryManager.TreatStackAsSingleItem` (currently only used in itemgiver)
+- Added `/ub playsounds` to play mp3 files from command line
+- Added `/ub pcap` to export pcap files from a rolling buffer
+- Added ability to auto-generate equip profile based on currently equipped items
+- Added `/ub autostack` to quickly:tm: stack all of the things
+- Added `/ub autocram` to quickly:tm: cram all of the things in packs other than your main pack
+- Added Re-enable autostack and autocram while vendoring, if enabled with AutoVendor.AutoStack and AutoVendor.AutoCram
+- BROKE: `/ub jump` format has changed, use `/ub help jump` for more info
+- BROKE: AutoSalvage finished think message has been changed.
 
 ## 0.0.14 (2019-11-15) [UtilityBeltInstaller-0.0.14.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/0d29c14ccc27377941cb5f92c37ffaef/UtilityBeltInstaller-0.0.14.exe)
 - Added VisualNav.Enabled setting

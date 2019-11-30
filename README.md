@@ -1,26 +1,9 @@
+![Build Status](https://gitlab.com/pages/hugo/badges/master/build.svg)
+
 # UtilityBelt
-UtilityBelt is a multipurpose decal plugin. Currently it has the following "modules".
-- [AutoVendor](https://gitlab.com/trevis/utilitybelt/wikis/AutoVendor) - Automatically buy/sell based on a vtank loot profile when using a vendor.
-- [AutoSalvage](https://gitlab.com/trevis/utilitybelt/wikis/AutoSalvage) - Automatically salvage items in your inventory that match salvage rules from the currently loaded vtank loot profile.
-- [Counter](https://gitlab.com/trevis/utilitybelt/wikis/Counter) - Counts items based on regex or utl loot profiles.
-- [DungeonMaps](https://gitlab.com/trevis/utilitybelt/wikis/DungeonMaps) - Shows a map of the current dungeon on your screen.
-- [EmuConfig](https://gitlab.com/trevis/utilitybelt/wikis/EmuConfig) - Helper UI for reading/setting client config options on GDLE servers.
-- [InventoryManager](https://gitlab.com/trevis/utilitybelt/wikis/InventoryManager) - Commands for handing items to other players/npcs.
-- [Jumper](https://gitlab.com/trevis/utilitybelt/wikis/Jumper) - Jump commands
-- [QuestTracker](https://gitlab.com/trevis/utilitybelt/wikis/QuestTracker) - Shows quest timers.
-- [VisualNav](https://gitlab.com/trevis/utilitybelt/wikis/VisualNav) - Shows VTank nav route visually (like vi2 blue lines).
+For documentation and latest install files, check out [http://utilitybelt.gitlab.io/](http://utilitybelt.gitlab.io)
 
-
-## Installation
-Download and run the installer: [UtilityBeltInstaller-0.0.14.exe](/uploads/0d29c14ccc27377941cb5f92c37ffaef/UtilityBeltInstaller-0.0.14.exe)
-
-## Usage
-Check the [wiki](https://gitlab.com/trevis/utilitybelt/wikis/home) 
-
-## Known Issues
-* VirindiHotkeySystem will throw an error when changing emuconfig options. (If you don't use VHS just disable it in decal)
-* Requires vtank to be installed (for autosalvage and autovendor, todo: make it fail gracefully)
-* Visual Nav Routes only works on routes loaded via profile. [None] and routes embedded from a meta do not currently show.
+Have a feature / suggestion / bug report? Join us in [Discord](https://discord.gg/c75pPaz)
 
 ## Contributors
 * Cosmic Jester
