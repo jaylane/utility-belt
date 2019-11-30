@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UBLoader", "UBLoader\UBLoader.csproj", "{BB14F564-6E92-4FD0-9394-120E517EA5BA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UBDocsGen", "UBDocsGen\UBDocsGen.csproj", "{895DDC02-40BC-4F5A-8212-7032231216AE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Release|x86 = Release|x86
@@ -26,6 +28,8 @@ Global
 		{C2880823-67E7-4B3D-A481-9ADC9847C39C}.Release|x86.Build.0 = Release|x86
 		{BB14F564-6E92-4FD0-9394-120E517EA5BA}.Release|x86.ActiveCfg = Release|x86
 		{BB14F564-6E92-4FD0-9394-120E517EA5BA}.Release|x86.Build.0 = Release|x86
+		{895DDC02-40BC-4F5A-8212-7032231216AE}.Release|x86.ActiveCfg = Release|x86
+		{895DDC02-40BC-4F5A-8212-7032231216AE}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

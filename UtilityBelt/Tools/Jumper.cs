@@ -10,6 +10,10 @@ using System.ComponentModel;
 
 namespace UtilityBelt.Tools {
     [Name("Jumper")]
+    [Summary("Used to jump and face heading, with built-in VTank pausing.")]
+    [FullDescription(@"
+Jumper is used for well... Jumping and turning. These commands will turn off Vtank navigation while running and set back to previous state once complete
+    ")]
     public class Jumper : ToolBase {
         private bool isTurning = false;
         private bool needToTurn = false;

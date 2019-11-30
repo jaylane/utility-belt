@@ -14,6 +14,25 @@ using System.ComponentModel;
 
 namespace UtilityBelt.Tools {
     [Name("InventoryManager")]
+    [Summary("Provides a command-line interface to inventory management.")]
+    [FullDescription(@"
+Provides a command-line interface to inventory management.
+
+### Example Profiles
+* [aaset.utl](/utl/aaset.utl)
+  - Hands exactly one set of Ancient Armor
+  - example: `/ub ig aaset.utl to Zero Cool`
+* [Kreavon.utl](/utl/Kreavon.utl)
+  - Hands all Gem type salvage in your inventory, for the [Town Founder](https://asheron.fandom.com/wiki/Town_Founder) Quest.
+  - example: `/ub ig Kreavon.utl to Kreavon`
+* [Caelis Renning.utl](/utl/Caelis Renning.utl)
+  - Hands all metal/wood type salvage in your inventory, for the [Town Founder](https://asheron.fandom.com/wiki/Town_Founder) Quest.
+  - example: `/ub ig Caelis Renning.utl to Caelis Renning`
+* [Aun Teverea.utl](/utl/Aun Teverea.utl)
+  - Hands all cloth type salvage in your inventory, for the [Town Founder](https://asheron.fandom.com/wiki/Town_Founder) Quest.
+  - example: `ub ig Aun Teverea.utl to Aun Teverea`
+
+    ")]
     public class InventoryManager : ToolBase {
         private const int THINK_INTERVAL = 300;
         private const int ITEM_BLACKLIST_TIMEOUT = 60; // in seconds

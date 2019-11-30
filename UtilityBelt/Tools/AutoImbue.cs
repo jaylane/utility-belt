@@ -20,7 +20,8 @@ namespace UtilityBelt.Tools {
         readonly HudCombo AutoImbueSalvageCombo;
         readonly HudCombo AutoImbueDmgTypeCombo;
         readonly HudButton AutoImbueRefreshListButton;
-        public DataTable tinkerDT = new DataTable();
+        internal DataTable tinkerDT = new DataTable();
+
         private bool waitingForIds = false;
         private DateTime lastIdSpam = DateTime.MinValue;
         private DateTime startTime = DateTime.MinValue;
@@ -71,11 +72,13 @@ namespace UtilityBelt.Tools {
 
                 HudStaticText c = (HudStaticText)(AutoImbueDmgTypeCombo[AutoImbueDmgTypeCombo.Current]);
                 SelectDefaultSalvage(c.Text.ToString());
+
+                UB.Core.RenderFrame += Core_RenderFrame;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        public void Think() {
+        public void Core_RenderFrame(object sender, EventArgs e) {
             try {
                     if (waitingForIds) {
                         if (UB.Assessor.NeedsInventoryData(itemsToId)) {
@@ -424,7 +427,7 @@ namespace UtilityBelt.Tools {
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
-                    //CoreManager.Current.CommandLineText -= Current_CommandLineText;
+                    UB.Core.RenderFrame -= Core_RenderFrame;
                     CoreManager.Current.ChatBoxMessage -= Current_ChatBoxMessage;
                     base.Dispose(disposing);
                 }

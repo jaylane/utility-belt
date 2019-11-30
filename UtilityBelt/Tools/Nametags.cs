@@ -8,6 +8,14 @@ using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("Nametags")]
+    [Summary("Shows nametags above certain landscape objects")]
+    [FullDescription(@"
+When enabled, this will draw nametags above players/npcs/vendors/monsters/portals.
+
+For players, it also shows the allegiance and level of the player.
+
+For portals, it will show the destination.
+    ")]
     public class Nametags : ToolBase {
         private static Dictionary<int, BitcoinMiner> tags = new Dictionary<int, BitcoinMiner>();
         internal static List<int> destructionQueue = new List<int>();

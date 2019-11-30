@@ -9,6 +9,10 @@ using UtilityBelt.Lib;
 
 namespace UtilityBelt.Tools {
     [Name("Counter")]
+    [Summary("Counter is used to count items based on text or utl profiles as well as players in range.")]
+    [FullDescription(@"
+Counter is used to count items based on text or utl profiles as well as players in range.
+    ")]
     public class Counter : ToolBase {
         string utlProfile = "";
         private object lootProfile;

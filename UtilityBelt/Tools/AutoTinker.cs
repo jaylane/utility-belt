@@ -14,6 +14,18 @@ using System.ComponentModel;
 
 namespace UtilityBelt.Tools {
     [Name("AutoTinker")]
+    [Summary("Provides a UI for automatically applying salvage to weapons/armor.")]
+    [FullDescription(@"
+This tool provides a UI for automatically applying salvage to weapons and armor. It will choose the best (lowest workmanship) salvage to apply for the given item, that still gives a percentage over [AutoTinker.MinPercent](/docs/tools/autotinker/#autotinker-minpercentage).
+
+### Usage
+
+1. Select an item in your inventory you want to tinker.
+2. Set [AutoTinker.MinPercent](/docs/tools/autotinker/#autotinker-minpercentage) 
+3. Choose a salvage type from the dropdown.
+4. Click the populate button.
+5. If it looks good, hit Go.
+    ")]
     public class AutoTinker : ToolBase {
         readonly HudButton AutoTinkAddSelectedButton;
         readonly HudList AutoTinkerList;
@@ -25,7 +37,8 @@ namespace UtilityBelt.Tools {
         readonly HudTextBox AutoTinkMinPercentTextBox;
 
         private readonly FakeItem fakeItem = new FakeItem();
-        public DataTable tinkerDT = new DataTable();
+        internal DataTable tinkerDT = new DataTable();
+
         private bool waitingForIds = false;
         private DateTime lastIdSpam = DateTime.MinValue;
         private DateTime startTime = DateTime.MinValue;
@@ -58,7 +71,6 @@ namespace UtilityBelt.Tools {
         public AutoTinker(UtilityBeltPlugin ub, string name) : base(ub, name) {
             try {
                 CreateDataTable();
-                CoreManager.Current.CommandLineText += Current_CommandLineText;
                 CoreManager.Current.ChatBoxMessage += Current_ChatBoxMessage;
 
                 AutoTinkerList = (HudList)UB.MainView.view["AutoTinkerList"];
@@ -87,6 +99,8 @@ namespace UtilityBelt.Tools {
 
                 PopulateAutoTinkCombo();
 
+                UB.Core.RenderFrame += Core_RenderFrame;
+
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -102,7 +116,7 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        public void Think() {
+        public void Core_RenderFrame(object sender, EventArgs e) {
             try {
                 if (waitingForIds) {
                     if (UB.Assessor.NeedsInventoryData(itemsToId)) {
@@ -529,7 +543,7 @@ namespace UtilityBelt.Tools {
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
-                    UB.Core.CommandLineText -= Current_CommandLineText;
+                    UB.Core.RenderFrame -= Core_RenderFrame;
                     UB.Core.ChatBoxMessage -= Current_ChatBoxMessage;
 
                     base.Dispose(disposing);

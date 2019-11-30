@@ -14,6 +14,10 @@ using UtilityBelt.Lib;
 
 namespace UtilityBelt.Tools {
     [Name("QuestTracker")]
+    [Summary("UI / commands for checking your quest flag timers.")]
+    [FullDescription(@"
+    TODO
+    ")]
     public class QuestTracker : ToolBase {
         DateTime lastMyQuestsRequest = DateTime.MinValue;
 

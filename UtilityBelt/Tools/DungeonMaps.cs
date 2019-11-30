@@ -24,6 +24,15 @@ using VirindiViewService.Controls;
 
 namespace UtilityBelt.Tools {
     [Name("DungeonMaps")]
+    [Summary("Draws an overlay with dungeon maps on your screen")]
+    [FullDescription(@"
+Draws an overlay with dungeon maps on your screen
+
+* Open the UtilityBelt decal window, go to the DungeonMaps tab and enable maps.
+* A new flashlight icon will appear on the virindi bar under the utilitybelt icon.
+* Use the new map window to resize/move the map.
+* When the maps window is open you can use your scrollwheel to zoom.
+    ")]
     public class DungeonMaps : ToolBase {
         private const int DRAW_INTERVAL = 45;
         private DateTime lastDrawTime = DateTime.UtcNow;

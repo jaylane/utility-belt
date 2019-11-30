@@ -154,7 +154,7 @@ namespace UtilityBelt {
         /// Returns a list of PropertyInfo's for all the loaded tools.
         /// </summary>
         /// <returns>A list of PropertyInfo's for all the loaded tools.</returns>
-        internal IEnumerable<PropertyInfo> GetToolProps() {
+        public IEnumerable<PropertyInfo> GetToolProps() {
             return GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(
                 p => p.PropertyType.IsSubclassOf(typeof(ToolBase))
             );

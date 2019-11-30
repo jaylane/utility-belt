@@ -11,6 +11,25 @@ using UtilityBelt.Lib;
 
 namespace UtilityBelt.Tools {
     [Name("EquipmentManager")]
+    [Summary("Provides commands for managing equipped items.")]
+    [FullDescription(@"
+Equipment Manager allows you to create and execute equipment profiles based on VTank loot profiles. As an example, you could have your main suit of armor in a loot profile an issue a command to equip it. Alternatively, if you like to switch to your robe and mask when sitting at your allegiance mansion, you could issue a command to dequip your current items and equip that.
+
+When invoked, Equipment Manager will attempt to load a VTank loot profile in one of the following locations:
+
+ * Documents\Decal Plugins\UtilityBelt\equip\<Server>\<Character>\<Trade Partner Name>.utl
+ * Documents\Decal Plugins\UtilityBelt\equip\<Server>\<Trade Partner Name>.utl
+ * Documents\Decal Plugins\UtilityBelt\equip\<Trade Partner Name>.utl
+ * Documents\Decal Plugins\UtilityBelt\equip\<Server>\<Character>\default.utl
+ * Documents\Decal Plugins\UtilityBelt\equip\<Server>\default.utl
+ * Documents\Decal Plugins\UtilityBelt\equip\default.utl
+
+### Example VTank Profiles
+
+ * [Cosmic Jester.utl](/utl/Cosmic Jester.utl) - Matches a suit of armor
+ * [Plaguefang.utl](/utl/Plaguefang.utl) - Matches a PF robe and Rynthid Energy Shield
+ * [Set A.utl](/utl/Set A.utl) - Matches all items that are equippable and inscribed with 'Set A'
+    ")]
     public class EquipmentManager : ToolBase {
         private static readonly ObjectClass[] ValidEquippableObjectClasses = new[] {
                         ObjectClass.Armor,
