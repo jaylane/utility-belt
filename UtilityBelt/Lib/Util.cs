@@ -30,20 +30,18 @@ namespace UtilityBelt
 
         private static readonly Regex releaseBranchVersion = new Regex(@"^\d+\.\d+.\d+\.release");
         public static string GetVersion(bool includeGitExtras=false) {
-            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetAssembly(typeof(UtilityBeltPlugin));
-
-            if (assembly != null) {
+            try {
                 var productVersion = FileVersionInfo.GetVersionInfo(AssemblyLocation).ProductVersion;
 
                 // show the short version for release branch builds
                 if (releaseBranchVersion.IsMatch(productVersion) && !includeGitExtras) {
-                    return FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
+                    return FileVersionInfo.GetVersionInfo(AssemblyLocation).FileVersion;
                 }
                 else {
                     return productVersion;
                 }
-
             }
+            catch (Exception ex) { Logger.LogException(ex); }
 
             return "0.0.0";
         }
