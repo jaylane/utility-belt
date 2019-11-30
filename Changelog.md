@@ -1,3 +1,6 @@
+## 0.1.1 (TBD)
+- Release notes go here
+
 ## 0.1.0 (2019-11-30) [UtilityBeltInstaller-0.1.0.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/d92c9e54fb61ab148bc2e1d2342ee204/UtilityBeltInstaller-0.1.0.exe)
 - Added AutoTinker and AutoImbue (thanks Schneebly)
 - Added `VisualNav.ScaleCurrentWaypoint` option to enable/disable scaling current waypoint using vTankMinNavDistance
