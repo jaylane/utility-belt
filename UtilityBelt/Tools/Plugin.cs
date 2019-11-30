@@ -636,7 +636,7 @@ namespace UtilityBelt.Tools {
         #region /ub playsound [volume] <filepath>
         [Summary("Play a sound from the client")]
         [Usage("/ub playsound [volume] <filepath>")]
-        [Example("/ub playsound 100 C:\test.wav", "Plays absolute path to music file at 100% volume")]
+        [Example("/ub playsound 100 C:\\test.wav", "Plays absolute path to music file at 100% volume")]
         [Example("/ub playsound 50 test.wav", "Plays test.wav from the UB plugin storage directory at 50% volume")]
         [CommandPattern("playsound", @"^ *(?<params>(\d+ )?.+) *$")]
         public void DoPlaySound(string _, Match args) {
