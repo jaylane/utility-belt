@@ -1,4 +1,4 @@
-baseurl = "http://ubstaging.haxit.org/"
+baseurl = "https://utilitybelt.gitlab.io/"
 contentdir    = "Site/content"
 layoutdir     = "Site/layouts"
 staticdir     = "Site/static"
@@ -36,7 +36,7 @@ disableKinds = ["taxonomy", "taxonomyTerm"]
 #  desc = "Hexagon"
 
 [Author]
-  gitlab = "trevis/utilitybelt"
+  gitlab = "utilitybelt/utilitybelt.gitlab.io"
 
 
 [[menu.main]]
@@ -80,7 +80,13 @@ disableKinds = ["taxonomy", "taxonomyTerm"]
     weight = 5
 
 [[menu.main]]
+    identifier = "Discord"
+    name = "Discord"
+    url = "https://discord.gg/c75pPaz"
+    weight = 3
+
+[[menu.main]]
     identifier = "Gitlab"
     name = "Gitlab"
-    url = "https://gitlab.com/trevis/utilitybelt"
-    weight = 3
+    url = "https://gitlab.com/utilitybelt/utilitybelt.gitlab.io"
+    weight = 4
