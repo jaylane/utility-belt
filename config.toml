@@ -1,0 +1,86 @@
+baseurl = "http://ubstaging.haxit.org/"
+contentdir    = "Site/content"
+layoutdir     = "Site/layouts"
+staticdir     = "Site/static"
+publishdir    = "public"
+title         = "UtilityBelt"
+canonifyurls  = true
+
+DefaultContentLanguage = "en"
+theme = "beautifulhugo"
+metaDataFormat = "yaml"
+pygmentsUseClasses = true
+pygmentCodeFences = true
+#googleAnalytics = "XXX"
+
+disableKinds = ["taxonomy", "taxonomyTerm"]
+
+[Params]
+  subtitle = "A multipurpose Decal plugin for Asheron's Call"
+  logo = "img/avatar-icon.png"
+  favicon = "favicon.ico"
+  dateFormat = "January 2, 2006"
+  commit = false
+  rss = true
+  comments = false
+#  gcse = "012345678901234567890:abcdefghijk" # Get your code from google.com/cse. Make sure to go to "Look and Feel" and change Layout to "Full Width" and Theme to "Classic"
+
+#[[Params.bigimg]]
+#  src = "img/triangle.jpg"
+#  desc = "Triangle"
+#[[Params.bigimg]]
+#  src = "img/sphere.jpg"
+#  desc = "Sphere"
+#[[Params.bigimg]]
+#  src = "img/hexagon.jpg"
+#  desc = "Hexagon"
+
+[Author]
+  gitlab = "trevis/utilitybelt"
+
+
+[[menu.main]]
+    name = "Releases"
+    url = "releases/"
+    weight = 1
+
+[[menu.main]]
+    identifier = "Documentation"
+    name = "Documentation"
+    weight = 2
+
+[[menu.main]]
+    parent = "Documentation"
+    name = "Overview"
+    url = "docs/overview/"
+    weight = 1
+
+[[menu.main]]
+    parent = "Documentation"
+    name = "Command Line"
+    url = "docs/command-line/"
+    weight = 2
+
+[[menu.main]]
+    parent = "Documentation"
+    name = "Config Files"
+    url = "docs/config-files/"
+    weight = 3
+
+[[menu.main]]
+    parent = "Documentation"
+    name = "Plugin Settings"
+    url = "docs/plugin-settings/"
+    weight = 4
+
+[[menu.main]]
+    parent = "Documentation"
+    name = "Reporting Bugs"
+    url = "docs/reporting-bugs/"
+    weight = 5
+
+[[menu.main]]
+    identifier = "Gitlab"
+    name = "Gitlab"
+    url = "https://gitlab.com/trevis/utilitybelt"
+    weight = 3

@@ -11,6 +11,32 @@ using UtilityBelt.Lib;
 
 namespace UtilityBelt.Tools {
     [Name("AutoTrade")]
+    [Summary("Provides commands for automatic muling via the trade window")]
+    [FullDescription(@"
+This plugin will add items to a trade window that match keep or keep # rules in a VTank loot profile (.utl file). This can be used to automatically mule items during a meta as an alternative to giving items directly. Much like other tools in UB, it requires all items to be assessed to determine whether they can/should be added to the trade window. Other features include automatically accepting the trade after items have been added, and auto-accepting a trade from characters whose name matches a certain pattern. The tool can be launched either from the command line or automatically if a profile exists that matches your trade partner's name.
+
+When enabled, AutoTrade will attempt to load a profile in one the following locations (stopping when it finds the first match):
+
+* Documents\Decal Plugins\UtilityBelt\autotrade\<Server>\<Character>\<Trade Partner Name>.utl
+* Documents\Decal Plugins\UtilityBelt\autotrade\<Server>\<Trade Partner Name>.utl
+* Documents\Decal Plugins\UtilityBelt\autotrade\<Trade Partner Name>.utl
+* Documents\Decal Plugins\UtilityBelt\autotrade\<Server>\<Character>\default.utl
+* Documents\Decal Plugins\UtilityBelt\autotrade\<Server>\default.utl
+* Documents\Decal Plugins\UtilityBelt\autotrade\default.utl
+
+### Keep/Keep # Rules
+
+AutoTrade supports keep and keep # actions in VTank rules. These actions have the following meanings:
+
+ * **Keep** - Add all items to trade window that match the rule
+ * **Keep # (# > 0)** - Add up to (#) items to trade window that match the rule (may split stacks if applicable)
+ * **Keep # (# < 0)** - Add all items minus (#) to trade window that match the rule (may split stacks if applicable)
+
+###  Example VTank Profiles
+
+ * [Shen-Sort I.utl](/utl/Shen-Sort I.utl) - Add trophies/epics/weapons to trade window for sort mule
+ * [Shen-Steel I.utl](/utl/Shen-Steel I.utl) - Add full bags of Salvaged Steel to trade window
+    ")]
     public class AutoTrade : ToolBase {
         private bool disposed = false;
         private object lootProfile = null;
@@ -27,7 +53,7 @@ namespace UtilityBelt.Tools {
         private int lastIdCount = 0;
         private DateTime bailTimer = DateTime.MinValue;
 
-        #region Config
+        #region Settings
         [Summary("Enable AutoTrade when Trade Window is Opened")]
         [DefaultValue(false)]
         public bool Enabled {

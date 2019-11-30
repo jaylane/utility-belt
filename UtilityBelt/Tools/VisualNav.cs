@@ -127,6 +127,22 @@ namespace UtilityBelt.Tools {
     #endregion
 
     [Name("VisualNav")]
+    [Summary("Shows VTank nav routes visually, like vi2")]
+    [FullDescription(@"
+![](https://i.gyazo.com/729b98fa095dee1a70bc991aa62d61bc.mp4)
+
+Shows your currently loaded VTank navigation profile visually.  All waypoint types can be displayed, most of which will just show text above the waypoint.  It actively monitors for when a navigation profile has been changed or reloaded, and will automatically update the route display.  Currently it has no way of knowing where along a route you are, so all waypoints are treated equally.
+
+### Embedded Routes
+In order to display embedded nav routes, UB will have to save embedded routes to a file as they are loaded.  Right now all embedded navs are saved to the same file, called '[None].nav'.  If you wish to enable this feature, check the box on the VisualNav tab.
+
+### Customizing
+
+On the VisualNav tab of the main UtilityBelt window you can see the different waypoint types.Unchecking the checkbox next to an item will disable it from being displayed.Clicking on the solid color box next to an item will let you edit its color.Colors can be adjusted by sliding the Alpha, Red, Green, and Blue sliders.
+
+![](https://i.gyazo.com/db99a93bd01b197f1e6be018efd42f8f.mp4)
+![](https://i.gyazo.com/2cf96aaddf32badfbd096715474eff45.mp4)
+    ")]
 
     public class VisualNav : ToolBase {
         private string currentRoutePath = "";

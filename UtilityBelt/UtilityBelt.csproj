@@ -3,8 +3,8 @@
   <!-- todo: move these somewhere easier to get to? -->
   <PropertyGroup>
     <Major>0</Major>
-    <Minor>0</Minor>
-    <Build>15</Build>
+    <Minor>1</Minor>
+    <Build>0</Build>
     <Revision>0</Revision>
     <Branch>master</Branch>
   </PropertyGroup>

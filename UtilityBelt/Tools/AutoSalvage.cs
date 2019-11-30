@@ -11,6 +11,14 @@ using VirindiViewService.Controls;
 namespace UtilityBelt.Tools {
     [Name("AutoSalvage")]
     [Summary("Salvages items in your inventory based on the loot profile currently loaded in VTank")]
+    [FullDescription(@"
+<span style='color: red'>
+**Use at your own risk, I'm not responsible if you salvage your super dope untinkered armor that was in your inventory.**
+</span>
+
+This plugin will attempt to salvage all items in your inventory that match loot rule salvage in your currently loaded VTank loot profile.  This is helpful for cleaning up after vtank misses salvaging items.  It needs to ID all items in your inventory so it may take a minute to run.  It avoids salvaging equipped, tinkered, and imbued. Anything else that matches a salvage loot rule is fair game, <span style='color: red'>**you have been warned**</span>.
+    ")]
+
     public class AutoSalvage : ToolBase {
 
         private const int THINK_INTERVAL_MS = 100;

@@ -14,6 +14,12 @@ using System.ComponentModel;
 
 namespace UtilityBelt.Tools {
     [Name("VTankFellowHeals")]
+    [Summary("Automatically forwards vital information to VTank.")]
+    [FullDescription(@"
+If enabled, this will automatically share vital information for all clients on the same PC with VTank.
+
+This allows VTank to heal/restam/remana characters on your same pc, even when they do not share in ingame fellowship.
+    ")]
     public class VTankFellowHeals : ToolBase {
         cExternalInterfaceTrustedRelay vTank;
         private BufferReadWrite sharedBuffer;

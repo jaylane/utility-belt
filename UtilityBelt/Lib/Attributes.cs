@@ -5,7 +5,7 @@ using System.Text;
 
 namespace UtilityBelt.Lib {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class)]
-    class NameAttribute : Attribute {
+    public class NameAttribute : Attribute {
         public string Name { get; }
 
         public NameAttribute(string name) {
@@ -14,7 +14,7 @@ namespace UtilityBelt.Lib {
     }
 
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Method)]
-    class SummaryAttribute : Attribute {
+    public class SummaryAttribute : Attribute {
         public string Summary { get; }
 
         public SummaryAttribute(string summary) {
@@ -23,7 +23,7 @@ namespace UtilityBelt.Lib {
     }
 
     [AttributeUsage(AttributeTargets.Class)]
-    class SectionAttribute : Attribute {
+    public class SectionAttribute : Attribute {
         public string Section { get; }
 
         public SectionAttribute(string section) {
@@ -32,7 +32,7 @@ namespace UtilityBelt.Lib {
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    class DefaultColorAttribute : Attribute {
+    public class DefaultColorAttribute : Attribute {
         public int Color { get; }
 
         public DefaultColorAttribute(int color) {
@@ -41,7 +41,7 @@ namespace UtilityBelt.Lib {
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    class DefaultEnabledAttribute : Attribute {
+    public class DefaultEnabledAttribute : Attribute {
         public bool Enabled { get; }
 
         public DefaultEnabledAttribute(bool enabled) {
@@ -50,7 +50,7 @@ namespace UtilityBelt.Lib {
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    class DefaultUseIconAttribute : Attribute {
+    public class DefaultUseIconAttribute : Attribute {
         public bool UseIcon { get; }
 
         public DefaultUseIconAttribute(bool useIcon) {
@@ -59,7 +59,7 @@ namespace UtilityBelt.Lib {
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    class DefaultSizeAttribute : Attribute {
+    public class DefaultSizeAttribute : Attribute {
         public int Size { get; }
 
         public DefaultSizeAttribute(int size) {
@@ -68,7 +68,7 @@ namespace UtilityBelt.Lib {
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    class DefaultShowLabelAttribute : Attribute {
+    public class DefaultShowLabelAttribute : Attribute {
         public bool Enabled { get; }
 
         public DefaultShowLabelAttribute(bool enabled) {
@@ -77,7 +77,7 @@ namespace UtilityBelt.Lib {
     }
 
     [AttributeUsage(AttributeTargets.Method)]
-    class UsageAttribute : Attribute {
+    public class UsageAttribute : Attribute {
         public string Usage { get; }
 
         public UsageAttribute(string usage) {
@@ -86,7 +86,7 @@ namespace UtilityBelt.Lib {
     }
 
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    class ExampleAttribute : Attribute {
+    public class ExampleAttribute : Attribute {
         public string Command { get; }
         public string Description { get; }
 
@@ -97,7 +97,7 @@ namespace UtilityBelt.Lib {
     }
 
     [AttributeUsage(AttributeTargets.Method)]
-    class CommandPatternAttribute : Attribute {
+    public class CommandPatternAttribute : Attribute {
         public string Verb { get; }
         public bool AllowPartialVerbMatch { get; }
         public string ArgumentsPattern { get; }
@@ -110,6 +110,15 @@ namespace UtilityBelt.Lib {
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    class SupportsFlagsAttribute : Attribute {
+    public class SupportsFlagsAttribute : Attribute {
+    }
+
+    [AttributeUsage(AttributeTargets.Class)]
+    public class FullDescriptionAttribute : Attribute {
+        public string Description { get; }
+
+        public FullDescriptionAttribute(string description) {
+            Description = description;
+        }
     }
 }

@@ -27,6 +27,10 @@ namespace UtilityBelt.Tools {
     }
 
     [Name("Plugin")]
+    [Summary("Provides misc commands")]
+    [FullDescription(@"
+'The Junk Drawer of UtilityBelt' -Cosmic Jester
+    ")]
     public class Plugin : ToolBase {
         private static readonly MediaPlayer mediaPlayer = new MediaPlayer();
 
@@ -147,6 +151,150 @@ namespace UtilityBelt.Tools {
             Util.WriteToChat("UtilityBelt Version v" + Util.GetVersion(true) + "\n Type `/ub help` or `/ub help <command>` for help.");
         }
         #endregion
+        #region /ub help
+        [Summary("Prints help for UB command line usage")]
+        [Usage("/ub help [command]")]
+        [Example("/ub help", "Prints out all available UB commands")]
+        [Example("/ub help printcolors", "Prints out help and usage information for the printcolors command")]
+        [CommandPattern("help", @"^(?<Command>\S+)?$")]
+        public void PrintHelp(string command, Match args) {
+            var argCommand = args.Groups["Command"].Value;
+
+            if (!string.IsNullOrEmpty(argCommand) && UB.RegisteredCommands.ContainsKey(argCommand)) {
+                UB.PrintHelp(UB.RegisteredCommands[argCommand]);
+            }
+            else {
+                var help = "All available UB commands: /ub {";
+
+                var availableVerbs = UB.RegisteredCommands.Keys.ToList();
+                availableVerbs.Remove("");
+                availableVerbs.Sort();
+
+                help += string.Join(", ", availableVerbs.ToArray());
+                help += "}\nFor help with a specific command, use `/ub help [command]`";
+
+                Util.WriteToChat(help);
+            }
+        }
+
+        #endregion
+        #region /ub opt {list | get <option> | set <option> <newValue>}
+        [Summary("Manage plugin settings from the command line")]
+        [Usage("/ub opt {list | get <option> | set <option> <newValue>}")]
+        [Example("/ub opt list", "Lists all available settings.")]
+        [Example("/ub get Plugin.Debug", "Gets the current value for the \"Plugin.Debug\" setting")]
+        [Example("/ub set Plugin.Debug true", "Sets the \"Plugin.Debug\" setting to True")]
+        [CommandPattern("opt", @"^ *(?<params>(list|get \S+|set \S+ \S+)) *$")]
+        public void DoOpt(string command, Match args) {
+            UB_opt(args.Groups["params"].Value);
+        }
+
+        readonly private Regex optionRe = new Regex(@"^((get|set) )?(?<option>[^\s]+)\s?(?<value>.*)", RegexOptions.IgnoreCase);
+        private void UB_opt(string args) {
+            try {
+                if (args.ToLower().Trim() == "list") {
+                    Util.WriteToChat("All Settings:\n" + ListOptions(UB, ""));
+                    return;
+                }
+
+                if (!optionRe.IsMatch(args.Trim())) return;
+
+                var match = optionRe.Match(args.Trim());
+                var option = UB.Settings.GetOptionProperty(match.Groups["option"].Value);
+                string name = match.Groups["option"].Value;
+                string newValue = match.Groups["value"].Value;
+
+                if (option == null || option.Object == null) {
+                    Util.WriteToChat("Invalid option: " + name);
+                    return;
+                }
+
+                if (option.Object is System.Collections.IList list) {
+                    var b = new StringBuilder();
+                    if (!string.IsNullOrEmpty(newValue)) {
+                        var parts = newValue.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                        switch (parts[0].ToLower()) {
+                            case "add":
+                                if (parts.Length < 2 || string.IsNullOrEmpty(parts[1].Trim())) {
+                                    Logger.Debug("Missing item to add");
+                                    return;
+                                }
+                                list.Add(parts[1]);
+                                break;
+
+                            case "remove":
+                                if (parts.Length < 2 || string.IsNullOrEmpty(parts[1].Trim())) {
+                                    Logger.Debug("Missing item to remove");
+                                    return;
+                                }
+                                list.Remove(parts[1]);
+                                break;
+
+                            case "clear":
+                                list.Clear();
+                                break;
+
+                            default:
+                                Util.WriteToChat($"Unknown verb: {parts[1]}");
+                                return;
+                        }
+                    }
+
+                    b.Append(name);
+                    b.Append(" = [ ");
+                    int i = 0;
+                    foreach (var o in list) {
+                        if (i++ > 0)
+                            b.Append(", ");
+                        b.Append(o);
+                    }
+                    b.Append(" ]");
+                    Util.WriteToChat(b.ToString());
+                }
+                else if (string.IsNullOrEmpty(newValue)) {
+                    Util.WriteToChat(name + " = " + UB.Settings.DisplayValue(name));
+                }
+                else {
+                    try {
+                        option.Property.SetValue(option.Parent, Convert.ChangeType(newValue, option.Property.PropertyType), null);
+                        if (!UB.Plugin.Debug) Util.WriteToChat(name + " = " + UB.Settings.DisplayValue(name));
+                    }
+                    catch (Exception ex) { Logger.LogException(ex); }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private string ListOptions(object obj, string history) {
+            var results = "";
+            obj = obj ?? UB;
+
+            if (string.IsNullOrEmpty(history)) {
+                var props = UB.GetToolProps();
+
+                foreach (var prop in props) {
+                    results += ListOptions(prop.GetValue(UB, null), $"{history}{prop.Name}.");
+                }
+            }
+            else {
+                var props = obj.GetType().GetProperties();
+
+                foreach (var prop in props) {
+                    var summaryAttributes = prop.GetCustomAttributes(typeof(SummaryAttribute), true);
+                    var defaultValueAttributes = prop.GetCustomAttributes(typeof(DefaultValueAttribute), true);
+
+                    if (defaultValueAttributes.Length > 0) {
+                        results += $"{history}{prop.Name} = {UB.Settings.DisplayValue(history + prop.Name, true)}\n";
+                    }
+                    else if (summaryAttributes.Length > 0) {
+                        results += ListOptions(prop.GetValue(obj, null), $"{history}{prop.Name}.");
+                    }
+                }
+            }
+            return results;
+        }
+
+        #endregion
         #region /ub delay <millisecondDelay> <command>
         [Summary("Thinks to yourself with your current vitae percentage")]
         [Usage("/ub delay <millisecondDelay> <command>")]
@@ -185,33 +333,6 @@ namespace UtilityBelt.Tools {
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
-        #endregion
-        #region /ub help
-        [Summary("Prints help for UB command line usage")]
-        [Usage("/ub help [command]")]
-        [Example("/ub help", "Prints out all available UB commands")]
-        [Example("/ub help printcolors", "Prints out help and usage information for the printcolors command")]
-        [CommandPattern("help", @"^(?<Command>\S+)?$")]
-        public void PrintHelp(string _, Match args) {
-            var argCommand = args.Groups["Command"].Value;
-
-            if (!string.IsNullOrEmpty(argCommand) && UB.RegisteredCommands.ContainsKey(argCommand)) {
-                UB.PrintHelp(UB.RegisteredCommands[argCommand]);
-            }
-            else {
-                var help = "All available UB commands: /ub {";
-
-                var availableVerbs = UB.RegisteredCommands.Keys.ToList();
-                availableVerbs.Remove("");
-                availableVerbs.Sort();
-
-                help += string.Join(", ", availableVerbs.ToArray());
-                help += "}\nFor help with a specific command, use `/ub help [command]`";
-
-                Util.WriteToChat(help);
-            }
-        }
-
         #endregion
         #region /ub closestportal || /ub portal <name> || /ub portalp <name>
         [Summary("Uses the closest portal.")]
@@ -333,123 +454,6 @@ namespace UtilityBelt.Tools {
             if (e.Type == LogoffEventType.Requested && VTankControl.vTankInstance != null && VTankControl.vTankInstance.GetNavProfile().Equals("UBFollow"))
                 VTankControl.vTankInstance.LoadNavProfile(null);
         }
-        #endregion
-        #region /ub opt {list | get <option> | set <option> <newValue>}
-        [Summary("Manage plugin settings from the command line")]
-        [Usage("/ub opt {list | get <option> | set <option> <newValue>}")]
-        [Example("/ub opt list", "Lists all available options.")]
-        [Example("/ub get Plugin.Debug", "Gets the current value for the \"Plugin.Debug\" setting")]
-        [Example("/ub set Plugin.Debug true", "Sets the \"Plugin.Debug\" setting to True")]
-        [CommandPattern("opt", @"^ *(?<params>(list|get \S+|set \S+ \S+)) *$")]
-        public void DoOpt(string _, Match args) {
-            UB_opt(args.Groups["params"].Value);
-        }
-
-        readonly private Regex optionRe = new Regex(@"^((get|set) )?(?<option>[^\s]+)\s?(?<value>.*)", RegexOptions.IgnoreCase);
-        private void UB_opt(string args) {
-            try {
-                if (args.ToLower().Trim() == "list") {
-                    Util.WriteToChat("All Settings:\n" + ListOptions(UB, ""));
-                    return;
-                }
-
-                if (!optionRe.IsMatch(args.Trim())) return;
-
-                var match = optionRe.Match(args.Trim());
-                var option = UB.Settings.GetOptionProperty(match.Groups["option"].Value);
-                string name = match.Groups["option"].Value;
-                string newValue = match.Groups["value"].Value;
-
-                if (option == null || option.Object == null) {
-                    Util.WriteToChat("Invalid option: " + name);
-                    return;
-                }
-
-                if (option.Object is System.Collections.IList list) {
-                    var b = new StringBuilder();
-                    if (!string.IsNullOrEmpty(newValue)) {
-                        var parts = newValue.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
-                        switch (parts[0].ToLower()) {
-                            case "add":
-                                if (parts.Length < 2 || string.IsNullOrEmpty(parts[1].Trim())) {
-                                    Logger.Debug("Missing item to add");
-                                    return;
-                                }
-                                list.Add(parts[1]);
-                                break;
-
-                            case "remove":
-                                if (parts.Length < 2 || string.IsNullOrEmpty(parts[1].Trim())) {
-                                    Logger.Debug("Missing item to remove");
-                                    return;
-                                }
-                                list.Remove(parts[1]);
-                                break;
-
-                            case "clear":
-                                list.Clear();
-                                break;
-
-                            default:
-                                Util.WriteToChat($"Unknown verb: {parts[1]}");
-                                return;
-                        }
-                    }
-
-                    b.Append(name);
-                    b.Append(" = [ ");
-                    int i = 0;
-                    foreach (var o in list) {
-                        if (i++ > 0)
-                            b.Append(", ");
-                        b.Append(o);
-                    }
-                    b.Append(" ]");
-                    Util.WriteToChat(b.ToString());
-                }
-                else if (string.IsNullOrEmpty(newValue)) {
-                    Util.WriteToChat(name + " = " + UB.Settings.DisplayValue(name));
-                }
-                else {
-                    try {
-                        option.Property.SetValue(option.Parent, Convert.ChangeType(newValue, option.Property.PropertyType), null);
-                        if (!UB.Plugin.Debug) Util.WriteToChat(name + " = " + UB.Settings.DisplayValue(name));
-                    }
-                    catch (Exception ex) { Logger.LogException(ex); }
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private string ListOptions(object obj, string history) {
-            var results = "";
-            obj = obj ?? UB;
-
-            if (string.IsNullOrEmpty(history)) {
-                var props = UB.GetToolProps();
-
-                foreach (var prop in props) {
-                    results += ListOptions(prop.GetValue(UB, null), $"{history}{prop.Name}.");
-                }
-            }
-            else {
-                var props = obj.GetType().GetProperties();
-
-                foreach (var prop in props) {
-                    var summaryAttributes = prop.GetCustomAttributes(typeof(SummaryAttribute), true);
-                    var defaultValueAttributes = prop.GetCustomAttributes(typeof(DefaultValueAttribute), true);
-
-                    if (defaultValueAttributes.Length > 0) {
-                        results += $"{history}{prop.Name} = {UB.Settings.DisplayValue(history + prop.Name, true)}\n";
-                    }
-                    else if (summaryAttributes.Length > 0) {
-                        results += ListOptions(prop.GetValue(obj, null), $"{history}{prop.Name}.");
-                    }
-                }
-            }
-            return results;
-        }
-
         #endregion
         #region /ub pos
         [Summary("Prints position information for the currently selected object")]

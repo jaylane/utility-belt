@@ -72,7 +72,7 @@ namespace UtilityBelt.Lib {
 
                                     var description = string.Join("", lines.ToArray());
                                     UB.Host.Actions.AddChatText($"[UB] Version {releaseVersion.ToString()} is now available! {description}", 3);
-                                    UB.Host.Actions.AddChatText($"Get it here: <Tell:IIDString:{Util.GetChatId()}:openurl|https://gitlab.com/trevis/utilitybelt>https://gitlab.com/trevis/utilitybelt</Tell>", 3);
+                                    UB.Host.Actions.AddChatText($"Get it here: <Tell:IIDString:{Util.GetChatId()}:openurl|https://utilitybelt.gitlab.io/>https://utilitybelt.gitlab.io/</Tell>", 3);
                                     foundUpdate = true;
                                     break;
                                 }
