@@ -124,7 +124,6 @@ namespace UtilityBelt {
                 CharacterName = characterName;
 
                 Util.Init(this, assemblyLocation, storagePath); //static classes can not have constructors, but still need to init variables.
-                Logger.Debug("UtilityBelt.Startup");
 
                 UBHelper.Core.Startup();
 
@@ -165,13 +164,12 @@ namespace UtilityBelt {
         /// Called on CharacterFilter_Login, this is used to initialize our plugin globals / tools / ui.
         /// </summary>
         public void Init() {
-            Logger.Debug("UtilityBelt.Init");
+            Util.CreateDataDirectories();
             // CharacterFilter_Login will be called multiple times if the character was already in the world,
             // so make sure we only actually init once
             if (didInit) return;
             didInit = true;
 
-            Util.CreateDataDirectories();
             Logger.Init();
             Settings = new Settings();
 
