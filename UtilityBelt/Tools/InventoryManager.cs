@@ -138,7 +138,7 @@ Provides a command-line interface to inventory management.
         [Usage("/ub ig[p] <lootProfile> to <target>")]
         [Example("/ub ig muledItems.utl to Zero Cool", "Gives all items matching Keep rules in muledItems.utl to Zero Cool")]
         [Example("/ub igp muledItems.utl to Zero", "Gives all items matching Keep rules in muledItems.utl to a character partially matching the name Zero")]
-        [CommandPattern("ig", @"^ *(?<utlProfile>.+) to (?<Target>.+)|(?<StopCommand>(cancel|stop|abort|quit))$")]
+        [CommandPattern("ig", @"^ *(?<utlProfile>.+) to (?<Target>.+)|(?<StopCommand>(cancel|stop|abort|quit))$", true)]
         public void DoItemGiver(string command, Match args) {
             if (!string.IsNullOrEmpty(args.Groups["StopCommand"].Value)) {
                 IGStop();
