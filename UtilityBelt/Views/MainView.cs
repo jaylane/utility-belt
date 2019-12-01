@@ -35,6 +35,7 @@ namespace UtilityBelt.Views {
                     { "DungeonMapsEnabled", "DungeonMaps.Enabled" },
                     { "NameTagsEnabled", "Nametags.Enabled" },
                     { "VideoPatchEnabled", "Plugin.VideoPatch" },
+                    { "VideoPatchFocusEnabled", "Plugin.VideoPatchFocus" },
                     { "VisualNavEnabled", "VisualNav.Enabled" },
                     { "VitalSharingEnabled", "VTank.VitalSharing" },
                     { "Debug", "Plugin.Debug" }

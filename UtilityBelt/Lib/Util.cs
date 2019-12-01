@@ -561,5 +561,14 @@ namespace UtilityBelt
 
             return matrix[bounds.Height - 1, bounds.Width - 1];
         }
+
+        #region IsClientActive()
+        public static bool IsClientActive() {
+            return GetForegroundWindow() == UB.Core.Decal.Hwnd;
+        }
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+        #endregion
+
     }
 }

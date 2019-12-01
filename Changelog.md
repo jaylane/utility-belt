@@ -1,5 +1,6 @@
 ## 0.1.1 (TBD)
-- Release notes go here
+- Increase AutoStack/AutoCram timeout to 30s
+- Add `Plugin.VideoPatchFocus`, to automatically enable/disable VideoPatch based on client focus
 
 ## 0.1.0 (2019-11-30) [UtilityBeltInstaller-0.1.0.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/d92c9e54fb61ab148bc2e1d2342ee204/UtilityBeltInstaller-0.1.0.exe)
 - Added AutoTinker and AutoImbue (thanks Schneebly)
