@@ -96,14 +96,17 @@ namespace UtilityBelt.Tools {
             get { return (bool)GetSetting("VideoPatch"); }
             set {
                 UpdateSetting("VideoPatch", value);
+                VideoPatchToggle(value);
+            }
+        }
 
-                if (UBHelper.Core.version < 1911140303) {
-                    Util.WriteToChat($"Error UBHelper.dll is out of date!");
-                    return;
-                }
-
-                if (value) UBHelper.VideoPatch.Enable();
-                else UBHelper.VideoPatch.Disable();
+        [Summary("Disables VideoPatch while the client has focus")]
+        [DefaultValue(false)]
+        public bool VideoPatchFocus {
+            get { return (bool)GetSetting("VideoPatchFocus"); }
+            set {
+                UpdateSetting("VideoPatchFocus", value);
+                if (VideoPatch) VideoPatchFocusToggle(value);
             }
         }
 
@@ -763,6 +766,57 @@ namespace UtilityBelt.Tools {
                     break;
             }
         }
+        public void VideoPatchToggle(bool enabled) {
+            if (enabled) {
+                if (VideoPatchFocus) VideoPatchFocusToggle(true);
+                else UBHelper.VideoPatch.Enable();
+            }
+            else {
+                if (VideoPatchFocus) VideoPatchFocusToggle(false);
+                else UBHelper.VideoPatch.Disable();
+            }
+        }
+
+        private bool VideoPatchFocusEventRegistered = false;
+        public void VideoPatchFocusToggle(bool enabled) {
+            if (enabled) {
+                if (!VideoPatchFocusEventRegistered) {
+                    VideoPatchFocusEventRegistered = true;
+                    if (Util.IsClientActive()) UBHelper.VideoPatch.Disable();
+                    else UBHelper.VideoPatch.Enable();
+                    UB.Core.WindowMessage += Core_WindowMessage_VideoPatchFocusToggle;
+                }
+            }
+            else {
+                if (VideoPatchFocusEventRegistered) {
+                    VideoPatchFocusEventRegistered = false;
+                    UB.Core.WindowMessage -= Core_WindowMessage_VideoPatchFocusToggle;
+                    VideoPatchFocusDisableAt = DateTime.MaxValue;
+                    if (VideoPatch) UBHelper.VideoPatch.Enable();
+                }
+            }
+        }
+        private DateTime VideoPatchFocusDisableAt = DateTime.MaxValue;
+        private void Core_WindowMessage_VideoPatchFocusToggle(object sender, WindowMessageEventArgs e) {
+            if (e.Msg == 0x0008) { // WM_KILLFOCUS
+                VideoPatchFocusDisableAt = DateTime.UtcNow + TimeSpan.FromSeconds(2);
+                UB.Core.RenderFrame += Core_RenderFrame_VideoPatchFocusToggle;
+            }
+            else if (e.Msg == 0x0007) { // WM_SETFOCUS
+                if (VideoPatchFocusDisableAt != DateTime.MaxValue) VideoPatchFocusDisableAt = DateTime.MaxValue;
+                else UBHelper.VideoPatch.Disable();
+            }
+        }
+        private void Core_RenderFrame_VideoPatchFocusToggle(object sender, EventArgs e) {
+            if (VideoPatchFocusDisableAt == DateTime.MaxValue) {
+                UB.Core.RenderFrame -= Core_RenderFrame_VideoPatchFocusToggle;
+            } else if (DateTime.UtcNow > VideoPatchFocusDisableAt) {
+                VideoPatchFocusDisableAt = DateTime.MaxValue;
+                UBHelper.VideoPatch.Enable();
+                UB.Core.RenderFrame -= Core_RenderFrame_VideoPatchFocusToggle;
+            }
+        }
+
         #endregion
         #region /ub fixbusy
         public void UB_fixbusy() {
@@ -795,6 +849,8 @@ namespace UtilityBelt.Tools {
                     UB.Core.RenderFrame -= Core_RenderFrame_Delay;
                     UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch_PortalOpen;
                     UB.Core.CharacterFilter.Logoff -= CharacterFilter_Logoff_Follow;
+                    UB.Core.WindowMessage -= Core_WindowMessage_VideoPatchFocusToggle;
+                    UB.Core.RenderFrame -= Core_RenderFrame_VideoPatchFocusToggle;
                 }
                 disposedValue = true;
             }

@@ -14,7 +14,8 @@
         <control progid="DecalControls.PushButton" name="VisualNavEnabled" left="144" top="72" width="110" height="24" text="   Visual Nav Lines"/>
         <control progid="DecalControls.PushButton" name="CheckForUpdate" left="144" top="184" width="110" height="24" text="Check For Update"/>
 
-        <control progid="DecalControls.PushButton" name="VideoPatchEnabled" left="280" top="8" width="110" height="24" text="Video Patch  "/>
+        <control progid="DecalControls.PushButton" name="VideoPatchEnabled" left="280" top="8" width="88" height="24" text="  Video Patch"/>
+        <control progid="DecalControls.PushButton" name="VideoPatchFocusEnabled" left="368" top="8" width="22" height="24" text="F"/>
         <control progid="DecalControls.PushButton" name="VitalSharingEnabled" left="280" top="40" width="110" height="24" text="Vital Sharing"/>
         <control progid="DecalControls.PushButton" name="Debug" left="280" top="184" width="110" height="24" text="  Debug Mode"/>
       </control>
