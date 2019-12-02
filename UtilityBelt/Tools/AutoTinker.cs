@@ -187,15 +187,26 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
         }
 
         private void NextTink() {
-            AutoTinkerList.RemoveRow(0);
-            tinking = false;
-            DoTinks();
+            try {
+                AutoTinkerList.RemoveRow(0);
+                tinking = false;
+                if (AutoTinkerList.RowCount >= 1) {
+                    DoTinks();
+                }
+                else {
+                    Util.WriteToChat("There are " + AutoTinkerList.RowCount.ToString() + " in the list.");
+                    AutoTinkItemNameLabel.Text = "[None]";
+                    itemWO = null;
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
         }
 
-        public void AutoImbueSalvageCombo_Change(object sender, EventArgs e) {
-            ClearAllTinks();
-            DoPopulateList();
-        }
+        //public void AutoImbueSalvageCombo_Change(object sender, EventArgs e) {
+        //    ClearAllTinks();
+        //    DoPopulateList();
+        //}
 
         public void GetPotentialSalvage() {
             try {
@@ -286,7 +297,12 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
 
         private void PopulateListButton_Hit(object sender, EventArgs e) {
             ClearAllTinks();
-            DoPopulateList();
+            if (AutoTinkItemNameLabel.Text.ToString() != "[None]" && itemWO != null) {
+                DoPopulateList();
+            }
+            else {
+                Util.WriteToChat("No item selected...");
+            }
         }
 
         private void AutoTinkAddSelectedButton_Hit(object sender, EventArgs e) {
@@ -391,58 +407,61 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
         }
 
         private void DoTinks() {
-            if (AutoTinkerList.RowCount <= 0) {
-                ClearAllTinks();
-            }
+            try {
+                if (AutoTinkerList.RowCount <= 0) {
+                    ClearAllTinks();
+                }
 
-            HudList.HudListRowAccessor tinkerListRow = AutoTinkerList[0];
-            HudStaticText item = (HudStaticText)tinkerListRow[1];
-            HudStaticText sal = (HudStaticText)tinkerListRow[2];
-            HudStaticText successP = (HudStaticText)tinkerListRow[3];
-            string successPstr = successP.Text.ToString();
-            HudStaticText salID = (HudStaticText)tinkerListRow[4];
-            HudStaticText itemID = (HudStaticText)tinkerListRow[5];
-            
-            if (!int.TryParse(itemID.Text.ToString(), out int intItemId)) {
-                Util.WriteToChat("AutoTinker: Something went wrong, unable to parse item to work with: " + itemID.Text);
-            }
-            
-            if (!int.TryParse(salID.Text.ToString(), out int intSalvId)) {
-                Util.WriteToChat("AutoTinker: Something went wrong, unable to parse salvage to work with: " + salID.Text);
-            }
-            
-            
-            if (intItemId != 0) {
-                currentItemName = Util.GetObjectName(intItemId);
-            }
-            
-            if (intSalvId != 0) {
-                currentSalvageWK = Math.Round(CoreManager.Current.WorldFilter[intSalvId].Values(DoubleValueKey.SalvageWorkmanship),2, MidpointRounding.AwayFromZero);
-                currentSalvage = Util.GetObjectName(intSalvId).Replace(" Salvage", "").Replace(" (100)", "");
-            }
-            
-            CoreManager.Current.Actions.SelectItem(intSalvId);
+                HudList.HudListRowAccessor tinkerListRow = AutoTinkerList[0];
+                HudStaticText item = (HudStaticText)tinkerListRow[1];
+                HudStaticText sal = (HudStaticText)tinkerListRow[2];
+                HudStaticText successP = (HudStaticText)tinkerListRow[3];
+                string successPstr = successP.Text.ToString();
+                HudStaticText salID = (HudStaticText)tinkerListRow[4];
+                HudStaticText itemID = (HudStaticText)tinkerListRow[5];
+
+                if (!int.TryParse(itemID.Text.ToString(), out int intItemId)) {
+                    Util.WriteToChat("AutoTinker: Something went wrong, unable to parse item to work with: " + itemID.Text);
+                }
+
+                if (!int.TryParse(salID.Text.ToString(), out int intSalvId)) {
+                    Util.WriteToChat("AutoTinker: Something went wrong, unable to parse salvage to work with: " + salID.Text);
+                }
 
 
-            if (!tinking) {
+                if (intItemId != 0) {
+                    currentItemName = Util.GetObjectName(intItemId);
+                }
+
+                if (intSalvId != 0) {
+                    currentSalvageWK = Math.Round(CoreManager.Current.WorldFilter[intSalvId].Values(DoubleValueKey.SalvageWorkmanship), 2, MidpointRounding.AwayFromZero);
+                    currentSalvage = Util.GetObjectName(intSalvId).Replace(" Salvage", "").Replace(" (100)", "");
+                }
+
                 CoreManager.Current.Actions.SelectItem(intSalvId);
-                if (CoreManager.Current.Actions.CurrentSelection == intSalvId) {
-                    UBHelper.ConfirmationRequest.ConfirmationRequestEvent += UBHelper_ConfirmationRequest;
-                    string verifyPercent = (tinkerCalc.DoCalc(intSalvId, CoreManager.Current.WorldFilter[intItemId], CoreManager.Current.WorldFilter[intItemId].Values(LongValueKey.NumberTimesTinkered)).ToString("P"));
-                    if (targetItemUpdated && verifyPercent == successPstr ) {
-                        //Util.WriteToChat("matched success %... applying");
-                        CoreManager.Current.WorldFilter.ChangeObject += WaitForItemUpdate;
-                        readyForNextTink = false;
-                        CoreManager.Current.Actions.ApplyItem(intSalvId, intItemId);
-                        targetItemUpdated = false;
-                        tinking = true;
-                    }
-                    else if (targetItemUpdated && verifyPercent != successPstr) {
-                        Util.WriteToChat("Tinker % changed.  Please check your buffs/brill and refresh the list to continue." + " ------ planned: " + successPstr + " ----- actual: " + verifyPercent);
-                        ClearAllTinks();
+
+
+                if (!tinking) {
+                    CoreManager.Current.Actions.SelectItem(intSalvId);
+                    if (CoreManager.Current.Actions.CurrentSelection == intSalvId) {
+                        UBHelper.ConfirmationRequest.ConfirmationRequestEvent += UBHelper_ConfirmationRequest;
+                        string verifyPercent = (tinkerCalc.DoCalc(intSalvId, CoreManager.Current.WorldFilter[intItemId], CoreManager.Current.WorldFilter[intItemId].Values(LongValueKey.NumberTimesTinkered)).ToString("P"));
+                        if (targetItemUpdated && verifyPercent == successPstr) {
+                            //Util.WriteToChat("matched success %... applying");
+                            CoreManager.Current.WorldFilter.ChangeObject += WaitForItemUpdate;
+                            readyForNextTink = false;
+                            CoreManager.Current.Actions.ApplyItem(intSalvId, intItemId);
+                            targetItemUpdated = false;
+                            tinking = true;
+                        }
+                        else if (targetItemUpdated && verifyPercent != successPstr) {
+                            Util.WriteToChat("Tinker % changed.  Please check your buffs/brill and refresh the list to continue." + " ------ planned: " + successPstr + " ----- actual: " + verifyPercent);
+                            ClearAllTinks();
+                        }
                     }
                 }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void WaitForItemUpdate(object sender, ChangeObjectEventArgs e) {

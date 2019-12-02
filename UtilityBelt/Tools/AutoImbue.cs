@@ -106,10 +106,19 @@ namespace UtilityBelt.Tools {
         }
 
         private void NextTink() {
-            CoreManager.Current.Actions.RequestId(currentItemID);
-            AutoImbueList.RemoveRow(0);
-            tinking = false;
-            DoTinks();
+            try {
+                CoreManager.Current.Actions.RequestId(currentItemID);
+                AutoImbueList.RemoveRow(0);
+                tinking = false;
+                if (AutoImbueList.RowCount >= 1) {
+                    DoTinks();
+                }
+                else {
+                    Util.WriteToChat("There are " + AutoImbueList.RowCount.ToString() + " in the list.");
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
         }
 
         private void AutoImbueList_Click(object sender, int row, int col) {
@@ -360,45 +369,48 @@ namespace UtilityBelt.Tools {
         }
 
         private void DoTinks() {
-            HudList.HudListRowAccessor tinkerListRow = AutoImbueList[0];
-            HudStaticText item = (HudStaticText)tinkerListRow[1];
-            HudStaticText sal = (HudStaticText)tinkerListRow[2];
-            HudStaticText salID = (HudStaticText)tinkerListRow[4];
-            HudStaticText itemID = (HudStaticText)tinkerListRow[5];
+            try {
+                HudList.HudListRowAccessor tinkerListRow = AutoImbueList[0];
+                HudStaticText item = (HudStaticText)tinkerListRow[1];
+                HudStaticText sal = (HudStaticText)tinkerListRow[2];
+                HudStaticText salID = (HudStaticText)tinkerListRow[4];
+                HudStaticText itemID = (HudStaticText)tinkerListRow[5];
 
-            
-            //Logger.Debug("AutoTinker: applying " + sal.Text.ToString() + ": " + salID.Text.ToString() + " to " + item.Text.ToString() + ": " + itemID.Text.ToString());
-            if (!int.TryParse(itemID.Text.ToString(), out int intItemId)) {
-                Util.WriteToChat("AutoImbue: Something went wrong, unable to parse item to work with.");
-                return;
-            }
 
-            if (!int.TryParse(salID.Text.ToString(), out int intSalvId)) {
-                Util.WriteToChat("AutoImbue: Something went wrong, unable to parse salvage to work with.");
-                return;
-            }
+                //Logger.Debug("AutoTinker: applying " + sal.Text.ToString() + ": " + salID.Text.ToString() + " to " + item.Text.ToString() + ": " + itemID.Text.ToString());
+                if (!int.TryParse(itemID.Text.ToString(), out int intItemId)) {
+                    Util.WriteToChat("AutoImbue: Something went wrong, unable to parse item to work with.");
+                    return;
+                }
 
-            if (intItemId != 0) {
-                currentItemName = Util.GetObjectName(intItemId);
-                currentItemID = intItemId;
-            }
+                if (!int.TryParse(salID.Text.ToString(), out int intSalvId)) {
+                    Util.WriteToChat("AutoImbue: Something went wrong, unable to parse salvage to work with.");
+                    return;
+                }
 
-            if (intSalvId != 0) {
-                currentSalvageWK = Math.Round(CoreManager.Current.WorldFilter[intSalvId].Values(DoubleValueKey.SalvageWorkmanship), 2, MidpointRounding.AwayFromZero);
-                currentSalvage = Util.GetObjectName(intSalvId).Replace(" Salvage","").Replace(" (100)","");
-            }
+                if (intItemId != 0) {
+                    currentItemName = Util.GetObjectName(intItemId);
+                    currentItemID = intItemId;
+                }
 
-            if (!tinking) {
-                CoreManager.Current.Actions.SelectItem(intSalvId);
-                if (CoreManager.Current.Actions.CurrentSelection == intSalvId) {
-                    //CoreManager.Current.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
-                    UBHelper.ConfirmationRequest.ConfirmationRequestEvent += UBHelper_ConfirmationRequest;
+                if (intSalvId != 0) {
+                    currentSalvageWK = Math.Round(CoreManager.Current.WorldFilter[intSalvId].Values(DoubleValueKey.SalvageWorkmanship), 2, MidpointRounding.AwayFromZero);
+                    currentSalvage = Util.GetObjectName(intSalvId).Replace(" Salvage", "").Replace(" (100)", "");
+                }
 
-                    //CoreManager.Current.WorldFilter.ReleaseObject += Current_ReleaseObject;
-                    CoreManager.Current.Actions.ApplyItem(intSalvId, intItemId);
-                    tinking = true;
+                if (!tinking) {
+                    CoreManager.Current.Actions.SelectItem(intSalvId);
+                    if (CoreManager.Current.Actions.CurrentSelection == intSalvId) {
+                        //CoreManager.Current.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
+                        UBHelper.ConfirmationRequest.ConfirmationRequestEvent += UBHelper_ConfirmationRequest;
+
+                        //CoreManager.Current.WorldFilter.ReleaseObject += Current_ReleaseObject;
+                        CoreManager.Current.Actions.ApplyItem(intSalvId, intItemId);
+                        tinking = true;
+                    }
                 }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         
         public void ClearAllTinks() {
