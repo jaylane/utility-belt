@@ -55,7 +55,7 @@ Draws an overlay with dungeon maps on your screen
         private Dungeon currentBlock = null;
         private int markerCount = 0;
 
-        readonly System.Windows.Forms.Timer zoomSaveTimer;
+        readonly System.Timers.Timer zoomSaveTimer;
         private long lastDrawMs = 0;
         private long lastHudMs = 0;
         HudButton UIFollowCharacter;
@@ -489,10 +489,10 @@ Draws an overlay with dungeon maps on your screen
 
                 Toggle();
 
-                zoomSaveTimer = new System.Windows.Forms.Timer {
+                zoomSaveTimer = new System.Timers.Timer {
                     Interval = 2000 // save the window position 2 seconds after it has stopped moving
                 };
-                zoomSaveTimer.Tick += (s, e) => {
+                zoomSaveTimer.Elapsed += (s, e) => {
                     zoomSaveTimer.Stop();
                     MapZoom = scale;
                 };
