@@ -19,7 +19,7 @@ namespace UtilityBelt.Tools {
     TODO
     ")]
     public class QuestTracker : ToolBase {
-        DateTime lastMyQuestsRequest = DateTime.MinValue;
+        DateTime lastHeartbeat = DateTime.MinValue;
 
         HudTextBox UIQuestsListFilter;
         HudTabView UIQuestListNotebook;
@@ -77,7 +77,7 @@ namespace UtilityBelt.Tools {
 
             UIQuestsListFilter.Change += (s, e) => { DrawQuestLists(); };
 
-            UIQuestListRefresh.Hit += (s, e) => { GetMyQuestsList(); };
+            UIQuestListRefresh.Hit += (s, e) => { GetMyQuestsList(1); };
 
             UITimedQuestList.Click += (s, r, c) => { HandleRowClicked(UITimedQuestList, r, c); };
             UIKillTaskQuestList.Click += (s, r, c) => { HandleRowClicked(UIKillTaskQuestList, r, c); };
@@ -87,9 +87,91 @@ namespace UtilityBelt.Tools {
             questRedrawTimer.Tick += QuestRedrawTimer_Tick;
             questRedrawTimer.Interval = 1000;
 
+            if (UB.Core.CharacterFilter.LoginStatus == 0)
+                UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
+            else
+                GetMyQuestsList(3);
+        }
+
+        private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
+            UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
+            GetMyQuestsList(3);
+        }
+        private bool GettingQuests = false;
+        private bool GotFirstQuest = false;
+        private sbyte GetQuestTries = 0;
+        private void GetMyQuestsList(sbyte tries = 1) {
+            if (GettingQuests) {
+                LogError("GetMyQuestsList called while it was already running");
+                return;
+            }
+            GetQuestTries = tries;
+            GettingQuests = true;
+            GotFirstQuest = false;
             UB.Core.ChatBoxMessage += Current_ChatBoxMessage;
-            
-            GetMyQuestsList();
+            UB.Core.RenderFrame += Core_RenderFrame;
+            lastHeartbeat = DateTime.UtcNow;
+            UIQuestListRefresh.Visible = false;
+            RealGetMyQuestList();
+        }
+        private void RealGetMyQuestList() {
+            if (GetQuestTries < 1) {
+                LogError("GetMyQuestList failed too many times, retiring");
+                GettingQuests = false;
+                UB.Core.ChatBoxMessage -= Current_ChatBoxMessage;
+                UB.Core.RenderFrame -= Core_RenderFrame;
+                UIQuestListRefresh.Visible = true;
+                return;
+            }
+            try {
+                UB.Core.Actions.InvokeChatParser("/myquests");
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        public void Current_ChatBoxMessage(object sender, ChatTextInterceptEventArgs e) {
+            try {
+                if (!GettingQuests) {
+                    UB.Core.ChatBoxMessage -= Current_ChatBoxMessage;
+                    LogError("Current_ChatBoxMessage called while not getting quests");
+                    return;
+                }
+                if (QuestFlag.MyQuestRegex.IsMatch(e.Text)) {
+                    e.Eat = GotFirstQuest = true;
+                    var questFlag = QuestFlag.FromMyQuestsLine(e.Text);
+
+                    if (questFlag != null) {
+                        UpdateQuestFlag(questFlag);
+                    }
+                    lastHeartbeat = DateTime.UtcNow;
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void Core_RenderFrame(object sender, EventArgs e) {
+            if (!GettingQuests) {
+                UB.Core.RenderFrame -= Core_RenderFrame;
+                LogError("Core_RenderFrame called while not getting quests");
+                return;
+            }
+            if (GotFirstQuest) {
+                if (DateTime.UtcNow - lastHeartbeat > TimeSpan.FromSeconds(1)) {
+                    GettingQuests = false;
+                    UB.Core.ChatBoxMessage -= Current_ChatBoxMessage;
+                    UB.Core.RenderFrame -= Core_RenderFrame;
+                    UIQuestListRefresh.Visible = true;
+                }
+            } else {
+                if (DateTime.UtcNow - lastHeartbeat > TimeSpan.FromSeconds(3)) {
+                    LogError("Timeout (15s) getting quests");
+                    GetQuestTries--;
+                    lastHeartbeat = DateTime.UtcNow;
+                    RealGetMyQuestList();
+                }
+
+            }
+
         }
 
         private void QuestRedrawTimer_Tick(object sender, EventArgs e) {
@@ -111,22 +193,6 @@ namespace UtilityBelt.Tools {
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        public void Current_ChatBoxMessage(object sender, ChatTextInterceptEventArgs e) {
-            try {
-                if (ShouldEatQuests()) {
-                    e.Eat = true;
-                }
-
-                if (QuestFlag.MyQuestRegex.IsMatch(e.Text)) {
-                    var questFlag = QuestFlag.FromMyQuestsLine(e.Text);
-
-                    if (questFlag != null) {
-                        UpdateQuestFlag(questFlag);
-                    }
-                }
-            } catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void HandleRowClicked(HudList uiList, int row, int col) {
@@ -192,11 +258,6 @@ namespace UtilityBelt.Tools {
             UITimedQuestList.ScrollPosition = timedScrollPosition;
             UIKillTaskQuestList.ScrollPosition = killTakScrollPosition;
             UIOnceQuestList.ScrollPosition = onceScrollPosition;
-        }
-
-        private bool ShouldEatQuests() {
-            // assuming we get a response back in <3 seconds
-            return DateTime.UtcNow - lastMyQuestsRequest < TimeSpan.FromSeconds(3);
         }
 
         private void UpdateQuestFlag(QuestFlag questFlag) {
@@ -267,19 +328,12 @@ namespace UtilityBelt.Tools {
             return null;
         }
 
-        private void GetMyQuestsList() {
-            try {
-                lastMyQuestsRequest = DateTime.UtcNow;
-                UB.Core.Actions.InvokeChatParser("/myquests");
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
+                    UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
                     UB.Core.ChatBoxMessage -= Current_ChatBoxMessage;
-
+                    UB.Core.RenderFrame -= Core_RenderFrame;
                     if (questRedrawTimer != null) {
                         questRedrawTimer.Stop();
                         questRedrawTimer.Dispose();
