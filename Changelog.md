@@ -3,6 +3,9 @@
 - Add `Plugin.VideoPatchFocus`, to automatically enable/disable VideoPatch based on client focus
 - Migrate Auto-Accept list to separate config so it can be shared
 - Fix ProfileWatcher attempting to watch a null file and causing vtank to overwrite settings
+- Fix VTankVitalSharing not always sharing vitals
+- Fix High DPI scaling when running utilitybelt (/ub playsound will still break dpi scaling)
+- Fix VisualNav routes not always redrawing properly
 
 ## 0.1.0 (2019-11-30) [UtilityBeltInstaller-0.1.0.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/d92c9e54fb61ab148bc2e1d2342ee204/UtilityBeltInstaller-0.1.0.exe)
 - Added AutoTinker and AutoImbue (thanks Schneebly)

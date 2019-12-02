@@ -131,7 +131,7 @@ Draws an overlay with dungeon maps on your screen
         [DefaultValue(4.20f)]
         public float MapZoom {
             get { return (float)GetSetting("MapZoom"); }
-            set { UpdateSetting("MapZoom", value); }
+            set { UpdateSetting("MapZoom", value); scale = MapZoom; }
         }
 
         [Summary("Map display options")]
