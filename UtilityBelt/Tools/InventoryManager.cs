@@ -197,44 +197,53 @@ Provides a command-line interface to inventory management.
             UB.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
             UB.Core.RenderFrame += Core_RenderFrame;
 
-            if (WatchLootProfile) WatchLootProfile_Changed(true);
+            //if (WatchLootProfile) WatchLootProfile_Changed(true);
         }
 
         #region Loot Profile Watcher
-
+        private bool PC_LootProfileChanged_Registered = false;
         // Handle settings changes while running
         public void WatchLootProfile_Changed(bool enabled) {
-            if (VTankControl.vTankInstance == null && enabled) {
-                LogError("Error accessing VTank");
-                WatchLootProfile = false;
-                return;
-            }
-            string profilePath = Util.GetVTankProfilesDirectory();
-            if (!Directory.Exists(profilePath) && enabled) {
-                LogError($"WatchLootProfile_Changed(true) Error: {profilePath} does not exist!");
-                WatchLootProfile = false;
-                return;
-            }
             if (profilesWatcher != null)
                 profilesWatcher.Dispose();
             if (enabled) {
+                if (VTankControl.vTankInstance == null) {
+                    LogError("Error accessing VTank");
+                    WatchLootProfile = false;
+                    return;
+                }
+                string profilePath = Util.GetVTankProfilesDirectory();
+                if (!Directory.Exists(profilePath)) {
+                    LogError($"WatchLootProfile_Changed(true) Error: {profilePath} does not exist!");
+                    WatchLootProfile = false;
+                    return;
+                }
                 string loadedProfile = VTankControl.vTankInstance.GetLootProfile();
                 profilesWatcher = new FileSystemWatcher {
                     NotifyFilter = NotifyFilters.LastWrite,
                     Filter = loadedProfile,
                     Path = profilePath,
-                    EnableRaisingEvents = true
+                    EnableRaisingEvents = false
                 };
                 profilesWatcher.Changed += LootProfile_Changed;
-                uTank2.PluginCore.PC.LootProfileChanged += PC_LootProfileChanged;
-                LogDebug($"FileSystemWatcher enabled on Path={profilePath},Filter={loadedProfile}");
+
+                if (!PC_LootProfileChanged_Registered) {
+                    uTank2.PluginCore.PC.LootProfileChanged += PC_LootProfileChanged;
+                    PC_LootProfileChanged_Registered = true;
+                }
+                if (!string.IsNullOrEmpty(profilesWatcher.Filter)) profilesWatcher.EnableRaisingEvents = true;
             } else {
-                uTank2.PluginCore.PC.LootProfileChanged -= PC_LootProfileChanged;
+                if (PC_LootProfileChanged_Registered) {
+                    uTank2.PluginCore.PC.LootProfileChanged -= PC_LootProfileChanged;
+                    PC_LootProfileChanged_Registered = false;
+                }
             }
         }
 
         private static void PC_LootProfileChanged() {
             string loadedProfile = VTankControl.vTankInstance.GetLootProfile();
+            if (string.IsNullOrEmpty(loadedProfile)) profilesWatcher.EnableRaisingEvents = false;
+            else profilesWatcher.EnableRaisingEvents = true;
             profilesWatcher.Filter = loadedProfile;
         }
 
@@ -340,7 +349,8 @@ Provides a command-line interface to inventory management.
             }
             if (reloadLootProfile && DateTime.UtcNow - reloadLootProfileTS > TimeSpan.FromSeconds(2)) {
                 reloadLootProfile = false;
-                VTankControl.vTankInstance.LoadLootProfile(VTankControl.vTankInstance.GetLootProfile());
+                if (profilesWatcher != null && !string.IsNullOrEmpty(profilesWatcher.Filter))
+                    VTankControl.vTankInstance.LoadLootProfile(profilesWatcher.Filter);
             }
             if (!igRunning)
                 return;
