@@ -163,7 +163,7 @@ namespace UtilityBelt.Tools {
                     UIQuestListRefresh.Visible = true;
                 }
             } else {
-                if (DateTime.UtcNow - lastHeartbeat > TimeSpan.FromSeconds(3)) {
+                if (DateTime.UtcNow - lastHeartbeat > TimeSpan.FromSeconds(15)) {
                     LogError("Timeout (15s) getting quests");
                     GetQuestTries--;
                     lastHeartbeat = DateTime.UtcNow;
