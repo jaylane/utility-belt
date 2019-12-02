@@ -157,6 +157,7 @@
           </page>
         </control>
         <control progid="DecalControls.PushButton" name="QuestListRefresh" left="8" top="205" width="110" height="20" text="Refresh"/>
+        <control progid="DecalControls.StaticText" name="QuestListRefreshLoading" left="8" top="205" width="110" height="20" justify="Center" text="Please Wait..."/>
       </control>
     </page>
     <page label="Settings">
