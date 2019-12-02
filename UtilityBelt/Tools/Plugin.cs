@@ -8,10 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows.Media;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Constants;
-using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     public class DelayedCommand {
@@ -32,7 +30,7 @@ namespace UtilityBelt.Tools {
 'The Junk Drawer of UtilityBelt' -Cosmic Jester
     ")]
     public class Plugin : ToolBase {
-        private static MediaPlayer mediaPlayer;
+        private readonly Mp3Player mediaPlayer;
 
         private DateTime portalTimestamp = DateTime.MinValue;
         private int portalAttempts = 0;
@@ -648,13 +646,13 @@ namespace UtilityBelt.Tools {
         private static readonly Regex PlaySoundParamRegex = new Regex(@"^(?<volume>\d*)?\s*(?<path>.*)$");
         private void UB_playsound(string @params) {
             string absPath = null;
-            double volume = 0.5;
+            int volume = 50;
             string path = null;
             var m = PlaySoundParamRegex.Match(@params);
             if (m != null && m.Success) {
                 path = m.Groups["path"].Value;
                 if (!string.IsNullOrEmpty(m.Groups["volume"].Value) && int.TryParse(m.Groups["volume"].Value, out var volumeInt)) {
-                    volume = Math.Max(0, Math.Min(100, volumeInt)) * 0.01;
+                    volume = Math.Max(0, Math.Min(100, volumeInt));
                 }
             }
 
@@ -673,11 +671,7 @@ namespace UtilityBelt.Tools {
             if (string.IsNullOrEmpty(absPath))
                 Util.WriteToChat($"Could not find file: <{path}>");
             else {
-                if (mediaPlayer == null) mediaPlayer = new MediaPlayer();
-
-                mediaPlayer.Open(new Uri(absPath));
-                mediaPlayer.Volume = volume;
-                mediaPlayer.Play();
+                mediaPlayer.PlaySound(absPath, volume);
             }
         }
 
@@ -838,6 +832,8 @@ namespace UtilityBelt.Tools {
                 UB.Core.CharacterFilter.Logoff += CharacterFilter_Logoff_Follow;
                 if (VTankControl.vTankInstance != null && VTankControl.vTankInstance.GetNavProfile().Equals("UBFollow"))
                     VTankControl.vTankInstance.LoadNavProfile(null);
+
+                mediaPlayer = new Mp3Player(UB.Core);
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
