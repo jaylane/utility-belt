@@ -78,34 +78,37 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
         [Example("/ub equip load profile.utl", "Equips all items matching profile.utl.")]
         [Example("/ub equip list", "Lists available equipment profiles.")]
         [Example("/ub equip test profile.utl", "Test equipping profile.utl")]
-        [CommandPattern("equip", @"^ *(?<Verb>(load|list|test|create)) *(?<Profile>.*) *$")]
+        [CommandPattern("equip", @"^\s*(?<Verb>(load|list|test|create))\s+(?<Profile>.*?)\s*$")]
         public void DoEquip(string command, Match args) {
-                    var verb = args.Groups["Verb"].Value;
-                    var profileName = args.Groups["Profile"].Value;
+            var verb = args.Groups["Verb"].Value;
+            var profileName = args.Groups["Profile"].Value;
 
-                    switch (verb) {
-                        case "create":
-                            Start(profileName, RunningState.Creating);
-                            break;
-                        case "load":
-                            Start(profileName, RunningState.Dequipping);
-                            break;
+            if (string.IsNullOrEmpty(Path.GetExtension(profileName)))
+                profileName = profileName + ".utl";
 
-                        case "list":
-                            WriteToChat("Equip Profiles");
-                            foreach (var p in GetProfiles(profileName)) {
-                                Util.WriteToChat($" * {Path.GetFileName(p)} ({Path.GetDirectoryName(p)})");
-                            }
-                            break;
+            switch (verb) {
+                case "create":
+                    Start(profileName, RunningState.Creating);
+                    break;
+                case "load":
+                    Start(profileName, RunningState.Dequipping);
+                    break;
 
-                        case "test":
-                            Start(profileName, RunningState.Test);
-                            break;
-
-                        default:
-                            LogError($"Unknown verb: {verb}");
-                            break;
+                case "list":
+                    WriteToChat("Equip Profiles");
+                    foreach (var p in GetProfiles(profileName)) {
+                        Util.WriteToChat($" * {Path.GetFileName(p)} ({Path.GetDirectoryName(p)})");
                     }
+                    break;
+
+                case "test":
+                    Start(profileName, RunningState.Test);
+                    break;
+
+                default:
+                    LogError($"Unknown verb: {verb}");
+                    break;
+            }
         }
 
         #endregion

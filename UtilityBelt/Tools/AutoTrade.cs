@@ -1,4 +1,5 @@
 ﻿using Decal.Adapter.Wrappers;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,12 +18,12 @@ This plugin will add items to a trade window that match keep or keep # rules in 
 
 When enabled, AutoTrade will attempt to load a profile in one the following locations (stopping when it finds the first match):
 
-* Documents\Decal Plugins\UtilityBelt\autotrade\<Server>\<Character>\<Trade Partner Name>.utl
-* Documents\Decal Plugins\UtilityBelt\autotrade\<Server>\<Trade Partner Name>.utl
-* Documents\Decal Plugins\UtilityBelt\autotrade\<Trade Partner Name>.utl
-* Documents\Decal Plugins\UtilityBelt\autotrade\<Server>\<Character>\default.utl
-* Documents\Decal Plugins\UtilityBelt\autotrade\<Server>\default.utl
-* Documents\Decal Plugins\UtilityBelt\autotrade\default.utl
+* Documents\\Decal Plugins\\UtilityBelt\\autotrade\\&lt;Server&gt;\\&lt;Character&gt;\\&lt;Trade Partner Name&gt;.utl
+* Documents\\Decal Plugins\\UtilityBelt\\autotrade\\&lt;Server&gt;\\&lt;Trade Partner Name&gt;.utl
+* Documents\\Decal Plugins\\UtilityBelt\\autotrade\\&lt;Trade Partner Name&gt;.utl
+* Documents\\Decal Plugins\\UtilityBelt\\autotrade\\&lt;Server&gt;\\&lt;Character&gt;\default.utl
+* Documents\\Decal Plugins\\UtilityBelt\\autotrade\\&lt;Server&gt;\\default.utl
+* Documents\\Decal Plugins\\UtilityBelt\\autotrade\\default.utl
 
 ### Keep/Keep # Rules
 
@@ -36,8 +37,15 @@ AutoTrade supports keep and keep # actions in VTank rules. These actions have th
 
  * [Shen-Sort I.utl](/utl/Shen-Sort I.utl) - Add trophies/epics/weapons to trade window for sort mule
  * [Shen-Steel I.utl](/utl/Shen-Steel I.utl) - Add full bags of Salvaged Steel to trade window
+
+### Auto-Accept List
+
+AutoTrade supports a list of patterns you want to auto-accept any incoming trades from. So, when your trade partner accepts a trade and matches at least one of the patterns in your list, your character will automatically accept the trade. You can add patterns to your character's list, a shared server list, or a global (all servers) list. The patterns can be any .NET regular expression.
+
+**Note**: Formerly, the auto-accept list was stored in the character-specific settings.json file. This will continue to be supported for backwards-compatibility purposes, but the `/ub autotrade autoaccept add/remove` commands will not modify this list. You can use the settings panel to add/remove characters from this list.
     ")]
     public class AutoTrade : ToolBase {
+        private static readonly string AutoAcceptListFileName = "autoAcceptList.json";
         private bool disposed = false;
         private object lootProfile = null;
         private bool waitingForIds = false;
@@ -101,13 +109,31 @@ AutoTrade supports keep and keep # actions in VTank rules. These actions have th
         #region Commands
         #region /ub autotrade
         [Summary("Adds all items matching a VTank loot profile to the trade window.")]
-        [Usage("/ub autotrade <lootProfile>")]
+        [Usage("/ub autotrade { <lootProfile> | autoaccept { add[gs] <namePattern> | remove[gs] <namePattern> | list } }")]
         [Example("/ub autotrade", "Adds all items matching CharacterName.utl to the trade window, where CharacterName is the name of the character you currently have a trade open with.")]
         [Example("/ub autotrade mfk.utl", "Adds all items matching mfk.utl to the currently open trade window")]
-        [CommandPattern("autotrade", @"^ *(?<LootProfile>.*) *$")]
+        [Example("/ub autotrade autoaccept add Shen-.*", "Adds any char matching the pattern Shen-.* to the current character's auto-accept list")]
+        [Example("/ub autotrade autoaccept removes Sunnuj", "Removes Sunnuj from the auto-accept list for all of your characters on the current server")]
+        [Example("/ub autotrade autoaccept addg Yonneh", "Adds Yonneh to the auto-accept list for all of your characters on any server")]
+        [Example("/ub autotrade autoaccept list", "Lists all auto accept name patterns")]
+        [CommandPattern("autotrade", @"^\s*autoaccept\s+(?<Verb>(?:add|remove|list)[gs]?)\s*(?<CharPattern>.*)|(?<LootProfile>.*\.utl)$")]
         public void DoAutoTrade(string command, Match args) {
-            LogDebug($"Starting autotrade with profile: {args.Groups["LootProfile"].Value}");
-            Start(traderId, args.Groups["LootProfile"].Value);
+            if (!string.IsNullOrEmpty(args.Groups["LootProfile"].Value)) {
+                LogDebug($"Starting autotrade with profile: {args.Groups["LootProfile"].Value}");
+                Start(traderId, args.Groups["LootProfile"].Value);
+            }
+            else if (args.Groups["Verb"].Value == "list") {
+                var list = GetAutoAcceptChars();
+                Util.WriteToChat("Auto Accept List:");
+                int i = 0;
+                foreach (var aac in list) {
+                    Util.WriteToChat($" [{++i}] {aac}");
+                }
+            }
+            else if (!string.IsNullOrEmpty(args.Groups["Verb"].Value) &&
+                    !string.IsNullOrEmpty(args.Groups["CharPattern"].Value)) {
+                ChangeAutoAcceptCharList(args.Groups["Verb"].Value, args.Groups["CharPattern"].Value);
+            }
         }
         #endregion
         #endregion
@@ -130,21 +156,62 @@ AutoTrade supports keep and keep # actions in VTank rules. These actions have th
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void WorldFilter_AcceptTrade(object sender, AcceptTradeEventArgs e) {
-            if (e.TargetId == UB.Core.CharacterFilter.Id)
-                return;
-
-            var target = UB.Core.WorldFilter[e.TargetId];
-
-            if (target == null)
-                return;
-
-            Logger.Debug($"Checking {target.Name} against {AutoAcceptChars.Count} accepted chars.");
-            if (AutoAcceptChars.Any(c => Regex.IsMatch(target.Name, c, RegexOptions.IgnoreCase))) {
-                LogDebug("Accepting trade...");
-                UB.Core.Actions.TradeAccept();
-                Util.ThinkOrWrite("Trade accepted: " + target.Name, UB.AutoTrade.Think);
+        private void ChangeAutoAcceptCharList(string verb, string charPattern) {
+            string path = null;
+            switch (verb.LastOrDefault()) {
+                case 'g':
+                    path = Path.Combine(Path.Combine(Util.GetPluginDirectory(), "autotrade"), AutoAcceptListFileName);
+                    break;
+                case 's':
+                    path = Path.Combine(Path.Combine(Util.GetServerDirectory(), "autotrade"), AutoAcceptListFileName);
+                    break;
+                default:
+                    path = Path.Combine(Path.Combine(Util.GetCharacterDirectory(), "autotrade"), AutoAcceptListFileName);
+                    break;
             }
+
+            var autoAcceptList = new List<string>(ReadAutoAcceptCharFile(path));
+
+            if (verb.StartsWith("add") && !autoAcceptList.Contains(charPattern)) {
+                try {
+                    Regex.Match("", charPattern);
+                }
+                catch {
+                    Util.WriteToChat("Error: Invalid regex", 15);
+                    return;
+                }
+
+                autoAcceptList.Add(charPattern);
+            }
+            else if (verb.StartsWith("remove") && autoAcceptList.Contains(charPattern)) {
+                autoAcceptList.Remove(charPattern);
+            }
+
+            if (autoAcceptList.Count <= 0)
+                File.Delete(path);
+            else
+                File.WriteAllText(path, JsonConvert.SerializeObject(autoAcceptList));
+        }
+
+        private void WorldFilter_AcceptTrade(object sender, AcceptTradeEventArgs e) {
+            try {
+                if (e.TargetId == UB.Core.CharacterFilter.Id)
+                    return;
+
+                var target = UB.Core.WorldFilter[e.TargetId];
+
+                if (target == null)
+                    return;
+
+                var autoAcceptCharList = GetAutoAcceptChars();
+                Logger.Debug($"Checking {target.Name} against {autoAcceptCharList.Count()} accepted chars.");
+                if (autoAcceptCharList.Any(c => Regex.IsMatch(target.Name, c, RegexOptions.IgnoreCase))) {
+                    LogDebug("Accepting trade...");
+                    UB.Core.Actions.TradeAccept();
+                    Util.ThinkOrWrite("Trade accepted: " + target.Name, UB.AutoTrade.Think);
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void WorldFilter_FailToAddTradeItem(object sender, FailToAddTradeItemEventArgs e) {
@@ -250,6 +317,23 @@ AutoTrade supports keep and keep # actions in VTank rules. These actions have th
             LogDebug("Blocking VTank nav/stack");
             VTankControl.Item_Block(30000, false);
             VTankControl.Nav_Block(30000, UB.Plugin.Debug);
+        }
+
+        private IEnumerable<string> GetAutoAcceptChars() {
+            var globalChars = ReadAutoAcceptCharFile(Path.Combine(Path.Combine(Util.GetPluginDirectory(), "autotrade"), AutoAcceptListFileName));
+            var serverChars = ReadAutoAcceptCharFile(Path.Combine(Path.Combine(Util.GetServerDirectory(), "autotrade"), AutoAcceptListFileName));
+            var localChars = ReadAutoAcceptCharFile(Path.Combine(Path.Combine(Util.GetCharacterDirectory(), "autotrade"), AutoAcceptListFileName));
+
+            return globalChars.Union(serverChars).Union(localChars).Union(AutoAcceptChars);
+        }
+
+        private IEnumerable<string> ReadAutoAcceptCharFile(string file) {
+            var list = new List<string>();
+            if (File.Exists(file)) {
+                var json = File.ReadAllText(file);
+                list.AddRange(JsonConvert.DeserializeObject<IEnumerable<string>>(json));
+            }
+            return list.AsReadOnly();
         }
 
         public void Core_RenderFrame(object sender, EventArgs e) {
