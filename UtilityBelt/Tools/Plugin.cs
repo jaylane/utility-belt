@@ -32,7 +32,7 @@ namespace UtilityBelt.Tools {
 'The Junk Drawer of UtilityBelt' -Cosmic Jester
     ")]
     public class Plugin : ToolBase {
-        private static readonly MediaPlayer mediaPlayer = new MediaPlayer();
+        private static MediaPlayer mediaPlayer;
 
         private DateTime portalTimestamp = DateTime.MinValue;
         private int portalAttempts = 0;
@@ -673,6 +673,8 @@ namespace UtilityBelt.Tools {
             if (string.IsNullOrEmpty(absPath))
                 Util.WriteToChat($"Could not find file: <{path}>");
             else {
+                if (mediaPlayer == null) mediaPlayer = new MediaPlayer();
+
                 mediaPlayer.Open(new Uri(absPath));
                 mediaPlayer.Volume = volume;
                 mediaPlayer.Play();

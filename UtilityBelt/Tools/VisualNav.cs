@@ -196,6 +196,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
         public override void Init() {
             base.Init();
             UB.Core.CharacterFilter.ChangePortalMode += CharacterFilter_ChangePortalMode;
+            UB.Core.RenderFrame += Core_RenderFrame;
 
             var server = UB.Core.CharacterFilter.Server;
             var character = UB.Core.CharacterFilter.Name;
@@ -352,7 +353,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
             currentRoute = null;
         }
 
-        public void Think() {
+        public void Core_RenderFrame(object sender, EventArgs e) {
             if (needsDraw) {
                 needsDraw = false;
                 forceUpdate = true;
@@ -364,6 +365,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
             if (!disposedValue) {
                 if (disposing) {
                     try {
+                        UB.Core.RenderFrame -= Core_RenderFrame;
                         UB.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
                         uTank2.PluginCore.PC.NavRouteChanged -= PC_NavRouteChanged;
                     }

@@ -46,6 +46,7 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
             }
 
             UB.Core.CharacterFilter.ChangeVital += CharacterFilter_ChangeVital;
+            UB.Core.RenderFrame += Core_RenderFrame;
         }
 
         private void CharacterFilter_ChangeVital(object sender, ChangeVitalEventArgs e) {
@@ -160,7 +161,7 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        public void Think() {
+        public void Core_RenderFrame(object sender, EventArgs e) {
             if (DateTime.UtcNow - lastUpdate > TimeSpan.FromMilliseconds(UPDATE_INTERVAL)) {
                 if (!HasVTank() || !UB.VTank.VitalSharing) return;
 
@@ -195,6 +196,7 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
             if (!disposedValue) {
                 if (disposing) {
                     UB.Core.CharacterFilter.ChangeVital -= CharacterFilter_ChangeVital;
+                    UB.Core.RenderFrame -= Core_RenderFrame;
 
                     sharedBuffer.Dispose();
 
