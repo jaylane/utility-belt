@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
+using System.Timers;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using VirindiViewService;
@@ -52,10 +52,9 @@ namespace UtilityBelt.Views {
                     UB.Plugin.WindowPositionY
                 );
 
-                timer = new Timer {
-                    Interval = 2000 // save the window position 2 seconds after it has stopped moving
-                };
-                timer.Tick += (s, e) => {
+                timer = new Timer(2000);
+
+                timer.Elapsed += (s, e) => {
                     timer.Stop();
                     UB.Plugin.WindowPositionX = view.Location.X;
                     UB.Plugin.WindowPositionY = view.Location.Y;

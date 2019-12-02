@@ -5,13 +5,15 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
+using System.Timers;
 using UtilityBelt.Lib;
 using VirindiViewService;
 using VirindiViewService.XMLParsers;
 
 namespace UtilityBelt.Views {
     public class MapView : BaseView {
+        Timer timer;
+
         public MapView(UtilityBeltPlugin ub) : base(ub) {
             CreateFromXMLResource("UtilityBelt.Views.MapView.xml");
         }
@@ -28,9 +30,9 @@ namespace UtilityBelt.Views {
                 view.Width = UB.DungeonMaps.MapWindowWidth;
                 view.Height = UB.DungeonMaps.MapWindowHeight;
 
-                var timer = new Timer();
-                timer.Interval = 2000; // save the window position 2 seconds after it has stopped moving
-                timer.Tick += (s, e) => {
+                timer = new Timer(2000);
+
+                timer.Elapsed += (s, e) => {
                     timer.Stop();
                     UB.DungeonMaps.MapWindowX = view.Location.X;
                     UB.DungeonMaps.MapWindowY = view.Location.Y;
@@ -53,6 +55,9 @@ namespace UtilityBelt.Views {
 
         internal override ACImage GetIcon() {
             return GetIcon("UtilityBelt.Resources.icons.dungeonmaps.png");
+        }
+        ~MapView() {
+            if (timer != null) timer.Dispose();
         }
     }
 }
