@@ -70,6 +70,7 @@ namespace UBLoader {
         public string ServerName;
         public Dictionary<int, string> Characters = new Dictionary<int, string>();
         private bool hasLoaded = false;
+        private bool needsLoginLoad = false;
 
         /// <summary>
         /// This is called when the plugin is started up. This happens only once.
@@ -93,7 +94,7 @@ namespace UBLoader {
                         CharacterName = Characters[loginId];
                     }
                     else {
-                        throw new Exception($"Character id not in character list! " + Characters.Keys.ToArray());
+                        needsLoginLoad = true;
                     }
                 }
             }
@@ -120,9 +121,24 @@ namespace UBLoader {
                     case 0xF7E1:
                         ServerName = e.Message.Value<string>("server");
                         break;
+
+                    case 0xF7B0:
+                        if (needsLoginLoad && e.Message.Value<int>("event") == 0x0013) {
+                            Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
+                        }
+                        break;
                 }
             }
             catch (Exception ex) { LogException(ex); }
+        }
+
+        private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
+            Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
+            ServerName = Core.CharacterFilter.Server;
+            CharacterName = Core.CharacterFilter.Name;
+            lastFileChange = DateTime.UtcNow;
+            needsReload = true;
+            needsLoginLoad = false;
         }
 
         private void Core_PluginInitComplete(object sender, EventArgs e) {
@@ -158,7 +174,7 @@ namespace UBLoader {
 
         private void Core_RenderFrame(object sender, EventArgs e) {
             try {
-                if (needsReload && pluginsReady && DateTime.UtcNow - lastFileChange > TimeSpan.FromSeconds(1)) {
+                if (!needsLoginLoad && needsReload && pluginsReady && DateTime.UtcNow - lastFileChange > TimeSpan.FromSeconds(1)) {
                     needsReload = false;
                     Core.RenderFrame -= Core_RenderFrame;
                     try {
