@@ -91,7 +91,14 @@ For portals, it will show the destination.
                 UB.Core.CharacterFilter.Login += CharacterFilter_Login;
         }
         private void EnableReal() {
-            if (Enabled) {
+            if (Enabled && !enabled) {
+                if (UBHelper.Core.version >= 1912022230) UBHelper.VideoPatch.Changed += VideoPatch_Changed;
+                else LogError("UBHelper is out of date");
+                EnableRealInternal();
+            }
+        }
+        private void EnableRealInternal() {
+            if (Enabled && !enabled) {
                 enabled = true;
                 UB.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
                 UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
@@ -107,7 +114,6 @@ For portals, it will show the destination.
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
-
                     PropertyChanged -= Nametags_PropertyChanged;
                     if (enabled) Disable();
                     base.Dispose(disposing);
@@ -116,14 +122,22 @@ For portals, it will show the destination.
             }
         }
 
-        public static void Disable() {
-            enabled = false;
-            CoreManager.Current.WorldFilter.CreateObject -= WorldFilter_CreateObject;
-            CoreManager.Current.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
-            CoreManager.Current.RenderFrame -= Core_RenderFrame;
-            foreach (var i in tags) i.Value.Dispose();
-            tags.Clear();
-            destructionQueue.Clear();
+        public void Disable() {
+            if (enabled) {
+                if (UBHelper.Core.version >= 1912022230) UBHelper.VideoPatch.Changed -= VideoPatch_Changed;
+                DisableInternal();
+            }
+        }
+        public void DisableInternal() {
+            if (enabled) {
+                enabled = false;
+                CoreManager.Current.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                CoreManager.Current.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
+                CoreManager.Current.RenderFrame -= Core_RenderFrame;
+                foreach (var i in tags) i.Value.Dispose();
+                tags.Clear();
+                destructionQueue.Clear();
+            }
         }
         private void Nametags_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
             switch (e.PropertyName) {
@@ -156,6 +170,10 @@ For portals, it will show the destination.
                     break;
             }
             evaluate_tags_time = DateTime.UtcNow + TimeSpan.FromMilliseconds(250);
+        }
+        private void VideoPatch_Changed(object sender, EventArgs e) {
+            if (UBHelper.VideoPatch.IsEnabled()) DisableInternal();
+            else EnableRealInternal();
         }
         private static void AddTag(WorldObject wo) {
             if (wo.Id == CoreManager.Current.CharacterFilter.Id) return;
