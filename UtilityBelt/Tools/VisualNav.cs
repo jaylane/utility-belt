@@ -219,6 +219,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
             DrawCurrentRoute();
 
             uTank2.PluginCore.PC.NavRouteChanged += PC_NavRouteChanged;
+            if (UBHelper.Core.version >= 1912022230) UBHelper.VideoPatch.Changed += VideoPatch_Changed;
 
             PropertyChanged += (s, e) => {
                 if (e.PropertyName == "Enabled") {
@@ -226,6 +227,10 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
                     DrawCurrentRoute();
                 }
             };
+        }
+
+        private void VideoPatch_Changed(object sender, EventArgs e) {
+            needsDraw = true;
         }
 
         private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
@@ -293,7 +298,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
         private void DrawCurrentRoute() {
             var vTank = VTankControl.vTankInstance;
 
-            if (!Enabled || UB.Plugin.VideoPatch || string.IsNullOrEmpty(vTank.GetNavProfile())) {
+            if (!Enabled || UBHelper.VideoPatch.IsEnabled() || string.IsNullOrEmpty(vTank.GetNavProfile())) {
                 ClearCurrentRoute();
                 return;
             }
@@ -368,6 +373,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
                         UB.Core.RenderFrame -= Core_RenderFrame;
                         UB.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
                         uTank2.PluginCore.PC.NavRouteChanged -= PC_NavRouteChanged;
+                        if (UBHelper.Core.version >= 1912022230) UBHelper.VideoPatch.Changed -= VideoPatch_Changed;
                     }
                     catch { }
 
