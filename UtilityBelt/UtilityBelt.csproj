@@ -877,6 +877,7 @@
     <EmbeddedResource Include="Views\EnumFlagEditor.xml" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\dungeons.csv" />
     <None Include="Resources\SharedMemory.dll" />
   </ItemGroup>
   <ItemGroup>

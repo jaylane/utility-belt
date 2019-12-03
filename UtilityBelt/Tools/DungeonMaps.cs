@@ -59,6 +59,7 @@ Draws an overlay with dungeon maps on your screen
         private long lastDrawMs = 0;
         private long lastHudMs = 0;
         HudButton UIFollowCharacter;
+        HudHSlider UIOpacitySlider;
 
         #region Config
         public const int MIN_ZOOM = 0;
@@ -69,6 +70,21 @@ Draws an overlay with dungeon maps on your screen
         public bool Enabled {
             get { return (bool)GetSetting("Enabled"); }
             set { UpdateSetting("Enabled", value); }
+        }
+
+        [Summary("Show debug information while drawing maps")]
+        [DefaultValue(false)]
+        public bool Debug {
+            get { return (bool)GetSetting("Debug"); }
+            set { UpdateSetting("Debug", value); }
+        }
+
+        [Summary("Dungeon Name header")]
+        [DefaultEnabled(true)]
+        [DefaultColor(-1)]
+        public ColorToggleOption DungeonName {
+            get { return (ColorToggleOption)GetSetting("DungeonName"); }
+            private set { UpdateSetting("DungeonName", value); }
         }
 
         [Summary("Draw dungeon maps even when map window is closed")]
@@ -96,7 +112,10 @@ Draws an overlay with dungeon maps on your screen
         [DefaultValue(16)]
         public int Opacity {
             get { return (int)GetSetting("Opacity"); }
-            set { UpdateSetting("Opacity", value); }
+            set {
+                UpdateSetting("Opacity", value);
+                if (UIOpacitySlider != null) UIOpacitySlider.Position = Opacity;
+            }
         }
 
         [Summary("Map Window X")]
@@ -468,8 +487,10 @@ Draws an overlay with dungeon maps on your screen
 
                 #region UI Setup
                 UIFollowCharacter = (HudButton)UB.MapView.view["FollowCharacter"];
+                UIOpacitySlider = (HudHSlider)UB.MapView.view["OpacitySlider"];
 
                 UIFollowCharacter.Hit += UIFollowCharacter_Hit;
+                UIOpacitySlider.Changed += UIOpacitySlider_Changed;
 
                 UB.MapView.view["DungeonMapsRenderContainer"].MouseEvent += DungeonMaps_MouseEvent;
                 #endregion
@@ -496,6 +517,19 @@ Draws an overlay with dungeon maps on your screen
                     zoomSaveTimer.Stop();
                     MapZoom = scale;
                 };
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        public override void Init() {
+            base.Init();
+
+            UIOpacitySlider.Position = Opacity;
+        }
+
+        private void UIOpacitySlider_Changed(int min, int max, int pos) {
+            try {
+                Opacity = pos;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -685,6 +719,7 @@ Draws an overlay with dungeon maps on your screen
 
                     DrawCompass(hud);
                     DrawMarkerLabels(hud);
+                    DrawDungeonName();
                     DrawMapDebug(hud);
                 }
                 catch (Exception ex) { Logger.LogException(ex); }
@@ -695,6 +730,15 @@ Draws an overlay with dungeon maps on your screen
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void DrawDungeonName() {
+            if (!DungeonName.Enabled) return;
+
+            hud.BeginText("mono", 14, Decal.Adapter.Wrappers.FontWeight.Heavy, false);
+            var rect = new Rectangle(0, 0, hud.Region.Width, 15);
+            hud.WriteText(currentBlock.Name, Color.FromArgb(DungeonName.Color), Decal.Adapter.Wrappers.WriteTextFormats.Center, rect);
+            hud.EndText();
         }
 
         private void DrawCompass(Hud hud) {
@@ -790,14 +834,14 @@ Draws an overlay with dungeon maps on your screen
 
         private void DrawMapDebug(Hud hud) {
             // debug cell / environment debug text
-            if (UB.Plugin.Debug) {
+            if (Debug) {
                 hud.BeginText("mono", 14, Decal.Adapter.Wrappers.FontWeight.Heavy, false);
                 var cells = currentBlock.GetCurrentCells();
-                var offset = 15;
+                var offset = 30;
 
                 if (currentBlock != null) {
                     var stats = $"Tiles: {currentBlock.drawCount:D3} Markers: {markerCount:D3} Map: {lastDrawMs:D3}ms Hud: {lastHudMs:D3}ms";
-                    var rect = new Rectangle(0, 0, hud.Region.Width, 15);
+                    var rect = new Rectangle(0, 15, hud.Region.Width, 15);
 
                     using (var bmp = new Bitmap(hud.Region.Width, 15)) {
                         var bgColor = Color.FromArgb(150, 0, 0, 0);

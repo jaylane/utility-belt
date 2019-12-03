@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using UtilityBelt.Lib.VTNav.Waypoints;
@@ -20,6 +21,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
         public Color TRANSPARENT_COLOR = Color.White;
         public uint LandBlockId;
         public uint LandCellId;
+        public string Name = "Unknown Dungeon";
         private List<int> checkedCells = new List<int>();
         private List<string> filledCoords = new List<string>();
         public Dictionary<int, List<DungeonCell>> zLayers = new Dictionary<int, List<DungeonCell>>();
@@ -35,6 +37,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
         public List<uint> visitedTiles = new List<uint>();
         private List<string> drawNavLines = new List<string>();
         private UtilityBeltPlugin UB;
+        private Dictionary<uint, string> dungeonNames;
 
         public Dungeon(uint landCell) {
             UB = UtilityBeltPlugin.Instance;
@@ -43,10 +46,46 @@ namespace UtilityBelt.Lib.DungeonMaps {
 
             if (!IsDungeon()) return;
 
+            LoadName();
             LoadCells();
 
             dungeonWidth = (int)(Math.Abs(maxX) + Math.Abs(minX) + CELL_SIZE);
             dungeonHeight = (int)(Math.Abs(maxY) + Math.Abs(minY) + CELL_SIZE);
+        }
+
+        private void LoadName() {
+            if (dungeonNames == null) {
+                string filePath = Path.Combine(Util.GetResourcesDirectory(), "dungeons.csv");
+                Stream fileStream = null;
+                if (File.Exists(filePath)) {
+                    fileStream = new FileStream(filePath, FileMode.Open);
+                }
+                else {
+                    fileStream = typeof(Dungeon).Assembly.GetManifestResourceStream($"UtilityBelt.Resources.dungeons.csv");
+                }
+
+                dungeonNames = new Dictionary<uint, string>();
+
+                using (var reader = new StreamReader(fileStream, true)) {
+                    string line;
+                    while ((line = reader.ReadLine()) != null) {
+                        var parts = line.Split(',');
+                        if (parts.Length != 2) continue;
+
+                        if (uint.TryParse(parts[0], System.Globalization.NumberStyles.HexNumber, null, out uint parsed)) {
+                            if (!dungeonNames.ContainsKey(parsed)) {
+                                dungeonNames[parsed << 16] = parts[1];
+                            }
+                        }
+                    }
+                }
+
+                fileStream.Dispose();
+            }
+
+            if (dungeonNames.ContainsKey((LandBlockId))) {
+                Name = dungeonNames[LandBlockId];
+            }
         }
 
         internal void LoadCells() {
