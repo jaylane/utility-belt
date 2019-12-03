@@ -81,8 +81,8 @@ namespace UtilityBelt {
         public AutoTrade AutoTrade { get; private set; }
         public AutoVendor AutoVendor { get; private set; }
         public ChatLogger ChatLogger { get; private set; }
+        public ChatNameClickHandler ChatNameClickHandler { get; private set; }
         public Counter Counter { get; private set; }
-        public DoorWatcher DoorWatcher { get; private set; }
         public DungeonMaps DungeonMaps { get; private set; }
         public EquipmentManager EquipmentManager { get; private set; }
         public InventoryManager InventoryManager { get; private set; }

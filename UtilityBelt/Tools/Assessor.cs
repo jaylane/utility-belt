@@ -44,11 +44,12 @@ namespace UtilityBelt.Tools {
         }
 
         private void Core_RenderFrame(object sender, EventArgs e) {
-            if (IdentQueue.Count > 0 && DateTime.UtcNow - lastIdentLimit > TimeSpan.FromMilliseconds(50)) {
+            if (IdentQueue.Count > 0 && DateTime.UtcNow - lastIdentLimit > TimeSpan.FromMilliseconds(150)) {
                 int thisid;
                 tryagain:
                 thisid = IdentQueue.Dequeue();
-                if (UB.Core.WorldFilter[thisid] != null) {
+                // UB.Core.WorldFilter checks WorldFilter, UBHelper.Weenie checks client memory
+                if (UB.Core.WorldFilter[thisid] != null || new UBHelper.Weenie(thisid).Valid) {
                     lastIdentLimit = DateTime.UtcNow;
                     m(thisid);
                 } else {
@@ -110,7 +111,7 @@ namespace UtilityBelt.Tools {
             }
 
             if (itemsNeedingData > 0) {
-                Util.WriteToChat(String.Format("Requesting id data for {0} inventory items. This will take approximately {0} seconds.", itemsNeedingData));
+                Util.WriteToChat($"Requesting id data for {itemsNeedingData} inventory items. This will take approximately {(itemsNeedingData / 6):n3} seconds.");
             }
         }
 

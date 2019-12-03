@@ -376,7 +376,7 @@ namespace UtilityBelt.Lib.DungeonMaps {
             var onYAxis = Math.Abs(wo.Orientation().W) > 0.6 && Math.Abs(wo.Orientation().W) < 0.8;
 
             // currently we are only drawing closed doors...
-            if (!UB.DoorWatcher.GetOpenStatus(wo.Id)) {
+            if (!UBHelper.InventoryManager.IsDoorOpen(wo.Id)) {
                 if (onYAxis) {
                     gfx.FillRectangle(brush, x - 0.2f, y - 1.5f, 0.4f, 3);
                 }

@@ -88,7 +88,7 @@ For portals, it will show the destination.
             if (UB.Core.CharacterFilter.LoginStatus != 0)
                 EnableReal();
             else
-                UB.Core.CharacterFilter.Login += CharacterFilter_Login;
+                UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
         }
         private void EnableReal() {
             if (Enabled && !enabled) {
@@ -106,8 +106,8 @@ For portals, it will show the destination.
                 evaluate_tags_time = DateTime.MinValue;
             }
         }
-        private void CharacterFilter_Login(object sender, LoginEventArgs e) {
-            UB.Core.CharacterFilter.Login -= CharacterFilter_Login;
+        private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
+            UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
             EnableReal();
         }
 
@@ -131,9 +131,10 @@ For portals, it will show the destination.
         public void DisableInternal() {
             if (enabled) {
                 enabled = false;
-                CoreManager.Current.WorldFilter.CreateObject -= WorldFilter_CreateObject;
-                CoreManager.Current.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
-                CoreManager.Current.RenderFrame -= Core_RenderFrame;
+                UB.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                UB.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
+                UB.Core.RenderFrame -= Core_RenderFrame;
+                UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
                 foreach (var i in tags) i.Value.Dispose();
                 tags.Clear();
                 destructionQueue.Clear();

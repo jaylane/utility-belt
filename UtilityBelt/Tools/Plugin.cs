@@ -452,9 +452,16 @@ namespace UtilityBelt.Tools {
 
         }
         private void CharacterFilter_Logoff_Follow(object sender, LogoffEventArgs e) {
-            if (e.Type == LogoffEventType.Requested && VTankControl.vTankInstance != null && VTankControl.vTankInstance.GetNavProfile().Equals("UBFollow"))
+            if (e.Type == LogoffEventType.Requested) UB_Follow_Clear();
+        }
+        private void CharacterFilter_LoginComplete_Follow(object sender, EventArgs e) {
+            UB_Follow_Clear();
+        }
+        private void UB_Follow_Clear() {
+            if (VTankControl.vTankInstance != null && VTankControl.vTankInstance.GetNavProfile().Equals("UBFollow"))
                 VTankControl.vTankInstance.LoadNavProfile(null);
         }
+
         #endregion
         #region /ub pos
         [Summary("Prints position information for the currently selected object")]
@@ -824,8 +831,8 @@ namespace UtilityBelt.Tools {
                 UB.Core.RenderFrame += Core_RenderFrame_Delay;
                 UB.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch_PortalOpen;
                 UB.Core.CharacterFilter.Logoff += CharacterFilter_Logoff_Follow;
-                if (VTankControl.vTankInstance != null && VTankControl.vTankInstance.GetNavProfile().Equals("UBFollow"))
-                    VTankControl.vTankInstance.LoadNavProfile(null);
+                if (UB.Core.CharacterFilter.LoginStatus != 0) UB_Follow_Clear();
+                else UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete_Follow;
 
                 mediaPlayer = new Mp3Player(UB.Core);
             }
@@ -841,6 +848,7 @@ namespace UtilityBelt.Tools {
                     UB.Core.RenderFrame -= Core_RenderFrame_Delay;
                     UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch_PortalOpen;
                     UB.Core.CharacterFilter.Logoff -= CharacterFilter_Logoff_Follow;
+                    UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete_Follow;
                     UB.Core.WindowMessage -= Core_WindowMessage_VideoPatchFocusToggle;
                 }
                 disposedValue = true;
