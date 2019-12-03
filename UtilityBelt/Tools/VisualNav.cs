@@ -213,10 +213,15 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
                 return;
             }
 
-            UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
+            if (UB.Core.CharacterFilter.LoginStatus == 0) {
+                UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
+
+            }
+            else {
+                DrawCurrentRoute();
+            }
 
             Display.PropertyChanged += (s, e) => { needsDraw = true; };
-            DrawCurrentRoute();
 
             uTank2.PluginCore.PC.NavRouteChanged += PC_NavRouteChanged;
             if (UBHelper.Core.version >= 1912022230) UBHelper.VideoPatch.Changed += VideoPatch_Changed;
