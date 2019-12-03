@@ -36,7 +36,7 @@ namespace UtilityBelt.Tools {
         #region /ub quests
         [Summary("Checks quest flags, and thinks to yourself with the status.  To find a quest flag, open quest tracker and click on something to print the name to the chatbox.")]
         [Usage("/ub quests check <questFlag>")]
-        [Example("/ub quests check bella", "Think to yourself with the status of all quest flags matching bella")]
+        [Example("/ub quests check blankaug", "Think to yourself with the status of all quest flags matching blankaug")]
         [CommandPattern("quests", @"^ *check +(?<QuestFlag>.+)$")]
         public void DoAutoVendor(string command, Match args) {
             var searchText = args.Groups["QuestFlag"].Value;
