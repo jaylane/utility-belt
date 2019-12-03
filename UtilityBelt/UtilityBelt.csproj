@@ -87,7 +87,6 @@
     <Compile Include="Lib\Attributes.cs" />
     <Compile Include="Lib\Mp3Player.cs" />
     <Compile Include="Lib\ToolBase.cs" />
-    <Compile Include="Tools\DoorWatcher.cs" />
     <Compile Include="Tools\Nametags.cs" />
     <Compile Include="Lib\ChatLog\ChatLog.cs" />
     <Compile Include="Lib\ChatLog\ChatLogWriter.cs" />

@@ -136,6 +136,14 @@ namespace UtilityBelt.Tools {
                     LogError("Current_ChatBoxMessage called while not getting quests");
                     return;
                 }
+                if (e.Text.Equals("Quest list is empty.\n") || e.Text.Equals("The command \"myquests\" is not currently enabled on this server.\n")) {
+                    GettingQuests = false;
+                    UB.Core.ChatBoxMessage -= Current_ChatBoxMessage;
+                    UB.Core.RenderFrame -= Core_RenderFrame;
+                    UIQuestListRefresh.Visible = true;
+                    return;
+                }
+
                 if (QuestFlag.MyQuestRegex.IsMatch(e.Text)) {
                     e.Eat = GotFirstQuest = true;
                     var questFlag = QuestFlag.FromMyQuestsLine(e.Text);

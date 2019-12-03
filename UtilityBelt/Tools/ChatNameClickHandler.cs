@@ -7,7 +7,7 @@ using UtilityBelt.Lib;
 
 namespace UtilityBelt.Tools {
     [Name("ChatNameClickHandler")]
-    class ChatNameClickHandler : ToolBase {
+    public class ChatNameClickHandler : ToolBase {
         public ChatNameClickHandler(UtilityBeltPlugin ub, string name) : base(ub, name) {
             CoreManager.Current.ChatNameClicked += Core_ChatNameClicked;
         }

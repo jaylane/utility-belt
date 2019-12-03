@@ -168,7 +168,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
 
             //abort turning if takes longer than 3 seconds
             if (isTurning && DateTime.UtcNow - turningSeconds >= TimeSpan.FromSeconds(3)) {
-                isTurning = false;
+                isTurning = needToJump = false;
                 Util.ThinkOrWrite("Turning failed", ThinkFail);
             }
             //Do the jump thing
