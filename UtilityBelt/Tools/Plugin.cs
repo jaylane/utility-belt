@@ -777,42 +777,36 @@ namespace UtilityBelt.Tools {
         public void VideoPatchFocusToggle(bool enabled) {
             if (enabled) {
                 if (!VideoPatchFocusEventRegistered) {
-                    VideoPatchFocusEventRegistered = true;
-                    if (Util.IsClientActive()) UBHelper.VideoPatch.Disable();
-                    else UBHelper.VideoPatch.Enable();
-                    UB.Core.WindowMessage += Core_WindowMessage_VideoPatchFocusToggle;
+                    if (VideoPatch) {
+                        VideoPatchFocusEventRegistered = true;
+                        UB.Core.WindowMessage += Core_WindowMessage_VideoPatchFocusToggle;
+                        if (Util.IsClientActive()) UBHelper.VideoPatch.Disable();
+                        else if (VideoPatch) UBHelper.VideoPatch.Enable();
+                    }
                 }
             }
             else {
                 if (VideoPatchFocusEventRegistered) {
                     VideoPatchFocusEventRegistered = false;
                     UB.Core.WindowMessage -= Core_WindowMessage_VideoPatchFocusToggle;
-                    VideoPatchFocusDisableAt = DateTime.MaxValue;
                     if (VideoPatch) UBHelper.VideoPatch.Enable();
                 }
             }
         }
-        private DateTime VideoPatchFocusDisableAt = DateTime.MaxValue;
         private void Core_WindowMessage_VideoPatchFocusToggle(object sender, WindowMessageEventArgs e) {
-            if (e.Msg == 0x0008) { // WM_KILLFOCUS
-                VideoPatchFocusDisableAt = DateTime.UtcNow + TimeSpan.FromSeconds(2);
-                UB.Core.RenderFrame += Core_RenderFrame_VideoPatchFocusToggle;
-            }
-            else if (e.Msg == 0x0007) { // WM_SETFOCUS
-                if (VideoPatchFocusDisableAt != DateTime.MaxValue) VideoPatchFocusDisableAt = DateTime.MaxValue;
-                else UBHelper.VideoPatch.Disable();
-            }
-        }
-        private void Core_RenderFrame_VideoPatchFocusToggle(object sender, EventArgs e) {
-            if (VideoPatchFocusDisableAt == DateTime.MaxValue) {
-                UB.Core.RenderFrame -= Core_RenderFrame_VideoPatchFocusToggle;
-            } else if (DateTime.UtcNow > VideoPatchFocusDisableAt) {
-                VideoPatchFocusDisableAt = DateTime.MaxValue;
-                UBHelper.VideoPatch.Enable();
-                UB.Core.RenderFrame -= Core_RenderFrame_VideoPatchFocusToggle;
+            switch (e.Msg) {
+                case 0x0007: // WM_SETFOCUS
+                case 0x0021: // WM_MOUSEACTIVATE
+                case 0x0086: // WM_NCACTIVATE
+                    UBHelper.VideoPatch.Disable();
+                    break;
+                case 0x0008: // WM_KILLFOCUS
+                    UBHelper.VideoPatch.Enable();
+                    break;
+                default:
+                    break;
             }
         }
-
         #endregion
         #region /ub fixbusy
         public void UB_fixbusy() {
@@ -848,7 +842,6 @@ namespace UtilityBelt.Tools {
                     UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch_PortalOpen;
                     UB.Core.CharacterFilter.Logoff -= CharacterFilter_Logoff_Follow;
                     UB.Core.WindowMessage -= Core_WindowMessage_VideoPatchFocusToggle;
-                    UB.Core.RenderFrame -= Core_RenderFrame_VideoPatchFocusToggle;
                 }
                 disposedValue = true;
             }
