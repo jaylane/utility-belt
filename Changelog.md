@@ -1,4 +1,4 @@
-## 0.1.1 (TBD)
+## 0.1.1 (2019-12-03) [UtilityBeltInstaller-0.1.1.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/c94b459edb29649f99f1d84eae3f76ce/UtilityBeltInstaller-0.1.1.exe)
 - Increase AutoStack/AutoCram timeout to 30s
 - Add `Plugin.VideoPatchFocus`, to automatically enable/disable VideoPatch based on client focus
 - Migrate Auto-Accept list to separate config so it can be shared
@@ -13,6 +13,7 @@
 - Add Dungeon name to dungeon maps display (Disable with DungeonMaps.DungeonName.Enabled)
 - Fix Autotinker/imbue throwing an exception
 - Add Opacity slider to Dungeon Maps window
+- Fix UB now properly loads on new characters
 
 ## 0.1.0 (2019-11-30) [UtilityBeltInstaller-0.1.0.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/d92c9e54fb61ab148bc2e1d2342ee204/UtilityBeltInstaller-0.1.0.exe)
 - Added AutoTinker and AutoImbue (thanks Schneebly)
