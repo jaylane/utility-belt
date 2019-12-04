@@ -154,14 +154,15 @@ namespace UtilityBelt
             return (T)retval;
         }
 
-        public static void WriteToChat(string message, int color=5) {
-			try
-			{
-				UB.Host.Actions.AddChatText("[UB] " + message, color);
+        public static void WriteToChat(string message, int color = 5) {
+            try {
+                string msg = "[UB] " + message;
+                UB.Host.Actions.AddChatText(msg, color);
+                UBHelper.vTank.Tell(msg, color, 0);
                 Util.WriteToDebugLog(message);
             }
-			catch (Exception ex) { Logger.LogException(ex); }
-		}
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
 
         public static int GetFreeMainPackSpace() {
             WorldObject mainPack = UB.Core.WorldFilter[CoreManager.Current.CharacterFilter.Id];
