@@ -609,7 +609,7 @@ namespace UtilityBelt.Tools {
         }
         #endregion
         #region /ub playeroption <option> <on/true|off/false>
-        [Summary("Disables rendering of the 3d world to conserve CPU")]
+        [Summary("Turns on/off acclient player options.")]
         [Usage("/ub playeroption <option> {on | true | off | false}")]
         [Example("/ub playeroption AutoRepeatAttack on", "Enables the AutoRepeatAttack player option.")]
         [CommandPattern("playeroption", @"^ *(?<params>.+ (on|off|true|false)) *$")]

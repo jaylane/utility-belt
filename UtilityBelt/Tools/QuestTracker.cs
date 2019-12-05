@@ -34,12 +34,12 @@ namespace UtilityBelt.Tools {
 
         #region Commands
         #region /ub quests
-        [Summary("Checks quest flags, and thinks to yourself with the status.  To find a quest flag, open quest tracker and click on something to print the name to the chatbox.")]
+        [Summary("Checks quest flags, and thinks to yourself with the status.  To find a quest flag, open quest tracker and click on something to print the name to the chatbox. Note: If you recently completed a quest, you need to run `/myquests` first.")]
         [Usage("/ub quests check <questFlag>")]
         [Example("/ub quests check blankaug", "Think to yourself with the status of all quest flags matching blankaug")]
         [CommandPattern("quests", @"^ *check +(?<QuestFlag>.+)$")]
-        public void DoAutoVendor(string command, Match args) {
-            var searchText = args.Groups["QuestFlag"].Value;
+        public void DoQuestsFlagCheck(string command, Match args) {
+            var searchText = args.Groups["QuestFlag"].Value.Trim();
             var searchRe = new Regex(searchText, RegexOptions.IgnoreCase);
             var thoughts = 0;
 
