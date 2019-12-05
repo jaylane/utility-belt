@@ -76,9 +76,12 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                 return;
             }
             isTurning = true;
-            needToTurn = true;
             turningSeconds = DateTime.UtcNow;
-            UB.Core.Actions.FaceHeading(targetDirection, true);
+            if (PauseNav)
+                UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(15000));
+
+            needToTurn = false;
+            UBHelper.Core.TurnToHeading(targetDirection);
             LogDebug("Turning to " + targetDirection);
         }
         #endregion
@@ -135,16 +138,16 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
             if (jumpFlags.Contains("c")) addC = true;
             if (jumpFlags.Contains("s")) addShift = true;
 
+            if (PauseNav)
+                UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(15000));
+
             needToJump = true;
             //start turning
+            isTurning = needToTurn;
             if (needToTurn) {
                 turningSeconds = DateTime.UtcNow;
-                isTurning = true;
                 needToTurn = false;
-                UB.Core.Actions.FaceHeading(targetDirection, true);
-            }
-            else {
-                isTurning = false;
+                UBHelper.Core.TurnToHeading(targetDirection);
             }
         }
         #endregion
@@ -162,24 +165,26 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
             if (isTurning && DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(100)) {
                 lastThought = DateTime.UtcNow;
                 if (targetDirection == Math.Round(CoreManager.Current.Actions.Heading, 0)) {
+                    if (ThinkComplete)
+                        Util.Think("Turning Success");
                     isTurning = false;
-                }
+                    if (!needToJump)
+                        UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+                } else
+                    UBHelper.Core.TurnToHeading(targetDirection);
             }
 
-            //abort turning if takes longer than 3 seconds
-            if (isTurning && DateTime.UtcNow - turningSeconds >= TimeSpan.FromSeconds(3)) {
+            //abort turning if takes longer than 5 seconds
+            if (isTurning && DateTime.UtcNow - turningSeconds >= TimeSpan.FromSeconds(5)) {
                 isTurning = needToJump = false;
                 Util.ThinkOrWrite("Turning failed", ThinkFail);
+                UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
             }
             //Do the jump thing
             if (needToJump && !isTurning) {
                 needToJump = false;
                 enableNavTimer = TimeSpan.FromMilliseconds(msToHoldDown + 1000);
-                //Util.WriteToChat("Jumper enableNavTimer: "+enableNavTimer);
-
-                if (PauseNav)
-                    VTankControl.Nav_Block(15000, UB.Plugin.Debug);
-                PostMessageTools.SendSpace(msToHoldDown, addShift, addW, addZ, addX, addC);
+                UBHelper.Jumper.Jump((float)(msToHoldDown / 1000), addShift, addW, addX, addZ, addC);
                 waitingForJump = true;
                 
                 navSettingTimer = DateTime.UtcNow;
@@ -191,13 +196,12 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                     navSettingTimer = DateTime.UtcNow;
                     Logger.Debug("Timeout waiting for jump, trying again...");
                     if (PauseNav)
-                        VTankControl.Nav_Block(15000, UB.Plugin.Debug);
-                    PostMessageTools.SendSpace(msToHoldDown, addShift, addW, addZ, addX, addC);
+                        UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(15000));
+                    UBHelper.Jumper.Jump((float)(msToHoldDown / 1000), addShift, addW, addX, addZ, addC);
                 } else {
                     Util.ThinkOrWrite("You have failed to jump too many times.", ThinkFail);
 
-                    if (PauseNav)
-                        VTankControl.Nav_UnBlock();
+                    UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
                     waitingForJump = false;
                     //clear settings
                     addShift = addW = addZ = addX = addC = false;
@@ -212,8 +216,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                     // Util.WriteToChat(string.Format("You Jumped. height: {0}", e.Message["height"]));
                     if (ThinkComplete)
                         Util.Think("Jumper Success");
-                    if (PauseNav)
-                        VTankControl.Nav_UnBlock();
+                    UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
                     waitingForJump = false;
                     //clear settings
                     addShift = addW = addZ = addX = addC = false;
@@ -229,6 +232,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                 if (disposing) {
                     UB.Core.RenderFrame -= Core_RenderFrame;
                     UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
+                    UBHelper.Jumper.JumpCancel();
                     base.Dispose(disposing);
                 }
                 disposedValue = true;

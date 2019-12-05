@@ -149,55 +149,6 @@ namespace UtilityBelt.MagTools.Shared {
         }
 
 
-        public static void SendSpace(int msToHoldDown = 0, bool addShift = false, bool addW = false, bool addZ = false, bool addX = false, bool addC = false) {
-            User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYDOWN, (IntPtr)VK_SPACE, (UIntPtr)0x00390001);
-            if (msToHoldDown == 0) {
-                if (addShift) SendKeyBinding("downshift");  
-                if (addW) SendKeyBinding("downforward"); 
-                if (addZ) SendKeyBinding("downstrafeleft"); 
-                if (addX) SendKeyBinding("downbackward"); 
-                if (addC) SendKeyBinding("downstraferight");
-                User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)VK_SPACE, (UIntPtr)0xC0390001);
-                if (addW) SendKeyBinding("upforward"); 
-                if (addZ) SendKeyBinding("upstrafeleft");
-                if (addX) SendKeyBinding("upbackward");
-                if (addC) SendKeyBinding("upstraferight");
-                if (addShift) SendKeyBinding("upshift");
-            } else {
-                if (_spaceReleaseTimer == null) {
-                    _spaceReleaseTimer = new Timer();
-                    _spaceReleaseTimer.Tick += new EventHandler(SpaceReleaseTimer_Tick);
-                    _spaceReleaseTimer.Interval = 1;
-                }
-
-                _spaceSendTime = DateTime.UtcNow;
-                _spaceHoldTimeMilliseconds = msToHoldDown;
-                _spaceAddShift = addShift;
-                _spaceAddW = addW;
-                _spaceAddZ = addZ;
-                _spaceAddX = addX;
-                _spaceAddC = addC;
-                _spaceReleaseTimer.Start();
-            }
-        }
-        
-        static void SpaceReleaseTimer_Tick(object sender, EventArgs e) {
-            if (_spaceSendTime.AddMilliseconds(_spaceHoldTimeMilliseconds) <= DateTime.UtcNow) {
-                _spaceReleaseTimer.Stop();
-                if (_spaceAddShift) SendKeyBinding("downshift");
-                if (_spaceAddW) SendKeyBinding("downforward"); 
-                if (_spaceAddZ) SendKeyBinding("downstrafeleft"); 
-                if (_spaceAddX) SendKeyBinding("downbackward"); 
-                if (_spaceAddC) SendKeyBinding("downstraferight");
-                User32.PostMessage(CoreManager.Current.Decal.Hwnd, User32.WM_KEYUP, (IntPtr)VK_SPACE, (UIntPtr)0xC0390001);
-                if (_spaceAddW) SendKeyBinding("upforward");
-                if (_spaceAddZ) SendKeyBinding("upstrafeleft");
-                if (_spaceAddX) SendKeyBinding("upbackward");
-                if (_spaceAddC) SendKeyBinding("upstraferight");
-                if (_spaceAddShift) SendKeyBinding("upshift");
-            }
-        }
-
         static Timer _movementReleaseTimer;
         static DateTime _movementSendTime;
         static int _movementHoldTimeMilliseconds;

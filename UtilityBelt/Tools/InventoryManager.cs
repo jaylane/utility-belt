@@ -207,18 +207,13 @@ Provides a command-line interface to inventory management.
             if (profilesWatcher != null)
                 profilesWatcher.Dispose();
             if (enabled) {
-                if (VTankControl.vTankInstance == null) {
-                    LogError("Error accessing VTank");
-                    WatchLootProfile = false;
-                    return;
-                }
                 string profilePath = Util.GetVTankProfilesDirectory();
                 if (!Directory.Exists(profilePath)) {
                     LogError($"WatchLootProfile_Changed(true) Error: {profilePath} does not exist!");
                     WatchLootProfile = false;
                     return;
                 }
-                string loadedProfile = VTankControl.vTankInstance.GetLootProfile();
+                string loadedProfile = UBHelper.vTank.Instance?.GetLootProfile();
                 profilesWatcher = new FileSystemWatcher {
                     NotifyFilter = NotifyFilters.LastWrite,
                     Filter = loadedProfile,
@@ -241,7 +236,7 @@ Provides a command-line interface to inventory management.
         }
 
         private static void PC_LootProfileChanged() {
-            string loadedProfile = VTankControl.vTankInstance.GetLootProfile();
+            string loadedProfile = UBHelper.vTank.Instance?.GetLootProfile();
             if (string.IsNullOrEmpty(loadedProfile)) profilesWatcher.EnableRaisingEvents = false;
             else profilesWatcher.EnableRaisingEvents = true;
             profilesWatcher.Filter = loadedProfile;
@@ -333,6 +328,7 @@ Provides a command-line interface to inventory management.
             }
         }
 
+        //TODO: Split this up, and disable when not in use
         public void Core_RenderFrame(object sender, EventArgs e) {
             if (DateTime.UtcNow - lastThought > TimeSpan.FromMilliseconds(THINK_INTERVAL)) {
                 lastThought = DateTime.UtcNow;
@@ -350,14 +346,14 @@ Provides a command-line interface to inventory management.
             if (reloadLootProfile && DateTime.UtcNow - reloadLootProfileTS > TimeSpan.FromSeconds(2)) {
                 reloadLootProfile = false;
                 if (profilesWatcher != null && !string.IsNullOrEmpty(profilesWatcher.Filter))
-                    VTankControl.vTankInstance.LoadLootProfile(profilesWatcher.Filter);
+                    UBHelper.vTank.Instance?.LoadLootProfile(profilesWatcher.Filter);
             }
             if (!igRunning)
                 return;
             try {
-                if (VTankControl.navBlockedUntil < DateTime.UtcNow + TimeSpan.FromSeconds(1)) { //if itemgiver is running, and nav block has less than a second remaining, refresh it
-                    VTankControl.Nav_Block(30000, UB.Plugin.Debug);
-                    VTankControl.Item_Block(30000, false);
+                if (UBHelper.vTank.locks[uTank2.ActionLockType.Navigation] < DateTime.UtcNow + TimeSpan.FromSeconds(1)) { //if itemgiver is running, and nav block has less than a second remaining, refresh it
+                    UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
+                    UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
                 }
 
                 if (idItems.Count > 0 && DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(10)) {
@@ -431,7 +427,7 @@ Provides a command-line interface to inventory management.
                 return;
             }
             var flags = command.Replace("give", "");
-            VTankControl.Nav_Block(1000, false); // quick block to keep vtank from truckin' off before the profile loads, but short enough to not matter if it errors out and doesn't unlock
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(1000));
             targetPlayer = giveMatch.Groups["Target"].Value;
             var destination = Util.FindName(targetPlayer, flags.Contains("p"), new Decal.Adapter.Wrappers.ObjectClass[] { Decal.Adapter.Wrappers.ObjectClass.Player, Decal.Adapter.Wrappers.ObjectClass.Npc });
 
@@ -464,8 +460,8 @@ Provides a command-line interface to inventory management.
 
 
             LogDebug($"ItemGiver GIVE {(maxGive == int.MaxValue ? "∞" : maxGive.ToString())} {(givePartialItem ? "(partial)" : "")}{utlProfile} to {UB.Core.WorldFilter[destinationId].Name}");
-            VTankControl.Nav_Block(30000, UB.Plugin.Debug);
-            VTankControl.Item_Block(30000, false);
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
             GetGiveItems();
 
             lastIdCount = int.MaxValue;
@@ -479,7 +475,7 @@ Provides a command-line interface to inventory management.
                 return;
             }
             var flags = command.Replace("ig", "");
-            VTankControl.Nav_Block(1000, false); // quick block to keep vtank from truckin' off before the profile loads, but short enough to not matter if it errors out and doesn't unlock
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(1000));
             targetPlayer = igMatch.Groups["Target"].Value;
 
             var destination = Util.FindName(targetPlayer, flags.Equals("p"), new Decal.Adapter.Wrappers.ObjectClass[] { Decal.Adapter.Wrappers.ObjectClass.Player, Decal.Adapter.Wrappers.ObjectClass.Npc });
@@ -527,8 +523,8 @@ Provides a command-line interface to inventory management.
 
             lootProfile.LoadProfile(Path.Combine(profilePath, utlProfile), false);
 
-            VTankControl.Nav_Block(30000, UB.Plugin.Debug);
-            VTankControl.Item_Block(30000, false);
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
             lastIdCount = int.MaxValue;
             GetIGItems();
 
@@ -544,8 +540,8 @@ Provides a command-line interface to inventory management.
             }
 
             Util.ThinkOrWrite($"ItemGiver finished: {utlProfile} to {targetPlayer}. took {Util.GetFriendlyTimeDifference(giveTimer.Elapsed)} to give {itemsGiven} item(s). {totalFailures - itemsGiven}", IGThink);
-            VTankControl.Nav_UnBlock();
-            VTankControl.Item_UnBlock();
+            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.ItemUse);
 
             itemsGiven = totalFailures = failedItems = pendingGiveCount = 0;
             igRunning = isRegex = false;

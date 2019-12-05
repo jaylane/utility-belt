@@ -21,7 +21,6 @@ If enabled, this will automatically share vital information for all clients on t
 This allows VTank to heal/restam/remana characters on your same pc, even when they do not share in ingame fellowship.
     ")]
     public class VTankFellowHeals : ToolBase {
-        cExternalInterfaceTrustedRelay vTank;
         private BufferReadWrite sharedBuffer;
         DateTime lastThought = DateTime.UtcNow;
         DateTime lastUpdate = DateTime.MinValue;
@@ -32,8 +31,6 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
         private int BUFFER_SIZE = 1024 * 1024;
 
         public VTankFellowHeals(UtilityBeltPlugin ub, string name) : base(ub, name) {
-            vTank = VTankControl.vTankInstance;
-
             try {
                 sharedBuffer = new SharedMemory.BufferReadWrite(BUFFER_NAME, BUFFER_SIZE);
 
@@ -56,12 +53,8 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
             catch (Exception ex) { Logger.LogException(ex);  }
         }
 
-        public bool HasVTank() {
-            return vTank != null;
-        }
-
         public void UpdateMySharedVitals() {
-            if (!HasVTank() || !UB.VTank.VitalSharing) return;
+            if (UBHelper.vTank.Instance == null || !UB.VTank.VitalSharing) return;
 
             UBPlayerUpdate playerUpdate = GetMyPlayerUpdate();
 
@@ -92,10 +85,8 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
                                 UpdateVTankVitalInfo(update);
                             }
                             else if (update.PlayerID != UB.Core.CharacterFilter.Id) {
-                                if (HasVTank()) {
-                                    //Util.WriteToChat("Marking player as invalid: " + update.PlayerID.ToString() + " on server " + update.Server);
-                                    vTank.HelperPlayerSetInvalid(update.PlayerID);
-                                }
+                                //Util.WriteToChat("Marking player as invalid: " + update.PlayerID.ToString() + " on server " + update.Server);
+                                UBHelper.vTank.Instance?.HelperPlayerSetInvalid(update.PlayerID);
                             }
 
                             i++;
@@ -136,7 +127,7 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
 
         private void UpdateVTankVitalInfo(UBPlayerUpdate update) {
             try {
-                if (!HasVTank() || update == null) return;
+                if (UBHelper.vTank.Instance == null || update == null) return;
                 if (update.Server != UB.Core.CharacterFilter.Server) return;
 
                 //Util.WriteToChat($"Updating vital info for {update.PlayerID} stam:{update.curStam}/{update.maxStam}");
@@ -155,7 +146,7 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
                 };
 
                 if (helperUpdate != null) {
-                    vTank.HelperPlayerUpdate(helperUpdate);
+                    UBHelper.vTank.Instance.HelperPlayerUpdate(helperUpdate);
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -163,7 +154,7 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
 
         public void Core_RenderFrame(object sender, EventArgs e) {
             if (DateTime.UtcNow - lastUpdate > TimeSpan.FromMilliseconds(UPDATE_INTERVAL)) {
-                if (!HasVTank() || !UB.VTank.VitalSharing) return;
+                if (UBHelper.vTank.Instance == null || !UB.VTank.VitalSharing) return;
 
                 UpdateMySharedVitals();
             }

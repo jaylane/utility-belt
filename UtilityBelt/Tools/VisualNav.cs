@@ -254,19 +254,18 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
                 needsDraw = true;
 
                 var routePath = VTNavRoute.GetLoadedNavigationProfile();
-                var vTank = VTankControl.vTankInstance;
 
-                if (vTank == null || vTank.NavNumPoints <= 0) return;
+                if (UBHelper.vTank.Instance == null || UBHelper.vTank.Instance.NavNumPoints <= 0) return;
 
                 // the route has changed, but we are currently in a [None] route, so we will save it
                 // to a new route called " [None].nav" so we can parse and draw it.
-                if (string.IsNullOrEmpty(vTank.GetNavProfile())) {
+                if (string.IsNullOrEmpty(UBHelper.vTank.Instance?.GetNavProfile())) {
                     Util.DispatchChatToBoxWithPluginIntercept($"/vt nav save {VTNavRoute.NoneNavName}");
                     needsDraw = true;
                 }
 
                 // the route has changed, and we are on our custon [None].nav, so we force a redraw
-                if (vTank.GetNavProfile().StartsWith(VTNavRoute.NoneNavName)) {
+                if (UBHelper.vTank.Instance.GetNavProfile().StartsWith(VTNavRoute.NoneNavName)) {
                     needsDraw = true;
                 }
             }
@@ -301,14 +300,13 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
         }
 
         private void DrawCurrentRoute() {
-            var vTank = VTankControl.vTankInstance;
 
-            if (!Enabled || UBHelper.VideoPatch.IsEnabled() || string.IsNullOrEmpty(vTank.GetNavProfile())) {
+            if (!Enabled || UBHelper.VideoPatch.IsEnabled() || string.IsNullOrEmpty(UBHelper.vTank.Instance?.GetNavProfile())) {
                 ClearCurrentRoute();
                 return;
             }
 
-            var routePath = Path.Combine(Util.GetVTankProfilesDirectory(), vTank.GetNavProfile());
+            var routePath = Path.Combine(Util.GetVTankProfilesDirectory(), UBHelper.vTank.Instance.GetNavProfile());
             if (routePath == currentRoutePath && !forceUpdate) return;
 
             forceUpdate = false;
@@ -327,7 +325,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
                 navFileWatcher.Dispose();
             }
 
-            if (!vTank.GetNavProfile().StartsWith(VTNavRoute.NoneNavName)) {
+            if (!UBHelper.vTank.Instance.GetNavProfile().StartsWith(VTNavRoute.NoneNavName)) {
                 WatchRouteFiles();
             }
         }

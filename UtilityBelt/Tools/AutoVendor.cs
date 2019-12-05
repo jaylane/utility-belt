@@ -213,7 +213,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     UB.Core.Actions.FaceHeading(UB.Core.Actions.Heading - 1, true);
                     vendor = null;
                     vendorOpening = 0;
-                    VTankControl.Nav_UnBlock();
+                    UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
                     break;
             }
         }
@@ -226,7 +226,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             Util.ThinkOrWrite("AutoVendor failed to open vendor", UB.AutoVendor.Think);
         }
         private void OpenVendor() {
-            VTankControl.Nav_Block(500 + UB.AutoVendor.TriesTime, false);
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(500 + UB.AutoVendor.TriesTime));
             vendorOpening = 1;
             UB.Core.RenderFrame += Core_RenderFrame_OpenVendor;
             vendorTimestamp = DateTime.UtcNow - TimeSpan.FromMilliseconds(UB.AutoVendor.TriesTime - 250); // fudge timestamp so next think hits in 500ms
@@ -242,7 +242,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                         if (vendorOpening > 1)
                             Logger.Debug("Vendor Open Timed out, trying again");
 
-                        VTankControl.Nav_Block(500 + UB.AutoVendor.TriesTime, false);
+                        UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(500 + UB.AutoVendor.TriesTime));
                         vendorOpening++;
                         vendorTimestamp = DateTime.UtcNow;
                         CoreManager.Current.Actions.UseItem(vendor.Id, 0);
@@ -253,7 +253,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                         vendor = null;
                         vendorOpening = 0;
                         UB.Core.RenderFrame -= Core_RenderFrame_OpenVendor;
-                        VTankControl.Nav_UnBlock();
+                        UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
                     }
                 }
             }
@@ -500,7 +500,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                 return;
             }
 
-            VTankControl.Nav_Block(1000, false); // quick block to keep vtank from truckin' off before the profile loads, but short enough to not matter if it errors out and doesn't unlock
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(1000));
 
             // Load our loot profile
             lootProfile.LoadProfile(profilePath, false);
@@ -534,8 +534,8 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             needsToBuy = needsToSell = false;
             lastThought = bailTimer = DateTime.UtcNow;
             lastIdCount = int.MaxValue;
-            VTankControl.Item_Block(30000, false);
-            VTankControl.Nav_Block(30000, UB.Plugin.Debug);
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
             UB.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
             UB.Core.EchoFilter.ClientDispatch += EchoFilter_ClientDispatch;
             UBHelper.Vendor.VendorClosed += UBHelper_VendorClosed;
@@ -560,8 +560,8 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
             UB.Core.EchoFilter.ClientDispatch -= EchoFilter_ClientDispatch;
             if (lootProfile != null) (lootProfile).UnloadProfile();
-            VTankControl.Nav_UnBlock();
-            VTankControl.Item_UnBlock();
+            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.ItemUse);
         }
 
         public void Core_RenderFrame_VendorSpam(object sender, EventArgs e) {
@@ -584,9 +584,9 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     lastThought = DateTime.UtcNow;
 
                     //if autovendor is running, and nav block has less than a second plus thinkInterval remaining, refresh it
-                    if (VTankControl.navBlockedUntil < DateTime.UtcNow + TimeSpan.FromMilliseconds(1250)) {
-                        VTankControl.Item_Block(30000, false);
-                        VTankControl.Nav_Block(30000, UB.Plugin.Debug);
+                    if (UBHelper.vTank.locks[uTank2.ActionLockType.Navigation] < DateTime.UtcNow + TimeSpan.FromMilliseconds(1250)) {
+                        UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
+                        UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
                     }
 
                     if (waitingForIds) {
@@ -612,7 +612,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     }
                     if (waitingForAutoStackCram) return;
 
-                    if (shouldAutoStackCram && (UB.InventoryManager.AutoStack && UBHelper.InventoryManager.AutoStack())||(UB.InventoryManager.AutoStack && UBHelper.InventoryManager.AutoCram())) {
+                    if (shouldAutoStackCram && (UB.InventoryManager.AutoStack && UBHelper.InventoryManager.AutoStack())||(UB.InventoryManager.AutoCram && UBHelper.InventoryManager.AutoCram())) {
                         UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent;
                         waitingForAutoStackCram = true;
                         shouldAutoStackCram = false;
