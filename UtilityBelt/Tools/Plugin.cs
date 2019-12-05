@@ -362,7 +362,7 @@ namespace UtilityBelt.Tools {
             Util.ThinkOrWrite("Could not find a portal", PortalThink);
         }
         private void UsePortal() {
-            VTankControl.Nav_Block(500 + PortalTimeout, false);
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(500 + PortalTimeout));
             portalAttempts = 1;
 
             portalTimestamp = DateTime.UtcNow - TimeSpan.FromMilliseconds(PortalTimeout - 250); // fudge timestamp so next think hits in 500ms
@@ -377,7 +377,7 @@ namespace UtilityBelt.Tools {
                         if (portalAttempts > 1)
                             LogDebug("Use Portal Timed out, trying again");
 
-                        VTankControl.Nav_Block(500 + PortalTimeout, false);
+                        UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(500 + PortalTimeout));
                         portalAttempts++;
                         portalTimestamp = DateTime.UtcNow;
                         CoreManager.Current.Actions.UseItem(portal.Id, 0);
@@ -388,7 +388,7 @@ namespace UtilityBelt.Tools {
                         Util.ThinkOrWrite("failed to use portal", PortalThink);
                         portal = null;
                         portalAttempts = 0;
-                        VTankControl.Nav_UnBlock();
+                        UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
                     }
                 }
             }
@@ -400,7 +400,7 @@ namespace UtilityBelt.Tools {
                     LogDebug("portal used successfully");
                     portal = null;
                     portalAttempts = 0;
-                    VTankControl.Nav_UnBlock();
+                    UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -437,18 +437,16 @@ namespace UtilityBelt.Tools {
                 LogError($"Character 0x{id:X8} does not exist");
                 return;
             }
-            if (VTankControl.vTankInstance == null) {
-                LogError("Could not connect to VTank");
-                return;
-            }
-            try {
+            try { // intentionally setup to throw early.
+                UBHelper.vTank.Instance.LoadNavProfile("UBFollow");
+                UBHelper.vTank.Instance.NavSetFollowTarget(id, "");
+                if (!(bool)UBHelper.vTank.Instance.GetSetting("EnableNav"))
+                    UBHelper.vTank.Instance.SetSetting("EnableNav", true);
                 Util.WriteToChat($"Following {UB.Core.WorldFilter[id].Name}[0x{id:X8}]");
-                VTankControl.vTankInstance.LoadNavProfile("UBFollow");
-                VTankControl.vTankInstance.NavSetFollowTarget(id, "");
-                if (!(bool)VTankControl.vTankInstance.GetSetting("EnableNav"))
-                    VTankControl.vTankInstance.SetSetting("EnableNav", true);
             }
-            catch { }
+            catch {
+                Util.WriteToChat($"Failed to follow {UB.Core.WorldFilter[id].Name}[0x{id:X8}] (is vTank loaded?)");
+            }
 
         }
         private void CharacterFilter_Logoff_Follow(object sender, LogoffEventArgs e) {
@@ -458,8 +456,8 @@ namespace UtilityBelt.Tools {
             UB_Follow_Clear();
         }
         private void UB_Follow_Clear() {
-            if (VTankControl.vTankInstance != null && VTankControl.vTankInstance.GetNavProfile().Equals("UBFollow"))
-                VTankControl.vTankInstance.LoadNavProfile(null);
+            if (UBHelper.vTank.Instance != null && UBHelper.vTank.Instance.GetNavProfile().Equals("UBFollow"))
+                UBHelper.vTank.Instance?.LoadNavProfile(null);
         }
 
         #endregion

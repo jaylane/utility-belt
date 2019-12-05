@@ -340,8 +340,8 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
                 if (state != RunningState.Creating && lootProfile != null)
                     ((VTClassic.LootCore)lootProfile).UnloadProfile();
                 if (state == RunningState.Equipping || state == RunningState.Dequipping) {
-                    VTankControl.Nav_UnBlock();
-                    VTankControl.Item_UnBlock();
+                    UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+                    UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.ItemUse);
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -439,9 +439,9 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
 
         private void CheckVTankNavBlock() {
             try {
-                if (VTankControl.navBlockedUntil < DateTime.UtcNow + TimeSpan.FromSeconds(1)) { //if equip is running, and nav block has less than a second remaining, refresh it
-                    VTankControl.Nav_Block(30000, UB.Plugin.Debug);
-                    VTankControl.Item_Block(30000, false);
+                if (UBHelper.vTank.locks[uTank2.ActionLockType.Navigation] < DateTime.UtcNow + TimeSpan.FromSeconds(1)) { //if equip is running, and nav block has less than a second remaining, refresh it
+                    UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
+                    UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }

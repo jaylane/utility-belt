@@ -225,8 +225,8 @@ namespace UtilityBelt.Lib.VTNav {
 
         private void PC_NavWaypointChanged() {
             try {
-                if (NavType == eNavType.Once && points.Count > VTankControl.vTankInstance.NavNumPoints) {
-                    var offset = points.Count - VTankControl.vTankInstance.NavNumPoints;
+                if (NavType == eNavType.Once && points.Count > UBHelper.vTank.Instance.NavNumPoints) {
+                    var offset = points.Count - UBHelper.vTank.Instance.NavNumPoints;
                     if (offset != NavOffset) {
                         NavOffset = offset;
                         for (var i = 0; i < NavOffset; i++) {
@@ -242,21 +242,21 @@ namespace UtilityBelt.Lib.VTNav {
 
         private void UpdateCurrentWaypoint() {
             try {
-                var routeFinished = VTankControl.vTankInstance.NavCurrent > VTankControl.vTankInstance.NavNumPoints - 1;
+                var routeFinished = UBHelper.vTank.Instance?.NavCurrent > UBHelper.vTank.Instance?.NavNumPoints - 1;
                 var isWaypointRoute = NavType != eNavType.Target;
                 var isEnabled = UB.VisualNav.Display.CurrentWaypoint.Enabled;
-                var isValidPointOffset = NavOffset + VTankControl.vTankInstance.NavCurrent < points.Count;
+                var isValidPointOffset = NavOffset + UBHelper.vTank.Instance?.NavCurrent < points.Count;
 
                 if (isEnabled && isWaypointRoute && !routeFinished && isValidPointOffset) {
 
-                    var current = points[NavOffset + VTankControl.vTankInstance.NavCurrent];
+                    var current = points[NavOffset + UBHelper.vTank.Instance.NavCurrent];
 
                     if (currentNavShape == null) {
                         currentNavShape = CoreManager.Current.D3DService.MarkCoordsWithShape(0f, 0f, 0f, D3DShape.Ring, Color.Red.ToArgb());
                     }
 
                     // this is dumb, i cant get it to convert straight to a float
-                    var navCloseStopRangeStr = VTankControl.vTankInstance.GetSetting("NavCloseStopRange").ToString();
+                    var navCloseStopRangeStr = UBHelper.vTank.Instance?.GetSetting("NavCloseStopRange").ToString();
 
                     if (float.TryParse(navCloseStopRangeStr, out float navCloseStopRange)) {
                         currentNavShape.Visible = true;
