@@ -457,7 +457,7 @@ namespace UtilityBelt.Tools {
         }
         private void UB_Follow_Clear() {
             if (UBHelper.vTank.Instance != null && UBHelper.vTank.Instance.GetNavProfile().Equals("UBFollow"))
-                UBHelper.vTank.Instance?.LoadNavProfile(null);
+                Util.Decal_DispatchOnChatCommand("/vt nav load ");
         }
 
         #endregion
