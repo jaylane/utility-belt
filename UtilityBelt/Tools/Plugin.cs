@@ -104,7 +104,7 @@ namespace UtilityBelt.Tools {
             get { return (bool)GetSetting("VideoPatchFocus"); }
             set {
                 UpdateSetting("VideoPatchFocus", value);
-                if (VideoPatch) VideoPatchFocusToggle(value);
+                VideoPatchFocusToggle(value);
             }
         }
 
@@ -786,7 +786,7 @@ namespace UtilityBelt.Tools {
                         VideoPatchFocusEventRegistered = true;
                         UB.Core.WindowMessage += Core_WindowMessage_VideoPatchFocusToggle;
                         if (Util.IsClientActive()) UBHelper.VideoPatch.Disable();
-                        else if (VideoPatch) UBHelper.VideoPatch.Enable();
+                        else UBHelper.VideoPatch.Enable();
                     }
                 }
             }
