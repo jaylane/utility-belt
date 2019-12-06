@@ -194,17 +194,41 @@ Provides a command-line interface to inventory management.
 
             UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
             UB.Core.RenderFrame += Core_RenderFrame;
+        }
 
-            //if (WatchLootProfile) WatchLootProfile_Changed(true);
+        public override void Init() {
+            base.Init();
+
+            if (UB.Core.CharacterFilter.LoginStatus != 0) {
+                WatchLootProfile_Changed(WatchLootProfile);
+            }
+            else {
+                UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
+            }
+        }
+
+        private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
+            try {
+                UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
+                WatchLootProfile_Changed(WatchLootProfile);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         #region Loot Profile Watcher
         private bool PC_LootProfileChanged_Registered = false;
         // Handle settings changes while running
         public void WatchLootProfile_Changed(bool enabled) {
+            if (UB.Core.CharacterFilter.LoginStatus == 0)
+                return;
+
             if (profilesWatcher != null)
                 profilesWatcher.Dispose();
             if (enabled) {
+                if (!PC_LootProfileChanged_Registered) {
+                    uTank2.PluginCore.PC.LootProfileChanged += PC_LootProfileChanged;
+                    PC_LootProfileChanged_Registered = true;
+                }
                 string profilePath = Util.GetVTankProfilesDirectory();
                 if (!Directory.Exists(profilePath)) {
                     LogError($"WatchLootProfile_Changed(true) Error: {profilePath} does not exist!");
@@ -212,19 +236,15 @@ Provides a command-line interface to inventory management.
                     return;
                 }
                 string loadedProfile = UBHelper.vTank.Instance?.GetLootProfile();
+                if (string.IsNullOrEmpty(loadedProfile)) return;
+
                 profilesWatcher = new FileSystemWatcher {
                     NotifyFilter = NotifyFilters.LastWrite,
                     Filter = loadedProfile,
                     Path = profilePath,
-                    EnableRaisingEvents = false
+                    EnableRaisingEvents = true
                 };
                 profilesWatcher.Changed += LootProfile_Changed;
-
-                if (!PC_LootProfileChanged_Registered) {
-                    uTank2.PluginCore.PC.LootProfileChanged += PC_LootProfileChanged;
-                    PC_LootProfileChanged_Registered = true;
-                }
-                if (!string.IsNullOrEmpty(profilesWatcher.Filter)) profilesWatcher.EnableRaisingEvents = true;
             } else {
                 if (PC_LootProfileChanged_Registered) {
                     uTank2.PluginCore.PC.LootProfileChanged -= PC_LootProfileChanged;
@@ -233,11 +253,10 @@ Provides a command-line interface to inventory management.
             }
         }
 
-        private static void PC_LootProfileChanged() {
+        private void PC_LootProfileChanged() {
             string loadedProfile = UBHelper.vTank.Instance?.GetLootProfile();
-            if (string.IsNullOrEmpty(loadedProfile)) profilesWatcher.EnableRaisingEvents = false;
-            else profilesWatcher.EnableRaisingEvents = true;
-            profilesWatcher.Filter = loadedProfile;
+            if (!string.IsNullOrEmpty(loadedProfile))
+                WatchLootProfile_Changed(WatchLootProfile);
         }
 
         private static void LootProfile_Changed(object sender, FileSystemEventArgs e) {
@@ -322,8 +341,10 @@ Provides a command-line interface to inventory management.
             }
             if (reloadLootProfile && DateTime.UtcNow - reloadLootProfileTS > TimeSpan.FromSeconds(2)) {
                 reloadLootProfile = false;
-                if (profilesWatcher != null && !string.IsNullOrEmpty(profilesWatcher.Filter))
-                    UBHelper.vTank.Instance?.LoadLootProfile(profilesWatcher.Filter);
+                if (profilesWatcher != null && !string.IsNullOrEmpty(profilesWatcher.Filter)) {
+                    LogDebug($"/vt loot load {profilesWatcher.Filter}");
+                    Util.Decal_DispatchOnChatCommand($"/vt loot load {profilesWatcher.Filter}");
+                }
             }
             if (!igRunning)
                 return;
