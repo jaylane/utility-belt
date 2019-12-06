@@ -43,7 +43,6 @@ Provides a command-line interface to inventory management.
         private bool isPaused = false;
         private bool isForced = false;
         private DateTime lastThought = DateTime.MinValue;
-        private int movingObjectId = 0;
         private readonly Dictionary<int, DateTime> blacklistedItems = new Dictionary<int, DateTime>();
         private readonly Dictionary<int, DateTime> blacklistedContainers = new Dictionary<int, DateTime>();
 
@@ -194,7 +193,6 @@ Provides a command-line interface to inventory management.
             Directory.CreateDirectory(profilePath);
 
             UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
-            UB.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
             UB.Core.RenderFrame += Core_RenderFrame;
 
             //if (WatchLootProfile) WatchLootProfile_Changed(true);
@@ -254,25 +252,6 @@ Provides a command-line interface to inventory management.
                 {
                     giveObjects.Remove(e.Changed.Id);
                 }
-
-                if (e.Change != WorldChangeType.StorageChange) return;
-
-                if (movingObjectId == e.Changed.Id) {
-                    movingObjectId = 0;
-                }
-                else if (e.Changed.Container == UB.Core.CharacterFilter.Id && !isRunning) {
-                    //Start();
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
-            try {
-                // created in main backpack?
-                if (e.New.Container == UB.Core.CharacterFilter.Id && !isRunning) {
-                    //Start();
-                }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -281,7 +260,6 @@ Provides a command-line interface to inventory management.
             isRunning = true;
             isPaused = false;
             isForced = force;
-            movingObjectId = 0;
 
             LogDebug("Started");
 
@@ -291,7 +269,6 @@ Provides a command-line interface to inventory management.
         public void Stop() {
             isForced = false;
             isRunning = false;
-            movingObjectId = 0;
 
             ChatThink("Finished.");
             LogDebug("Finished");
@@ -616,20 +593,18 @@ Provides a command-line interface to inventory management.
                         continue;
 
                     if (!item.HasIdData && lootProfile.DoesPotentialItemNeedID(itemInfo)) {
-                        if (!idItems.Contains(item.Id)) {
-                            UB.Assessor.Queue(item.Id);
+                        if (!idItems.Contains(item.Id) && UB.Assessor.Queue(item.Id)) {
                             idItems.Add(item.Id);
+                            continue;
                         }
-                        continue;
                     }
 
                     if (!item.HasIdData) {
                         if (lootProfile.DoesPotentialItemNeedID(itemInfo)) {
-                            if (!idItems.Contains(item.Id)) {
-                                UB.Assessor.Queue(item.Id);
+                            if (!idItems.Contains(item.Id) && UB.Assessor.Queue(item.Id)) {
                                 idItems.Add(item.Id);
+                                continue;
                             }
-                            continue;
                         }
                     } else if (idItems.Contains(item.Id))
                         idItems.Remove(item.Id);
@@ -692,7 +667,6 @@ Provides a command-line interface to inventory management.
                     if (UB.Core != null) {
                         if (UB.Core.WorldFilter != null) {
                             UB.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
-                            UB.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
                         }
                     }
                     if (profilesWatcher != null) {
