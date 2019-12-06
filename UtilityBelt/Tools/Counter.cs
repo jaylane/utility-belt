@@ -182,8 +182,7 @@ Counter is used to count items based on text or utl profiles as well as players 
                     }
 
                     if (((VTClassic.LootCore)lootProfile).DoesPotentialItemNeedID(itemInfo)) {
-                        UB.Assessor.Queue(item.Id);
-                        if (!idItems.Contains(item)) {
+                        if (UB.Assessor.Queue(item.Id) && !idItems.Contains(item)) {
                             idItems.Add(item);
                         }
                         continue;

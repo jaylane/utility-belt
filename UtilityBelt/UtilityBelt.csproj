@@ -134,7 +134,6 @@
     <Compile Include="Lib\VTNav\Waypoints\VTNRecall.cs" />
     <Compile Include="Lib\VTNav\Waypoints\VTNUseNPC.cs" />
     <Compile Include="Lib\Logger.cs" />
-    <Compile Include="Lib\MagTools\Shared\PostMessageTools.cs" />
     <Compile Include="Lib\MagTools\Shared\User32.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
