@@ -1,6 +1,7 @@
 ## 0.1.2 (TBD)
 - "Fix" `/ub playeroption` on ACE, by sending the entire PlayerSystem packet
 - Feed all UB messages to vTank, so they can be scraped by metas without needing a /think
+- Fix manually typing /myquests not updating questtracker
 
 ## 0.1.1 (2019-12-03) [UtilityBeltInstaller-0.1.1.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/c94b459edb29649f99f1d84eae3f76ce/UtilityBeltInstaller-0.1.1.exe)
 - Increase AutoStack/AutoCram timeout to 30s
