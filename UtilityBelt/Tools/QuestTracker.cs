@@ -113,7 +113,7 @@ namespace UtilityBelt.Tools {
         private sbyte GetQuestTries = 0;
         private void GetMyQuestsList(sbyte tries = 1, bool doCommand=true) {
             if (GettingQuests) {
-                LogError("GetMyQuestsList called while it was already running");
+                if (doCommand) LogError("GetMyQuestsList called while it was already running");
                 return;
             }
             GetQuestTries = tries;
