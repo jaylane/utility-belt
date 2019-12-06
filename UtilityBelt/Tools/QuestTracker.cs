@@ -86,11 +86,22 @@ namespace UtilityBelt.Tools {
             UB.MainView.view.VisibleChanged += MainView_VisibleChanged;
             questRedrawTimer.Tick += QuestRedrawTimer_Tick;
             questRedrawTimer.Interval = 1000;
-
+            
             if (UB.Core.CharacterFilter.LoginStatus == 0)
                 UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
             else
                 GetMyQuestsList(3);
+
+            UB.Core.CommandLineText += Core_CommandLineText;
+        }
+
+        private void Core_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
+            try {
+                if (e.Text == "/myquests" || e.Text == "@myquests") {
+                    GetMyQuestsList(1, false);
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
@@ -100,7 +111,7 @@ namespace UtilityBelt.Tools {
         private bool GettingQuests = false;
         private bool GotFirstQuest = false;
         private sbyte GetQuestTries = 0;
-        private void GetMyQuestsList(sbyte tries = 1) {
+        private void GetMyQuestsList(sbyte tries = 1, bool doCommand=true) {
             if (GettingQuests) {
                 LogError("GetMyQuestsList called while it was already running");
                 return;
@@ -112,7 +123,7 @@ namespace UtilityBelt.Tools {
             UB.Core.RenderFrame += Core_RenderFrame;
             lastHeartbeat = DateTime.UtcNow;
             UIQuestListRefresh.Visible = false;
-            RealGetMyQuestList();
+            if (doCommand) RealGetMyQuestList();
         }
         private void RealGetMyQuestList() {
             if (GetQuestTries < 1) {
@@ -342,6 +353,7 @@ namespace UtilityBelt.Tools {
                     UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
                     UB.Core.ChatBoxMessage -= Current_ChatBoxMessage;
                     UB.Core.RenderFrame -= Core_RenderFrame;
+                    UB.Core.CommandLineText -= Core_CommandLineText;
                     if (questRedrawTimer != null) {
                         questRedrawTimer.Stop();
                         questRedrawTimer.Dispose();
