@@ -78,6 +78,14 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             return true;
         }
 
+        internal virtual void Write(StreamWriter file) {
+            file.WriteLine((int)Type);
+            file.WriteLine(EW);
+            file.WriteLine(NS);
+            file.WriteLine(Z);
+            file.WriteLine(0);
+        }
+
         public double DistanceTo(VTNPoint rp) {
             return Math.Abs(Math.Sqrt(Math.Pow(rp.NS - NS, 2) + Math.Pow(rp.EW - EW, 2) + Math.Pow(rp.Z - Z, 2))) * 240;
         }

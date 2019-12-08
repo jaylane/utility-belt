@@ -28,6 +28,11 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             return true;
         }
 
+        internal override void Write(StreamWriter file) {
+            base.Write(file);
+            file.WriteLine(Pause);
+        }
+
         public override void Draw() {
             var rp = GetPreviousPoint();
             var color = Color.FromArgb(UtilityBeltPlugin.Instance.VisualNav.Display.Pause.Color);

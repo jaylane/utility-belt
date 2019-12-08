@@ -86,6 +86,12 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             return true;
         }
 
+        internal override void Write(StreamWriter file) {
+            base.Write(file);
+            file.WriteLine(Id);
+            file.WriteLine(Name);
+        }
+
         public override void Draw() {
             //base.Draw();
             var rp = GetPreviousPoint();

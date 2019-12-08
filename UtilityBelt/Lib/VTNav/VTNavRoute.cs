@@ -184,6 +184,16 @@ namespace UtilityBelt.Lib.VTNav {
             return false;
         }
 
+        internal void Write(StreamWriter file) {
+            file.WriteLine(Header);
+            file.WriteLine((int)NavType);
+            file.WriteLine(RecordCount);
+
+            foreach (var point in points) {
+                point.Write(file);
+            }
+        }
+
         private void WorldFilter_ReleaseObject(object sender, ReleaseObjectEventArgs e) {
             try {
                 if (NavType != eNavType.Target) {

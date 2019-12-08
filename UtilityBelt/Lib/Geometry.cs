@@ -6,14 +6,29 @@ using System.Text;
 
 namespace UtilityBelt.Lib {
     public static class Geometry {
-        public static uint GetLandblockFromCoordinates(float ew, float ns) {
-            float lat2 = (ns * 240.0f + 84.0f) / 192.0f;
-            float lng2 = (ew * 240.0f + 84.0f) / 192.0f;
+        public static uint GetLandblockFromCoordinates(float EW, float NS) {
+            NS -= 0.5f;
+            EW -= 0.5f;
+            NS *= 10.0f;
+            EW *= 10.0f;
 
-            uint lblat = (uint)(lat2 + 0x7f);
-            uint lblng = (uint)(lng2 + 0x7f);
+            uint basex = (uint)(EW + 0x400);
+            uint basey = (uint)(NS + 0x400);
 
-            return (lblng << 8) | lblat;
+            if ((int)(basex) < 0 || (int)(basey) < 0 || basex >= 0x7F8 || basey >= 0x7F8) {
+                Console.WriteLine("Out of Bounds");
+            }
+            byte blockx = (byte)(basex >> 3);
+            byte blocky = (byte)(basey >> 3);
+            byte cellx = (byte)(basex & 7);
+            byte celly = (byte)(basey & 7);
+
+            int block = (blockx << 8) | (blocky);
+            int cell = (cellx << 3) | (celly);
+
+            int dwCell = (block << 16) | (cell + 1);
+
+            return (uint)dwCell;
         }
 
         public static PointF LandblockOffsetFromCoordinates(float ew, float ns) {
@@ -32,14 +47,14 @@ namespace UtilityBelt.Lib {
             );
         }
 
-        private static int LandblockXDifference(uint originLandblock, uint landblock) {
+        public static int LandblockXDifference(uint originLandblock, uint landblock) {
             var olbx = originLandblock >> 24;
             var lbx = landblock >> 24;
 
             return (int)(lbx - olbx) * 192;
         }
 
-        private static int LandblockYDifference(uint originLandblock, uint landblock) {
+        public static int LandblockYDifference(uint originLandblock, uint landblock) {
             var olby = originLandblock << 8 >> 24;
             var lby = landblock << 8 >> 24;
 
