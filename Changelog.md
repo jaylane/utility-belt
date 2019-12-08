@@ -4,6 +4,8 @@
 - Fix manually typing /myquests not updating questtracker
 - Rewrite of Assessor backend, to be more redundant, and repeat failed ids
 - Moderate changes to Jumper backend, to remove keyboard dependancy
+- Fixed Quest timers for quests that are longer than 11.5 day repeat
+- Added `/ub translateroute` command to convert a nav route from one landblock to another
 
 ## 0.1.1 (2019-12-03) [UtilityBeltInstaller-0.1.1.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/c94b459edb29649f99f1d84eae3f76ce/UtilityBeltInstaller-0.1.1.exe)
 - Increase AutoStack/AutoCram timeout to 30s

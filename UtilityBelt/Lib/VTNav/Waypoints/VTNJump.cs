@@ -41,6 +41,13 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             return true;
         }
 
+        internal override void Write(StreamWriter file) {
+            base.Write(file);
+            file.WriteLine(Heading);
+            file.WriteLine(ShiftJump);
+            file.WriteLine(Milliseconds);
+        }
+
         public override void Draw() {
             var rp = GetPreviousPoint();
             var textColor = Color.FromArgb(UtilityBeltPlugin.Instance.VisualNav.Display.JumpText.Color);

@@ -29,6 +29,11 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             return true;
         }
 
+        internal override void Write(StreamWriter file) {
+            base.Write(file);
+            file.WriteLine(RecallSpellId);
+        }
+
         public override void Draw() {
             FileService service = CoreManager.Current.Filter<FileService>();
             var spell = service.SpellTable.GetById(RecallSpellId);

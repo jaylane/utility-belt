@@ -114,6 +114,15 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             return true;
         }
 
+        internal override void Write(StreamWriter file) {
+            base.Write(file);
+            file.WriteLine(Name);
+            file.WriteLine((int)ObjectClass);
+            file.WriteLine(NpcEW);
+            file.WriteLine(NpcNS);
+            file.WriteLine(NpcZ);
+        }
+
         public override void Draw() {
             var rp = GetPreviousPoint();
             var color = Color.FromArgb(UtilityBeltPlugin.Instance.VisualNav.Display.Lines.Color);

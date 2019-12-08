@@ -23,6 +23,11 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             return true;
         }
 
+        internal override void Write(StreamWriter file) {
+            base.Write(file);
+            file.WriteLine(Message);
+        }
+
         public override void Draw() {
             if (!UtilityBeltPlugin.Instance.VisualNav.Display.ChatText.Enabled) return;
 
