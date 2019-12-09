@@ -1,16 +1,14 @@
-﻿using Decal.Adapter;
-using Decal.Adapter.Wrappers;
+﻿using Decal.Adapter.Wrappers;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using VirindiViewService.Controls;
-using System.IO;
-using System.Text.RegularExpressions;
-using VTClassic;
-using uTank2.LootPlugins;
-using System.Diagnostics;
-using UtilityBelt.Lib;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using uTank2.LootPlugins;
+using UtilityBelt.Lib;
+using VTClassic;
 
 namespace UtilityBelt.Tools {
     [Name("InventoryManager")]
@@ -54,6 +52,7 @@ Provides a command-line interface to inventory management.
         private LootCore lootProfile = null;
         private static string targetPlayer = "", utlProfile = "", profilePath = "";
         private static readonly Dictionary<string, int> givenItemsCount = new Dictionary<string, int>();
+        private static readonly List<int> keptObjects = new List<int>();
         private Stopwatch giveTimer;
 
         private static FileSystemWatcher profilesWatcher = null;
@@ -269,6 +268,10 @@ Provides a command-line interface to inventory management.
             {
                 if (igRunning && e.Changed.Id == currentItem && (e.Change == WorldChangeType.SizeChange || e.Changed.Container == -1))
                 {
+                    // Partial stack give - keep the rest
+                    if (e.Change == WorldChangeType.SizeChange)
+                        keptObjects.Add(e.Changed.Id);
+
                     giveObjects.Remove(e.Changed.Id);
                 }
             }
@@ -546,6 +549,7 @@ Provides a command-line interface to inventory management.
             lootProfile = null;
             givenItemsCount.Clear();
             giveObjects.Clear();
+            keptObjects.Clear();
             idItems.Clear();
         }
 
@@ -601,6 +605,9 @@ Provides a command-line interface to inventory management.
             try {
                 foreach (WorldObject item in UB.Core.WorldFilter.GetInventory()) {
                     if (giveObjects.ContainsKey(item.Id)) // already in the list
+                        continue;
+
+                    if (keptObjects.Contains(item.Id)) // item was already given (partial stack)
                         continue;
 
                     if (item.Values(LongValueKey.EquippedSlots, 0) > 0 || item.Values(LongValueKey.Slot, -1) == -1) // If the item is equipped or wielded, don't process it.
