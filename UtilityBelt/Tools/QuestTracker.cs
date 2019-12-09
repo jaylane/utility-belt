@@ -3,11 +3,8 @@ using Decal.Adapter;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using VirindiViewService.Controls;
-using System.Data;
+using System.ComponentModel;
 using System.Linq;
-using System.Xml.Schema;
-using System.Xml;
-using System.IO;
 using System.Windows.Forms;
 using UtilityBelt.Lib.Quests;
 using UtilityBelt.Lib;
@@ -31,6 +28,15 @@ namespace UtilityBelt.Tools {
 
         Timer questRedrawTimer = new Timer();
         Dictionary<string, QuestFlag> questFlags = new Dictionary<string, QuestFlag>();
+
+        #region Config
+        [Summary("Loads Quests from server on login")]
+        [DefaultValue(true)]
+        public bool AutoRequest {
+            get { return (bool)GetSetting("AutoRequest"); }
+            set { UpdateSetting("AutoRequest", value); }
+        }
+        #endregion
 
         #region Commands
         #region /ub quests
@@ -82,17 +88,20 @@ namespace UtilityBelt.Tools {
             UITimedQuestList.Click += (s, r, c) => { HandleRowClicked(UITimedQuestList, r, c); };
             UIKillTaskQuestList.Click += (s, r, c) => { HandleRowClicked(UIKillTaskQuestList, r, c); };
             UIOnceQuestList.Click += (s, r, c) => { HandleRowClicked(UIOnceQuestList, r, c); };
+        }
 
+        public override void Init() {
             UB.MainView.view.VisibleChanged += MainView_VisibleChanged;
             questRedrawTimer.Tick += QuestRedrawTimer_Tick;
             questRedrawTimer.Interval = 1000;
-            
-            if (UB.Core.CharacterFilter.LoginStatus == 0)
-                UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
-            else
-                GetMyQuestsList(3);
 
             UB.Core.CommandLineText += Core_CommandLineText;
+            if (AutoRequest) {
+                if (UB.Core.CharacterFilter.LoginStatus == 0)
+                    UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
+                else
+                    GetMyQuestsList(3);
+            } else UIQuestListRefresh.Text = "Load";
         }
 
         private void Core_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
@@ -122,6 +131,7 @@ namespace UtilityBelt.Tools {
             UB.Core.ChatBoxMessage += Current_ChatBoxMessage;
             UB.Core.RenderFrame += Core_RenderFrame;
             lastHeartbeat = DateTime.UtcNow;
+            UIQuestListRefresh.Text = "Refresh";
             UIQuestListRefresh.Visible = false;
             if (doCommand) RealGetMyQuestList();
         }
