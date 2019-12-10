@@ -2,7 +2,6 @@
 using System;
 using Decal.Adapter.Wrappers;
 using Decal.Filters;
-using UtilityBelt.MagTools.Shared;
 using System.Text.RegularExpressions;
 using VirindiViewService.Controls;
 using UtilityBelt.Lib;

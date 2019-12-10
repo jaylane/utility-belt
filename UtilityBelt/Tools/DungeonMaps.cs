@@ -1,24 +1,21 @@
 ﻿using Decal.Adapter;
 using Decal.Adapter.Wrappers;
-using Decal.Filters;
+using Microsoft.DirectX;
 using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
-using UtilityBelt;
+using System.Text;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Constants;
-using UtilityBelt.Lib.DungeonMaps;
+using UtilityBelt.Lib.Dungeon;
 using UtilityBelt.Lib.Settings;
-using UtilityBelt.Tools;
-using UtilityBelt.Views;
+using UtilityBelt.Lib.VTNav.Waypoints;
 using VirindiViewService;
 using VirindiViewService.Controls;
 
@@ -33,37 +30,51 @@ Draws an overlay with dungeon maps on your screen
 * Use the new map window to resize/move the map.
 * When the maps window is open you can use your scrollwheel to zoom.
     ")]
-    public class DungeonMaps : ToolBase {
-        private const int DRAW_INTERVAL = 45;
-        private DateTime lastDrawTime = DateTime.UtcNow;
-        private Hud hud = null;
-        private Rectangle hudRect = new Rectangle();
-        internal Bitmap drawBitmap = null;
-        readonly private Bitmap compassBitmap = null;
-        private float scale = 1;
-        private int rawScale = 12;
-        private int currentLandBlock = 0;
-        private bool isFollowingCharacter = true;
-        private bool isPanning = false;
-        private float dragOffsetX = 0;
-        private float dragOffsetY = 0;
-        private float dragOffsetStartX = 0;
-        private float dragOffsetStartY = 0;
-        private int dragStartX = 0;
-        private int dragStartY = 0;
-        private int rotation = 0;
-        private Dungeon currentBlock = null;
-        private int markerCount = 0;
 
-        readonly System.Timers.Timer zoomSaveTimer;
-        private long lastDrawMs = 0;
-        private long lastHudMs = 0;
+    public class DungeonMaps : ToolBase {
+        private DxTexture mapTexture;
+        private DxTexture labelsTexture;
+        private DxHud hud;
+        private TimeSpan mapUpdateInterval = TimeSpan.FromMilliseconds(1000 / 30);
+        private DateTime lastDraw = DateTime.MinValue;
+        private uint currentLandblock = 0;
+        private Dungeon dungeon;
+        private long lastDrawDuration = 0;
+        private Rectangle tileRect = new Rectangle(0,0,10 * TextureCache.TileScale,10 * TextureCache.TileScale);
+        private string fontFace;
+        private int fontWeight;
+        private float scale = 3.0f;
+        private bool needsMapDraw = true;
+        private double lastPlayerZ = 0.0f;
+
+        private Dictionary<int, DxTexture> zLayerCache = new Dictionary<int, DxTexture>();
+        private Dictionary<int, DxTexture> dynamicZLayerCache = new Dictionary<int, DxTexture>();
+
         HudButton UIFollowCharacter;
         HudHSlider UIOpacitySlider;
+        private bool needsClear = false;
+        private bool isPanning = false;
+        private bool isFollowingCharacter = true;
+        private float dragOffsetX;
+        private float dragOffsetY;
+        private float dragOffsetStartX;
+        private float dragOffsetStartY;
+        private int dragStartX;
+        private int dragStartY;
+        private double mapRotation;
+        private float centerX;
+        private float centerY;
+        readonly System.Timers.Timer zoomSaveTimer;
+        private bool isRunning = false;
+        private bool isPortaling = true;
+
+        Dictionary<int, TrackedObject> trackedObjects = new Dictionary<int, TrackedObject>();
+        public const int LABEL_HEIGHT = 10;
 
         #region Config
         public const int MIN_ZOOM = 0;
         public const int MAX_ZOOM = 16;
+        private const double Z_REDRAW_DISTANCE = 0.5f;
 
         [Summary("Enabled")]
         [DefaultValue(false)]
@@ -147,10 +158,13 @@ Draws an overlay with dungeon maps on your screen
         }
 
         [Summary("Map zoom level")]
-        [DefaultValue(4.20f)]
+        [DefaultValue(1.20f)]
         public float MapZoom {
             get { return (float)GetSetting("MapZoom"); }
-            set { UpdateSetting("MapZoom", value); scale = MapZoom; }
+            set {
+                UpdateSetting("MapZoom", value);
+                scale = MapZoom;
+            }
         }
 
         [Summary("Map display options")]
@@ -267,7 +281,7 @@ Draws an overlay with dungeon maps on your screen
             [Summary("You")]
             [DefaultEnabled(true)]
             [DefaultColor(-65536)] // red
-            [DefaultUseIcon(true)]
+            [DefaultUseIcon(false)]
             [DefaultShowLabel(false)]
             [DefaultSize(3)]
             public MarkerToggleOption You {
@@ -480,86 +494,67 @@ Draws an overlay with dungeon maps on your screen
         #endregion
 
         public DungeonMaps(UtilityBeltPlugin ub, string name) : base(ub, name) {
-            try {
-                Display = new MapDisplayOptions(this);
+            Display = new MapDisplayOptions(this);
 
-                scale = MapZoom;
-
-                #region UI Setup
-                UIFollowCharacter = (HudButton)UB.MapView.view["FollowCharacter"];
-                UIOpacitySlider = (HudHSlider)UB.MapView.view["OpacitySlider"];
-
-                UIFollowCharacter.Hit += UIFollowCharacter_Hit;
-                UIOpacitySlider.Changed += UIOpacitySlider_Changed;
-
-                UB.MapView.view["DungeonMapsRenderContainer"].MouseEvent += DungeonMaps_MouseEvent;
-                #endregion
-
-                using (Stream manifestResourceStream = typeof(MainView).Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.compass.png")) {
-                    if (manifestResourceStream != null) {
-                        compassBitmap = new Bitmap(manifestResourceStream);
-                        compassBitmap.MakeTransparent(Color.White);
-                    }
-                }
-
-                UB.Core.RegionChange3D += Core_RegionChange3D;
-                UB.Core.RenderFrame += Core_RenderFrame;
-                PropertyChanged += DungeonMaps_PropertyChanged;
-                UB.MapView.view.Resize += View_Resize;
-                UB.MapView.view.Moved += View_Moved;
-
-                Toggle();
-
-                zoomSaveTimer = new System.Timers.Timer {
-                    Interval = 2000 // save the window position 2 seconds after it has stopped moving
-                };
-                zoomSaveTimer.Elapsed += (s, e) => {
-                    zoomSaveTimer.Stop();
-                    MapZoom = scale;
-                };
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+            zoomSaveTimer = new System.Timers.Timer {
+                AutoReset = true,
+                Interval = 2000 // save the window position 2 seconds after it has stopped moving
+            };
         }
 
         public override void Init() {
             base.Init();
 
+            UIFollowCharacter = (HudButton)UB.MapView.view["FollowCharacter"];
+            UIOpacitySlider = (HudHSlider)UB.MapView.view["OpacitySlider"];
+
+            UIOpacitySlider.Changed += UIOpacitySlider_Changed;
             UIOpacitySlider.Position = Opacity;
+            UIFollowCharacter.Hit += UIFollowCharacter_Hit;
+
+            UB.MapView.view["DungeonMapsRenderContainer"].MouseEvent += DungeonMaps_MouseEvent;
+
+            scale = MapZoom;
+            fontFace = (string)((HudControl)UB.MapView.view.MainControl).Theme.GetVal<string>("DefaultTextFontFace");
+            fontWeight = (int)((HudControl)UB.MapView.view.MainControl).Theme.GetVal<int>("ViewTextFontWeight");
+
+            CreateHud(MapWindowWidth, MapWindowHeight, MapWindowX, MapWindowY);
+            
+            zoomSaveTimer.Elapsed += (s, e) => {
+                zoomSaveTimer.Stop();
+                MapZoom = scale;
+            };
+
+            if (UB.Core.CharacterFilter.LoginStatus != 3) {
+                UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
+            }
+
+            PropertyChanged += DungeonMaps_PropertyChanged;
         }
 
+        #region Event Handlers
+        private void DungeonMaps_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+            switch (e.PropertyName) {
+                case "Opacity":
+                    return;
+                case "DrawWhenClosed":
+                case "Enabled":
+                    UB.MapView.ResizeMapHud();
+                    break;
+            }
+            needsClear = true;
+        }
+
+        private void VisualNav_NavChanged(object sender, EventArgs e) {
+            needsClear = true;
+        }
+
+        private void UIFollowCharacter_Hit(object sender, EventArgs e) {
+            isFollowingCharacter = true;
+        }
         private void UIOpacitySlider_Changed(int min, int max, int pos) {
             try {
                 Opacity = pos;
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void DungeonMaps_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
-            Toggle();
-        }
-
-        #region UI Event Handlers
-        private void UIFollowCharacter_Hit(object sender, EventArgs e) {
-            try {
-                isFollowingCharacter = true;
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void View_Resize(object sender, EventArgs e) {
-            try {
-                RemoveHud();
-                CreateHud();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void View_Moved(object sender, EventArgs e) {
-            try {
-                if (!Enabled) return;
-
-                RemoveHud();
-                CreateHud();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -568,17 +563,18 @@ Draws an overlay with dungeon maps on your screen
             try {
                 switch (e.EventType) {
                     case ControlMouseEventArgs.MouseEventType.MouseWheel:
-                        if ((e.WheelAmount < 0 && rawScale < 16) || (e.WheelAmount > 0 && rawScale > 0)) {
-                            var s = e.WheelAmount < 0 ? ++rawScale : --rawScale;
-
-                            // todo: something else, i dont even know what this is anymore...
-                            scale = 8.4F - Map(s, 0, 16, 0.4F, 8);
-
-                            if (zoomSaveTimer.Enabled) zoomSaveTimer.Stop();
+                        if ((e.WheelAmount > 0 && scale < 5) || (e.WheelAmount < 0 && scale > 0.3)) {
+                            zoomSaveTimer.Stop();
                             zoomSaveTimer.Start();
+                            // todo: smooth zooming steps
+                            if (e.WheelAmount < 0) {
+                                scale -= 0.2f;
+                            }
+                            else {
+                                scale += 0.2f;
+                            }
                         }
                         break;
-
                     case ControlMouseEventArgs.MouseEventType.MouseDown:
                         if (isFollowingCharacter) {
                             dragOffsetX = (float)UB.Core.Actions.LocationX;
@@ -600,9 +596,9 @@ Draws an overlay with dungeon maps on your screen
 
                     case ControlMouseEventArgs.MouseEventType.MouseMove:
                         if (isPanning) {
-                            var angle = 180 - rotation - (Math.Atan2(e.Y - dragStartY, dragStartX - e.X) * 180.0 / Math.PI);
+                            var angle =  mapRotation - (Math.Atan2(e.Y - dragStartY, dragStartX - e.X) * 180.0 / Math.PI);
                             var distance = Math.Sqrt(Math.Pow(dragStartX - e.X, 2) + Math.Pow(dragStartY - e.Y, 2));
-                            var np = Util.MovePoint(new PointF(dragOffsetStartX, dragOffsetStartY), angle, distance / scale);
+                            var np = Util.MovePoint(new PointF(dragOffsetStartX, dragOffsetStartY), angle, distance / scale / TextureCache.TileScale);
 
                             dragOffsetX = np.X;
                             dragOffsetY = np.Y;
@@ -612,352 +608,704 @@ Draws an overlay with dungeon maps on your screen
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
+
+        private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
+            try {
+                UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
+                CreateHud(MapWindowWidth, MapWindowHeight, MapWindowX, MapWindowY);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void Core_RegionChange3D(object sender, Decal.Adapter.RegionChange3DEventArgs e) {
+            try {
+                UB.MapView.ResizeMapHud();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void EchoFilter_ServerDispatch(object sender, Decal.Adapter.NetworkMessageEventArgs e) {
+            try {
+                if (e.Message.Type == 0xF747) {
+                    var id = e.Message.Value<int>("object");
+                    if (trackedObjects.ContainsKey(id)) {
+                        RemoveTrackedObject(id);
+                    }
+                }
+
+                // check if we are moving to a new landblock
+                if (isPortaling && e.Message.Type == 0xF748 && e.Message.Value<int>("object") == UB.Core.CharacterFilter.Id && ((e.Message.Struct("position").Value<int>("landcell")) & 0xFFFF0000) != currentLandblock) {
+                    LoadLandblock(e.Message.Struct("position").Value<int>("landcell"));
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void Core_RenderFrame(object sender, EventArgs e) {
+            try {
+                if (dungeon == null || DateTime.UtcNow - lastDraw < mapUpdateInterval) return;
+                lastDraw = DateTime.UtcNow;
+
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                if (Math.Abs(lastPlayerZ - UB.Core.Actions.LocationZ) > Z_REDRAW_DISTANCE) {
+                    lastPlayerZ = UB.Core.Actions.LocationZ;
+                    needsMapDraw = true;
+                }
+
+                UpdateTrackedObjects();
+                RenderMapTexture();
+                RenderHud();
+
+                watch.Stop();
+                lastDrawDuration = watch.ElapsedTicks;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void CharacterFilter_ChangePortalMode(object sender, ChangePortalModeEventArgs e) {
+            try {
+                isPortaling = (e.Type == PortalEventType.EnterPortal);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
+            try {
+                if (e.New.Id == UB.Core.CharacterFilter.Id) return;
+                if (trackedObjects.ContainsKey(e.New.Id)) return;
+                if (e.New.Values(LongValueKey.Wielder, 0) != 0) return;
+
+                trackedObjects.Add(e.New.Id, new TrackedObject(e.New.Id));
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
         #endregion
 
-        private void Toggle() {
-            try {
-                UB.MapView.view.Icon = UB.MapView.GetIcon();
-                UB.MapView.view.ShowInBar = Enabled;
+        #region misc
+        private void UpdateTrackedObjects() {
+            var dirtyLayers = new List<int>();
+            var dirtyDynamicLayers = new List<int>();
+            var keys = trackedObjects.Keys.ToArray();
+            foreach (var to in keys) {
+                if (trackedObjects[to].Update(false)) {
+                    if (trackedObjects[to].Static) {
+                        if (!dirtyLayers.Contains(trackedObjects[to].ZLayer)) dirtyLayers.Add(trackedObjects[to].ZLayer);
+                        if (!dirtyLayers.Contains(trackedObjects[to].PrevZLayer)) dirtyLayers.Add(trackedObjects[to].PrevZLayer);
+                    }
+                    else {
+                        if (!dirtyDynamicLayers.Contains(trackedObjects[to].ZLayer)) dirtyDynamicLayers.Add(trackedObjects[to].ZLayer);
+                        if (!dirtyDynamicLayers.Contains(trackedObjects[to].PrevZLayer)) dirtyDynamicLayers.Add(trackedObjects[to].PrevZLayer);
+                    }
 
-                if (!Enabled) {
-                    if (UB.MapView.view.Visible) {
-                        UB.MapView.view.Visible = false;
-                    }
-                    if (hud != null) {
-                        ClearHud();
+                    if (trackedObjects[to].IsDisposed) trackedObjects.Remove(to);
+                }
+            }
+
+            if (dirtyLayers.Count > 0) {
+                needsMapDraw = true;
+                foreach (var z in dirtyLayers) {
+                    if (zLayerCache.ContainsKey(z)) {
+                        zLayerCache[z].Dispose();
+                        zLayerCache.Remove(z);
                     }
                 }
-                else {
-                    CreateHud();
+            }
+
+            if (dirtyDynamicLayers.Count > 0) {
+                needsMapDraw = true;
+                foreach (var z in dirtyDynamicLayers) {
+                    if (dynamicZLayerCache.ContainsKey(z)) {
+                        dynamicZLayerCache[z].Dispose();
+                        dynamicZLayerCache.Remove(z);
+                    }
                 }
+            }
+        }
+
+        private void RemoveTrackedObject(int id) {
+            if (!trackedObjects.ContainsKey(id)) return;
+
+            trackedObjects[id].Dispose();
+            if (trackedObjects[id].Static) {
+                if (zLayerCache.ContainsKey(trackedObjects[id].ZLayer)) {
+                    zLayerCache[trackedObjects[id].ZLayer].Dispose();
+                    zLayerCache.Remove(trackedObjects[id].ZLayer);
+                }
+            }
+            else {
+                if (dynamicZLayerCache.ContainsKey(trackedObjects[id].ZLayer)) {
+                    dynamicZLayerCache[trackedObjects[id].ZLayer].Dispose();
+                    dynamicZLayerCache.Remove(trackedObjects[id].ZLayer);
+                }
+            }
+            trackedObjects.Remove(id);
+            needsMapDraw = true;
+        }
+
+        private void LoadLandblock(int landcell, bool loadExisting=false) {
+            var dungeonWatch = System.Diagnostics.Stopwatch.StartNew();
+            currentLandblock = (uint)(landcell & 0xFFFF0000);
+            dungeon = new Dungeon(landcell);
+
+            ClearCache(true);
+            if (mapTexture != null) mapTexture.Dispose();
+            if (labelsTexture != null) labelsTexture.Dispose();
+
+            if (!dungeon.IsDungeon()) {
+                dungeon = null;
+                isPortaling = false;
+                ClearHud();
+            }
+            else {
+                mapTexture = new DxTexture(new Size(dungeon.Width * TextureCache.TileScale, dungeon.Height * TextureCache.TileScale));
+                labelsTexture = new DxTexture(new Size(dungeon.Width * TextureCache.TileScale, dungeon.Height * TextureCache.TileScale));
+                var landscape = CoreManager.Current.WorldFilter.GetLandscape();
+                foreach (var wo in landscape) {
+                    if (!CoreManager.Current.Actions.IsValidObject(wo.Id)) continue;
+                    if (trackedObjects.ContainsKey(wo.Id)) continue;
+                    if ((PhysicsObject.GetLandcell(wo.Id) & 0xFFFF0000) == currentLandblock) {
+                        trackedObjects.Add(wo.Id, new TrackedObject(wo.Id));
+                    }
+                }
+
+                if (!trackedObjects.ContainsKey(UB.Core.CharacterFilter.Id)) {
+                    trackedObjects.Add(UB.Core.CharacterFilter.Id, new TrackedObject(UB.Core.CharacterFilter.Id));
+                }
+            }
+
+            dungeonWatch.Stop();
+            LogDebug($"Took {dungeonWatch.ElapsedTicks / 10000f:N4}ms to check landblock {currentLandblock:X8}");
+        }
+
+        private void ClearCache(bool clearTracked=false) {
+            foreach (var kp in zLayerCache) {
+                kp.Value.Dispose();
+            }
+            zLayerCache.Clear();
+
+            foreach (var kp in dynamicZLayerCache) {
+                kp.Value.Dispose();
+            }
+            dynamicZLayerCache.Clear();
+
+            if (clearTracked) {
+                foreach (var to in trackedObjects) {
+                    to.Value.Dispose();
+                }
+                trackedObjects.Clear();
+            }
+        }
+        #endregion
+
+        #region Hud
+        private void ClearHud() {
+            if (hud == null || hud.Texture == null || hud.Texture.IsDisposed) return;
+            try {
+                if (hud.Texture.IsDisposed) return;
+                hud.Texture.BeginRender();
+                hud.Texture.Fill(new Rectangle(0, 0, hud.Texture.Width, hud.Texture.Height), Color.Transparent);
             }
             catch (Exception ex) { Logger.LogException(ex); }
+            finally { hud.Texture.EndRender(); }
         }
 
-        private void ClearTileCache() {
-            TileCache.Clear();
-        }
-
-        private void ClearVisitedTiles() {
-            if (currentBlock != null) {
-                currentBlock.visitedTiles.Clear();
-            }
-        }
-
-        private void Core_RegionChange3D(object sender, RegionChange3DEventArgs e) {
-            try {
-                RemoveHud();
-
-                if (Enabled) {
-                    CreateHud();
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        public float Map(float value, float fromSource, float toSource, float fromTarget, float toTarget) {
-            return (value - fromSource) / (toSource - fromSource) * (toTarget - fromTarget) + fromTarget;
-        }
-
-        #region Hud Stuff
-        public Rectangle GetHudRect() {
-            hudRect.Y = UB.MapView.view.Location.Y + UB.MapView.view["DungeonMapsRenderContainer"].ClipRegion.Y + 20;
-            hudRect.X = UB.MapView.view.Location.X + UB.MapView.view["DungeonMapsRenderContainer"].ClipRegion.X;
-
-            hudRect.Height = UB.MapView.view.Height - 20;
-            hudRect.Width = UB.MapView.view.Width;
-
-            return hudRect;
-        }
-
-        public void CreateHud() {
-            if (hud != null) {
-                hud.Enabled = true;
-                return;
-            }
-
-            hud = UB.Core.RenderService.CreateHud(GetHudRect());
-
-            hud.Region = GetHudRect();
-        }
-
-        private void RemoveHud() {
+        internal void CreateHud(int width, int height, int x, int y) {
             try {
                 if (hud != null) {
-                    hud.Enabled = false;
                     hud.Dispose();
-                    hud = null;
-                }
-            }
-            catch { }
-        }
-
-        public void ClearHud() {
-            if (hud != null && hud.Enabled) {
-                hud.Clear();
-                hud.Enabled = false;
-            }
-        }
-
-        public void UpdateHud() {
-            DrawHud();
-        }
-
-        public void DrawHud() {
-            try {
-                if (hud == null) {
-                    CreateHud();
                 }
 
-                hud.Clear();
-                hud.Fill(Color.Transparent);
-                hud.BeginRender();
+                if (UB.Core.Actions.Landcell == 0) return;
 
-                try {
-                    // the whole "map", includes all icons/map tiles but not text
-                    hud.DrawImage(drawBitmap, new Rectangle(0, 0, hud.Region.Width, hud.Region.Height));
+                if (!Enabled || (!DrawWhenClosed) && !UB.MapView.view.Visible) {
+                    if (isRunning) {
+                        zoomSaveTimer.Stop();
+                        UB.VisualNav.NavChanged -= VisualNav_NavChanged;
+                        UB.Core.RenderFrame -= Core_RenderFrame;
+                        UB.Core.RegionChange3D -= Core_RegionChange3D;
+                        UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
+                        UB.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
+                        UB.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                        UB.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
 
-                    DrawCompass(hud);
-                    DrawMarkerLabels(hud);
-                    DrawDungeonName();
-                    DrawMapDebug(hud);
+                        foreach (var to in trackedObjects.Values) {
+                            to.Dispose();
+                        }
+                        trackedObjects.Clear();
+                    }
+                    isRunning = false;
+                    return;
                 }
-                catch (Exception ex) { Logger.LogException(ex); }
-                finally {
-                    hud.EndRender();
-                    hud.Alpha = (int)Math.Round(((Opacity * 5) / 100F)*255);
-                    hud.Enabled = true;
+
+
+                if (!isRunning) {
+                    UB.VisualNav.NavChanged += VisualNav_NavChanged;
+                    UB.Core.RenderFrame += Core_RenderFrame;
+                    UB.Core.RegionChange3D += Core_RegionChange3D;
+                    UB.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
+                    UB.Core.CharacterFilter.ChangePortalMode += CharacterFilter_ChangePortalMode;
+                    UB.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
+                    UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
+                    needsMapDraw = true;
+                    LoadLandblock(UB.Core.Actions.Landcell);
                 }
+
+                hud = new DxHud(new Point(x + 5, y + 45), new Size(width - 10, height - 50), 0);
+                hud.Enabled = true;
+
+                isRunning = true;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void DrawDungeonName() {
-            if (!DungeonName.Enabled) return;
-
-            hud.BeginText("mono", 14, Decal.Adapter.Wrappers.FontWeight.Heavy, false);
-            var rect = new Rectangle(0, 0, hud.Region.Width, 15);
-            hud.WriteText(currentBlock.Name, Color.FromArgb(DungeonName.Color), Decal.Adapter.Wrappers.WriteTextFormats.Center, rect);
-            hud.EndText();
-        }
-
-        private void DrawCompass(Hud hud) {
-            // compass icon that always points north
-            if (ShowCompass && compassBitmap != null) {
-                using (Bitmap rotatedCompass = new Bitmap(compassBitmap.Width, compassBitmap.Height)) {
-                    using (Graphics compassGfx = Graphics.FromImage(rotatedCompass)) {
-                        compassGfx.TranslateTransform(compassBitmap.Width / 2, compassBitmap.Height / 2);
-                        compassGfx.RotateTransform(180 + rotation);
-                        compassGfx.DrawImage(compassBitmap, -compassBitmap.Width / 2, -compassBitmap.Height / 2);
-                        compassGfx.Save();
-                        hud.DrawImage(rotatedCompass, new Rectangle(hud.Region.Width - compassBitmap.Width, 0, compassBitmap.Width, compassBitmap.Height));
+        private void WorldFilter_ChangeObject(object sender, ChangeObjectEventArgs e) {
+            try {
+                if (e.Change == WorldChangeType.StorageChange && trackedObjects.ContainsKey(e.Changed.Id)) {
+                    if (e.Changed.Container != 0) {
+                        RemoveTrackedObject(e.Changed.Id);
                     }
                 }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
+        #endregion
 
-        private void DrawMarkerLabels(Hud hud) {
-            // too zoomed out to draw marker labels?
-            if (scale < 1.4) return;
+        #region Rendering
+        private void RenderHud() {
+            if (hud == null || hud.Texture == null || hud.Texture.IsDisposed) return;
+
+            PrecacheLabels();
 
             try {
-                hud.BeginText("Terminal", 10, Decal.Adapter.Wrappers.FontWeight.Normal, false);
+                hud.Texture.BeginRender();
+                hud.Texture.Fill(new Rectangle(0, 0, hud.Texture.Width, hud.Texture.Height), Color.FromArgb(0, 111, 111, 111));
 
-                markerCount = 0;
+                Matrix transform = new Matrix();
+                int sx, sy;
+                Quaternion rotQuat;
 
-                foreach (var wo in UB.Core.WorldFilter.GetLandscape()) {
-                    if (!ShouldDrawLabel(wo)) continue;
+                if (isFollowingCharacter) {
+                    mapRotation = UB.Core.Actions.Heading;
+                    centerX = (float)((dungeon.Width - 5 - UB.Core.Actions.LocationX) * TextureCache.TileScale) * scale;
+                    centerY = (float)((dungeon.Height - 5 + UB.Core.Actions.LocationY) * TextureCache.TileScale) * scale;
+                }
+                else {
+                    centerX = (float)((dungeon.Width - 5 -dragOffsetX) * TextureCache.TileScale) * scale;
+                    centerY = (float)((dungeon.Height - 5 + -dragOffsetY) * TextureCache.TileScale) * scale;
+                }
 
-                    var objPos = wo.Offset();
-                    var obj = PhysicsObject.FromId(wo.Id);
-                    if (obj != null) {
-                        objPos = new Vector3Object(obj.Position.X, obj.Position.Y, obj.Position.Z);
-                        obj = null;
+                rotQuat = Geometry.HeadingToQuaternion((float)mapRotation - 180f);
+                sx = -((int)centerX - (hud.Texture.Width / 2));
+                sy = -((int)centerY - (hud.Texture.Height / 2));
+
+                var rotationCenter = new Vector3(centerX, centerY, 0);
+                var tint = Color.FromArgb((int)((Opacity / 20f) * 255), 255, 255, 255).ToArgb();
+
+                transform.AffineTransformation(scale, rotationCenter, rotQuat, new Vector3(sx, sy, 0));
+                hud.Texture.DrawTextureWithTransform(mapTexture, transform, tint);
+
+                DrawLabels();
+
+                if (Debug) {
+                    try {
+                        hud.Texture.BeginText(fontFace, 10f, 150, false, 1, (int)byte.MaxValue);
+                        var text = $"Objs:{trackedObjects.Keys.Count} Icons:{TextureCache.iconCache.Count} Tiles:{TextureCache.tileCache.Count} Markers:{TextureCache.markerCache.Count} Texts:{TextureCache.textCache.Count} - {lastDrawDuration:D8}";
+                        if (DungeonName.Enabled) {
+                            hud.Texture.WriteText(dungeon.Name, Color.FromArgb(DungeonName.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
+                        }
+                        hud.Texture.WriteText(text, Color.White, VirindiViewService.WriteTextFormats.Center, new Rectangle(0, hud.Texture.Height - 20, hud.Texture.Width, 20));
                     }
-
-                    // clamp objects to the floor
-                    var objZ = Math.Round(objPos.Z / 6) * 6;
-
-                    // dont draw if its not on the same floor as us
-                    if (Math.Abs(objZ - UB.Core.Actions.LocationZ) > 5) continue;
-
-                    var x = (objPos.X - UB.Core.Actions.LocationX) * scale;
-                    var y = (UB.Core.Actions.LocationY - objPos.Y) * scale;
-
-                    if (!isFollowingCharacter) {
-                        x = (objPos.X - dragOffsetX) * scale;
-                        y = (-dragOffsetY - objPos.Y) * scale;
+                    finally {
+                        hud.Texture.EndText();
                     }
-
-                    var name = wo.Name;
-
-                    if (wo.ObjectClass == ObjectClass.Portal) {
-                        name = name.Replace("Portal to ", "").Replace(" Portal", "");
-                    }
-
-                    var rpoint = Util.RotatePoint(new Point((int)x, (int)y), new Point(0, 0), rotation + 180);
-                    var textWidth = name.Length * 6;
-                    var rect = new Rectangle(rpoint.X - (textWidth/2) + (hud.Region.Width / 2), rpoint.Y - 18 + (hud.Region.Height / 2), textWidth, 12);
-                    var labelColor = Display.Markers.GetLabelColor(wo);
-
-                    // inside map window?
-                    if (rect.X < -(Dungeon.CELL_SIZE * scale) || rect.X > hud.Region.Width + (Dungeon.CELL_SIZE * scale)) {
-                        continue;
-                    }
-                    if (rect.Y < -(Dungeon.CELL_SIZE * scale) || rect.Y > hud.Region.Height + (Dungeon.CELL_SIZE * scale)) {
-                        continue;
-                    }
-
-                    hud.WriteText(name, labelColor, Decal.Adapter.Wrappers.WriteTextFormats.SingleLine, rect);
-                    markerCount++;
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
             finally {
-                hud.EndText();
+                hud.Texture.EndRender();
             }
+        }
+
+        private void PrecacheLabels() {
+            var z = (int)(Math.Floor((PhysicsObject.GetPosition(UB.Core.CharacterFilter.Id).Z + 3) / 6) * 6);
+            if (TrackedObject.ByZLayer.ContainsKey(z)) {
+                if (!dungeon.ZLayers.ContainsKey(z)) return;
+
+                foreach (var obj in TrackedObject.ByZLayer[z]) {
+                    var wo = UB.Core.WorldFilter[obj.Id];
+                    if (wo == null || !Display.Markers.ShouldShowlabel(wo)) return;
+
+                    var color = Color.FromArgb(Display.Markers.GetMarkerColor(wo));
+                    TextureCache.GetText(wo.Name, LABEL_HEIGHT, color, fontFace, fontWeight);
+                }
+            }
+        }
+
+        private void DrawLabels() {
+            var z = (int)(Math.Floor((PhysicsObject.GetPosition(UB.Core.CharacterFilter.Id).Z + 3) / 6) * 6);
+
+            if (TrackedObject.ByZLayer.ContainsKey(z)) {
+                if (!dungeon.ZLayers.ContainsKey(z)) return;
+
+                try {
+                    foreach (var obj in TrackedObject.ByZLayer[z]) {
+                        var wo = UB.Core.WorldFilter[obj.Id];
+                        if (wo == null || !Display.Markers.ShouldShowlabel(wo)) return;
+
+                        if (!ShouldDrawLabel(wo)) continue;
+
+                        var color = Color.FromArgb(Display.Markers.GetMarkerColor(wo));
+                        var textTexture = TextureCache.GetText(wo.Name, LABEL_HEIGHT, color, fontFace, fontWeight);
+                        
+                        if (isFollowingCharacter) {
+                            int x = (int)((obj.Position.X - UB.Core.Actions.LocationX) * scale * TextureCache.TileScale);
+                            int y = (int)((UB.Core.Actions.LocationY - obj.Position.Y) * scale * TextureCache.TileScale);
+                            Point rotatedPoint = Util.RotatePoint(new Point(x, y), new Point(0, 0), 360f - mapRotation);
+
+                            hud.Texture.DrawTexture(textTexture, new Rectangle(rotatedPoint.X - (textTexture.Width / 2) + (hud.Texture.Width / 2), rotatedPoint.Y - (textTexture.Height / 2) + (hud.Texture.Height / 2), textTexture.Width, textTexture.Height));
+                        }
+                        else {
+                            int x = (int)((obj.Position.X - dragOffsetX) * scale * TextureCache.TileScale);
+                            int y = (int)((-obj.Position.Y - dragOffsetY) * scale * TextureCache.TileScale);
+                            Point rotatedPoint = Util.RotatePoint(new Point(x, y), new Point(0, 0), 360f - mapRotation);
+
+                            hud.Texture.DrawTexture(textTexture, new Rectangle(rotatedPoint.X - (textTexture.Width / 2) + (hud.Texture.Width / 2), rotatedPoint.Y - (textTexture.Height / 2) + (hud.Texture.Height / 2), textTexture.Width, textTexture.Height));
+                        }
+                    }
+                }
+                catch (Exception ex) { Logger.LogException(ex); }
+            }
+        }
+
+        private void RenderMapTexture() {
+            if (hud == null || hud.Texture == null || hud.Texture.IsDisposed) return;
+            if (mapTexture == null || mapTexture.IsDisposed) return;
+
+            if (needsClear) {
+                needsMapDraw = true;
+                TextureCache.Clear();
+                ClearCache(false);
+                needsClear = false;
+            }
+            
+            if (!needsMapDraw) return;
+
+            needsMapDraw = false;
+            foreach (var kp in dungeon.ZLayers) {
+                // floors more than one level above or four levels below your char are not drawn
+                if (UB.Core.Actions.LocationZ - kp.Key < -10 || UB.Core.Actions.LocationZ - kp.Key > 24) {
+                    continue;
+                }
+
+                if (zLayerCache.ContainsKey(kp.Key)) {
+                    if (!dynamicZLayerCache.ContainsKey(kp.Key)) DrawDynamicZLayer(kp);
+                    continue;
+                }
+
+                needsMapDraw = true;
+
+                foreach (var cell in kp.Value.Cells) {
+                    // precache tiles outside of render
+                    TextureCache.GetTile(cell.EnvironmentId);
+                }
+
+                DrawZLayer(kp);
+                DrawDynamicZLayer(kp);
+            }
+
+            try {
+                mapTexture.BeginRender();
+                if (Debug) {
+                    mapTexture.Fill(new Rectangle(0, 0, mapTexture.Width, mapTexture.Height), Color.FromArgb(110, 255, 255, 0));
+                }
+                else {
+                    mapTexture.Fill(new Rectangle(0, 0, mapTexture.Width, mapTexture.Height), Color.Transparent);
+                }
+
+                foreach (var kp in dungeon.ZLayers) {
+                    if (zLayerCache.ContainsKey(kp.Key)) {
+                        mapTexture.DrawTextureTinted(zLayerCache[kp.Key], new Rectangle(
+                            0, 0, zLayerCache[kp.Key].Width, zLayerCache[kp.Key].Height
+                        ), new Rectangle(
+                            kp.Value.OffsetX * TextureCache.TileScale,
+                            kp.Value.OffsetY * TextureCache.TileScale,
+                            kp.Value.Width * TextureCache.TileScale,
+                            kp.Value.Height * TextureCache.TileScale
+                        ), GetTint(kp.Key));
+                    }
+                    if (dynamicZLayerCache.ContainsKey(kp.Key)) {
+                        mapTexture.DrawTextureTinted(dynamicZLayerCache[kp.Key], new Rectangle(
+                            0, 0, dynamicZLayerCache[kp.Key].Width, dynamicZLayerCache[kp.Key].Height
+                        ), new Rectangle(
+                            kp.Value.OffsetX * TextureCache.TileScale,
+                            kp.Value.OffsetY * TextureCache.TileScale,
+                            kp.Value.Width * TextureCache.TileScale,
+                            kp.Value.Height * TextureCache.TileScale
+                        ), GetTint(kp.Key));
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+            finally { mapTexture.EndRender(); }
+        }
+
+        private void DrawDynamicZLayer(KeyValuePair<int, DungeonLayer> kp) {
+            DxTexture texture;
+            if (dynamicZLayerCache.ContainsKey(kp.Key)) {
+                texture = dynamicZLayerCache[kp.Key];
+            }
+            else {
+                texture = new DxTexture(new Size(kp.Value.Width * TextureCache.TileScale, kp.Value.Height * TextureCache.TileScale));
+            }
+
+            try {
+                texture.BeginRender();
+                texture.Fill(new Rectangle(0, 0, texture.Width, texture.Height), Color.Transparent);
+
+                if (TrackedObject.ByZLayer.ContainsKey(kp.Key)) {
+                    foreach (TrackedObject to in TrackedObject.ByZLayer[kp.Key]) {
+                       if (!to.Static) DrawTrackedObject(to, kp.Key, texture);
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+            finally { texture.EndRender(); }
+
+            if (!dynamicZLayerCache.ContainsKey(kp.Key)) dynamicZLayerCache.Add(kp.Key, texture);
+        }
+
+        private void DrawZLayer(KeyValuePair<int, DungeonLayer> kp) {
+            DxTexture zLayerTexture;
+            if (zLayerCache.ContainsKey(kp.Key)) {
+                zLayerTexture = dynamicZLayerCache[kp.Key];
+            }
+            else {
+                zLayerTexture = new DxTexture(new Size(kp.Value.Width * TextureCache.TileScale, kp.Value.Height * TextureCache.TileScale));
+            }
+
+            try {
+                zLayerTexture.BeginRender();
+                if (Debug) {
+                    zLayerTexture.Fill(new Rectangle(0, 0, zLayerTexture.Width, zLayerTexture.Height), Color.FromArgb(110, 255, 0, 255));
+                }
+                else {
+                    zLayerTexture.Fill(new Rectangle(0, 0, zLayerTexture.Width, zLayerTexture.Height), Color.FromArgb(0, 255, 0, 255));
+                }
+
+                foreach (var cell in kp.Value.Cells) {
+                    var x = ((kp.Value.Width - 10 - (cell.X - kp.Value.minX)) * TextureCache.TileScale);
+                    var y = ((cell.Y - kp.Value.minY) * TextureCache.TileScale);
+                    var tile = TextureCache.GetTile(cell.EnvironmentId);
+                    var tilePoint = new Point(x + (TextureCache.TileScale * 5), y + (TextureCache.TileScale * 5));
+                    zLayerTexture.DrawTextureRotated(tile, tileRect, tilePoint, -1, cell.R);
+
+                    if (Debug) {
+                        try {
+                            zLayerTexture.BeginText(fontFace, 7f, fontWeight, false, 1, (int)byte.MaxValue);
+                            zLayerTexture.WriteText($"{cell.EnvironmentId}\n{cell.X},{cell.Y}",
+                                Color.White,
+                                VirindiViewService.WriteTextFormats.Center | VirindiViewService.WriteTextFormats.VerticalCenter,
+                                new Rectangle(x, y, tileRect.Width, tileRect.Height));
+                        }
+                        catch (Exception ex) { Logger.LogException(ex); }
+                        finally {
+                            zLayerTexture.EndText();
+                        }
+                    }
+                }
+
+                if (Debug) {
+                    try {
+                        zLayerTexture.BeginText(fontFace, 7f, fontWeight, false, 1, (int)byte.MaxValue);
+                        zLayerTexture.WriteText($"{kp.Value.OffsetX},{kp.Value.OffsetY},{kp.Value.Width},{kp.Value.minX}",
+                            Color.White,
+                            VirindiViewService.WriteTextFormats.VerticalCenter,
+                            new Rectangle(0, 0, zLayerTexture.Width, 10));
+                    }
+                    catch (Exception ex) { Logger.LogException(ex); }
+                    finally {
+                        zLayerTexture.EndText();
+                    }
+                }
+
+                DrawMarkers(zLayerTexture, kp.Key);
+                DrawNavLines(zLayerTexture, kp.Key);
+                zLayerCache.Add(kp.Key, zLayerTexture);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+            finally {
+                zLayerTexture.EndRender();
+            }
+        }
+
+        private int GetTint(int zLayer) {
+            // floors directly above your character
+            if (UB.Core.Actions.LocationZ - zLayer < -3) {
+                return Color.FromArgb(141, 151, 151, 151).ToArgb();
+            }
+            // current floor
+            else if (Math.Abs(UB.Core.Actions.LocationZ - zLayer) < 3) {
+                return -1;
+            }
+            // floors below
+            else {
+                var d = (int)(Math.Min(1,(Math.Abs(UB.Core.Actions.LocationZ - zLayer) / 6f) * 0.4f) * 255);
+                return Color.FromArgb(255, 255-d, 255-d, 255-d).ToArgb();
+            }
+        }
+
+        private void DrawMarkers(DxTexture texture, int zLayer) {
+            if (!TrackedObject.ByZLayer.ContainsKey(zLayer)) return;
+
+            foreach (TrackedObject to in TrackedObject.ByZLayer[zLayer]) {
+                if (to.Static) DrawTrackedObject(to, zLayer, texture);
+            }
+        }
+
+        private bool ShouldDrawMarker(WorldObject wo) {
+            // make sure the client knows about this object
+            if (!UB.Core.Actions.IsValidObject(wo.Id)) return false;
+
+            // too far?
+            // TODO: get distance from physics object
+            if (UB.Core.WorldFilter.Distance(wo.Id, UB.Core.CharacterFilter.Id) * 240 > 300) return false;
+
+            return Display.Markers.ShouldDraw(wo);
         }
 
         private bool ShouldDrawLabel(WorldObject wo) {
             // make sure the client knows about this object
             if (!UB.Core.Actions.IsValidObject(wo.Id)) return false;
 
-            // make sure its close enough
+            // too far?
+            // TODO: get distance from physics object
             if (UB.Core.WorldFilter.Distance(wo.Id, UB.Core.CharacterFilter.Id) * 240 > 300) return false;
 
-            if (!Display.Markers.ShouldDraw(wo)) return false;
-
-            if (!Display.Markers.ShouldShowlabel(wo)) return false;
-
-            return true;
+            return Display.Markers.ShouldShowlabel(wo);
         }
 
-        private void DrawMapDebug(Hud hud) {
-            // debug cell / environment debug text
-            if (Debug) {
-                hud.BeginText("mono", 14, Decal.Adapter.Wrappers.FontWeight.Heavy, false);
-                var cells = currentBlock.GetCurrentCells();
-                var offset = 30;
-
-                if (currentBlock != null) {
-                    var stats = $"Tiles: {currentBlock.drawCount:D3} Markers: {markerCount:D3} Map: {lastDrawMs:D3}ms Hud: {lastHudMs:D3}ms";
-                    var rect = new Rectangle(0, 15, hud.Region.Width, 15);
-
-                    using (var bmp = new Bitmap(hud.Region.Width, 15)) {
-                        var bgColor = Color.FromArgb(150, 0, 0, 0);
-                        bmp.MakeTransparent();
-
-                        using (var gfx = Graphics.FromImage(bmp)) {
-                            gfx.FillRectangle(new SolidBrush(bgColor), 0, 0, bmp.Width, bmp.Height);
-                            hud.DrawImage(bmp, rect);
-                            hud.WriteText(stats, Color.White, Decal.Adapter.Wrappers.WriteTextFormats.SingleLine, rect);
-                        }
-                    }
-                }
-
-                foreach (var cell in cells) {
-                    var message = string.Format("cell: {0}, env: {1}, r: {2}, pos: {3},{4},{5}",
-                        cell.CellId.ToString("X8"),
-                        cell.EnvironmentId,
-                        cell.R.ToString(),
-                        cell.X,
-                        cell.Y,
-                        cell.Z);
-                    var color = Math.Abs(cell.Z - UB.Core.Actions.LocationZ) < 2 ? Color.LightGreen : Color.White;
-                    var rect2 = new Rectangle(0, offset, hud.Region.Width, offset + 15);
-
-                    hud.WriteText(message, color, Decal.Adapter.Wrappers.WriteTextFormats.SingleLine, rect2);
-                    offset += 15;
-                }
-                hud.EndText();
-            }
-        }
-        #endregion
-
-        public bool NeedsDraw() {
-            if (!Enabled) return false;
-
-            if (DrawWhenClosed == false && UB.MapView.view.Visible == false) {
-                hud.Clear();
-                return false;
-            }
-
-            return true;
-        }
-
-        public void Core_RenderFrame(object sender, EventArgs e) {
+        private void DrawTrackedObject(TrackedObject obj, int roundedZ, DxTexture texture) {
             try {
-                if (!Enabled) return;
+                DungeonLayer zLayer = dungeon.ZLayers[roundedZ];
+                var wo = UB.Core.WorldFilter[obj.Id];
 
-                if (DateTime.UtcNow - lastDrawTime > TimeSpan.FromMilliseconds(DRAW_INTERVAL)) {
-                    lastDrawTime = DateTime.UtcNow;
+                if (wo == null || !ShouldDrawMarker(wo)) return;
 
-                    if (!NeedsDraw()) return;
+                float x = (float)((zLayer.Width - 5 - (obj.Position.X - zLayer.minX)) * TextureCache.TileScale);
+                float y = (float)((obj.Position.Y + 5 - zLayer.minY) * TextureCache.TileScale);
 
-                    currentBlock = DungeonCache.Get((uint)UB.Core.Actions.Landcell);
+                Matrix transform = new Matrix();
+                var useIcon = Display.Markers.ShouldUseIcon(wo);
 
-                    if (currentLandBlock != UB.Core.Actions.Landcell >> 16 << 16) {
-                        ClearHud();
-                        currentLandBlock = UB.Core.Actions.Landcell >> 16 << 16;
-
-                        ClearVisitedTiles();
-                    }
-
-                    if (currentBlock == null) return;
-                    if (!currentBlock.IsDungeon()) return;
-
-                    if (!currentBlock.visitedTiles.Contains((uint)(UB.Core.Actions.Landcell << 16 >> 16))) {
-                        currentBlock.visitedTiles.Add((uint)(UB.Core.Actions.Landcell << 16 >> 16));
-                    }
-
-                    if (hud == null || hud.Region == null) return;
-
-                    var watch = System.Diagnostics.Stopwatch.StartNew();
-
-                    float x = isFollowingCharacter ? (float)UB.Core.Actions.LocationX : dragOffsetX;
-                    float y = isFollowingCharacter ? - (float)UB.Core.Actions.LocationY : dragOffsetY;
-
-                    if (isFollowingCharacter) {
-                        rotation = (int)(360 - (((float)UB.Core.Actions.Heading + 180) % 360));
-                    }
-
-                    drawBitmap = currentBlock.Draw(x, y, scale, rotation, new Rectangle(0, 0, hud.Region.Width, hud.Region.Height));
-
-                    watch.Stop();
-                    var watch2 = System.Diagnostics.Stopwatch.StartNew();
-                    UpdateHud();
-                    watch2.Stop();
-
-                    lastDrawMs = watch.ElapsedMilliseconds;
-                    lastHudMs = watch2.ElapsedMilliseconds;
+                DxTexture marker;
+                if (Display.Markers.ShouldUseIcon(wo) && TextureCache.GetIcon(obj.Icon) != null) {
+                    marker = TextureCache.GetIcon(obj.Icon);
                 }
+                else {
+                    marker = TextureCache.GetMarker(Display.Markers.GetMarkerColor(wo));
+                }
+
+                Quaternion q = new Quaternion(0, 0, 0, 0);
+                transform.AffineTransformation(1, new Vector3((marker.Width / 2), (marker.Height / 2), 0), q, new Vector3(x - (marker.Width / 2), y - (marker.Height / 2), 0));
+                texture.DrawTextureWithTransform(marker, transform, -1);
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        #region IDisposable Support
-        protected override void Dispose(bool disposing) {
-            if (!disposedValue) {
-                if (disposing) {
-                    UB.Core.RegionChange3D -= Core_RegionChange3D;
-                    UB.Core.RenderFrame -= Core_RenderFrame;
+        #region VisualNav
+        private void DrawNavLines(DxTexture texture, int zLayer) {
+            var route = UB.VisualNav.currentRoute;
+            if (route == null) return;
 
-                    ClearTileCache();
-                    ClearHud();
+            switch (route.NavType) {
+                case Lib.VTNav.eNavType.Circular:
+                case Lib.VTNav.eNavType.Linear:
+                case Lib.VTNav.eNavType.Once:
+                    DrawPointRoute(texture, zLayer, route);
+                    break;
+            }
+        }
 
-                    if (hud != null) {
-                        UB.Core.RenderService.RemoveHud(hud);
-                        hud.Dispose();
-                    }
-                    if (drawBitmap != null) drawBitmap.Dispose();
-                    if (compassBitmap != null) compassBitmap.Dispose();
-                    if (zoomSaveTimer != null) zoomSaveTimer.Dispose();
+        public void DrawPointRoute(DxTexture texture, int zLayer, Lib.VTNav.VTNavRoute route) {
+            var allPoints = route.points.Where((p) => (p.Type == Lib.VTNav.eWaypointType.Point && p.index >= route.NavOffset)).ToArray();
 
-                    base.Dispose(disposing);
+            // todo: follow routes
+            if (route.NavType == Lib.VTNav.eNavType.Target) return;
+            var dz = dungeon.ZLayers[zLayer];
+
+            // sticky point
+            if (allPoints.Length == 1 && (route.NavType == Lib.VTNav.eNavType.Circular || route.NavType == Lib.VTNav.eNavType.Linear)) {
+                if (!UB.DungeonMaps.Display.VisualNavStickyPoint.Enabled) return;
+
+                VTNPoint point = allPoints[0];
+                if (Math.Abs(zLayer - (point.Z*240) - 6) > 6) return;
+                var landblock = Geometry.GetLandblockFromCoordinates((float)point.EW, (float)point.NS);
+                var pointOffset = Geometry.LandblockOffsetFromCoordinates(currentLandblock, (float)point.EW, (float)point.NS);
+                var x = ((dz.Width - 10 - (pointOffset.X - dz.minX) + 5) * TextureCache.TileScale);
+                var y = ((pointOffset.Y - dz.minY + 5) * TextureCache.TileScale);
+                texture.DrawPortalImage(100667897, new Rectangle((int)x - 15, (int)y - 15, 30, 30));
+                return;
+            }
+
+            // circular / once / linear routes.. currently not discriminating
+            if (!UB.DungeonMaps.Display.VisualNavLines.Enabled) return;
+
+            for (var i = route.NavOffset; i < route.points.Count; i++) {
+                var point = route.points[i];
+                var prev = point.GetPreviousPoint();
+
+                if (prev == null) continue;
+
+                if (point.Type == Lib.VTNav.eWaypointType.Point) {
+                    var landblock = Geometry.GetLandblockFromCoordinates((float)point.EW, (float)point.NS);
+                    var pointOffset = Geometry.LandblockOffsetFromCoordinates(currentLandblock, (float)point.EW, (float)point.NS);
+                    var prevOffset = Geometry.LandblockOffsetFromCoordinates(currentLandblock, (float)prev.EW, (float)prev.NS);
+                    var x = ((dz.Width - 10 - (pointOffset.X - dz.minX) + 5) * TextureCache.TileScale);
+                    var y = ((pointOffset.Y - dz.minY + 5) * TextureCache.TileScale);
+                    var px = ((dz.Width - 10 - (prevOffset.X - dz.minX) + 5) * TextureCache.TileScale);
+                    var py = ((prevOffset.Y - dz.minY + 5) * TextureCache.TileScale);
+
+                    // we pump these up a bit so they get drawn preferentially on a higher layer
+                    // todo: this is still broken on ramps, some nav lines get drawn under the ramp tile
+                    var prevZ = (prev.Z * 240)+1;
+                    var pointZ = (point.Z * 240)+1;
+
+                    bool prevIsOnActiveLayer = Math.Abs((prevZ - zLayer)) < 4;
+                    bool pointIsOnActiveLayer = Math.Abs(pointZ - zLayer) < 4;
+
+                    // skip if neither of the points fall on this layer
+                    if (!prevIsOnActiveLayer && !pointIsOnActiveLayer) continue;
+
+                    texture.DrawLine(new PointF(x, y), new PointF(px, py), Color.FromArgb(Display.VisualNavLines.Color), 5);
                 }
-                disposedValue = true;
             }
         }
         #endregion
+        #endregion
+
+        protected override void Dispose(bool disposing) {
+            if (disposing) {
+                PropertyChanged -= DungeonMaps_PropertyChanged;
+
+                if (isRunning) {
+                    zoomSaveTimer.Stop();
+                    UB.VisualNav.NavChanged -= VisualNav_NavChanged;
+                    UB.Core.RenderFrame -= Core_RenderFrame;
+                    UB.Core.RegionChange3D -= Core_RegionChange3D;
+                    UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
+                    UB.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
+                    UB.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                    UB.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
+                    if (mapTexture != null) mapTexture.Dispose();
+                    if (hud != null) hud.Dispose();
+                }
+
+                ClearCache();
+                TextureCache.Clear();
+
+                dungeon = null;
+                base.Dispose(disposing);
+            }
+        }
     }
 }

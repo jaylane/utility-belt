@@ -156,6 +156,8 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
 
         private List<D3DObj> shapes = new List<D3DObj>();
 
+        public event EventHandler NavChanged;
+
         #region Config
         [Summary("Enabled")]
         [DefaultValue(true)]
@@ -218,7 +220,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
 
             }
             else {
-                DrawCurrentRoute();
+                needsDraw = true;
             }
 
             Display.PropertyChanged += (s, e) => { needsDraw = true; };
@@ -303,6 +305,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
 
             if (!Enabled || UBHelper.VideoPatch.IsEnabled() || string.IsNullOrEmpty(UBHelper.vTank.Instance?.GetNavProfile())) {
                 ClearCurrentRoute();
+                NavChanged?.Invoke(this, new EventArgs());
                 return;
             }
 
@@ -328,6 +331,8 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
             if (!UBHelper.vTank.Instance.GetNavProfile().StartsWith(VTNavRoute.NoneNavName)) {
                 WatchRouteFiles();
             }
+
+            NavChanged?.Invoke(this, new EventArgs());
         }
 
         private void WatchRouteFiles() {

@@ -8,6 +8,7 @@
 - Added `/ub translateroute` command to convert a nav route from one landblock to another
 - Fix itemgiver: negative keep # wasn't properly tracking items already given
 - Add QuestTracker.AutoRequest setting
+- Rewrite DungeonMaps with performance in mind
 
 ## 0.1.1 (2019-12-03) [UtilityBeltInstaller-0.1.1.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/c94b459edb29649f99f1d84eae3f76ce/UtilityBeltInstaller-0.1.1.exe)
 - Increase AutoStack/AutoCram timeout to 30s

@@ -230,40 +230,6 @@ namespace UtilityBelt.Views {
                     }
                 }
             }
-            /*
-            obj = obj ?? UB;
-
-            var props = obj.GetType().GetProperties();
-
-            if (history != "") {
-                ((SectionBase)obj).PropertyChanged += (object sender, PropertyChangedEventArgs e) => {
-                    var fullName = history + e.PropertyName;
-
-                    for (var i = 0; i < SettingsList.RowCount; i++) {
-                        var row = ((HudList.HudListRowAccessor)SettingsList[i]);
-                        if (((HudStaticText)row[0]).Text == fullName) {
-                            ((HudStaticText)row[1]).Text = UB.Settings.DisplayValue(fullName);
-                            break;
-                        }
-                    }
-                };
-            }
-
-            foreach (var prop in props) {
-                var summaryAttributes = prop.GetCustomAttributes(typeof(SummaryAttribute), true);
-                var defaultValueAttributes = prop.GetCustomAttributes(typeof(DefaultValueAttribute), true);
-
-                if (defaultValueAttributes.Length > 0) {
-                    var row = SettingsList.AddRow();
-                    ((HudStaticText)row[0]).Text = history + prop.Name;
-                    ((HudStaticText)row[1]).Text = UB.Settings.DisplayValue(history + prop.Name);
-                    ((HudStaticText)row[1]).TextAlignment = WriteTextFormats.Right;
-                }
-                else if (summaryAttributes.Length > 0) {
-                    PopulateSettings(prop.GetValue(obj, null), $"{history}{prop.Name}.");
-                }
-            }
-            */
         }
 
         internal override ACImage GetIcon() {

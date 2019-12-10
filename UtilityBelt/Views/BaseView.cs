@@ -3,13 +3,30 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using VirindiViewService;
 using VirindiViewService.XMLParsers;
-using static UtilityBelt.MagTools.Shared.User32;
 
 namespace UtilityBelt.Views {
     public class BaseView : IDisposable {
+        #region Imports
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+
+            public int Width { get { return Right - Left; } }
+            public int Height { get { return Bottom - Top; } }
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetWindowRect(IntPtr hWnd, ref RECT lpRect);
+        #endregion
+
         public VirindiViewService.HudView view;
 
         private ViewProperties properties;
