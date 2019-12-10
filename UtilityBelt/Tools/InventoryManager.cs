@@ -32,29 +32,20 @@ Provides a command-line interface to inventory management.
 
     ")]
     public class InventoryManager : ToolBase {
-        private const int THINK_INTERVAL = 300;
-        private const int ITEM_BLACKLIST_TIMEOUT = 60; // in seconds
-        private const int CONTAINER_BLACKLIST_TIMEOUT = 60; // in seconds
 
         private bool disposed = false;
-        private bool isRunning = false;
-        private bool isPaused = false;
-        private bool isForced = false;
-        private DateTime lastThought = DateTime.MinValue;
-        private readonly Dictionary<int, DateTime> blacklistedItems = new Dictionary<int, DateTime>();
-        private readonly Dictionary<int, DateTime> blacklistedContainers = new Dictionary<int, DateTime>();
 
         private static readonly Dictionary<int, int> giveObjects = new Dictionary<int, int>();
-        private static readonly List<int> idItems = new List<int>();
+        private List<int> idItems = new List<int>();
         private static DateTime lastIdSpam = DateTime.MinValue, bailTimer = DateTime.MinValue, reloadLootProfileTS = DateTime.MinValue;
-        private static bool igRunning = false, givePartialItem, isRegex = false, reloadLootProfile = false;
+        private static bool igRunning = false, givePartialItem, isRegex = false;
         private static int currentItem, retryCount, destinationId, failedItems, totalFailures, maxGive, itemsGiven, lastIdCount, pendingGiveCount;
         private LootCore lootProfile = null;
         private static string targetPlayer = "", utlProfile = "", profilePath = "";
-        private static readonly Dictionary<string, int> givenItemsCount = new Dictionary<string, int>();
+        private static readonly Dictionary<string, int> poorlyNamedKeepUptoDictionary = new Dictionary<string, int>();
         private static readonly List<int> keptObjects = new List<int>();
         private Stopwatch giveTimer;
-
+        private Assessor.Job assessor = null;
         private static FileSystemWatcher profilesWatcher = null;
 
         #region Config
@@ -127,9 +118,99 @@ Provides a command-line interface to inventory management.
                 IGStop();
             }
             else {
-                StartGive(command, args);
+                UB_give_Start(command, args);
             }
         }
+        private void UB_give_Start(string command, Match giveMatch) {
+            if (igRunning) {
+                LogError("Already running.  Please wait until it completes or use /ub give stop to quit previous session");
+                return;
+            }
+            targetPlayer = giveMatch.Groups["Target"].Value;
+            var destination = Util.FindName(targetPlayer, command.Contains("p"), new Decal.Adapter.Wrappers.ObjectClass[] { Decal.Adapter.Wrappers.ObjectClass.Player, Decal.Adapter.Wrappers.ObjectClass.Npc });
+
+            if (destination == null) {
+                LogError($"player {targetPlayer} not found");
+                return;
+            }
+            destinationId = destination.Id;
+
+            if (destinationId == UB.Core.CharacterFilter.Id) {
+                LogError("You can't give to yourself");
+                return;
+            }
+
+            var playerDistance = (float)UB.Core.WorldFilter.Distance(UB.Core.CharacterFilter.Id, destinationId) * 240;
+            if (playerDistance > IGRange) {
+                LogError($"{targetPlayer} is {playerDistance:n2} meters away, IGRange is set to {IGRange}. bailing.");
+                return;
+            }
+            isRegex = command.Contains("r");
+            givePartialItem = command.Contains("P");
+            int.TryParse(giveMatch.Groups["Count"].Value, out maxGive);
+            if (maxGive < 1)
+                maxGive = int.MaxValue;
+
+            if (isRegex)
+                utlProfile = giveMatch.Groups["Item"].Value; //NOT a profile name. just re-purposing this.
+            else
+                utlProfile = giveMatch.Groups["Item"].Value.ToLower(); //NOT a profile name. just re-purposing this.
+
+
+            LogDebug($"ItemGiver GIVE {(maxGive == int.MaxValue ? "∞" : maxGive.ToString())} {(givePartialItem ? "(partial)" : "")}{utlProfile} to {UB.Core.WorldFilter[destinationId].Name}");
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
+            GetGiveItems();
+
+            lastIdCount = int.MaxValue;
+            bailTimer = DateTime.UtcNow;
+            giveTimer = Stopwatch.StartNew();
+            igRunning = true;
+            UB.Core.RenderFrame += Core_RenderFrame_ig;
+        }
+
+        private void GetGiveItems() {
+            try {
+                Regex itemre = new Regex(utlProfile);
+
+                List<int> inv = new List<int>();
+                UBHelper.InventoryManager.GetInventory(ref inv, UBHelper.InventoryManager.GetInventoryType.AllItems);
+                foreach (int item in inv) {
+                    if (pendingGiveCount >= maxGive) {
+                        Logger.Debug($"Max give ({maxGive}) reached, breaking");
+                        break;
+                    }
+
+                    if (isRegex) {
+                        if (!itemre.IsMatch(Util.GetObjectName(item))) continue;
+                    } else if (givePartialItem) {
+                        if (!Util.GetObjectName(item).ToLower().Contains(utlProfile)) continue;
+                    } else {
+                        if (!Util.GetObjectName(item).ToLower().Equals(utlProfile)) continue;
+                    }
+
+                    if (TreatStackAsSingleItem) {
+                        giveObjects.Add(item, 0);
+                        pendingGiveCount++;
+                    }
+                    else {
+                        UBHelper.Weenie w = new UBHelper.Weenie(item);
+                        var stackCount = w.StackCount;
+                        if (stackCount > maxGive - pendingGiveCount) {
+                            giveObjects.Add(item, maxGive - pendingGiveCount);
+                            pendingGiveCount = maxGive;
+                        }
+                        else {
+                            LogDebug($"Giving {stackCount} * {w.Name}");
+                            giveObjects.Add(item, 0);
+                            pendingGiveCount += stackCount;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
         #endregion
         #region /ub ig
         [Summary("Gives items matching the provided loot profile to a player.")]
@@ -142,8 +223,154 @@ Provides a command-line interface to inventory management.
                 IGStop();
             }
             else {
-                StartIG(command, args);
+                UB_ig_Start(command, args);
             }
+        }
+        private void UB_ig_Start(string command, Match igMatch) {
+            if (igRunning) {
+                LogError("Already running.  Please wait until it completes or use /ub ig stop to quit previous session");
+                return;
+            }
+            targetPlayer = igMatch.Groups["Target"].Value;
+
+            var destination = Util.FindName(targetPlayer, command.Equals("igp"), new Decal.Adapter.Wrappers.ObjectClass[] { Decal.Adapter.Wrappers.ObjectClass.Player, Decal.Adapter.Wrappers.ObjectClass.Npc });
+
+            if (destination == null) {
+                LogError($"player {targetPlayer} not found");
+                return;
+            }
+            destinationId = destination.Id;
+
+            if (destinationId == UB.Core.CharacterFilter.Id) {
+                LogError("You can't give to yourself");
+                return;
+            }
+
+            var playerDistance = UB.Core.WorldFilter.Distance(UB.Core.CharacterFilter.Id, destinationId) * 240;
+            if (playerDistance > IGRange) {
+                LogError($"ItemGiver {targetPlayer} is {playerDistance:n2} meters away. IGRange is set to {IGRange}");
+                return;
+            }
+
+            utlProfile = igMatch.Groups["utlProfile"].Value;
+
+            if (!File.Exists(Path.Combine(profilePath, utlProfile))) {
+                if (File.Exists(Path.Combine(profilePath, utlProfile + ".utl"))) {
+                    utlProfile += ".utl";
+                }
+                else {
+                    LogError($"ItemGiver Profile does not exist: {utlProfile} ({profilePath})");
+                    return;
+                }
+            }
+
+            if (lootProfile == null) {
+                var hasLootCore = false;
+                try {
+                    lootProfile = new LootCore();
+                    hasLootCore = true;
+                }
+                catch (Exception ex) { Logger.LogException(ex); }
+
+                if (!hasLootCore) {
+                    LogError("ItemGiver unable to load VTClassic, something went wrong.");
+                    return;
+                }
+            }
+
+            lootProfile.LoadProfile(Path.Combine(profilePath, utlProfile), false);
+
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
+            lastIdCount = int.MaxValue;
+            GetIGItems();
+
+            bailTimer = DateTime.UtcNow;
+            giveTimer = Stopwatch.StartNew();
+            igRunning = true;
+            UB.Core.RenderFrame += Core_RenderFrame_ig;
+        }
+
+        private void GetIGItems() {
+            idItems.Clear();
+            try {
+                List<int> inv = new List<int>();
+                UBHelper.InventoryManager.GetInventory(ref inv, UBHelper.InventoryManager.GetInventoryType.AllItems);
+                foreach (int item in inv) {
+                    if (giveObjects.ContainsKey(item)) // already in the list
+                        continue;
+
+                    if (keptObjects.Contains(item)) // item was already given (partial stack)
+                        continue;
+                    if (UB.Core.WorldFilter[item] == null) // Decal's World Filter doesn't know about this item
+                        continue;
+
+                    GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item);
+                    if (itemInfo == null) // This happens all the time for aetheria that has been converted
+                        continue;
+
+                    if (!UB.Core.WorldFilter[item].HasIdData && lootProfile.DoesPotentialItemNeedID(itemInfo)) {
+                        idItems.Add(item);
+                        continue;
+                    }
+
+                    TestIGItem(item);
+                }
+
+                assessor = new Assessor.Job(UB.Assessor, ref idItems, TestIGItem, () => { assessor = null; });
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void TestIGItem(int item) {
+            bailTimer = DateTime.UtcNow;
+            GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item);
+            LootAction result = lootProfile.GetLootDecision(itemInfo);
+            if (!result.IsKeep && !result.IsKeepUpTo) {
+                return;
+            }
+
+            if (result.IsKeepUpTo) {
+                if (!poorlyNamedKeepUptoDictionary.ContainsKey(result.RuleName)) {
+                    poorlyNamedKeepUptoDictionary.Add(result.RuleName, 0);
+                }
+
+                var stackCount = TreatStackAsSingleItem ? 1 : UB.Core.WorldFilter[item].Values(LongValueKey.StackCount, 1);
+                if (result.Data1 < 0) { // Keep this many
+                                        // Keep matches until we have kept the KeepUpTo #
+                    int alreadyKept = poorlyNamedKeepUptoDictionary[result.RuleName];
+                    int totalNumberToKeep = Math.Abs(result.Data1);
+                    if (totalNumberToKeep >= alreadyKept) {
+                        if (!TreatStackAsSingleItem && stackCount > totalNumberToKeep - alreadyKept) {
+                            int splitCount = stackCount - (totalNumberToKeep - alreadyKept);
+                            giveObjects.Add(item, splitCount);
+                            poorlyNamedKeepUptoDictionary[result.RuleName] += totalNumberToKeep - alreadyKept;
+                        }
+                        else {
+                            poorlyNamedKeepUptoDictionary[result.RuleName] += stackCount;
+                        }
+
+                        return;
+                    }
+                }
+                else { // Give this many
+                       // Keep if already given KeepUpTo #
+                    int alreadyGiven = poorlyNamedKeepUptoDictionary[result.RuleName];
+                    int numberToGive = result.Data1;
+                    if (alreadyGiven >= numberToGive) return;
+                    if (!TreatStackAsSingleItem && stackCount > numberToGive - alreadyGiven) {
+                        int neededCount = numberToGive - alreadyGiven;
+                        giveObjects.Add(item, neededCount);
+                        poorlyNamedKeepUptoDictionary[result.RuleName] += neededCount;
+
+                        return;
+                    }
+                    else
+                        poorlyNamedKeepUptoDictionary[result.RuleName] += stackCount;
+                }
+            }
+
+            giveObjects.Add(item, 0);
         }
         #endregion
         #region /ub autostack
@@ -184,6 +411,31 @@ Provides a command-line interface to inventory management.
             UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoCram;
         }
         #endregion
+
+        #region /ub clearbugged
+        [Summary("ID everything in your inventory, and remove bugged items")]
+        [Usage("/ub clearbugged")]
+        [CommandPattern("clearbugged", @"^$")]
+        public void DoClearBugged(string _, Match _1) {
+            List<int> inv = new List<int>();
+            UBHelper.InventoryManager.GetInventory(ref inv, UBHelper.InventoryManager.GetInventoryType.AllItems, UBHelper.Weenie.INVENTORY_LOC.ALL_LOC);
+            WriteToChat($"ClearBugged: Identifying {inv.Count} items, to check for bugged items...");
+            new Assessor.Job(UB.Assessor, ref inv, null, () => { WriteToChat($"ClearBugged: Done!"); });
+        }
+        #endregion
+        //#region /ub unstack
+        //[Summary("Dev Test 2")]
+        //[Usage("/ub unstack")]
+        //[CommandPattern("unstack", @"^$")]
+        //public void DoUnstack(string _, Match _1) {
+        //    if (UBHelper.InventoryManager.UnStack()) {
+        //        Util.WriteToChat("UnStack running");
+        //    }
+        //    else {
+        //        Util.WriteToChat("UnStack - nothing to do");
+        //    }
+        //}
+        //#endregion
         #endregion
 
         // TODO: support AutoPack profiles when cramming
@@ -192,7 +444,6 @@ Provides a command-line interface to inventory management.
             Directory.CreateDirectory(profilePath);
 
             UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
-            UB.Core.RenderFrame += Core_RenderFrame;
         }
 
         public override void Init() {
@@ -258,9 +509,18 @@ Provides a command-line interface to inventory management.
                 WatchLootProfile_Changed(WatchLootProfile);
         }
 
-        private static void LootProfile_Changed(object sender, FileSystemEventArgs e) {
-            reloadLootProfile = true;
+        private void LootProfile_Changed(object sender, FileSystemEventArgs e) {
+            UB.Core.RenderFrame += Core_RenderFrame_ReloadProfile;
             reloadLootProfileTS = DateTime.UtcNow;
+        }
+        private void Core_RenderFrame_ReloadProfile(object sender, EventArgs e) {
+            if (DateTime.UtcNow - reloadLootProfileTS > TimeSpan.FromSeconds(2)) {
+                if (profilesWatcher != null && !string.IsNullOrEmpty(profilesWatcher.Filter)) {
+                    LogDebug($"/vt loot load {profilesWatcher.Filter}");
+                    Util.Decal_DispatchOnChatCommand($"/vt loot load {profilesWatcher.Filter}");
+                    UB.Core.RenderFrame -= Core_RenderFrame_ReloadProfile;
+                }
+            }
         }
         #endregion
         private void WorldFilter_ChangeObject(object sender, ChangeObjectEventArgs e) {
@@ -278,93 +538,19 @@ Provides a command-line interface to inventory management.
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        public void Start(bool force=false) {
-            isRunning = true;
-            isPaused = false;
-            isForced = force;
-
-            LogDebug("Started");
-
-            CleanupBlacklists();
-        }
-
-        public void Stop() {
-            isForced = false;
-            isRunning = false;
-
-            ChatThink("Finished.");
-            LogDebug("Finished");
-        }
-
-        public void Pause() { // commented until autocram/autostack are actually enabled globally.
-            //if (!isPaused && (AutoCram || AutoStack))
-            //    LogDebug("Paused");
-            isPaused = true;
-        }
-
-        public void Resume() { // commented until autocram/autostack are actually enabled globally.
-            //if (isPaused && (AutoCram || AutoStack))
-            //    LogDebug("Resumed");
-            isPaused = false;
-        }
-
-        private void CleanupBlacklists() {
-            var containerKeys = blacklistedContainers.Keys.ToArray();
-            var itemKeys = blacklistedItems.Keys.ToArray();
-
-            // containers
-            foreach (var key in containerKeys) {
-                if (blacklistedContainers.ContainsKey(key) && DateTime.UtcNow - blacklistedContainers[key] >= TimeSpan.FromSeconds(CONTAINER_BLACKLIST_TIMEOUT)) {
-                    blacklistedContainers.Remove(key);
-                }
-            }
-
-            // items
-            foreach (var key in itemKeys) {
-                if (blacklistedItems.ContainsKey(key) && DateTime.UtcNow - blacklistedItems[key] >= TimeSpan.FromSeconds(ITEM_BLACKLIST_TIMEOUT)) {
-                    blacklistedItems.Remove(key);
-                }
-            }
-        }
 
         //TODO: Split this up, and disable when not in use
-        public void Core_RenderFrame(object sender, EventArgs e) {
-            if (DateTime.UtcNow - lastThought > TimeSpan.FromMilliseconds(THINK_INTERVAL)) {
-                lastThought = DateTime.UtcNow;
+        public void Core_RenderFrame_ig(object sender, EventArgs e) {
 
-                // dont run while vendoring
-                if (UB.Core.Actions.VendorId != 0) return;
-
-                if ((!isRunning || isPaused) && !isForced) return;
-
-                //if (AutoCram == true && DoAutoCram()) return;
-                //if (AutoStack == true && DoAutoStack()) return;
-
-                Stop();
-            }
-            if (reloadLootProfile && DateTime.UtcNow - reloadLootProfileTS > TimeSpan.FromSeconds(2)) {
-                reloadLootProfile = false;
-                if (profilesWatcher != null && !string.IsNullOrEmpty(profilesWatcher.Filter)) {
-                    LogDebug($"/vt loot load {profilesWatcher.Filter}");
-                    Util.Decal_DispatchOnChatCommand($"/vt loot load {profilesWatcher.Filter}");
-                }
-            }
-            if (!igRunning)
+            if (!igRunning) {
+                UB.Core.RenderFrame -= Core_RenderFrame_ig;
+                LogError("InventoryManager: Core_RenderFrame_ig called with igRunning==false");
                 return;
+            }
             try {
                 if (UBHelper.vTank.locks[uTank2.ActionLockType.Navigation] < DateTime.UtcNow + TimeSpan.FromSeconds(1)) { //if itemgiver is running, and nav block has less than a second remaining, refresh it
                     UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
                     UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
-                }
-
-                if (idItems.Count > 0 && DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(10)) {
-                    lastIdSpam = DateTime.UtcNow;
-                    var thisIdCount = idItems.Count;
-                    WriteToChat(string.Format("ItemGiver waiting to id {0} items, this will take approximately {0} seconds.", thisIdCount));
-                    if (lastIdCount != thisIdCount) { // if count has changed, reset bail timer
-                        lastIdCount = thisIdCount;
-                        bailTimer = DateTime.UtcNow;
-                    }
                 }
 
                 if (UB.Core.Actions.BusyState == 0) {
@@ -374,17 +560,14 @@ Provides a command-line interface to inventory management.
                         return;
                     }
 
-                    if (idItems.Count > 0)
-                        GetIGItems();
-
                     var invalidItems = giveObjects.Where(x => (UB.Core.WorldFilter[x.Key] == null) || (UB.Core.WorldFilter[x.Key].Container == -1)).ToArray();
                     foreach (var item in invalidItems)
                     {
                         itemsGiven++;
                         giveObjects.Remove(item.Key);
                     }
-
-                    foreach (var item in giveObjects) {
+                    if (giveObjects.Count > 0) {
+                        KeyValuePair<int, int> item = giveObjects.First();
                         if (item.Key != currentItem) {
                             retryCount = 0;
                             bailTimer = DateTime.UtcNow;
@@ -393,7 +576,7 @@ Provides a command-line interface to inventory management.
 
                         retryCount++;
                         totalFailures++;
-                        Logger.Debug($"Attempting to give {Util.GetObjectName(item.Key)} <{item.Key}> * {item.Value}");
+                        // Logger.Debug($"Attempting to give {Util.GetObjectName(item.Key)} <{item.Key}> * {item.Value}");
                         if (item.Value > 0)
                         {
                             UB.Core.Actions.SelectItem(item.Key);
@@ -411,7 +594,7 @@ Provides a command-line interface to inventory management.
                         return;
                     }
 
-                    if (giveObjects.Count == 0 && idItems.Count == 0) {
+                    if (giveObjects.Count == 0 && (assessor == null || assessor.ids == null || assessor.ids.Count == 0)) {
                         IGStop();
                     }
                 }
@@ -420,118 +603,6 @@ Provides a command-line interface to inventory management.
                     IGStop();
                 }
             } catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void StartGive(string command, Match giveMatch) {
-            if (igRunning) {
-                LogError("Already running.  Please wait until it completes or use /ub give stop to quit previous session");
-                return;
-            }
-            var flags = command.Replace("give", "");
-            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(1000));
-            targetPlayer = giveMatch.Groups["Target"].Value;
-            var destination = Util.FindName(targetPlayer, flags.Contains("p"), new Decal.Adapter.Wrappers.ObjectClass[] { Decal.Adapter.Wrappers.ObjectClass.Player, Decal.Adapter.Wrappers.ObjectClass.Npc });
-
-            if (destination == null) {
-                LogError($"player {targetPlayer} not found");
-                return;
-            }
-            destinationId = destination.Id;
-
-            if (destinationId == UB.Core.CharacterFilter.Id) {
-                LogError("You can't give to yourself");
-                return;
-            }
-
-            var playerDistance = (float)UB.Core.WorldFilter.Distance(UB.Core.CharacterFilter.Id, destinationId) * 240;
-            if (playerDistance > IGRange) {
-                LogError($"{targetPlayer} is {playerDistance:n2} meters away, IGRange is set to {IGRange}. bailing.");
-                return;
-            }
-            isRegex = flags.Contains("r");
-            givePartialItem = flags.Contains("P");
-            int.TryParse(giveMatch.Groups["Count"].Value, out maxGive);
-            if (maxGive < 1)
-                maxGive = int.MaxValue;
-
-            if (isRegex)
-                utlProfile = giveMatch.Groups["Item"].Value; //NOT a profile name. just re-purposing this.
-            else
-                utlProfile = giveMatch.Groups["Item"].Value.ToLower(); //NOT a profile name. just re-purposing this.
-
-
-            LogDebug($"ItemGiver GIVE {(maxGive == int.MaxValue ? "∞" : maxGive.ToString())} {(givePartialItem ? "(partial)" : "")}{utlProfile} to {UB.Core.WorldFilter[destinationId].Name}");
-            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
-            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
-            GetGiveItems();
-
-            lastIdCount = int.MaxValue;
-            bailTimer = DateTime.UtcNow;
-            giveTimer = Stopwatch.StartNew();
-            igRunning = true;
-        }
-        private void StartIG(string command, Match igMatch) {
-            if (igRunning) {
-                LogError("Already running.  Please wait until it completes or use /ub ig stop to quit previous session");
-                return;
-            }
-            var flags = command.Replace("ig", "");
-            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(1000));
-            targetPlayer = igMatch.Groups["Target"].Value;
-
-            var destination = Util.FindName(targetPlayer, flags.Equals("p"), new Decal.Adapter.Wrappers.ObjectClass[] { Decal.Adapter.Wrappers.ObjectClass.Player, Decal.Adapter.Wrappers.ObjectClass.Npc });
-
-            if (destination == null) {
-                LogError($"player {targetPlayer} not found");
-                return;
-            }
-            destinationId = destination.Id;
-
-            if (destinationId == UB.Core.CharacterFilter.Id) {
-                LogError("You can't give to yourself");
-                return;
-            }
-
-            var playerDistance = UB.Core.WorldFilter.Distance(UB.Core.CharacterFilter.Id, destinationId) * 240;
-            if (playerDistance > IGRange) {
-                LogError($"ItemGiver {targetPlayer} is {playerDistance:n2} meters away. IGRange is set to {IGRange}");
-                return;
-            }
-
-            utlProfile = igMatch.Groups["utlProfile"].Value;
-
-            if (!File.Exists(Path.Combine(profilePath, utlProfile))) {
-                if (File.Exists(Path.Combine(profilePath, utlProfile + ".utl"))) {
-                    utlProfile += ".utl";
-                } else {
-                    LogError($"ItemGiver Profile does not exist: {utlProfile} ({profilePath})");
-                    return;
-                }
-            }
-
-            if (lootProfile == null) {
-                var hasLootCore = false;
-                try {
-                    lootProfile = new LootCore();
-                    hasLootCore = true;
-                } catch (Exception ex) { Logger.LogException(ex); }
-
-                if (!hasLootCore) {
-                    LogError("ItemGiver unable to load VTClassic, something went wrong.");
-                    return;
-                }
-            }
-
-            lootProfile.LoadProfile(Path.Combine(profilePath, utlProfile), false);
-
-            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
-            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
-            lastIdCount = int.MaxValue;
-            GetIGItems();
-
-            bailTimer = DateTime.UtcNow;
-            giveTimer = Stopwatch.StartNew();
-            igRunning = true;
         }
 
         private void IGStop() {
@@ -543,152 +614,16 @@ Provides a command-line interface to inventory management.
             Util.ThinkOrWrite($"ItemGiver finished: {utlProfile} to {targetPlayer}. took {Util.GetFriendlyTimeDifference(giveTimer.Elapsed)} to give {itemsGiven} item(s). {totalFailures - itemsGiven}", IGThink);
             UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
             UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.ItemUse);
-
+            UB.Core.RenderFrame -= Core_RenderFrame_ig;
             itemsGiven = totalFailures = failedItems = pendingGiveCount = 0;
             igRunning = isRegex = false;
             lootProfile = null;
-            givenItemsCount.Clear();
+            poorlyNamedKeepUptoDictionary.Clear();
             giveObjects.Clear();
             keptObjects.Clear();
-            idItems.Clear();
+            assessor = null;
         }
 
-        private void GetGiveItems() {
-            try {
-                Regex itemre = new Regex(utlProfile);
-                foreach (WorldObject item in UB.Core.WorldFilter.GetInventory()) {
-
-                    if (pendingGiveCount >= maxGive)
-                    {
-                        Logger.Debug($"Max give ({maxGive}) reached, breaking");
-                        break;
-                    }
-
-                    // Util.WriteToChat($"Processing 0x{item.Id:X8} {item.Name}");
-
-                    if (item.Values(LongValueKey.EquippedSlots, 0) > 0 || item.Values(LongValueKey.Slot, -1) == -1) // If the item is equipped or wielded, don't process it.
-                        continue;
-
-                    if (item.Container == -1) // Silly GDLE.... sigh.
-                        continue;
-                    if (isRegex) {
-                        if (!itemre.IsMatch(Util.GetObjectName(item.Id)))
-                            continue;
-                    } else if (givePartialItem) {
-                        if (!Util.GetObjectName(item.Id).ToLower().Contains(utlProfile))
-                            continue;
-                    } else if (!Util.GetObjectName(item.Id).ToLower().Equals(utlProfile))
-                        continue;
-
-                    if (TreatStackAsSingleItem) {
-                        // Util.WriteToChat($"       Adding {item.Name}");
-                        giveObjects.Add(item.Id, 0);
-                        pendingGiveCount++;
-                    }
-                    else {
-                        var stackCount = item.Values(LongValueKey.StackCount, 1);
-                        if (stackCount > maxGive - pendingGiveCount) {
-                            giveObjects.Add(item.Id, maxGive - pendingGiveCount);
-                            pendingGiveCount = maxGive;
-                        }
-                        else {
-                            LogDebug($"Giving {stackCount} * {item.Name}");
-                            giveObjects.Add(item.Id, 0);
-                            pendingGiveCount += stackCount;
-                        }
-                    }
-                }
-            } catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void GetIGItems() {
-            try {
-                foreach (WorldObject item in UB.Core.WorldFilter.GetInventory()) {
-                    if (giveObjects.ContainsKey(item.Id)) // already in the list
-                        continue;
-
-                    if (keptObjects.Contains(item.Id)) // item was already given (partial stack)
-                        continue;
-
-                    if (item.Values(LongValueKey.EquippedSlots, 0) > 0 || item.Values(LongValueKey.Slot, -1) == -1) // If the item is equipped or wielded, don't process it.
-                        continue;
-
-                    if (item.Container == -1) // Silly GDLE.... sigh.
-                        continue;
-
-                    GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item.Id);
-                    if (itemInfo == null) // This happens all the time for aetheria that has been converted
-                        continue;
-
-                    if (!item.HasIdData && lootProfile.DoesPotentialItemNeedID(itemInfo)) {
-                        if (!idItems.Contains(item.Id) && UB.Assessor.Queue(item.Id)) {
-                            idItems.Add(item.Id);
-                            continue;
-                        }
-                    }
-
-                    if (!item.HasIdData) {
-                        if (lootProfile.DoesPotentialItemNeedID(itemInfo)) {
-                            if (!idItems.Contains(item.Id) && UB.Assessor.Queue(item.Id)) {
-                                idItems.Add(item.Id);
-                                continue;
-                            }
-                        }
-                    } else if (idItems.Contains(item.Id))
-                        idItems.Remove(item.Id);
-
-
-                    LootAction result = lootProfile.GetLootDecision(itemInfo);
-                    if (!result.IsKeep && !result.IsKeepUpTo) {
-                        continue;
-                    }
-
-                    if (result.IsKeepUpTo) {
-                        if (!givenItemsCount.ContainsKey(result.RuleName)) {
-                            givenItemsCount.Add(result.RuleName, 0);
-                        }
-
-                        var stackCount = TreatStackAsSingleItem ? 1 : UB.Core.WorldFilter[item.Id].Values(LongValueKey.StackCount, 1);
-                        if (result.Data1 < 0) { // Keep this many
-                            // Keep matches until we have kept the KeepUpTo #
-                            if (givenItemsCount[result.RuleName] < Math.Abs(result.Data1)) {
-                                LogDebug($"Need to keep: {Math.Abs(result.Data1) - givenItemsCount[result.RuleName]}");
-                                if (!TreatStackAsSingleItem && stackCount > Math.Abs(result.Data1) - givenItemsCount[result.RuleName]) {
-                                    int splitCount = stackCount - (Math.Abs(result.Data1) - givenItemsCount[result.RuleName]);
-                                    giveObjects.Add(item.Id, splitCount);
-                                    givenItemsCount[result.RuleName] += Math.Abs(result.Data1) - givenItemsCount[result.RuleName];
-                                }
-                                else {
-                                    LogDebug($"Keeping: {Util.GetObjectName(item.Id)} ({stackCount})");
-                                    givenItemsCount[result.RuleName] += stackCount;
-                                }
-
-                                continue;
-                            }
-                        }
-                        else { // Give this many
-                            // Keep if already given KeepUpTo #
-                            if (givenItemsCount[result.RuleName] >= result.Data1) {
-                                continue;
-                            }
-
-                            if (!TreatStackAsSingleItem && stackCount > result.Data1 - givenItemsCount[result.RuleName]) {
-                                int neededCount = result.Data1 - givenItemsCount[result.RuleName];
-                                giveObjects.Add(item.Id, neededCount);
-                                givenItemsCount[result.RuleName] += neededCount;
-
-                                continue;
-                            }
-                            else
-                                givenItemsCount[result.RuleName] += stackCount;
-                        }
-                    }
-
-                    giveObjects.Add(item.Id, 0);
-                }
-                idItems.RemoveAll(x => (UB.Core.WorldFilter[x] == null) || (UB.Core.WorldFilter[x].Container == -1)); // Remove items from IDQueue that no longer exist
-            } catch (Exception ex) { Logger.LogException(ex); }
-        }
         protected override void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
@@ -704,6 +639,8 @@ Provides a command-line interface to inventory management.
                         }
                     }
 
+                    UB.Core.RenderFrame -= Core_RenderFrame_ReloadProfile;
+                    UB.Core.RenderFrame -= Core_RenderFrame_ig;
                     base.Dispose(disposing);
                 }
                 disposed = true;

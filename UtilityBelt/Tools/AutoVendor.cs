@@ -66,7 +66,6 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
     public class AutoVendor : ToolBase {
         private const int MAX_VENDOR_BUY_COUNT = 5000;
         private const int PYREAL_STACK_SIZE = 25000;
-        private DateTime lastThought = DateTime.MinValue;
         private DateTime lastEvent = DateTime.MinValue;
         private DateTime vendorOpened = DateTime.MinValue;
         private DateTime bailTimer = DateTime.MinValue;
@@ -80,13 +79,11 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         private string vendorName = "";
         private float vendorSellRate = 1;
         private float vendorBuyRate = 1;
-        private bool waitingForIds = false;
+        private UBHelper.Weenie.ITEM_TYPE vendorCategories;
         private bool waitingForAutoStackCram = false;
         private bool shouldAutoStackCram = false;
         private bool showMerchantInfoCooldown = false;
-        private DateTime lastIdSpam = DateTime.MinValue;
-        private int lastIdCount;
-        private readonly List<int> itemsToId = new List<int>();
+        private List<int> itemsToId = new List<int>();
 
         private int expectedPyreals = 0;
         private readonly Dictionary<int, int> myPyreals = new Dictionary<int, int>();
@@ -162,7 +159,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         [Usage("/ub vendor {open[p] <vendorname,vendorid,vendorhex> | buyall | sellall | clearbuy | clearsell | opencancel}")]
         [Example("/ub vendor open Tunlok Weapons Master", "Opens vendor with name \"Tunlok Weapons Master\"")]
         [Example("/ub vendor opencancel", "Quietly cancels the last /ub vendor open* command")]
-        [CommandPattern("vendor", @"^ *(?<params>(openp? .+|buy(all)?|sell(all)?|clearbuy|clearsell|opencancel)) *$")]
+        [CommandPattern("vendor", @"^ *(?<params>(openp? ?.+|buy(all)?|sell(all)?|clearbuy|clearsell|opencancel)) *$")]
         public void DoVendor(string _, Match args) {
             UB_vendor(args.Groups["params"].Value);
         }
@@ -278,15 +275,26 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                 foreach (KeyValuePair<int, int> fff in pendingBuy) {
                     LogDebug($"    Type 0x{fff.Key:X8} x{fff.Value:n0}");
                 }
+                List<int> inv = new List<int>();
+                UBHelper.InventoryManager.GetInventory(ref inv, UBHelper.InventoryManager.GetInventoryType.AllItems, UBHelper.Weenie.INVENTORY_LOC.ALL_LOC);
+                foreach (int i in inv) {
+                    UB.Assessor.Queue(i);
+                }
             }
             pendingBuy.Clear();
         }
         private void Reset_pendingSell() {
             if (pendingSell.Count > 0) {
                 LogError($"pendingSell reset while it still contained {pendingSell.Count:n0} items!");
+
+
                 foreach (int i in pendingSell) {
                     LogDebug($"    Item 0x{i:X8} {(UB.Core.WorldFilter[i] == null?"Error": UB.Core.WorldFilter[i].Name)}");
                 }
+                List<int> inv = new List<int>();
+                waitingForAutoStackCram = true;
+                UBHelper.InventoryManager.GetInventory(ref inv, UBHelper.InventoryManager.GetInventoryType.AllItems, UBHelper.Weenie.INVENTORY_LOC.ALL_LOC);
+                new Assessor.Job(UB.Assessor, ref inv, (_) => { bailTimer = DateTime.UtcNow; }, () => { waitingForAutoStackCram = false; });
             }
             pendingSell.Clear();
         }
@@ -412,6 +420,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     vendorName = UB.Core.WorldFilter[e.MerchantId].Name;
                     vendorSellRate = e.Vendor.SellRate;
                     vendorBuyRate = e.Vendor.BuyRate;
+                    vendorCategories = (UBHelper.Weenie.ITEM_TYPE)e.Vendor.Categories;
                     vendorOpened = DateTime.UtcNow;
                     var vendorInfo = $"{UB.Core.WorldFilter[e.Vendor.MerchantId].Name}[0x{e.Vendor.MerchantId:X8}]: BuyRate: {e.Vendor.BuyRate * 100:n0}% SellRate: {e.Vendor.SellRate * 100:n0}% MaxValue: {e.Vendor.MaxValue:n0}";
                     if (!showMerchantInfoCooldown && ShowMerchantInfo) {
@@ -506,49 +515,40 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             lootProfile.LoadProfile(profilePath, false);
 
             itemsToId.Clear();
-            var inventory = UB.Core.WorldFilter.GetInventory();
-
+            List<int> inventory = new List<int>();
             // filter inventory beforehand if we are only selling from the main pack
-            if (OnlyFromMainPack == true) {
-                inventory.SetFilter(new ByContainerFilter(UB.Core.CharacterFilter.Id));
+            if (OnlyFromMainPack) {
+                UBHelper.InventoryManager.GetInventory(ref inventory, UBHelper.InventoryManager.GetInventoryType.MainPack);
+            } else {
+                UBHelper.InventoryManager.GetInventory(ref inventory, UBHelper.InventoryManager.GetInventoryType.AllItems);
             }
 
             // build a list of items to id from our inventory, attempting to be smart about it
             VendorInfo vendor = VendorCache.GetVendor(vendorId);
-            foreach (var item in inventory) {
-                // will the vendor buy this item?
-                if (vendor != null && (vendor.Categories & item.Category) == 0) continue;
-                itemsToId.Add(item.Id);
+            foreach (int item in inventory) {
+                UBHelper.Weenie w = new UBHelper.Weenie(item);
+                WorldObject wo = UB.Core.WorldFilter[item];
+                if (vendor != null && (vendorCategories & w.Type) == 0) continue;
+                if (wo.HasIdData) continue;
+                itemsToId.Add(item);
             }
-
-            if (UB.Assessor.NeedsInventoryData(itemsToId)) {
-                UB.Assessor.RequestAll(itemsToId);
-                waitingForIds = true;
-                lastIdSpam = DateTime.UtcNow;
-            }
-
-            UB.InventoryManager.Pause();
-
-            waitingForAutoStackCram = false;
-            isRunning = true;
-            needsToBuy = needsToSell = false;
-            lastThought = bailTimer = DateTime.UtcNow;
-            lastIdCount = int.MaxValue;
+            bailTimer = DateTime.UtcNow;
             UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
             UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
+            UBHelper.Vendor.VendorClosed += UBHelper_VendorClosed;
+            waitingForAutoStackCram = false;
+            needsToBuy = needsToSell = false;
             UB.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
             UB.Core.EchoFilter.ClientDispatch += EchoFilter_ClientDispatch;
-            UBHelper.Vendor.VendorClosed += UBHelper_VendorClosed;
             UB.Core.RenderFrame += Core_RenderFrame;
+            new Assessor.Job(UB.Assessor, ref itemsToId, (_) => { bailTimer = DateTime.UtcNow; }, () => { isRunning = true; });
         }
 
         public void Stop(bool silent = false) {
-            if (!isRunning)
-                return;
             if (!silent)
                 Util.ThinkOrWrite("AutoVendor finished: " + vendorName, Think);
 
-            UB.InventoryManager.Resume();
+            //UB.InventoryManager.Resume();
             isRunning = needsToBuy = needsToSell = false;
             vendorId = 0;
 
@@ -573,36 +573,21 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     vendorId = 0;
             }
         }
-            public void Core_RenderFrame(object sender, EventArgs e) {
-            if (!isRunning) {
-                UB.Core.RenderFrame -= Core_RenderFrame;
-                return;
+        public void Core_RenderFrame(object sender, EventArgs e) {
+
+            if (DateTime.UtcNow - bailTimer > TimeSpan.FromSeconds(60)) {
+                WriteToChat("bail, Timeout expired");
+                Stop();
             }
+            if (!isRunning) return;
 
             try {
-                if (UB.Core.Actions.BusyState == 0 && DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(250)) {
-                    lastThought = DateTime.UtcNow;
+                if (UB.Core.Actions.BusyState == 0) {
 
                     //if autovendor is running, and nav block has less than a second plus thinkInterval remaining, refresh it
                     if (UBHelper.vTank.locks[uTank2.ActionLockType.Navigation] < DateTime.UtcNow + TimeSpan.FromMilliseconds(1250)) {
                         UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
                         UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
-                    }
-
-                    if (waitingForIds) {
-                        if (UB.Assessor.NeedsInventoryData(itemsToId)) {
-                            if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15)) {
-                                lastIdSpam = DateTime.UtcNow;
-                                var thisIdCount = UB.Assessor.GetNeededIdCount(itemsToId);
-                                WriteToChat($"waiting to id {thisIdCount} items, this will take approximately {(thisIdCount/50):n3} seconds.");
-                                if (lastIdCount != thisIdCount) { // if count has changed, reset bail timer
-                                    lastIdCount = thisIdCount;
-                                    bailTimer = DateTime.UtcNow;
-                                }
-                            }
-                            return;
-                        } else
-                            waitingForIds = false;
                     }
 
                     if (TestMode) {
@@ -627,22 +612,22 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                                 needsToBuy = false;
                                 UB.Core.Actions.VendorBuyAll();
                                 CheckDone();
-                            } else if (needsToSell) {
+                            }
+                            else if (needsToSell) {
                                 needsToSell = false;
                                 UB.Core.Actions.VendorSellAll();
                                 CheckDone();
-                            } else {
+                            }
+                            else {
                                 DoVendoring();
                             }
                         }
                         // vendor closed?
-                        else
+                        else if (DateTime.UtcNow - bailTimer > TimeSpan.FromMilliseconds(500)) {
+                            LogDebug("Stop because no vendor");
                             Stop();
+                        }
                     }
-                }
-                if (DateTime.UtcNow - bailTimer > TimeSpan.FromSeconds(60)) {
-                    WriteToChat("bail, Timeout expired");
-                    Stop();
                 }
             } catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -921,9 +906,12 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         protected override void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
-                    UB.Core.WorldFilter.ApproachVendor -= WorldFilter_ApproachVendor;
-                    if (isRunning)
-                        Stop(true);
+                    UBHelper.Vendor.VendorClosed -= UBHelper_VendorClosed;
+                    Decal.Adapter.CoreManager.Current.WorldFilter.ApproachVendor -= WorldFilter_ApproachVendor;
+                    Decal.Adapter.CoreManager.Current.RenderFrame -= Core_RenderFrame;
+                    Decal.Adapter.CoreManager.Current.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
+                    Decal.Adapter.CoreManager.Current.EchoFilter.ClientDispatch -= EchoFilter_ClientDispatch;
+                    if (lootProfile != null) lootProfile.UnloadProfile();
                     base.Dispose(disposing);
                 }
                 disposed = true;
