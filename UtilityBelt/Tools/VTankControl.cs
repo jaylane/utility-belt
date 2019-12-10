@@ -8,7 +8,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using uTank2;
 using UtilityBelt.Lib;
-using UtilityBelt.Lib.DungeonMaps;
 using static uTank2.PluginCore;
 
 namespace UtilityBelt.Tools {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.DirectX;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -6,6 +7,37 @@ using System.Text;
 
 namespace UtilityBelt.Lib {
     public static class Geometry {
+        public static Quaternion HeadingToQuaternion(float angle) {
+            return ToQuaternion((float)Math.PI * -angle / 180.0f, 0, 0);
+        }
+        public static Quaternion RadiansToQuaternion(float angle) {
+            return ToQuaternion(angle, 0, 0);
+        }
+        public static unsafe double QuaternionToHeading(Quaternion q) {
+            // yaw (z-axis rotation)
+            return Math.Atan2(2 * (q.W * q.Z + q.X * q.Y), 1 - 2 * (q.Y * q.Y + q.Z * q.Z));
+        }
+
+        // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+        public static Quaternion ToQuaternion(float yaw, float pitch, float roll) { // yaw (Z), pitch (Y), roll (X)
+            // Abbreviations for the various angular functions
+            float cy = (float)Math.Cos(yaw * 0.5);
+            float sy = (float)Math.Sin(yaw * 0.5);
+            float cp = (float)Math.Cos(pitch * 0.5);
+            float sp = (float)Math.Sin(pitch * 0.5);
+            float cr = (float)Math.Cos(roll * 0.5);
+            float sr = (float)Math.Sin(roll * 0.5);
+
+            Quaternion q = new Quaternion();
+
+            q.W = cy * cp * cr + sy * sp * sr;
+            q.X = cy * cp * sr - sy * sp * cr;
+            q.Y = sy * cp * sr + cy * sp * cr;
+            q.Z = sy * cp * cr - cy * sp * sr;
+
+            return q;
+        }
+
         public static uint GetLandblockFromCoordinates(float EW, float NS) {
             NS -= 0.5f;
             EW -= 0.5f;

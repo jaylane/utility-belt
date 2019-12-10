@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace UtilityBelt.Lib.DungeonMaps {
+namespace UtilityBelt.Lib.Dungeon {
     partial class Dungeon {
         /* Copyright (c) 2007 Ben Howell
          * This software is licensed under the MIT License
@@ -31,28 +31,28 @@ namespace UtilityBelt.Lib.DungeonMaps {
         private static Dictionary<int, bool> mIsDungeonCache = new Dictionary<int, bool>();
 
         public bool IsDungeon() {
-            if ((LandCellId & 0x0000FFFF) < 0x0100) {
+            if ((Landcell & 0x0000FFFF) < 0x0100) {
                 return false;
             }
 
-            int dungeonId = (int)((LandCellId >> 16) & 0xFFFF);
+            int dungeonId = (int)(Landcell & 0xFFFF0000);
             bool isDungeon;
             if (mIsDungeonCache.TryGetValue(dungeonId, out isDungeon)) {
                 return isDungeon;
             }
 
             FileService service = CoreManager.Current.Filter<FileService>();
-            byte[] dungeonBlock = service.GetCellFile((int)LandCellId);
+            byte[] dungeonBlock = service.GetCellFile((int)Landcell);
 
             if (dungeonBlock == null || dungeonBlock.Length < 5) {
                 // This shouldn't happen...
                 isDungeon = true;
                 if (dungeonBlock == null) {
-                    Logger.Debug("Null cell file for landblock: " + LandCellId.ToString("X8"));
+                    Logger.Debug("Null cell file for landblock: " + Landcell.ToString("X8"));
                 }
                 else {
                     Logger.Debug("Cell file is only " + dungeonBlock.Length
-                        + " bytes long for landblock: " + LandCellId.ToString("X8"));
+                        + " bytes long for landblock: " + Landcell.ToString("X8"));
                 }
             }
             else {

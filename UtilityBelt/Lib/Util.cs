@@ -13,10 +13,11 @@ using Decal.Adapter;
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Microsoft.DirectX;
 
 namespace UtilityBelt
 {
-	public static class Util {
+    public static class Util {
         private static string pluginDirectory;
         private static UtilityBeltPlugin UB;
         public static void Init(UtilityBeltPlugin ub, string assemblyLocation, string storagePath) {
@@ -26,7 +27,18 @@ namespace UtilityBelt
         }
 
         public static string AssemblyLocation = "";
-        public static string AssemblyDirectory  { get { return System.IO.Path.GetDirectoryName(AssemblyLocation); } }
+        public static string AssemblyDirectory { get { return System.IO.Path.GetDirectoryName(AssemblyLocation); } }
+
+        private static FileService fileService = null;
+        public static FileService FileService {
+            get {
+                if (fileService == null) {
+                    fileService = CoreManager.Current.Filter<FileService>();
+                }
+
+                return fileService;
+            }
+        }
 
         private static readonly Regex releaseBranchVersion = new Regex(@"^\d+\.\d+.\d+\.release");
         public static string GetVersion(bool includeGitExtras=false) {
@@ -105,6 +117,10 @@ namespace UtilityBelt
         }
 
         internal static double GetDistance(Vector3Object v1, Vector3Object v2) {
+            return Math.Abs(Math.Sqrt(Math.Pow(v1.X - v2.X, 2) + Math.Pow(v1.Y - v2.Y, 2) + Math.Pow(v1.Z - v2.Z, 2))) * 240;
+        }
+
+        internal static double GetDistance(Vector3 v1, Vector3 v2) {
             return Math.Abs(Math.Sqrt(Math.Pow(v1.X - v2.X, 2) + Math.Pow(v1.Y - v2.Y, 2) + Math.Pow(v1.Z - v2.Z, 2))) * 240;
         }
 
@@ -501,6 +517,22 @@ namespace UtilityBelt
             double cosTheta = Math.Cos(angleInRadians);
             double sinTheta = Math.Sin(angleInRadians);
             return new Point {
+                X =
+                    (int)
+                    (cosTheta * (pointToRotate.X - centerPoint.X) -
+                    sinTheta * (pointToRotate.Y - centerPoint.Y) + centerPoint.X),
+                Y =
+                    (int)
+                    (sinTheta * (pointToRotate.X - centerPoint.X) +
+                    cosTheta * (pointToRotate.Y - centerPoint.Y) + centerPoint.Y)
+            };
+        }
+
+        public static PointF RotatePoint(PointF pointToRotate, PointF centerPoint, double angleInDegrees) {
+            double angleInRadians = angleInDegrees * (Math.PI / 180f);
+            double cosTheta = Math.Cos(angleInRadians);
+            double sinTheta = Math.Sin(angleInRadians);
+            return new PointF {
                 X =
                     (int)
                     (cosTheta * (pointToRotate.X - centerPoint.X) -

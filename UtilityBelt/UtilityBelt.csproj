@@ -50,6 +50,7 @@
     <Reference Include="Decal.Interop.Filters, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>.\..\packages\Newtonsoft.Json.12.0.3\lib\net35\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
@@ -85,8 +86,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Lib\Attributes.cs" />
+    <Compile Include="Lib\Dungeon\Dungeon.cs" />
+    <Compile Include="Lib\Dungeon\DungeonCell.cs" />
+    <Compile Include="Lib\Dungeon\DungeonLayer.cs" />
+    <Compile Include="Lib\Dungeon\IsDungeon.cs" />
+    <Compile Include="Lib\TextureCache.cs" />
+    <Compile Include="Lib\Dungeon\TrackedObject.cs" />
     <Compile Include="Lib\Mp3Player.cs" />
     <Compile Include="Lib\ToolBase.cs" />
+    <Compile Include="Tools\DungeonMaps.cs" />
     <Compile Include="Tools\Nametags.cs" />
     <Compile Include="Lib\ChatLog\ChatLog.cs" />
     <Compile Include="Lib\ChatLog\ChatLogWriter.cs" />
@@ -96,8 +104,6 @@
     <Compile Include="Lib\Constants\PhysicsState.cs" />
     <Compile Include="Lib\Constants\Skills.cs" />
     <Compile Include="Lib\Constants\UseFlags.cs" />
-    <Compile Include="Lib\DungeonMaps\IconCache.cs" />
-    <Compile Include="Lib\DungeonMaps\IsDungeon.cs" />
     <Compile Include="Lib\PhysicsObject.cs" />
     <Compile Include="Lib\Salvage\Material.cs" />
     <Compile Include="Lib\Salvage\TinkerCalc.cs" />
@@ -110,11 +116,6 @@
     <Compile Include="Lib\Constants\CharOptions2.cs" />
     <Compile Include="Lib\Constants\CharOptions.cs" />
     <Compile Include="Lib\Geometry.cs" />
-    <Compile Include="Lib\DungeonMaps\DungeonCell.cs" />
-    <Compile Include="Lib\DungeonMaps\Dungeon.cs" />
-    <Compile Include="Lib\DungeonMaps\DungeonCache.cs" />
-    <Compile Include="Lib\DungeonMaps\Portal.cs" />
-    <Compile Include="Lib\DungeonMaps\TileCache.cs" />
     <Compile Include="Lib\Quests\QuestFlag.cs" />
     <Compile Include="Lib\Quests\QuestFlagType.cs" />
     <Compile Include="Lib\Settings\SettingsForm.cs" />
@@ -134,7 +135,6 @@
     <Compile Include="Lib\VTNav\Waypoints\VTNRecall.cs" />
     <Compile Include="Lib\VTNav\Waypoints\VTNUseNPC.cs" />
     <Compile Include="Lib\Logger.cs" />
-    <Compile Include="Lib\MagTools\Shared\User32.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -153,7 +153,6 @@
     <Compile Include="Tools\Counter.cs" />
     <Compile Include="Tools\EquipmentManager.cs" />
     <Compile Include="Tools\InventoryManager.cs" />
-    <Compile Include="Tools\DungeonMaps.cs" />
     <Compile Include="Tools\Jumper.cs" />
     <Compile Include="Tools\Plugin.cs" />
     <Compile Include="Tools\QuestTracker.cs" />
@@ -188,7 +187,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Installer\Install.nsi" />
-    <None Include="Lib\MagTools\license.md" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -241,6 +239,15 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
       <Private>False</Private>
+    </COMReference>
+    <COMReference Include="stdole">
+      <Guid>{00020430-0000-0000-C000-000000000046}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
   <ItemGroup>

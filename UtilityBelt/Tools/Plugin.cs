@@ -483,14 +483,15 @@ namespace UtilityBelt.Tools {
                 return;
             }
 
-            var phys = PhysicsObject.FromId(selected);
+            var pos = PhysicsObject.GetPosition(wo.Id);
+            var d = PhysicsObject.GetDistance(wo.Id);
+            var lc = PhysicsObject.GetLandcell(wo.Id);
 
             Util.WriteToChat($"Offset: {wo.Offset()}");
             Util.WriteToChat($"Coords: {wo.Coordinates()}");
             Util.WriteToChat($"RawCoords: {wo.RawCoordinates()}"); //same as offset?
-            Util.WriteToChat($"Phys lb: {phys.Landblock.ToString("X8")}");
-            Util.WriteToChat($"Phys pos: x:{phys.Position.X} y:{phys.Position.Y} z:{phys.Position.Z}");
-            Util.WriteToChat($"Phys heading: x:{phys.Heading.X} y:{phys.Position.Y} z:{phys.Position.Z}");
+            Util.WriteToChat($"Phys lb: {lc.ToString("X8")}");
+            Util.WriteToChat($"Phys pos: x:{pos.X} y:{pos.Y} z:{pos.Z}");
         }
         #endregion
         #region /ub printcolors
