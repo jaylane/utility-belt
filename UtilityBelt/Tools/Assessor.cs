@@ -13,12 +13,10 @@ namespace UtilityBelt.Tools {
     public class Assessor : ToolBase {
         public bool NeedsInventoryData(IEnumerable<int> items) {
             bool needsData = false;
-            var itemsNeedingData = 0;
             foreach (var id in items) {
                 var wo = UB.Core.WorldFilter[id];
                 if (wo != null && !wo.HasIdData && ItemNeedsIdData(wo)) {
                     needsData = true;
-                    itemsNeedingData++;
                 }
             }
 
@@ -63,7 +61,7 @@ namespace UtilityBelt.Tools {
 
         private bool disposed = false;
         private static DateTime nextIdentWindow = DateTime.MinValue;
-        private static readonly Queue<int> IdentQueue = new Queue<int>();
+        public static readonly Queue<int> IdentQueue = new Queue<int>();
         private static readonly Dictionary<int, DateTime> IdentSent = new Dictionary<int, DateTime>();
         private static readonly int mask = 436554;
         private static readonly Dictionary<int, int> failures = new Dictionary<int, int>();
@@ -75,7 +73,6 @@ namespace UtilityBelt.Tools {
         private static readonly List<ObjectClass> SkippableObjectClasses = new List<ObjectClass>() {
             ObjectClass.Money,
             ObjectClass.TradeNote,
-            ObjectClass.Salvage,
             ObjectClass.Scroll,
             ObjectClass.SpellComponent,
             ObjectClass.Container,
@@ -163,12 +160,14 @@ namespace UtilityBelt.Tools {
             jobs.Remove(job);
         }
         public bool Queue(int f) {
-            if (f != 0 && !IdentQueue.Contains(f) && ShouldId(f)) {
+            if (f == 0) return false;
+            if (IdentQueue.Contains(f)) return true;
+            //if (ShouldId(f)) {
                 IdentQueue.Enqueue(f);
                 Start();
                 return true;
-            }
-            return IdentQueue.Contains(f);
+            //}
+            //return false;
         }
         private bool ShouldId(int object_id) {
             if (UB.Core.WorldFilter[object_id] != null) {
@@ -253,22 +252,17 @@ namespace UtilityBelt.Tools {
                     IdentSent.Remove(item_id);
 
                     if ((int)e.Message["success"] == 0) {
-                        UBHelper.Weenie w = new UBHelper.Weenie(item_id);
-                        if (w.ContainerID == UB.Core.CharacterFilter.Id) {
-                            Logger.Debug($"Bugged Item: 0x{item_id:X8}");
+                        var w = new UBHelper.Weenie(item_id);
+                        if (w.InInventory) {
+                            LogError($"Bugged Item: 0x{w.Id:X8} {w.Name}");
                             w.Delete();
                         }
-                        else {
-                            UBHelper.Weenie wc = new UBHelper.Weenie(w.ContainerID);
-                            if (wc.ContainerID == UB.Core.CharacterFilter.Id) {
-                                Logger.Debug($"Bugged Item: 0x{item_id:X8}");
-                                w.Delete();
-                            }
-                        }
                     }
-                    foreach (Job j in jobs.Reverse<Job>()) {
-                        if (j.ids.Contains(item_id)) {
-                            j.Handle(item_id);
+                    if (jobs.Count > 0) {
+                        foreach (Job j in jobs.Reverse<Job>()) {
+                            if (j.ids.Contains(item_id)) {
+                                j.Handle(item_id);
+                            }
                         }
                     }
                 }
