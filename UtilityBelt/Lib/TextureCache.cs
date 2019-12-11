@@ -42,10 +42,15 @@ namespace UtilityBelt.Lib.Dungeon {
 
                 if (image != null) {
                     var texture = new DxTexture(new Size(10 * TileScale, 10 * TileScale));
-                    texture.BeginRender();
-                    texture.Fill(new Rectangle(0, 0, texture.Width, texture.Height), Color.Transparent);
-                    texture.DrawImage(image, new Rectangle(0, 0, texture.Width, texture.Height), Color.White);
-                    texture.EndRender();
+                    try {
+                        texture.BeginRender();
+                        texture.Fill(new Rectangle(0, 0, texture.Width, texture.Height), Color.Transparent);
+                        texture.DrawImage(image, new Rectangle(0, 0, texture.Width, texture.Height), Color.White);
+                    }
+                    catch (Exception ex) { Logger.LogException(ex); }
+                    finally {
+                        texture.EndRender();
+                    }
                     tileCache.Add(environmentId, texture);
                 }
                 else {
@@ -106,8 +111,10 @@ namespace UtilityBelt.Lib.Dungeon {
             return null;
         }
 
-        public static DxTexture GetText(string text, int height, Color color, string fontFace, int fontWeight, int shadowSize=1) {
+        public static DxTexture GetText(string text, int height, Color color, string fontFace, int fontWeight, int shadowSize=1, bool allowRender=true) {
             if (textCache.ContainsKey(text)) return textCache[text];
+
+            if (!allowRender) return null;
 
             using (var measureTexture = new DxTexture(new Size(200, 10))) {
                 var textRect = measureTexture.MeasureText(text, WriteTextFormats.Center, fontFace, height, fontWeight, false, shadowSize);

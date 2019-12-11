@@ -30,11 +30,14 @@ namespace UtilityBelt.Lib.Dungeon {
 
             var wo = CoreManager.Current.WorldFilter[id];
             Name = wo.Name;
+
+            if (wo.ObjectClass == ObjectClass.Portal || wo.ObjectClass == ObjectClass.Npc) {
+                Name = Name.Replace("Portal to ", "").Replace(" Portal", "");
+            }
+
             ObjectClass = wo.ObjectClass;
             Icon = wo.Icon;
             Static = !(wo.ObjectClass == ObjectClass.Player || wo.ObjectClass == ObjectClass.Monster);
-
-            //if (wo.Id == CoreManager.Current.CharacterFilter.Id) ShouldDraw = false;
         }
 
         /// <summary>
