@@ -21,13 +21,10 @@ namespace UtilityBelt.Lib.Dungeon {
         public int OffsetX { get { return (dungeon.Width - Width) - (minX - dungeon.minX); } }
         public int OffsetY { get { return minY - dungeon.minY; } }
 
-        public DungeonLayer(int roundedZ) {
-            this.roundedZ = roundedZ;
-        }
-
         public DungeonLayer(Dungeon dungeon, int z) {
             this.dungeon = dungeon;
             this.z = z;
+            this.roundedZ = (int)(Math.Floor((z + 3f) / 6f) * 6f);
         }
 
         internal void AddCell(DungeonCell cell) {

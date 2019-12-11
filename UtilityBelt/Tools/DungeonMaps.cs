@@ -92,7 +92,7 @@ Draws an overlay with dungeon maps on your screen
             set { UpdateSetting("Debug", value); }
         }
 
-        [Summary("Dungeon Name header")]
+        [Summary("Dungeon name header")]
         [DefaultEnabled(true)]
         [DefaultColor(-1)]
         public ColorToggleOption DungeonName {
@@ -1076,6 +1076,11 @@ Draws an overlay with dungeon maps on your screen
                 }
 
                 foreach (var kp in dungeon.ZLayers) {
+                    // floors more than one level above or four levels below your char are not drawn
+                    if (UB.Core.Actions.LocationZ - kp.Key < -10 || UB.Core.Actions.LocationZ - kp.Key > 24) {
+                        continue;
+                    }
+
                     if (zLayerCache.ContainsKey(kp.Key)) {
                         mapTexture.DrawTextureTinted(zLayerCache[kp.Key], new Rectangle(
                             0, 0, zLayerCache[kp.Key].Width, zLayerCache[kp.Key].Height
@@ -1156,7 +1161,7 @@ Draws an overlay with dungeon maps on your screen
                     if (Debug) {
                         try {
                             zLayerTexture.BeginText(fontFace, 7f, fontWeight, false, 1, (int)byte.MaxValue);
-                            zLayerTexture.WriteText($"{cell.EnvironmentId}\n{cell.X},{cell.Y}",
+                            zLayerTexture.WriteText($"{cell.EnvironmentId}\n{cell.X},{cell.Y}\n{cell.Z}",
                                 Color.White,
                                 VirindiViewService.WriteTextFormats.Center | VirindiViewService.WriteTextFormats.VerticalCenter,
                                 new Rectangle(x, y, tileRect.Width, tileRect.Height));
@@ -1171,7 +1176,7 @@ Draws an overlay with dungeon maps on your screen
                 if (Debug) {
                     try {
                         zLayerTexture.BeginText(fontFace, 7f, fontWeight, false, 1, (int)byte.MaxValue);
-                        zLayerTexture.WriteText($"{kp.Value.OffsetX},{kp.Value.OffsetY},{kp.Value.Width},{kp.Value.minX}",
+                        zLayerTexture.WriteText($"Z: {kp.Value.roundedZ}",
                             Color.White,
                             VirindiViewService.WriteTextFormats.VerticalCenter,
                             new Rectangle(0, 0, zLayerTexture.Width, 10));
