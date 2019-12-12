@@ -47,7 +47,7 @@ namespace UtilityBelt.Tools {
                 }
             }
             if (itemsNeedingData > 0) {
-                Util.WriteToChat($"Requesting id data for {itemsNeedingData} inventory items. This will take approximately {(itemsNeedingData / 6):n3} seconds.");
+                Util.WriteToChat($"Requesting id data for {itemsNeedingData} inventory items. This will take approximately {(itemsNeedingData * ((float)assessDelay / 1000f)):n3} seconds.");
             }
         }
 
@@ -60,6 +60,7 @@ namespace UtilityBelt.Tools {
 
 
         private bool disposed = false;
+        private const int assessDelay = 150;
         private static DateTime nextIdentWindow = DateTime.MinValue;
         public static readonly Queue<int> IdentQueue = new Queue<int>();
         private static readonly Dictionary<int, DateTime> IdentSent = new Dictionary<int, DateTime>();
@@ -191,7 +192,7 @@ namespace UtilityBelt.Tools {
                 thisid = IdentQueue.Dequeue();
                 // UB.Core.WorldFilter checks WorldFilter, UBHelper.Weenie checks client memory
                 if (UB.Core.WorldFilter[thisid] != null || new UBHelper.Weenie(thisid).Valid) {
-                    nextIdentWindow = DateTime.UtcNow + TimeSpan.FromMilliseconds(150);
+                    nextIdentWindow = DateTime.UtcNow + TimeSpan.FromMilliseconds(assessDelay);
                     IdentSent.Add(thisid, DateTime.UtcNow + TimeSpan.FromMilliseconds(5000));
                     m(thisid);
                 }
@@ -220,7 +221,7 @@ namespace UtilityBelt.Tools {
                     }
                     else {
                         m(f.Key);
-                        nextIdentWindow = DateTime.UtcNow + TimeSpan.FromMilliseconds(600);
+                        nextIdentWindow = DateTime.UtcNow + TimeSpan.FromMilliseconds(assessDelay);
                         //Logger.Debug($"Assessor: Resend Ident {f.Key:X8}");
                         break;
                     }
@@ -236,7 +237,7 @@ namespace UtilityBelt.Tools {
 
             jobs.ForEach(j => {
                 if (DateTime.UtcNow > j.nextSpam) {
-                    Util.WriteToChat($"Assessor waiting to ID {j.ids.Count} of {j.initialCount} items. This will take about {(j.ids.Count * 0.15):n2} seconds.");
+                    Util.WriteToChat($"Assessor waiting to ID {j.ids.Count} of {j.initialCount} items. This will take about {(j.ids.Count * ((float)assessDelay / 1000f)):n2} seconds.");
                     j.nextSpam = DateTime.UtcNow + TimeSpan.FromSeconds(10);
                 }
             });
@@ -281,9 +282,9 @@ namespace UtilityBelt.Tools {
             private ItemCallback itemCallback;
             private Assessor assessor;
             public readonly int initialCount;
-            public Job(Assessor assessor, ref List<int> items, ItemCallback itemCallback, JobCallback jobCallback) {
+            public Job(Assessor assessor, ref List<int> items, ItemCallback itemCallback, JobCallback jobCallback, bool validateTypes = true) {
                 ids = new List<int>(items);
-                ids.RemoveAll(i => (!assessor.ShouldId(i)));
+                if (validateTypes) ids.RemoveAll(i => (!assessor.ShouldId(i)));
                 initialCount = ids.Count;
                 this.jobCallback = jobCallback;
                 this.itemCallback = itemCallback;

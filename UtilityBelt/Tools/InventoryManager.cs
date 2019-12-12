@@ -420,22 +420,9 @@ Provides a command-line interface to inventory management.
             List<int> inv = new List<int>();
             UBHelper.InventoryManager.GetInventory(ref inv, UBHelper.InventoryManager.GetInventoryType.AllItems, UBHelper.Weenie.INVENTORY_LOC.ALL_LOC);
             WriteToChat($"ClearBugged: Identifying {inv.Count} items, to check for bugged items...");
-            new Assessor.Job(UB.Assessor, ref inv, null, () => { WriteToChat($"ClearBugged: Done!"); });
+            new Assessor.Job(UB.Assessor, ref inv, null, () => { WriteToChat($"ClearBugged: Done!"); }, false);
         }
         #endregion
-        //#region /ub unstack
-        //[Summary("Dev Test 2")]
-        //[Usage("/ub unstack")]
-        //[CommandPattern("unstack", @"^$")]
-        //public void DoUnstack(string _, Match _1) {
-        //    if (UBHelper.InventoryManager.UnStack()) {
-        //        Util.WriteToChat("UnStack running");
-        //    }
-        //    else {
-        //        Util.WriteToChat("UnStack - nothing to do");
-        //    }
-        //}
-        //#endregion
         #endregion
 
         // TODO: support AutoPack profiles when cramming
