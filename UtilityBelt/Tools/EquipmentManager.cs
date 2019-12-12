@@ -74,16 +74,16 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
         #region Commands
         #region /ub equip
         [Summary("Commands to manage your equipment.")]
-        [Usage("/ub equip {list | load <lootProfile> | test <lootProfile> | create <lootProfile>}")]
+        [Usage("/ub equip {list | load [lootProfile] | test [lootProfile] | create [lootProfile]}")]
         [Example("/ub equip load profile.utl", "Equips all items matching profile.utl.")]
         [Example("/ub equip list", "Lists available equipment profiles.")]
         [Example("/ub equip test profile.utl", "Test equipping profile.utl")]
-        [CommandPattern("equip", @"^\s*(?<Verb>(load|list|test|create))\s+(?<Profile>.*?)\s*$")]
+        [CommandPattern("equip", @"^\s*(?<Verb>load|list|test|create)(?:\s+(?<Profile>.*?))?\s*$")]
         public void DoEquip(string command, Match args) {
             var verb = args.Groups["Verb"].Value;
             var profileName = args.Groups["Profile"].Value;
 
-            if (string.IsNullOrEmpty(Path.GetExtension(profileName)))
+            if (verb != "list" && !string.IsNullOrEmpty(profileName) && string.IsNullOrEmpty(Path.GetExtension(profileName)))
                 profileName = profileName + ".utl";
 
             switch (verb) {
@@ -95,7 +95,7 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
                     break;
 
                 case "list":
-                    WriteToChat("Equip Profiles");
+                    Util.WriteToChat("Equip Profiles:");
                     foreach (var p in GetProfiles(profileName)) {
                         Util.WriteToChat($" * {Path.GetFileName(p)} ({Path.GetDirectoryName(p)})");
                     }
@@ -119,10 +119,6 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
                 Directory.CreateDirectory(Path.Combine(Util.GetPluginDirectory(), "equip"));
                 Directory.CreateDirectory(Path.Combine(Util.GetCharacterDirectory(), "equip"));
                 Directory.CreateDirectory(Path.Combine(Util.GetServerDirectory(), "equip"));
-
-                // TODO: be selective about when to subscribe to RenderFrame
-                UB.Core.RenderFrame += Core_RenderFrame;
-                UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -283,7 +279,12 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
                         }
                     }
 
-                    var profilePath = GetProfilePath(string.IsNullOrEmpty(profileName) ? (UB.Core.CharacterFilter.Name + ".utl") : profileName);
+                    if (string.IsNullOrEmpty(profileName))
+                        profileName = UB.Core.CharacterFilter.Name + ".utl";
+                    else if (string.IsNullOrEmpty(Path.GetExtension(profileName)))
+                        profileName += ".utl";
+
+                    var profilePath = GetProfilePath(profileName);
 
                     if (!File.Exists(profilePath)) {
                         LogDebug("No equip profile exists: " + profilePath);
@@ -301,6 +302,8 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
                     pendingIdCount = UB.Assessor.GetNeededIdCount(equippableItems.Select(i => i.Id));
                     UB.Assessor.RequestAll(equippableItems.Select(i => i.Id));
                 }
+
+                UB.Core.RenderFrame += Core_RenderFrame;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -346,6 +349,8 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
             }
             catch (Exception ex) { Logger.LogException(ex); }
             finally {
+                UB.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
+                UB.Core.RenderFrame -= Core_RenderFrame;
                 state = RunningState.Idle;
                 itemList = null;
                 currentEquipAttempts = 0;
@@ -397,6 +402,7 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
 
                     LogDebug("Finished dequipping items");
                     state = RunningState.Equipping;
+                    UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
                 }
 
                 if (itemList.Count == 0) {
@@ -549,8 +555,8 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
-                    UB.Core.RenderFrame -= Core_RenderFrame;
-                    UB.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
+                    if (state != RunningState.Idle)
+                        Stop();
                     base.Dispose(disposing);
                 }
 
