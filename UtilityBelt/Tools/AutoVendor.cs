@@ -276,10 +276,9 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     LogDebug($"    Type 0x{fff.Key:X8} x{fff.Value:n0}");
                 }
                 List<int> inv = new List<int>();
+                waitingForAutoStackCram = true;
                 UBHelper.InventoryManager.GetInventory(ref inv, UBHelper.InventoryManager.GetInventoryType.AllItems, UBHelper.Weenie.INVENTORY_LOC.ALL_LOC);
-                foreach (int i in inv) {
-                    UB.Assessor.Queue(i);
-                }
+                new Assessor.Job(UB.Assessor, ref inv, (_) => { bailTimer = DateTime.UtcNow; }, () => { waitingForAutoStackCram = false; }, false);
             }
             pendingBuy.Clear();
         }
@@ -294,7 +293,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                 List<int> inv = new List<int>();
                 waitingForAutoStackCram = true;
                 UBHelper.InventoryManager.GetInventory(ref inv, UBHelper.InventoryManager.GetInventoryType.AllItems, UBHelper.Weenie.INVENTORY_LOC.ALL_LOC);
-                new Assessor.Job(UB.Assessor, ref inv, (_) => { bailTimer = DateTime.UtcNow; }, () => { waitingForAutoStackCram = false; });
+                new Assessor.Job(UB.Assessor, ref inv, (_) => { bailTimer = DateTime.UtcNow; }, () => { waitingForAutoStackCram = false; }, false);
             }
             pendingSell.Clear();
         }
