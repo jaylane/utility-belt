@@ -36,31 +36,25 @@ Counter is used to count items based on text or utl profiles as well as players 
         public void DoCount(string command, Match args) {
             if (args.Groups["Command"].Value.ToLower() == "item") {
                 string item = args.Groups["Name"].Value;
-                if (args.Groups["Options"].Value.ToLower().Contains("think")) {
-                    doThink = true;
-                }
-                if (args.Groups["Options"].Value.ToLower().Contains("debug")) {
-                    doDebug = true;
-                }
 
                 Regex searchRegex = new Regex(item, RegexOptions.IgnoreCase);
-                if (doDebug) Util.ThinkOrWrite("Regex String: " + searchRegex);
+                LogDebug("Regex String: " + searchRegex);
                 int stackCount = 0;
                 int totalCount = 0;
                 foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetInventory()) {
                     string itemName = Util.GetObjectName(wo.Id);
                     if (searchRegex.IsMatch(itemName)) {
-                        if (doDebug) Util.ThinkOrWrite("Matched Item: " + itemName);
+                        LogDebug("Matched Item: " + itemName);
                         stackCount = wo.Values(LongValueKey.StackCount, 1);
                         if (!itemList.ContainsKey(itemName)) {
                             itemList[itemName] = stackCount;
                             totalCount += stackCount;
-                            if (doDebug) Util.ThinkOrWrite("Count In Progress: " + itemName + " - " + stackCount);
+                            LogDebug("Count In Progress: " + itemName + " - " + stackCount);
                         }
                         else if (itemList[itemName] > 0) {
                             itemList[itemName] += stackCount;
                             totalCount += stackCount;
-                            if (doDebug) Util.ThinkOrWrite("Count In Progress: " + itemName + " - " + stackCount);
+                            LogDebug("Count In Progress: " + itemName + " - " + stackCount);
                         }
                         else {
                             continue;
@@ -70,11 +64,17 @@ Counter is used to count items based on text or utl profiles as well as players 
                         //Util.WriteToChat("no match for " + item);
                     }
                 }
-                foreach (KeyValuePair<string, int> entry in itemList) {
-                    Util.ThinkOrWrite("Item Count: " + entry.Key + " - " + entry.Value.ToString(), doThink);
+
+                if (itemList.Count == 0) {
+                    ChatThink("Item Count: " + item + " - 0");
+                }
+                else {
+                    foreach (KeyValuePair<string, int> entry in itemList) {
+                        ChatThink("Item Count: " + entry.Key + " - " + entry.Value.ToString());
+                    }
                 }
 
-                Util.ThinkOrWrite("Total Item Count: " + totalCount.ToString(), doThink);
+                ChatThink("Total Item Count: " + totalCount.ToString());
 
                 itemList.Clear();
                 doThink = false;
@@ -123,11 +123,11 @@ Counter is used to count items based on text or utl profiles as well as players 
 
                 foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetLandscape()) {
                     if (wo.Type == 1 && (CoreManager.Current.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, wo.Id) * 240) < rangeInt) {
-                        Util.WriteToChat("object : " + wo.Name + " id: " + wo.Id + " type: " + wo.Type);
+                        LogDebug("object : " + wo.Name + " id: " + wo.Id + " type: " + wo.Type);
                         playerCount++;
                     }
                 }
-                Util.Think("Player Count: " + " " + playerCount.ToString());
+                ChatThink("Player Count: " + playerCount.ToString());
             }
 
         }
@@ -150,7 +150,7 @@ Counter is used to count items based on text or utl profiles as well as players 
                     }
                     if (scanComplete && idItems.Count == 0) {
                         foreach (KeyValuePair<string, int> entry in matchedRule) {
-                            WriteToChat("Matched Rule: " + entry.Key + " ---- " + entry.Value);
+                            LogDebug("Matched Rule: " + entry.Key + " ---- " + entry.Value);
                             scanComplete = false;
                             isRunning = false;
 
