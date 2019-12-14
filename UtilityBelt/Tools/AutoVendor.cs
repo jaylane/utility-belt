@@ -527,8 +527,8 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             foreach (int item in inventory) {
                 UBHelper.Weenie w = new UBHelper.Weenie(item);
                 WorldObject wo = UB.Core.WorldFilter[item];
+                if (w == null || wo == null || wo.HasIdData) continue;
                 if (vendor != null && (vendorCategories & w.Type) == 0) continue;
-                if (wo.HasIdData) continue;
                 itemsToId.Add(item);
             }
             bailTimer = DateTime.UtcNow;

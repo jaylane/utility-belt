@@ -896,7 +896,7 @@ Draws an overlay with dungeon maps on your screen
 
         #region Rendering
         private void RenderHud() {
-            if (hud == null || hud.Texture == null || hud.Texture.IsDisposed) return;
+            if (hud == null || hud.Texture == null || hud.Texture.IsDisposed || mapTexture == null || mapTexture.IsDisposed) return;
 
             PrecacheLabels();
 
@@ -932,7 +932,7 @@ Draws an overlay with dungeon maps on your screen
                 transform.AffineTransformation(scale, rotationCenter, rotQuat, new Vector3(sx, sy, 0));
                 hud.Texture.DrawTextureWithTransform(mapTexture, transform, tint);
 
-                if (ShowCompass) {
+                if (ShowCompass && compassTexture != null && !compassTexture.IsDisposed) {
                     hud.Texture.DrawTextureRotated(compassTexture, new Rectangle(0, 0, compassTexture.Width, compassTexture.Height), new Point(hud.Texture.Width - (compassTexture.Width / 2), (compassTexture.Height / 2)), tint, (float)(Math.PI - UB.Core.Actions.HeadingRadians + Math.PI));
                 }
 

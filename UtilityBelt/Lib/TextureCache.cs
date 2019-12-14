@@ -31,10 +31,9 @@ namespace UtilityBelt.Lib.Dungeon {
                 using (Stream manifestResourceStream = typeof(TextureCache).Assembly.GetManifestResourceStream($"UtilityBelt.Resources.tiles.{environmentId}.bmp")) {
                     if (manifestResourceStream != null) {
                         using (Bitmap bitmap = new Bitmap(manifestResourceStream)) {
-                            bitmap.MakeTransparent(Color.White);
-                            image = new Bitmap(bitmap, bitmap.Width, bitmap.Height);
-                            using (Graphics gfx = Graphics.FromImage(image)) {
-                                gfx.DrawImage(bitmap, new Rectangle(0, 0, bitmap.Width, bitmap.Height), 0, 0, bitmap.Width, bitmap.Height, GraphicsUnit.Pixel, attr);
+                            if (bitmap != null) {
+                                bitmap.MakeTransparent(Color.White);
+                                image = new Bitmap(bitmap, bitmap.Width, bitmap.Height);
                             }
                         }
                     }
@@ -53,9 +52,6 @@ namespace UtilityBelt.Lib.Dungeon {
                     }
                     tileCache.Add(environmentId, texture);
                 }
-                else {
-                    tileCache.Add(environmentId, null);
-                }
             }
             catch (Exception ex) { Logger.LogException(ex); }
             finally {
@@ -64,7 +60,7 @@ namespace UtilityBelt.Lib.Dungeon {
                 }
             }
 
-            return GetTile(environmentId);
+            return tileCache[environmentId];
         }
 
         public static DxTexture GetMarker(int color) {
