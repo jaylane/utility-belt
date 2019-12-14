@@ -723,6 +723,44 @@ namespace UtilityBelt.Tools {
             }
         }
         #endregion
+        #region /ub resolution <width> <height>
+        [Summary("Set client resolution. This will take effect immediately, but will not change the settings page, or persist through relogging.")]
+        [Usage("/ub resolution <width> <height>")]
+        [Example("/ub resolution 640 600", "Set client resolution to 640 x 600")]
+        [CommandPattern("resolution", @"^(?<Width>\d+)[x ](?<Height>\d+)$")]
+        public void DoResolution(string _, Match args) {
+            ushort.TryParse(args.Groups["Width"].Value, out ushort width);
+            ushort.TryParse(args.Groups["Height"].Value, out ushort height);
+            if (height < 100 || height > 10000 || width < 100 || width > 10000) {
+                LogError($"Requested resolution was not valid ({width}x{height})");
+                return;
+            }
+            WriteToChat($"Setting Resolution {width}x{height}");
+            UBHelper.Core.SetResolution(width, height);
+        }
+        #endregion
+        #region /ub textures <landscape> <landscapeDetail> <environment> <environmentDetail> <sceneryDraw> <landscapeDraw>
+        [Summary("Sets Client texture options. This will take effect immediately, but will not change the settings page, or persist through relogging.")]
+        [Usage("/ub textures <landscape[0-4]> <landscapeDetail[0-1]> <environment[0-4]> <environmentDetail[0-1]> <sceneryDraw[1-25]> <landscapeDraw[1-25]>")]
+        [Example("/ub textures 0 1 0 1 25 25", "Sets max settings")]
+        [Example("/ub textures 4 0 4 0 1 1", "Sets min settings")]
+        [CommandPattern("textures", @"^(?<landscape>[0-4]) (?<landscapeDetail>[01]) (?<environment>[0-4]) (?<environmentDetail>[01]) (?<sceneryDraw>\d+) (?<landscapeDraw>\d+)$")]
+        public void DoTextures(string _, Match args) {
+            uint.TryParse(args.Groups["landscape"].Value, out uint landscape);
+            byte.TryParse(args.Groups["landscapeDetail"].Value, out byte landscapeDetail);
+            uint.TryParse(args.Groups["environment"].Value, out uint environment);
+            byte.TryParse(args.Groups["environmentDetail"].Value, out byte environmentDetail);
+            uint.TryParse(args.Groups["sceneryDraw"].Value, out uint sceneryDraw);
+            uint.TryParse(args.Groups["landscapeDraw"].Value, out uint landscapeDraw);
+
+            if (sceneryDraw > 25 || landscapeDraw > 25) {
+                LogError($"Requested Texture options were not valid");
+                return;
+            }
+            WriteToChat($"Setting Textures...");
+            UBHelper.Core.SetTextures(landscape, landscapeDetail, environment, environmentDetail, sceneryDraw, landscapeDraw);
+        }
+        #endregion
         #region /ub vitae
         [Summary("Thinks to yourself with your current vitae percentage")]
         [Usage("/ub vitae")]
