@@ -303,7 +303,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
 
         private void DrawCurrentRoute() {
 
-            if (!Enabled || UBHelper.VideoPatch.IsEnabled() || string.IsNullOrEmpty(UBHelper.vTank.Instance?.GetNavProfile())) {
+            if (!Enabled || string.IsNullOrEmpty(UBHelper.vTank.Instance?.GetNavProfile())) {
                 ClearCurrentRoute();
                 NavChanged?.Invoke(this, new EventArgs());
                 return;
@@ -321,7 +321,9 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
             currentRoute = new VTNavRoute(routePath, UB);
             currentRoute.Parse();
 
-            currentRoute.Draw();
+            if (!UBHelper.VideoPatch.IsEnabled()) {
+                currentRoute.Draw();
+            }
 
             if (navFileWatcher != null) {
                 navFileWatcher.EnableRaisingEvents = false;
