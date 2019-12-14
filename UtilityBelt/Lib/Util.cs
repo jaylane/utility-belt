@@ -173,7 +173,7 @@ namespace UtilityBelt
         public static void WriteToChat(string message, int color = 5) {
             try {
                 string msg = "[UB] " + message;
-                UB.Host.Actions.AddChatText(msg, color);
+                UB?.Host?.Actions?.AddChatText(msg, color);
                 UBHelper.vTank.Tell(msg, color, 0);
                 Util.WriteToDebugLog(message);
             }
