@@ -186,63 +186,66 @@ namespace UtilityBelt.Tools {
         private List<int> fail = new List<int>();
 
         private void Core_RenderFrame(object sender, EventArgs e) {
-            //limit to 4 idents on the wire at any time
-            if (IdentQueue.Count > 0 && DateTime.UtcNow > nextIdentWindow && IdentSent.Count < 4) {
-                int thisid;
-                thisid = IdentQueue.Dequeue();
-                // UB.Core.WorldFilter checks WorldFilter, UBHelper.Weenie checks client memory
-                if (UB.Core.WorldFilter[thisid] != null || new UBHelper.Weenie(thisid).Valid) {
-                    nextIdentWindow = DateTime.UtcNow + TimeSpan.FromMilliseconds(assessDelay);
-                    IdentSent.Add(thisid, DateTime.UtcNow + TimeSpan.FromMilliseconds(5000));
-                    m(thisid);
-                }
-                else {
-                    Logger.Debug($"Assessor: 0x{thisid:X8} Failed");
-                }
-            }
-
-            foreach (KeyValuePair<int, DateTime> f in IdentSent) {
-                if (DateTime.UtcNow > f.Value) {
-                    IdentSent[f.Key] = DateTime.UtcNow + TimeSpan.FromMilliseconds(1500);
-                    if (!failures.ContainsKey(f.Key))
-                        failures.Add(f.Key, 1);
-                    else
-                        failures[f.Key]++;
-
-                    if (failures[f.Key] > 10) {
-                        Logger.Debug($"Assessor: Ident FAILED {f.Key:X8}");
-                        fail.Add(f.Key);
-                        foreach (Job j in jobs) {
-                            if (j.ids.Contains(f.Key)) {
-                                j.Handle(f.Key);
-                            }
-                        }
-
+            try {
+                //limit to 4 idents on the wire at any time
+                if (IdentQueue.Count > 0 && DateTime.UtcNow > nextIdentWindow && IdentSent.Count < 4) {
+                    int thisid;
+                    thisid = IdentQueue.Dequeue();
+                    // UB.Core.WorldFilter checks WorldFilter, UBHelper.Weenie checks client memory
+                    if (UB.Core.WorldFilter[thisid] != null || new UBHelper.Weenie(thisid).Valid) {
+                        nextIdentWindow = DateTime.UtcNow + TimeSpan.FromMilliseconds(assessDelay);
+                        if (!IdentSent.ContainsKey(thisid)) IdentSent.Add(thisid, DateTime.UtcNow + TimeSpan.FromMilliseconds(5000));
+                        m(thisid);
                     }
                     else {
-                        m(f.Key);
-                        nextIdentWindow = DateTime.UtcNow + TimeSpan.FromMilliseconds(assessDelay);
-                        //Logger.Debug($"Assessor: Resend Ident {f.Key:X8}");
-                        break;
+                        Logger.Debug($"Assessor: 0x{thisid:X8} Failed");
                     }
                 }
-            }
-            if (fail.Count > 0) {
-                foreach (int f in fail) {
-                    IdentSent.Remove(f);
-                    failures.Remove(f);
-                }
-                fail.Clear();
-            }
 
-            jobs.ForEach(j => {
-                if (DateTime.UtcNow > j.nextSpam) {
-                    Util.WriteToChat($"Assessor waiting to ID {j.ids.Count} of {j.initialCount} items. This will take about {(j.ids.Count * ((float)assessDelay / 1000f)):n2} seconds.");
-                    j.nextSpam = DateTime.UtcNow + TimeSpan.FromSeconds(10);
-                }
-            });
+                foreach (KeyValuePair<int, DateTime> f in IdentSent) {
+                    if (DateTime.UtcNow > f.Value) {
+                        IdentSent[f.Key] = DateTime.UtcNow + TimeSpan.FromMilliseconds(1500);
+                        if (!failures.ContainsKey(f.Key))
+                            failures.Add(f.Key, 1);
+                        else
+                            failures[f.Key]++;
 
-            Stop();
+                        if (failures[f.Key] > 10) {
+                            Logger.Debug($"Assessor: Ident FAILED {f.Key:X8}");
+                            fail.Add(f.Key);
+                            foreach (Job j in jobs) {
+                                if (j.ids.Contains(f.Key)) {
+                                    j.Handle(f.Key);
+                                }
+                            }
+
+                        }
+                        else {
+                            m(f.Key);
+                            nextIdentWindow = DateTime.UtcNow + TimeSpan.FromMilliseconds(assessDelay);
+                            //Logger.Debug($"Assessor: Resend Ident {f.Key:X8}");
+                            break;
+                        }
+                    }
+                }
+                if (fail.Count > 0) {
+                    foreach (int f in fail) {
+                        IdentSent.Remove(f);
+                        failures.Remove(f);
+                    }
+                    fail.Clear();
+                }
+
+                jobs.ForEach(j => {
+                    if (DateTime.UtcNow > j.nextSpam) {
+                        Util.WriteToChat($"Assessor waiting to ID {j.ids.Count} of {j.initialCount} items. This will take about {(j.ids.Count * ((float)assessDelay / 1000f)):n2} seconds.");
+                        j.nextSpam = DateTime.UtcNow + TimeSpan.FromSeconds(10);
+                    }
+                });
+
+                Stop();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void EchoFilter_ServerDispatch(object sender, Decal.Adapter.NetworkMessageEventArgs e) {

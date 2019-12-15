@@ -114,8 +114,11 @@ namespace UtilityBelt.Tools {
         }
 
         private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
-            UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
-            GetMyQuestsList(3);
+            try {
+                UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
+                GetMyQuestsList(3);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         private bool GettingQuests = false;
         private bool GotFirstQuest = false;

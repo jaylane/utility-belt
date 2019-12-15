@@ -361,78 +361,81 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
         }
 
         public void Core_RenderFrame(object sender, EventArgs e) {
-            if (state == RunningState.Idle)
-                return;
+            try {
+                if (state == RunningState.Idle)
+                    return;
 
-            if (state == RunningState.Dequipping || state == RunningState.Equipping)
-                CheckVTankNavBlock();
+                if (state == RunningState.Dequipping || state == RunningState.Equipping)
+                    CheckVTankNavBlock();
 
-            if (HasPendingIdItems())
-                return;
+                if (HasPendingIdItems())
+                    return;
 
-            if (state == RunningState.Creating) {
-                CreateEquipProfile(currentProfileName);
-                Stop();
-                return;
-            }
-
-            if (itemList == null) {
-                itemList = new Queue<int>();
-                foreach (var id in CheckUtl())
-                    itemList.Enqueue(id);
-
-                LogDebug($"Found {itemList.Count} items to equip");
-            }
-
-            if (state == RunningState.Test) {
-                Util.WriteToChat("Will attempt to equip the following items in order:");
-                while (itemList.Count > 0) {
-                    var item = itemList.Dequeue();
-                    Util.WriteToChat($" * {Util.GetObjectName(item)} <{item}>");
-                }
-
-                Stop();
-                return;
-            }
-
-            if (UB.Core.Actions.BusyState == 0) {
-                if (state == RunningState.Dequipping) {
-                    if (TryDequipItem())
-                        return;
-
-                    LogDebug("Finished dequipping items");
-                    state = RunningState.Equipping;
-                    UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
-                }
-
-                if (itemList.Count == 0) {
-                    LogDebug("Item queue empty - stopping");
+                if (state == RunningState.Creating) {
+                    CreateEquipProfile(currentProfileName);
                     Stop();
                     return;
                 }
 
-                if (!TryGetItemToEquip(out var wo))
-                    return;
+                if (itemList == null) {
+                    itemList = new Queue<int>();
+                    foreach (var id in CheckUtl())
+                        itemList.Enqueue(id);
 
-                if (lastEquippingItem != itemList.Peek()) {
-                    lastEquippingItem = itemList.Peek();
-                    currentEquipAttempts = 0;
-                }
-                else if (++currentEquipAttempts > 15) // Stop trying to make fetch happen
-                {
-                    LogDebug($"Too many equip attempts ({Util.GetObjectName(itemList.Peek())}) - SKIPPING");
-                    currentEquipAttempts = 0;
-                    itemList.Dequeue();
-                    return;
+                    LogDebug($"Found {itemList.Count} items to equip");
                 }
 
-                EquipItem(wo);
-            }
+                if (state == RunningState.Test) {
+                    Util.WriteToChat("Will attempt to equip the following items in order:");
+                    while (itemList.Count > 0) {
+                        var item = itemList.Dequeue();
+                        Util.WriteToChat($" * {Util.GetObjectName(item)} <{item}>");
+                    }
 
-            if (DateTime.UtcNow - bailTimer > TimeSpan.FromSeconds(10)) {
-                WriteToChat($"bail, timeout expired");
-                Stop();
+                    Stop();
+                    return;
+                }
+
+                if (UB.Core.Actions.BusyState == 0) {
+                    if (state == RunningState.Dequipping) {
+                        if (TryDequipItem())
+                            return;
+
+                        LogDebug("Finished dequipping items");
+                        state = RunningState.Equipping;
+                        UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
+                    }
+
+                    if (itemList.Count == 0) {
+                        LogDebug("Item queue empty - stopping");
+                        Stop();
+                        return;
+                    }
+
+                    if (!TryGetItemToEquip(out var wo))
+                        return;
+
+                    if (lastEquippingItem != itemList.Peek()) {
+                        lastEquippingItem = itemList.Peek();
+                        currentEquipAttempts = 0;
+                    }
+                    else if (++currentEquipAttempts > 15) // Stop trying to make fetch happen
+                    {
+                        LogDebug($"Too many equip attempts ({Util.GetObjectName(itemList.Peek())}) - SKIPPING");
+                        currentEquipAttempts = 0;
+                        itemList.Dequeue();
+                        return;
+                    }
+
+                    EquipItem(wo);
+                }
+
+                if (DateTime.UtcNow - bailTimer > TimeSpan.FromSeconds(10)) {
+                    WriteToChat($"bail, timeout expired");
+                    Stop();
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void EquipItem(WorldObject wo) {

@@ -107,8 +107,11 @@ For portals, it will show the destination.
             }
         }
         private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
-            UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
-            EnableReal();
+            try {
+                UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
+                EnableReal();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         protected override void Dispose(bool disposing) {
@@ -203,7 +206,10 @@ For portals, it will show the destination.
             }
         }
         private static void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
-            AddTag(e.New);
+            try {
+                AddTag(e.New);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         private static void Core_RenderFrame(object sender, EventArgs e) {
             try {
@@ -217,9 +223,6 @@ For portals, it will show the destination.
                     EvaluateTags();
                     foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetLandscape()) AddTag(wo);
                 }
-
-
-
             } catch (Exception ex) { Logger.LogException(ex); }
         }
 

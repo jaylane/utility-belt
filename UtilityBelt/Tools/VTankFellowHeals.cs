@@ -153,11 +153,14 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
         }
 
         public void Core_RenderFrame(object sender, EventArgs e) {
-            if (DateTime.UtcNow - lastUpdate > TimeSpan.FromMilliseconds(UPDATE_INTERVAL)) {
-                if (UBHelper.vTank.Instance == null || !UB.VTank.VitalSharing) return;
+            try {
+                if (DateTime.UtcNow - lastUpdate > TimeSpan.FromMilliseconds(UPDATE_INTERVAL)) {
+                    if (UBHelper.vTank.Instance == null || !UB.VTank.VitalSharing) return;
 
-                UpdateMySharedVitals();
+                    UpdateMySharedVitals();
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private UBPlayerUpdate GetMyPlayerUpdate() {

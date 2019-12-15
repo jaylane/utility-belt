@@ -119,10 +119,13 @@ namespace UtilityBelt.Views {
         }
 
         private void Sliders_Changed(int min, int max, int pos) {
-            Color = Color.FromArgb(Alpha.Position, Red.Position, Green.Position, Blue.Position);
-            ColorPreview.Image = GetColorPreviewImage();
-            view.Icon = GetIconImage();
-            RaiseColorPickerChangeEvent?.Invoke(null, new ColorPickerChangeEventArgs(Color));
+            try {
+                Color = Color.FromArgb(Alpha.Position, Red.Position, Green.Position, Blue.Position);
+                ColorPreview.Image = GetColorPreviewImage();
+                view.Icon = GetIconImage();
+                RaiseColorPickerChangeEvent?.Invoke(null, new ColorPickerChangeEventArgs(Color));
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Save_Hit(object sender, EventArgs e) {

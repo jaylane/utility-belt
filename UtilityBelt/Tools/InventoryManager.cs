@@ -388,8 +388,11 @@ Provides a command-line interface to inventory management.
         }
 
         private void ActionQueue_InventoryEvent_AutoStack(object sender, EventArgs e) {
-            Util.WriteToChat("AutoStack complete.");
-            UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoStack;
+            try {
+                Util.WriteToChat("AutoStack complete.");
+                UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoStack;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         #endregion
         #region /ub autocram
@@ -407,8 +410,11 @@ Provides a command-line interface to inventory management.
         }
 
         private void ActionQueue_InventoryEvent_AutoCram(object sender, EventArgs e) {
-            Util.WriteToChat("AutoCram complete.");
-            UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoCram;
+            try {
+                Util.WriteToChat("AutoCram complete.");
+                UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoCram;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         #endregion
 
@@ -491,9 +497,12 @@ Provides a command-line interface to inventory management.
         }
 
         private void PC_LootProfileChanged() {
-            string loadedProfile = UBHelper.vTank.Instance?.GetLootProfile();
-            if (!string.IsNullOrEmpty(loadedProfile))
-                WatchLootProfile_Changed(WatchLootProfile);
+            try {
+                string loadedProfile = UBHelper.vTank.Instance?.GetLootProfile();
+                if (!string.IsNullOrEmpty(loadedProfile))
+                    WatchLootProfile_Changed(WatchLootProfile);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void LootProfile_Changed(object sender, FileSystemEventArgs e) {
@@ -501,20 +510,21 @@ Provides a command-line interface to inventory management.
             reloadLootProfileTS = DateTime.UtcNow;
         }
         private void Core_RenderFrame_ReloadProfile(object sender, EventArgs e) {
-            if (DateTime.UtcNow - reloadLootProfileTS > TimeSpan.FromSeconds(2)) {
-                if (profilesWatcher != null && !string.IsNullOrEmpty(profilesWatcher.Filter)) {
-                    LogDebug($"/vt loot load {profilesWatcher.Filter}");
-                    Util.Decal_DispatchOnChatCommand($"/vt loot load {profilesWatcher.Filter}");
-                    UB.Core.RenderFrame -= Core_RenderFrame_ReloadProfile;
+            try {
+                if (DateTime.UtcNow - reloadLootProfileTS > TimeSpan.FromSeconds(2)) {
+                    if (profilesWatcher != null && !string.IsNullOrEmpty(profilesWatcher.Filter)) {
+                        LogDebug($"/vt loot load {profilesWatcher.Filter}");
+                        Util.Decal_DispatchOnChatCommand($"/vt loot load {profilesWatcher.Filter}");
+                        UB.Core.RenderFrame -= Core_RenderFrame_ReloadProfile;
+                    }
                 }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         #endregion
         private void WorldFilter_ChangeObject(object sender, ChangeObjectEventArgs e) {
-            try
-            {
-                if (igRunning && e.Changed.Id == currentItem && (e.Change == WorldChangeType.SizeChange || e.Changed.Container == -1))
-                {
+            try{
+                if (igRunning && e.Changed.Id == currentItem && (e.Change == WorldChangeType.SizeChange || e.Changed.Container == -1)) {
                     // Partial stack give - keep the rest
                     if (e.Change == WorldChangeType.SizeChange)
                         keptObjects.Add(e.Changed.Id);
@@ -528,13 +538,13 @@ Provides a command-line interface to inventory management.
 
         //TODO: Split this up, and disable when not in use
         public void Core_RenderFrame_ig(object sender, EventArgs e) {
-
-            if (!igRunning) {
-                UB.Core.RenderFrame -= Core_RenderFrame_ig;
-                LogError("InventoryManager: Core_RenderFrame_ig called with igRunning==false");
-                return;
-            }
             try {
+                if (!igRunning) {
+                    UB.Core.RenderFrame -= Core_RenderFrame_ig;
+                    LogError("InventoryManager: Core_RenderFrame_ig called with igRunning==false");
+                    return;
+                }
+
                 if (UBHelper.vTank.locks[uTank2.ActionLockType.Navigation] < DateTime.UtcNow + TimeSpan.FromSeconds(1)) { //if itemgiver is running, and nav block has less than a second remaining, refresh it
                     UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
                     UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));

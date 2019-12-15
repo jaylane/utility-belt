@@ -239,8 +239,11 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
         }
 
         private void AutoTinkStopButton_Hit(object sender, EventArgs e) {
-            CoreManager.Current.Actions.RequestId(fakeItem.id);
-            ClearAllTinks();
+            try {
+                CoreManager.Current.Actions.RequestId(fakeItem.id);
+                ClearAllTinks();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public void ClearAllTinks() {
@@ -258,15 +261,18 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
         }
 
         private void AutoTinkMinPercentTextBox_Changed(object sender, EventArgs e) {
-            float f;
-            if (AutoTinkMinPercentTextBox.Text != "") {
-                f = float.Parse(AutoTinkMinPercentTextBox.Text, CultureInfo.InvariantCulture.NumberFormat);
-            }
-            else {
-                f = 0;
-            }
+            try {
+                float f;
+                if (AutoTinkMinPercentTextBox.Text != "") {
+                    f = float.Parse(AutoTinkMinPercentTextBox.Text, CultureInfo.InvariantCulture.NumberFormat);
+                }
+                else {
+                    f = 0;
+                }
 
-            MinPercentage = f;
+                MinPercentage = f;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void DoPopulateList() {
@@ -296,28 +302,34 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
         }
 
         private void PopulateListButton_Hit(object sender, EventArgs e) {
-            ClearAllTinks();
-            if (AutoTinkItemNameLabel.Text.ToString() != "[None]" && itemWO != null) {
-                DoPopulateList();
+            try {
+                ClearAllTinks();
+                if (AutoTinkItemNameLabel.Text.ToString() != "[None]" && itemWO != null) {
+                    DoPopulateList();
+                }
+                else {
+                    Util.WriteToChat("No item selected...");
+                }
             }
-            else {
-                Util.WriteToChat("No item selected...");
-            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void AutoTinkAddSelectedButton_Hit(object sender, EventArgs e) {
-            ClearAllTinks();
-            itemWO = CoreManager.Current.WorldFilter[CoreManager.Current.Actions.CurrentSelection];
-            targetItemUpdated = true;
-            if (itemWO.HasIdData && itemWO.Values(DoubleValueKey.SalvageWorkmanship) > 0 && itemWO.Values(LongValueKey.Material) > 0 && itemWO.Values(LongValueKey.NumberTimesTinkered) < 10) {
-                AutoTinkItemNameLabel.Text = Util.GetObjectName(itemWO.Id);
-                FilterSalvage(itemWO);
+            try {
+                ClearAllTinks();
+                itemWO = CoreManager.Current.WorldFilter[CoreManager.Current.Actions.CurrentSelection];
+                targetItemUpdated = true;
+                if (itemWO.HasIdData && itemWO.Values(DoubleValueKey.SalvageWorkmanship) > 0 && itemWO.Values(LongValueKey.Material) > 0 && itemWO.Values(LongValueKey.NumberTimesTinkered) < 10) {
+                    AutoTinkItemNameLabel.Text = Util.GetObjectName(itemWO.Id);
+                    FilterSalvage(itemWO);
+                }
+                else {
+                    Util.WriteToChat(Util.GetObjectName(itemWO.Id).ToString() + " cannot be tinkered. Please select another item.");
+                    AutoTinkItemNameLabel.Text = "[None]";
+                    itemWO = null;
+                }
             }
-            else {
-                Util.WriteToChat(Util.GetObjectName(itemWO.Id).ToString() + " cannot be tinkered. Please select another item.");
-                AutoTinkItemNameLabel.Text = "[None]";
-                itemWO = null;
-            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void FilterSalvageCombo(string[] salvageArray) {
@@ -387,7 +399,10 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
         }
 
         private void AutoTinkStartButton_Hit(object sender, EventArgs e) {
+            try {
                 DoTinks();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         
         private void UpdateTinkList() {
@@ -465,20 +480,26 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
         }
 
         private void WaitForItemUpdate(object sender, ChangeObjectEventArgs e) {
-            if (e.Changed.Id == fakeItem.id && readyForNextTink) {
-                //Util.WriteToChat("changed: " + e.Changed.Name);
-                targetItemUpdated = true;
-                CoreManager.Current.WorldFilter.ChangeObject -= WaitForItemUpdate;
-                NextTink();
+            try {
+                if (e.Changed.Id == fakeItem.id && readyForNextTink) {
+                    //Util.WriteToChat("changed: " + e.Changed.Name);
+                    targetItemUpdated = true;
+                    CoreManager.Current.WorldFilter.ChangeObject -= WaitForItemUpdate;
+                    NextTink();
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UBHelper_ConfirmationRequest(object sender, UBHelper.ConfirmationRequest.ConfirmationRequestEventArgs e) {
-            if (e.Confirm == 5) {
-                Util.WriteToChat($"AutoTinker: Clicking Yes on {e.Text}");
-                e.ClickYes = true;
-                UBHelper.ConfirmationRequest.ConfirmationRequestEvent -= UBHelper_ConfirmationRequest;
+            try {
+                if (e.Confirm == 5) {
+                    Util.WriteToChat($"AutoTinker: Clicking Yes on {e.Text}");
+                    e.ClickYes = true;
+                    UBHelper.ConfirmationRequest.ConfirmationRequestEvent -= UBHelper_ConfirmationRequest;
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void PopulateAutoTinkCombo() {

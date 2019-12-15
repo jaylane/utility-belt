@@ -317,16 +317,19 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             bailTimer = DateTime.UtcNow;
         }
         private void EchoFilter_ClientDispatch(object sender, NetworkMessageEventArgs e) {
-            if (e.Message.Type == 0xF7B1 && (int)e.Message["action"] == 0x005F) {
-                //Logger.Debug("Server has Buy");
-                Reset_myPyreals();
-                lastEvent = DateTime.UtcNow;
+            try {
+                if (e.Message.Type == 0xF7B1 && (int)e.Message["action"] == 0x005F) {
+                    //Logger.Debug("Server has Buy");
+                    Reset_myPyreals();
+                    lastEvent = DateTime.UtcNow;
+                }
+                if (e.Message.Type == 0xF7B1 && (int)e.Message["action"] == 0x0060) {
+                    //Logger.Debug("Server has Sell");
+                    Reset_myPyreals();
+                    lastEvent = DateTime.UtcNow;
+                }
             }
-            if (e.Message.Type == 0xF7B1 && (int)e.Message["action"] == 0x0060) {
-                //Logger.Debug("Server has Sell");
-                Reset_myPyreals();
-                lastEvent = DateTime.UtcNow;
-            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         private void EchoFilter_ServerDispatch(object sender, NetworkMessageEventArgs e) {
             try {
@@ -398,14 +401,15 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             } catch { }
         }
         private void WorldFilter_ApproachVendor(object sender, ApproachVendorEventArgs e) {
-            if (vendorOpening > 0 && e.Vendor.MerchantId == vendor.Id) {
-                LogDebug("vendor " + vendor.Name + " opened successfully");
-                vendor = null;
-                vendorOpening = 0;
-                UB.Core.RenderFrame -= Core_RenderFrame_OpenVendor;
-                // VTankControl.Nav_UnBlock(); Let it bleed over into AutoVendor; odds are there's a reason this vendor was opened, and letting vtank run off prolly isn't it.
-            }
             try {
+                if (vendorOpening > 0 && e.Vendor.MerchantId == vendor.Id) {
+                    LogDebug("vendor " + vendor.Name + " opened successfully");
+                    vendor = null;
+                    vendorOpening = 0;
+                    UB.Core.RenderFrame -= Core_RenderFrame_OpenVendor;
+                    // VTankControl.Nav_UnBlock(); Let it bleed over into AutoVendor; odds are there's a reason this vendor was opened, and letting vtank run off prolly isn't it.
+                }
+
                 if (isRunning) return;
 
                 VendorCache.AddVendor(e.Vendor);
@@ -439,9 +443,12 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         }
 
         private void UBHelper_VendorClosed(object sender, EventArgs e) {
-            UBHelper.Vendor.VendorClosed -= UBHelper_VendorClosed;
-            if (isRunning)
-                Stop();
+            try {
+                UBHelper.Vendor.VendorClosed -= UBHelper_VendorClosed;
+                if (isRunning)
+                    Stop();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private string GetProfilePath(string profileName) {
@@ -564,25 +571,26 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         }
 
         public void Core_RenderFrame_VendorSpam(object sender, EventArgs e) {
-            //if Merchant info is displayed, does not need vendoring, vendorId is set, and it's been over 5 minutes since the vendor was opened; reset vendorId.
-            if (DateTime.UtcNow - vendorOpened > TimeSpan.FromSeconds(15)) {
-                showMerchantInfoCooldown = false;
-                UB.Core.RenderFrame -= Core_RenderFrame_VendorSpam;
-                if (!Enabled)
-                    vendorId = 0;
+            try {
+                //if Merchant info is displayed, does not need vendoring, vendorId is set, and it's been over 5 minutes since the vendor was opened; reset vendorId.
+                if (DateTime.UtcNow - vendorOpened > TimeSpan.FromSeconds(15)) {
+                    showMerchantInfoCooldown = false;
+                    UB.Core.RenderFrame -= Core_RenderFrame_VendorSpam;
+                    if (!Enabled)
+                        vendorId = 0;
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         public void Core_RenderFrame(object sender, EventArgs e) {
-
-            if (DateTime.UtcNow - bailTimer > TimeSpan.FromSeconds(60)) {
-                WriteToChat("bail, Timeout expired");
-                Stop();
-            }
-            if (!isRunning) return;
-
             try {
-                if (UB.Core.Actions.BusyState == 0) {
+                if (DateTime.UtcNow - bailTimer > TimeSpan.FromSeconds(60)) {
+                    WriteToChat("bail, Timeout expired");
+                    Stop();
+                }
+                if (!isRunning) return;
 
+                if (UB.Core.Actions.BusyState == 0) {
                     //if autovendor is running, and nav block has less than a second plus thinkInterval remaining, refresh it
                     if (UBHelper.vTank.locks[uTank2.ActionLockType.Navigation] < DateTime.UtcNow + TimeSpan.FromMilliseconds(1250)) {
                         UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
@@ -632,8 +640,11 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         }
 
         private void ActionQueue_InventoryEvent(object sender, EventArgs e) {
-            waitingForAutoStackCram = false;
-            UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent;
+            try {
+                waitingForAutoStackCram = false;
+                UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void DoVendoring() {

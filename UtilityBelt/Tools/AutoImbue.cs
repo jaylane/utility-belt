@@ -188,15 +188,21 @@ namespace UtilityBelt.Tools {
         }
 
         public void AutoImbueSalvageCombo_Change(object sender, EventArgs e) {
-            ClearAllTinks();
-            GetPotentialItems();
+            try {
+                ClearAllTinks();
+                GetPotentialItems();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public void AutoImbueDmgTypeCombo_Change(object sender, EventArgs e) {
-            HudStaticText c = (HudStaticText)(AutoImbueDmgTypeCombo[AutoImbueDmgTypeCombo.Current]);
-            SelectDefaultSalvage(c.Text.ToString());
-            ClearAllTinks();
-            GetPotentialItems();
+            try {
+                HudStaticText c = (HudStaticText)(AutoImbueDmgTypeCombo[AutoImbueDmgTypeCombo.Current]);
+                SelectDefaultSalvage(c.Text.ToString());
+                ClearAllTinks();
+                GetPotentialItems();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void SelectDefaultSalvage(string dmgType) {
@@ -216,18 +222,27 @@ namespace UtilityBelt.Tools {
         }
 
         private void AutoImbueRefreshListButton_Hit(object sender, EventArgs e) {
-            ClearAllTinks();
-            GetPotentialItems();
+            try {
+                ClearAllTinks();
+                GetPotentialItems();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void AutoImbueStartButton_Hit(object sender, EventArgs e) {
-            for (int i = 0; i < AutoImbueList.RowCount; i++) {
-                DoTinks();
+            try {
+                for (int i = 0; i < AutoImbueList.RowCount; i++) {
+                    DoTinks();
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void AutoImbueStopButton_Hit(object sender, EventArgs e) {
-            ClearAllTinks();
+            try {
+                ClearAllTinks();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void PopulateAutoImbueSalvageCombo() {
@@ -430,11 +445,14 @@ namespace UtilityBelt.Tools {
         }
 
         private void UBHelper_ConfirmationRequest(object sender, UBHelper.ConfirmationRequest.ConfirmationRequestEventArgs e) {
-            if (e.Confirm == 5) {
-                Util.WriteToChat($"AutoImbue: Clicking Yes on {e.Text}");
-                e.ClickYes = true;
-                UBHelper.ConfirmationRequest.ConfirmationRequestEvent -= UBHelper_ConfirmationRequest;
+            try {
+                if (e.Confirm == 5) {
+                    Util.WriteToChat($"AutoImbue: Clicking Yes on {e.Text}");
+                    e.ClickYes = true;
+                    UBHelper.ConfirmationRequest.ConfirmationRequestEvent -= UBHelper_ConfirmationRequest;
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {

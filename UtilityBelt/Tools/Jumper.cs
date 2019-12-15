@@ -147,72 +147,80 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
         }
 
         public void Core_RenderFrame(object sender, EventArgs e) {
-            if (isTurning && DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(100)) {
-                lastThought = DateTime.UtcNow;
-                if (targetDirection == Math.Round(CoreManager.Current.Actions.Heading, 0)) {
-                    if (ThinkComplete && !needToJump)
-                        Util.Think("Turning Success");
-                    isTurning = false;
-                    if (!needToJump) {
-                        UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
-                        UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.CorpseOpenAttempt);
+            try {
+                if (isTurning && DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(100)) {
+                    lastThought = DateTime.UtcNow;
+                    if (targetDirection == Math.Round(CoreManager.Current.Actions.Heading, 0)) {
+                        if (ThinkComplete && !needToJump)
+                            Util.Think("Turning Success");
+                        isTurning = false;
+                        if (!needToJump) {
+                            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+                            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.CorpseOpenAttempt);
+                        }
                     }
-                } else UBHelper.Core.TurnToHeading(targetDirection); // giv'er!
-            }
+                    else UBHelper.Core.TurnToHeading(targetDirection); // giv'er!
+                }
 
-            //abort turning if takes longer than 15 seconds
-            if (isTurning && DateTime.UtcNow - turningSeconds >= TimeSpan.FromSeconds(15)) {
-                isTurning = needToJump = false;
-                Util.ThinkOrWrite("Turning failed", ThinkFail);
-                UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
-                UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.CorpseOpenAttempt);
-            }
-            //Do the jump thing
-            if (needToJump && !isTurning) {
-                needToJump = false;
-                enableNavTimer = TimeSpan.FromMilliseconds(msToHoldDown + 15000);
-                UBHelper.Jumper.JumpComplete += Jumper_JumpComplete;
-                UBHelper.Jumper.Jump(((float)msToHoldDown / 1000), addShift, addW, addX, addZ, addC);
-                waitingForJump = true;
-                
-                navSettingTimer = DateTime.UtcNow;
-            }
-            //Set vtank nav setting back to original state after jump/turn complete
-            if (waitingForJump && DateTime.UtcNow - navSettingTimer >= enableNavTimer) {
-                jumpTries++;
-                if (jumpTries < Attempts) {
-                    navSettingTimer = DateTime.UtcNow;
-                    //I don't know if this can even still fail.....
-                    Logger.Debug("Timeout waiting for jump, trying again...");
-                    if (PauseNav)
-                        UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(15000));
-                    UBHelper.Jumper.Jump(((float)msToHoldDown / 1000), addShift, addW, addX, addZ, addC);
-                } else {
-                    Util.ThinkOrWrite("You have failed to jump too many times.", ThinkFail);
-
+                //abort turning if takes longer than 15 seconds
+                if (isTurning && DateTime.UtcNow - turningSeconds >= TimeSpan.FromSeconds(15)) {
+                    isTurning = needToJump = false;
+                    Util.ThinkOrWrite("Turning failed", ThinkFail);
                     UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
                     UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.CorpseOpenAttempt);
-                    waitingForJump = false;
-                    UB.Core.RenderFrame -= Core_RenderFrame;
-                    //clear settings
-                    addShift = addW = addZ = addX = addC = false;
-                    jumpTries = 0;
+                }
+                //Do the jump thing
+                if (needToJump && !isTurning) {
+                    needToJump = false;
+                    enableNavTimer = TimeSpan.FromMilliseconds(msToHoldDown + 15000);
+                    UBHelper.Jumper.JumpComplete += Jumper_JumpComplete;
+                    UBHelper.Jumper.Jump(((float)msToHoldDown / 1000), addShift, addW, addX, addZ, addC);
+                    waitingForJump = true;
+
+                    navSettingTimer = DateTime.UtcNow;
+                }
+                //Set vtank nav setting back to original state after jump/turn complete
+                if (waitingForJump && DateTime.UtcNow - navSettingTimer >= enableNavTimer) {
+                    jumpTries++;
+                    if (jumpTries < Attempts) {
+                        navSettingTimer = DateTime.UtcNow;
+                        //I don't know if this can even still fail.....
+                        Logger.Debug("Timeout waiting for jump, trying again...");
+                        if (PauseNav)
+                            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(15000));
+                        UBHelper.Jumper.Jump(((float)msToHoldDown / 1000), addShift, addW, addX, addZ, addC);
+                    }
+                    else {
+                        Util.ThinkOrWrite("You have failed to jump too many times.", ThinkFail);
+
+                        UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+                        UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.CorpseOpenAttempt);
+                        waitingForJump = false;
+                        UB.Core.RenderFrame -= Core_RenderFrame;
+                        //clear settings
+                        addShift = addW = addZ = addX = addC = false;
+                        jumpTries = 0;
+                    }
                 }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
 
         private void Jumper_JumpComplete() {
-            UBHelper.Jumper.JumpComplete -= Jumper_JumpComplete;
-            UB.Core.RenderFrame -= Core_RenderFrame;
-            if (ThinkComplete)
-                Util.Think("Jumper Success");
-            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
-            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.CorpseOpenAttempt);
-            waitingForJump = false;
-            //clear settings
-            addShift = addW = addZ = addX = addC = false;
-            jumpTries = 0;
+            try {
+                UBHelper.Jumper.JumpComplete -= Jumper_JumpComplete;
+                UB.Core.RenderFrame -= Core_RenderFrame;
+                if (ThinkComplete)
+                    Util.Think("Jumper Success");
+                UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+                UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.CorpseOpenAttempt);
+                waitingForJump = false;
+                //clear settings
+                addShift = addW = addZ = addX = addC = false;
+                jumpTries = 0;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         protected override void Dispose(bool disposing) {
