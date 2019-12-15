@@ -124,7 +124,7 @@ namespace UtilityBelt {
 
                 Util.Init(this, assemblyLocation, storagePath); //static classes can not have constructors, but still need to init variables.
 
-                UBHelper.Core.Startup(assemblyLocation);
+                UBHelper.Core.Startup(assemblyLocation, storagePath, characterName);
 
                 Core.CommandLineText += Core_CommandLineText;
 
