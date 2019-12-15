@@ -317,7 +317,7 @@ Provides a command-line interface to inventory management.
                     TestIGItem(item);
                 }
 
-                assessor = new Assessor.Job(UB.Assessor, ref idItems, TestIGItem, () => { assessor = null; });
+                assessor = new Assessor.Job(UB.Assessor, ref idItems, TestIGItem, () => { assessor = null; }, false);
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
