@@ -14,7 +14,7 @@ namespace UtilityBelt.Lib.Dungeon {
         public static Dictionary<int, DxTexture> markerCache = new Dictionary<int, DxTexture>();
         public static Dictionary<int, DxTexture> iconCache = new Dictionary<int, DxTexture>();
         public static Dictionary<string, DxTexture> textCache = new Dictionary<string, DxTexture>();
-        public static int TileScale = 7;
+        public static int TileScale = 5;
 
         public static DxTexture GetTile(ushort environmentId) {
             if (tileCache.ContainsKey(environmentId)) return tileCache[environmentId];
@@ -40,7 +40,7 @@ namespace UtilityBelt.Lib.Dungeon {
                 }
 
                 if (image != null) {
-                    var texture = new DxTexture(new Size(10 * TileScale, 10 * TileScale));
+                    var texture = new DxTexture(new Size(10, 10));
                     try {
                         texture.BeginRender();
                         texture.Fill(new Rectangle(0, 0, texture.Width, texture.Height), Color.Transparent);

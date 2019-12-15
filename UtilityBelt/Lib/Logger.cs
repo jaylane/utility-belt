@@ -88,17 +88,23 @@ namespace UtilityBelt {
 
                 using (StreamWriter writer = new StreamWriter(Path.Combine(Util.GetPluginDirectory(), "exceptions.txt"), true)) {
 
-                    writer.WriteLine("============================================================================");
+                    writer.WriteLine(" ============================================================================");
                     writer.WriteLine(ex.ToString());
                     writer.WriteLine("============================================================================");
-                    writer.WriteLine(DateTime.Now.ToString());
-                    writer.WriteLine("Error: " + ex.Message);
-                    writer.WriteLine("Source: " + ex.Source);
-                    writer.WriteLine("Stack: " + ex.StackTrace);
-                    if (ex.InnerException != null) {
-                        writer.WriteLine("Inner: " + ex.InnerException.Message);
-                        writer.WriteLine("Inner Stack: " + ex.InnerException.StackTrace);
-                    }
+                    writer.WriteLine("");
+                    writer.Close();
+                }
+            }
+            catch {
+            }
+        }
+
+        public static void LogException(string ex) {
+            try {
+                using (StreamWriter writer = new StreamWriter(Path.Combine(Util.GetPluginDirectory(), "exceptions.txt"), true)) {
+
+                    writer.WriteLine("============================================================================");
+                    writer.WriteLine(ex);
                     writer.WriteLine("============================================================================");
                     writer.WriteLine("");
                     writer.Close();

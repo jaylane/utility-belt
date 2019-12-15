@@ -561,6 +561,26 @@ Draws an overlay with dungeon maps on your screen
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
+        private void VisualNav_NavUpdated(object sender, EventArgs e) {
+            try {
+                if (!Display.VisualNavLines.Enabled || UB.VisualNav.currentRoute == null || UB.VisualNav.currentRoute.NavType != Lib.VTNav.eNavType.Once) return;
+
+                var z = (int)(Math.Floor((PhysicsObject.GetPosition(UB.Core.CharacterFilter.Id).Z + 3) / 6) * 6);
+                var lastZ = (int)(Math.Floor((lastPlayerZ + 3) / 6) * 6);
+
+                if (zLayerCache.ContainsKey(z)) {
+                    zLayerCache[z].Dispose();
+                    zLayerCache.Remove(z);
+                }
+
+                if (z != lastZ && zLayerCache.ContainsKey(lastZ)) {
+                    zLayerCache[lastZ].Dispose();
+                    zLayerCache.Remove(lastZ);
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
         private void UIFollowCharacter_Hit(object sender, EventArgs e) {
             try {
                 isFollowingCharacter = true;
@@ -860,6 +880,7 @@ Draws an overlay with dungeon maps on your screen
                     if (isRunning) {
                         zoomSaveTimer.Stop();
                         UB.VisualNav.NavChanged -= VisualNav_NavChanged;
+                        UB.VisualNav.NavUpdated -= VisualNav_NavUpdated;
                         UB.Core.RenderFrame -= Core_RenderFrame;
                         UB.Core.RegionChange3D -= Core_RegionChange3D;
                         UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
@@ -880,6 +901,7 @@ Draws an overlay with dungeon maps on your screen
 
                 if (!isRunning) {
                     UB.VisualNav.NavChanged += VisualNav_NavChanged;
+                    UB.VisualNav.NavUpdated += VisualNav_NavUpdated;
                     UB.Core.RenderFrame += Core_RenderFrame;
                     UB.Core.RegionChange3D += Core_RegionChange3D;
                     UB.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
@@ -1162,7 +1184,10 @@ Draws an overlay with dungeon maps on your screen
                     var tile = TextureCache.GetTile(cell.EnvironmentId);
                     var tilePoint = new Point(x + (TextureCache.TileScale * 5), y + (TextureCache.TileScale * 5));
                     var tint = visitedTiles.Contains(cell.Landcell) ? VisitedTilesColor : -1;
-                    zLayerTexture.DrawTextureRotated(tile, tileRect, tilePoint, tint, cell.R);
+                    var transmat = new Matrix();
+                    transmat.AffineTransformation(TextureCache.TileScale, new Vector3(5 * TextureCache.TileScale,5 * TextureCache.TileScale,0), Geometry.ToQuaternion(cell.R,0,0), new Vector3(x,y,0));
+
+                    zLayerTexture.DrawTextureWithTransform(tile, transmat, tint);
 
                     if (Debug) {
                         try {
@@ -1270,8 +1295,9 @@ Draws an overlay with dungeon maps on your screen
                     marker = TextureCache.GetMarker(Display.Markers.GetMarkerColor(wo));
                 }
 
-                Quaternion q = new Quaternion(0, 0, 0, 0);
-                transform.AffineTransformation(1, new Vector3((marker.Width / 2), (marker.Height / 2), 0), q, new Vector3(x - (marker.Width / 2), y - (marker.Height / 2), 0));
+                Quaternion q = Geometry.HeadingToQuaternion(0);
+                var s = Display.Markers.GetSize(wo) / 5f;
+                transform.AffineTransformation(s, new Vector3((marker.Width * s / 2), (marker.Height * s / 2), 0), q, new Vector3(x - (marker.Width / 2) * s, y - (marker.Height / 2) * s, 0));
                 texture.DrawTextureWithTransform(marker, transform, -1);
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -1279,6 +1305,8 @@ Draws an overlay with dungeon maps on your screen
 
         #region VisualNav
         private void DrawNavLines(DxTexture texture, int zLayer) {
+            if (!Display.VisualNavLines.Enabled) return;
+
             var route = UB.VisualNav.currentRoute;
             if (route == null) return;
 
@@ -1303,11 +1331,16 @@ Draws an overlay with dungeon maps on your screen
                 if (!UB.DungeonMaps.Display.VisualNavStickyPoint.Enabled) return;
 
                 VTNPoint point = allPoints[0];
-                if (Math.Abs(zLayer - (point.Z*240) - 6) > 6) return;
                 var landblock = Geometry.GetLandblockFromCoordinates((float)point.EW, (float)point.NS);
                 var pointOffset = Geometry.LandblockOffsetFromCoordinates(currentLandblock, (float)point.EW, (float)point.NS);
                 var x = ((dz.Width - 10 - (pointOffset.X - dz.minX) + 5) * TextureCache.TileScale);
                 var y = ((pointOffset.Y - dz.minY + 5) * TextureCache.TileScale);
+                var pointZ = (point.Z * 240) + 1;
+                bool pointIsOnActiveLayer = Math.Abs(pointZ - zLayer) < 4;
+
+                if (!pointIsOnActiveLayer) 
+                    return;
+
                 texture.DrawPortalImage(100667897, new Rectangle((int)x - 15, (int)y - 15, 30, 30));
                 return;
             }
@@ -1355,6 +1388,7 @@ Draws an overlay with dungeon maps on your screen
                 if (isRunning) {
                     zoomSaveTimer.Stop();
                     UB.VisualNav.NavChanged -= VisualNav_NavChanged;
+                    UB.VisualNav.NavUpdated -= VisualNav_NavUpdated;
                     UB.Core.RenderFrame -= Core_RenderFrame;
                     UB.Core.RegionChange3D -= Core_RegionChange3D;
                     UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;

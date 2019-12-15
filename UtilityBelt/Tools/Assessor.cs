@@ -146,7 +146,7 @@ namespace UtilityBelt.Tools {
         }
 
         private void Stop() {
-            if (isRunning && jobs.Count == 0 && IdentQueue.Count == 0 && IdentSent.Count == 0) {
+            if (isRunning && (jobs == null || jobs.Count == 0) && IdentQueue.Count == 0 && IdentSent.Count == 0) {
                 isRunning = false;
                 UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
                 UB.Core.RenderFrame -= Core_RenderFrame;
@@ -201,27 +201,29 @@ namespace UtilityBelt.Tools {
                         Logger.Debug($"Assessor: 0x{thisid:X8} Failed");
                     }
                 }
+                var identKeys = IdentSent.Keys.ToArray();
+                foreach (int f in identKeys) {
+                    if (!IdentSent.ContainsKey(f)) continue;
 
-                foreach (KeyValuePair<int, DateTime> f in IdentSent) {
-                    if (DateTime.UtcNow > f.Value) {
-                        IdentSent[f.Key] = DateTime.UtcNow + TimeSpan.FromMilliseconds(1500);
-                        if (!failures.ContainsKey(f.Key))
-                            failures.Add(f.Key, 1);
+                    if (DateTime.UtcNow > IdentSent[f]) {
+                        IdentSent[f] = DateTime.UtcNow + TimeSpan.FromMilliseconds(1500);
+                        if (!failures.ContainsKey(f))
+                            failures.Add(f, 1);
                         else
-                            failures[f.Key]++;
+                            failures[f]++;
 
-                        if (failures[f.Key] > 10) {
-                            Logger.Debug($"Assessor: Ident FAILED {f.Key:X8}");
-                            fail.Add(f.Key);
+                        if (failures[f] > 10) {
+                            Logger.Debug($"Assessor: Ident FAILED {f:X8}");
+                            fail.Add(f);
                             foreach (Job j in jobs) {
-                                if (j.ids.Contains(f.Key)) {
-                                    j.Handle(f.Key);
+                                if (j.ids.Contains(f)) {
+                                    j.Handle(f);
                                 }
                             }
 
                         }
                         else {
-                            m(f.Key);
+                            m(f);
                             nextIdentWindow = DateTime.UtcNow + TimeSpan.FromMilliseconds(assessDelay);
                             //Logger.Debug($"Assessor: Resend Ident {f.Key:X8}");
                             break;
@@ -236,12 +238,15 @@ namespace UtilityBelt.Tools {
                     fail.Clear();
                 }
 
-                jobs.ForEach(j => {
-                    if (DateTime.UtcNow > j.nextSpam) {
-                        Util.WriteToChat($"Assessor waiting to ID {j.ids.Count} of {j.initialCount} items. This will take about {(j.ids.Count * ((float)assessDelay / 1000f)):n2} seconds.");
-                        j.nextSpam = DateTime.UtcNow + TimeSpan.FromSeconds(10);
-                    }
-                });
+                if (jobs != null) {
+                    jobs.ForEach(j => {
+                        if (j == null) Logger.LogException("j is null");
+                        if (DateTime.UtcNow > j.nextSpam) {
+                            Util.WriteToChat($"Assessor waiting to ID {j.ids.Count} of {j.initialCount} items. This will take about {(j.ids.Count * ((float)assessDelay / 1000f)):n2} seconds.");
+                            j.nextSpam = DateTime.UtcNow + TimeSpan.FromSeconds(10);
+                        }
+                    });
+                }
 
                 Stop();
             }
@@ -262,7 +267,8 @@ namespace UtilityBelt.Tools {
                             w.Delete();
                         }
                     }
-                    if (jobs.Count > 0) {
+                    
+                    if (jobs != null && jobs.Count > 0) {
                         foreach (Job j in jobs.Reverse<Job>()) {
                             if (j.ids.Contains(item_id)) {
                                 j.Handle(item_id);

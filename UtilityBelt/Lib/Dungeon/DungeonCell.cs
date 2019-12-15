@@ -13,6 +13,7 @@ namespace UtilityBelt.Lib.Dungeon {
         public int Y;
         public int Z;
         public float R = 0;
+        public float Rot = 0;
 
         public DungeonCell(int landcell) {
             byte[] cellFile = Util.FileService.GetCellFile(landcell);
@@ -29,6 +30,8 @@ namespace UtilityBelt.Lib.Dungeon {
                 Y = (int)Math.Round(BitConverter.ToSingle(cellFile, 24 + (int)cellFile[12] * 2));
                 Z = (int)Math.Round(BitConverter.ToSingle(cellFile, 28 + (int)cellFile[12] * 2));
                 var rot = BitConverter.ToSingle(cellFile, 32 + (int)cellFile[12] * 2);
+
+                Rot = rot;
 
                 if (X % 10 != 0) {
                     Landcell = 0;
