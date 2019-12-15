@@ -157,6 +157,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
         private List<D3DObj> shapes = new List<D3DObj>();
 
         public event EventHandler NavChanged;
+        public event EventHandler NavUpdated;
 
         #region Config
         [Summary("Enabled")]
@@ -226,6 +227,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
             Display.PropertyChanged += (s, e) => { needsDraw = true; };
 
             uTank2.PluginCore.PC.NavRouteChanged += PC_NavRouteChanged;
+            uTank2.PluginCore.PC.NavWaypointChanged += PC_NavWaypointChanged;
             if (UBHelper.Core.version >= 1912022230) UBHelper.VideoPatch.Changed += VideoPatch_Changed;
 
             PropertyChanged += (s, e) => {
@@ -234,6 +236,13 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
                     DrawCurrentRoute();
                 }
             };
+        }
+
+        private void PC_NavWaypointChanged() {
+            try {
+                NavUpdated?.Invoke(this, null);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void VideoPatch_Changed(object sender, EventArgs e) {
@@ -386,6 +395,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
                         UB.Core.RenderFrame -= Core_RenderFrame;
                         UB.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
                         uTank2.PluginCore.PC.NavRouteChanged -= PC_NavRouteChanged;
+                        uTank2.PluginCore.PC.NavWaypointChanged -= PC_NavWaypointChanged;
                         if (UBHelper.Core.version >= 1912022230) UBHelper.VideoPatch.Changed -= VideoPatch_Changed;
                     }
                     catch { }
