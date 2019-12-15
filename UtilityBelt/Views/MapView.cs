@@ -46,19 +46,28 @@ namespace UtilityBelt.Views {
                 };
 
                 view.Moved += (s, e) => {
-                    ResizeMapHud();
-                    if (timer.Enabled) timer.Stop();
-                    timer.Start();
+                    try {
+                        ResizeMapHud();
+                        if (timer.Enabled) timer.Stop();
+                        timer.Start();
+                    }
+                    catch (Exception ex) { Logger.LogException(ex); }
                 };
 
                 view.Resize += (s, e) => {
-                    ResizeMapHud();
-                    if (timer.Enabled) timer.Stop();
-                    timer.Start();
+                    try {
+                        ResizeMapHud();
+                        if (timer.Enabled) timer.Stop();
+                        timer.Start();
+                    }
+                    catch (Exception ex) { Logger.LogException(ex); }
                 };
 
                 view.VisibleChanged += (s, e) => {
-                    ResizeMapHud();
+                    try {
+                        ResizeMapHud();
+                    }
+                    catch (Exception ex) { Logger.LogException(ex); }
                 };
 
                 view.ShowInBar = UB.DungeonMaps.Enabled;

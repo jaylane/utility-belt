@@ -19,12 +19,15 @@ namespace UtilityBelt.Lib {
 
             EventHandler<EventArgs> ev = null;
             ev = (s, e) => {
-                var sb = new StringBuilder();
-                mciSendString($"status {soundId} mode", sb, 128, core.Decal.Hwnd);
-                if (sb.ToString().Equals("stopped", StringComparison.OrdinalIgnoreCase)) {
-                    mciSendString($"close {soundId}", null, 0, core.Decal.Hwnd);
-                    core.RenderFrame -= ev;
+                try {
+                    var sb = new StringBuilder();
+                    mciSendString($"status {soundId} mode", sb, 128, core.Decal.Hwnd);
+                    if (sb.ToString().Equals("stopped", StringComparison.OrdinalIgnoreCase)) {
+                        mciSendString($"close {soundId}", null, 0, core.Decal.Hwnd);
+                        core.RenderFrame -= ev;
+                    }
                 }
+                catch (Exception ex) { Logger.LogException(ex); }
             };
 
             core.RenderFrame += ev;

@@ -369,11 +369,14 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
         }
 
         public void Core_RenderFrame(object sender, EventArgs e) {
-            if (needsDraw) {
-                needsDraw = false;
-                forceUpdate = true;
-                DrawCurrentRoute();
+            try {
+                if (needsDraw) {
+                    needsDraw = false;
+                    forceUpdate = true;
+                    DrawCurrentRoute();
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         protected override void Dispose(bool disposing) {

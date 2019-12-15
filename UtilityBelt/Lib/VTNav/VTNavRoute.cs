@@ -265,6 +265,13 @@ namespace UtilityBelt.Lib.VTNav {
                         currentNavShape = CoreManager.Current.D3DService.MarkCoordsWithShape(0f, 0f, 0f, D3DShape.Ring, Color.Red.ToArgb());
                     }
 
+                    try {
+                        currentNavShape.Visible = true;
+                    }
+                    catch {
+                        currentNavShape = CoreManager.Current.D3DService.MarkCoordsWithShape(0f, 0f, 0f, D3DShape.Ring, Color.Red.ToArgb());
+                    }
+
                     // this is dumb, i cant get it to convert straight to a float
                     var navCloseStopRangeStr = UBHelper.vTank.Instance?.GetSetting("NavCloseStopRange").ToString();
 

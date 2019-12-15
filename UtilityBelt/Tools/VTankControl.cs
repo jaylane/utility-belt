@@ -89,8 +89,11 @@ namespace UtilityBelt.Tools {
             else UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
         }
         private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
-            UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
-            Enable();
+            try {
+                UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
+                Enable();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public void Enable() {
@@ -99,8 +102,11 @@ namespace UtilityBelt.Tools {
         }
 
         private void CharacterFilter_Logoff(object sender, Decal.Adapter.Wrappers.LogoffEventArgs e) {
-            if (e.Type == Decal.Adapter.Wrappers.LogoffEventType.Authorized)
-                UBHelper.vTank.Disable();
+            try {
+                if (e.Type == Decal.Adapter.Wrappers.LogoffEventType.Authorized)
+                    UBHelper.vTank.Disable();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {

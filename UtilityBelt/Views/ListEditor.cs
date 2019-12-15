@@ -63,27 +63,30 @@ namespace UtilityBelt.Views {
         }
 
         private void ChildList_Click(object sender, int row, int col) {
-            switch (col) {
-                case 0: // edit
-                    if (selectedIndex != -1) {
-                        ((HudStaticText)((HudList.HudListRowAccessor)ChildList[selectedIndex])[0]).TextColor = view.Theme.GetColor("ListText");
-                    }
+            try {
+                switch (col) {
+                    case 0: // edit
+                        if (selectedIndex != -1) {
+                            ((HudStaticText)((HudList.HudListRowAccessor)ChildList[selectedIndex])[0]).TextColor = view.Theme.GetColor("ListText");
+                        }
 
-                    selectedIndex = row;
-                    ((HudStaticText)((HudList.HudListRowAccessor)ChildList[selectedIndex])[0]).TextColor = Color.Red;
-                    form.SetValue(((HudStaticText)((HudList.HudListRowAccessor)ChildList[selectedIndex])[0]).Text);
-                    AddOrUpdate.Text = "Update";
-                    Cancel.Visible = true;
-                    Redraw();
-                    break;
+                        selectedIndex = row;
+                        ((HudStaticText)((HudList.HudListRowAccessor)ChildList[selectedIndex])[0]).TextColor = Color.Red;
+                        form.SetValue(((HudStaticText)((HudList.HudListRowAccessor)ChildList[selectedIndex])[0]).Text);
+                        AddOrUpdate.Text = "Update";
+                        Cancel.Visible = true;
+                        Redraw();
+                        break;
 
-                case 1: // delete
-                    var bindingFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod;
-                    var value = prop.Property.GetValue(prop.Parent, null);
-                    value.GetType().InvokeMember("RemoveAt", bindingFlags, null, value, new object[] { row });
-                    ResetForm();
-                    break;
+                    case 1: // delete
+                        var bindingFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod;
+                        var value = prop.Property.GetValue(prop.Parent, null);
+                        value.GetType().InvokeMember("RemoveAt", bindingFlags, null, value, new object[] { row });
+                        ResetForm();
+                        break;
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void AddOrUpdate_Hit(object sender, EventArgs e) {
@@ -106,7 +109,10 @@ namespace UtilityBelt.Views {
         }
 
         private void Cancel_Hit(object sender, EventArgs e) {
-            ResetForm();
+            try {
+                ResetForm();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void ResetForm() {

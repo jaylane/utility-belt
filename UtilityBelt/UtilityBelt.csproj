@@ -167,11 +167,6 @@
     <Compile Include="Views\ListEditor.cs" />
     <Compile Include="Views\MapView.cs" />
     <Compile Include="Views\MainView.cs" />
-    <Compile Include="Lib\VirindiViews\ViewSystemSelector.cs" />
-    <Compile Include="Lib\VirindiViews\Wrapper.cs" />
-    <Compile Include="Lib\VirindiViews\Wrapper_Decal.cs" />
-    <Compile Include="Lib\VirindiViews\Wrapper_MyHuds.cs" />
-    <Compile Include="Lib\VirindiViews\Wrapper_WireupHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">

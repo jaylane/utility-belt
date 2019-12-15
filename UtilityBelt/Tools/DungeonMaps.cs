@@ -555,11 +555,17 @@ Draws an overlay with dungeon maps on your screen
         }
 
         private void VisualNav_NavChanged(object sender, EventArgs e) {
-            needsClear = true;
+            try {
+                needsClear = true;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UIFollowCharacter_Hit(object sender, EventArgs e) {
-            isFollowingCharacter = true;
+            try {
+                isFollowingCharacter = true;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         private void UIOpacitySlider_Changed(int min, int max, int pos) {
             try {

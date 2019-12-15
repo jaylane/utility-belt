@@ -102,7 +102,10 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
         public ObservableCollection<string> AutoAcceptChars { get; set; } = new ObservableCollection<string>();
 
         private void AutoAcceptChars_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) {
-            OnPropertyChanged(nameof(AutoAcceptChars));
+            try {
+                OnPropertyChanged(nameof(AutoAcceptChars));
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         #endregion
 
@@ -215,41 +218,53 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
         }
 
         private void WorldFilter_FailToAddTradeItem(object sender, FailToAddTradeItemEventArgs e) {
-            if (running)
-                pendingAddItems.Remove(e.ItemId);
+            try {
+                if (running)
+                    pendingAddItems.Remove(e.ItemId);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void WorldFilter_AddTradeItem(object sender, AddTradeItemEventArgs e) {
-            if (running && e.SideId != 2) {
-                LogDebug($"{Util.GetObjectName(e.ItemId)} added to trade window");
-                if (pendingAddItems.Remove(e.ItemId)) {
-                    addedItems.Add(e.ItemId);
-                    bailTimer = DateTime.UtcNow;
+            try {
+                if (running && e.SideId != 2) {
+                    LogDebug($"{Util.GetObjectName(e.ItemId)} added to trade window");
+                    if (pendingAddItems.Remove(e.ItemId)) {
+                        addedItems.Add(e.ItemId);
+                        bailTimer = DateTime.UtcNow;
+                    }
                 }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void WorldFilter_EndTrade(object sender, EndTradeEventArgs e) {
-            if (running)
-                Stop();
-            traderId = 0;
+            try {
+                if (running)
+                    Stop();
+                traderId = 0;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void WorldFilter_EnterTrade(object sender, Decal.Adapter.Wrappers.EnterTradeEventArgs e) {
-            if (e.TradeeId == UB.Core.CharacterFilter.Id)
-                traderId = e.TraderId;
-            else if (e.TraderId == UB.Core.CharacterFilter.Id)
-                traderId = e.TradeeId;
+            try {
+                if (e.TradeeId == UB.Core.CharacterFilter.Id)
+                    traderId = e.TraderId;
+                else if (e.TraderId == UB.Core.CharacterFilter.Id)
+                    traderId = e.TradeeId;
 
-            if (traderId == 0 || UB.Core.WorldFilter[traderId] == null)
-                return;
+                if (traderId == 0 || UB.Core.WorldFilter[traderId] == null)
+                    return;
 
-            if (!UB.AutoTrade.Enabled)
-                return;
+                if (!UB.AutoTrade.Enabled)
+                    return;
 
-            traderName = UB.Core.WorldFilter[traderId].Name;
+                traderName = UB.Core.WorldFilter[traderId].Name;
 
-            Start(traderId);
+                Start(traderId);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public void Start(int traderId, string useProfilePath = "") {
@@ -522,15 +537,18 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
         private void TrySplitItem(int item, int stackCount, int splitCount) {
             EventHandler<CreateObjectEventArgs> splitHandler = null;
             splitHandler = (sender, e) => {
-                if (e.New.Container == UB.Core.CharacterFilter.Id &&
-                    e.New.Name == UB.Core.WorldFilter[item].Name &&
-                    e.New.Type == UB.Core.WorldFilter[item].Type &&
-                    e.New.Values(LongValueKey.StackCount, 1) == splitCount) {
-                    LogDebug($"Adding {splitCount} of {Util.GetObjectName(e.New.Id)} to trade window");
-                    pendingAddItems.Add(e.New.Id);
-                    UB.Core.Actions.TradeAdd(e.New.Id);
-                    UB.Core.WorldFilter.CreateObject -= splitHandler;
+                try {
+                    if (e.New.Container == UB.Core.CharacterFilter.Id &&
+                        e.New.Name == UB.Core.WorldFilter[item].Name &&
+                        e.New.Type == UB.Core.WorldFilter[item].Type &&
+                        e.New.Values(LongValueKey.StackCount, 1) == splitCount) {
+                        LogDebug($"Adding {splitCount} of {Util.GetObjectName(e.New.Id)} to trade window");
+                        pendingAddItems.Add(e.New.Id);
+                        UB.Core.Actions.TradeAdd(e.New.Id);
+                        UB.Core.WorldFilter.CreateObject -= splitHandler;
+                    }
                 }
+                catch (Exception ex) { Logger.LogException(ex); }
             };
 
             UB.Core.Actions.SelectItem(item);

@@ -156,12 +156,15 @@ Chat logger supports the following message types:
                         var row = UIChatLogTypeList.AddRow();
                         ((HudCheckBox)row[0]).Checked = false;
                         ((HudCheckBox)row[0]).Change += (s, e) => {
-                            if (((HudCheckBox)row[0]).Checked && !currentSelectedTypes.Contains(type)) {
-                                currentSelectedTypes.Add(type);
+                            try {
+                                if (((HudCheckBox)row[0]).Checked && !currentSelectedTypes.Contains(type)) {
+                                    currentSelectedTypes.Add(type);
+                                }
+                                else if (currentSelectedTypes.Contains(type)) {
+                                    currentSelectedTypes.Remove(type);
+                                }
                             }
-                            else if (currentSelectedTypes.Contains(type)) {
-                                currentSelectedTypes.Remove(type);
-                            }
+                            catch (Exception ex) { Logger.LogException(ex); }
                         };
                         ((HudPictureBox)row[1]).Image = type.GetIcon();
                         ((HudStaticText)row[2]).Text = type.GetDescription();
@@ -190,91 +193,100 @@ Chat logger supports the following message types:
         }
 
         private void UIChatLogRuleList_Click(object sender, int row, int col) {
-            if (col == 0) {
-                if (editingRow.HasValue && row == editingRow.Value) {
-                    editingRow = null;
-                    UIChatLogMessageFilter.Text = "";
-                    UIChatLogRuleAddButton.Text = "Add Rule";
-                }
-
-                Rules.RemoveAt(row);
-            }
-            else if (col == 1) {
-                Util.WriteToChat("[" + string.Join(", ", Rules[row].Types.Select(t => t.ToString()).ToArray()) + "]");
-            }
-            else if (col == 2) {
-                if (editingRow.HasValue)
-                    ((HudStaticText)UIChatLogRuleList[editingRow.Value][2]).TextColor = System.Drawing.Color.White;
-
-                var tRow = UIChatLogRuleList[row];
-                editingRow = row;
-                UIChatLogMessageFilter.Text = Rules[row].MessageFilter;
-
-                currentSelectedTypes.Clear();
-                for (var i = 0; i < UIChatLogTypeList.RowCount; ++i) {
-                    var r = UIChatLogTypeList[i];
-                    if (Rules[row].Types.Contains(typeTable[i])) {
-                        currentSelectedTypes.Add(typeTable[i]);
-                        ((HudCheckBox)r[0]).Checked = true;
+            try {
+                if (col == 0) {
+                    if (editingRow.HasValue && row == editingRow.Value) {
+                        editingRow = null;
+                        UIChatLogMessageFilter.Text = "";
+                        UIChatLogRuleAddButton.Text = "Add Rule";
                     }
-                    else {
-                        ((HudCheckBox)r[0]).Checked = false;
-                    }
-                }
 
-                ((HudStaticText)tRow[2]).TextColor = System.Drawing.Color.Red;
-                UIChatLogRuleAddButton.Text = "Save Changes";
+                    Rules.RemoveAt(row);
+                }
+                else if (col == 1) {
+                    Util.WriteToChat("[" + string.Join(", ", Rules[row].Types.Select(t => t.ToString()).ToArray()) + "]");
+                }
+                else if (col == 2) {
+                    if (editingRow.HasValue)
+                        ((HudStaticText)UIChatLogRuleList[editingRow.Value][2]).TextColor = System.Drawing.Color.White;
+
+                    var tRow = UIChatLogRuleList[row];
+                    editingRow = row;
+                    UIChatLogMessageFilter.Text = Rules[row].MessageFilter;
+
+                    currentSelectedTypes.Clear();
+                    for (var i = 0; i < UIChatLogTypeList.RowCount; ++i) {
+                        var r = UIChatLogTypeList[i];
+                        if (Rules[row].Types.Contains(typeTable[i])) {
+                            currentSelectedTypes.Add(typeTable[i]);
+                            ((HudCheckBox)r[0]).Checked = true;
+                        }
+                        else {
+                            ((HudCheckBox)r[0]).Checked = false;
+                        }
+                    }
+
+                    ((HudStaticText)tRow[2]).TextColor = System.Drawing.Color.Red;
+                    UIChatLogRuleAddButton.Text = "Save Changes";
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UIChatLogRuleAddButton_Hit(object sender, EventArgs e) {
-            if (currentSelectedTypes.Count <= 0) {
-                WriteToChat("Please select one or more message types to filter.");
-                return;
-            }
-
-            var filter = UIChatLogMessageFilter.Text;
-
-            var isValid = true;
-            if (!string.IsNullOrEmpty(filter)) {
-                try {
-                    Regex.Match("", filter);
+            try {
+                if (currentSelectedTypes.Count <= 0) {
+                    WriteToChat("Please select one or more message types to filter.");
+                    return;
                 }
-                catch (ArgumentException) {
-                    isValid = false;
+
+                var filter = UIChatLogMessageFilter.Text;
+
+                var isValid = true;
+                if (!string.IsNullOrEmpty(filter)) {
+                    try {
+                        Regex.Match("", filter);
+                    }
+                    catch (ArgumentException) {
+                        isValid = false;
+                    }
+                }
+
+                if (!isValid) {
+                    LogError("Invalid filter regex.");
+                    return;
+                }
+
+                var newRule = new ChatLogRule() {
+                    MessageFilter = filter,
+                    Types = currentSelectedTypes.ToArray()
+                };
+                if (editingRow.HasValue) {
+                    Rules[editingRow.Value] = newRule;
+                    ((HudStaticText)UIChatLogRuleList[editingRow.Value][2]).TextColor = System.Drawing.Color.White;
+                    editingRow = null;
+                    UIChatLogRuleAddButton.Text = "Add Rule";
+                }
+                else {
+                    LogDebug($"New rule added: {newRule}");
+                    Rules.Add(newRule);
+                }
+
+                UIChatLogMessageFilter.Text = "";
+                currentSelectedTypes.Clear();
+                for (var i = 0; i < UIChatLogTypeList.RowCount; ++i) {
+                    var row = UIChatLogTypeList[i];
+                    ((HudCheckBox)row[0]).Checked = false;
                 }
             }
-
-            if (!isValid) {
-                LogError("Invalid filter regex.");
-                return;
-            }
-
-            var newRule = new ChatLogRule() {
-                MessageFilter = filter,
-                Types = currentSelectedTypes.ToArray()
-            };
-            if (editingRow.HasValue) {
-                Rules[editingRow.Value] = newRule;
-                ((HudStaticText)UIChatLogRuleList[editingRow.Value][2]).TextColor = System.Drawing.Color.White;
-                editingRow = null;
-                UIChatLogRuleAddButton.Text = "Add Rule";
-            }
-            else {
-                LogDebug($"New rule added: {newRule}");
-                Rules.Add(newRule);
-            }
-
-            UIChatLogMessageFilter.Text = "";
-            currentSelectedTypes.Clear();
-            for (var i = 0; i < UIChatLogTypeList.RowCount; ++i) {
-                var row = UIChatLogTypeList[i];
-                ((HudCheckBox)row[0]).Checked = false;
-            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UIChatLogSaveToFile_Change(object sender, EventArgs e) {
-            SaveToFile = UIChatLogSaveToFile.Checked;
+            try {
+                SaveToFile = UIChatLogSaveToFile.Checked;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UpdateUI() {
@@ -295,7 +307,10 @@ Chat logger supports the following message types:
         }
 
         private void UIChatLogClear_Hit(object sender, EventArgs e) {
-            chatLogList.Clear();
+            try {
+                chatLogList.Clear();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Timer_Tick(object _) {
@@ -303,9 +318,12 @@ Chat logger supports the following message types:
         }
 
         private void UIChatLogLogList_Click(object sender, int row, int col) {
-            var clickedRow = filteredChatLogList[filteredChatLogList.Count - 1 - row];
-            var type = clickedRow.Type.GetParent() ?? clickedRow.Type;
-            WriteToChat($"{clickedRow.Timestamp.ToLocalTime():g}: [{type.GetDescription()}] {clickedRow.Message}");
+            try {
+                var clickedRow = filteredChatLogList[filteredChatLogList.Count - 1 - row];
+                var type = clickedRow.Type.GetParent() ?? clickedRow.Type;
+                WriteToChat($"{clickedRow.Timestamp.ToLocalTime():g}: [{type.GetDescription()}] {clickedRow.Message}");
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void ChatLogList_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) {
@@ -367,17 +385,23 @@ Chat logger supports the following message types:
         }
 
         private void UIChatLogFilter_Change(object sender, EventArgs e) {
-            debounceTimer.Change(500, Timeout.Infinite);
+            try {
+                debounceTimer.Change(500, Timeout.Infinite);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Core_ChatBoxMessage(object sender, Decal.Adapter.ChatTextInterceptEventArgs e) {
-            if (Enum.IsDefined(typeof(ChatMessageType), (ChatMessageType)e.Color)) {
-                var type = (ChatMessageType)Enum.ToObject(typeof(ChatMessageType), e.Color);
-                var parentType = type.GetParent();
-                if (Rules.Any(r => r.Types.Contains(parentType ?? type) && Regex.IsMatch(e.Text, r.MessageFilter))) {
-                    chatLogList.Add(new ChatLog(type, e.Text.Trim()));
+            try {
+                if (Enum.IsDefined(typeof(ChatMessageType), (ChatMessageType)e.Color)) {
+                    var type = (ChatMessageType)Enum.ToObject(typeof(ChatMessageType), e.Color);
+                    var parentType = type.GetParent();
+                    if (Rules.Any(r => r.Types.Contains(parentType ?? type) && Regex.IsMatch(e.Text, r.MessageFilter))) {
+                        chatLogList.Add(new ChatLog(type, e.Text.Trim()));
+                    }
                 }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         protected override void Dispose(bool disposing) {

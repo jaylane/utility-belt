@@ -61,8 +61,11 @@ namespace UtilityBelt.Views {
                 };
 
                 view.Moved += (s, e) => {
-                    if (timer.Enabled) timer.Stop();
-                    timer.Start();
+                    try {
+                        if (timer.Enabled) timer.Stop();
+                        timer.Start();
+                    }
+                    catch (Exception ex) { Logger.LogException(ex); }
                 };
 
                 SettingsList = (HudList)view["SettingsList"];
@@ -98,11 +101,17 @@ namespace UtilityBelt.Views {
         }
 
         private void CheckForUpdate_Hit(object sender, EventArgs e) {
-            UpdateChecker.CheckForUpdate();
+            try {
+                UpdateChecker.CheckForUpdate();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         private void ExportPCap_Hit(object sender, EventArgs e) {
-            string filename = $"{Util.GetPluginDirectory()}\\pkt_{DateTime.UtcNow:yyyy-M-d}_{(int)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds}_log.pcap";
-            UBHelper.PCap.Print(filename);
+            try {
+                string filename = $"{Util.GetPluginDirectory()}\\pkt_{DateTime.UtcNow:yyyy-M-d}_{(int)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds}_log.pcap";
+                UBHelper.PCap.Print(filename);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Settings_Changed(object sender, EventArgs e) {

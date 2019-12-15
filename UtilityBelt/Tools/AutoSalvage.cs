@@ -216,39 +216,42 @@ This plugin will attempt to salvage all items in your inventory that match loot 
         }
 
         public void Core_RenderFrame(object sender, EventArgs e) {
-            if (DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(THINK_INTERVAL_MS)) {
-                lastThought = DateTime.UtcNow;
-                
-                bool hasAllItemData = !UB.Assessor.NeedsInventoryData(inventoryItems);
+            try {
+                if (DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(THINK_INTERVAL_MS)) {
+                    lastThought = DateTime.UtcNow;
 
-                if (UB.AutoVendor.HasVendorOpen()) {
-                    WriteToChat("bailing, vendor is open.");
-                    Stop();
-                    return;
-                }
+                    bool hasAllItemData = !UB.Assessor.NeedsInventoryData(inventoryItems);
 
-                if (readyToSalvage && shouldSalvage) {
-                    readyToSalvage = false;
-                    UB.Core.Actions.SalvagePanelSalvage();
-                    lastThought = DateTime.UtcNow + TimeSpan.FromMilliseconds(800);
-                    return;
-                }
-
-                if (isRunning && hasAllItemData) {
-                    if (openedSalvageWindow) {
-                        AddSalvageToWindow();
+                    if (UB.AutoVendor.HasVendorOpen()) {
+                        WriteToChat("bailing, vendor is open.");
+                        Stop();
                         return;
                     }
-                    else {
-                        if (!OpenSalvageWindow()) {
-                            Stop();
+
+                    if (readyToSalvage && shouldSalvage) {
+                        readyToSalvage = false;
+                        UB.Core.Actions.SalvagePanelSalvage();
+                        lastThought = DateTime.UtcNow + TimeSpan.FromMilliseconds(800);
+                        return;
+                    }
+
+                    if (isRunning && hasAllItemData) {
+                        if (openedSalvageWindow) {
+                            AddSalvageToWindow();
                             return;
                         }
+                        else {
+                            if (!OpenSalvageWindow()) {
+                                Stop();
+                                return;
+                            }
 
-                        openedSalvageWindow = true;
+                            openedSalvageWindow = true;
+                        }
                     }
                 }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
     }
 }

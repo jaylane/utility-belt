@@ -6,7 +6,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Decal.Adapter;
 using Decal.Adapter.Wrappers;
-using MyClasses.MetaViewWrappers;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using UtilityBelt.Tools;

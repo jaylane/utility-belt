@@ -69,16 +69,19 @@ namespace UtilityBelt.Views {
                 ((HudCheckBox)row[0]).Checked = (((uint)prop.Object & (uint)value) != 0);
                 ((HudCheckBox)row[0]).Text = value.ToString();
                 ((HudCheckBox)row[0]).Change += (s, e) => {
-                    var flag = (uint)Enum.Parse(prop.Object.GetType(), value.ToString());
+                    try {
+                        var flag = (uint)Enum.Parse(prop.Object.GetType(), value.ToString());
 
-                    if (((HudCheckBox)s).Checked) {
-                        var newValue = (uint)prop.Property.GetValue(prop.Parent, null) | flag;
-                        prop.Property.SetValue(prop.Parent, Enum.ToObject(prop.Object.GetType(), newValue), null);
+                        if (((HudCheckBox)s).Checked) {
+                            var newValue = (uint)prop.Property.GetValue(prop.Parent, null) | flag;
+                            prop.Property.SetValue(prop.Parent, Enum.ToObject(prop.Object.GetType(), newValue), null);
+                        }
+                        else {
+                            var newValue = (uint)prop.Property.GetValue(prop.Parent, null) & ~flag;
+                            prop.Property.SetValue(prop.Parent, Enum.ToObject(prop.Object.GetType(), newValue), null);
+                        }
                     }
-                    else {
-                        var newValue = (uint)prop.Property.GetValue(prop.Parent, null) & ~flag;
-                        prop.Property.SetValue(prop.Parent, Enum.ToObject(prop.Object.GetType(), newValue), null);
-                    }
+                    catch (Exception ex) { Logger.LogException(ex); }
                 };
             }
         }

@@ -450,10 +450,16 @@ namespace UtilityBelt.Tools {
 
         }
         private void CharacterFilter_Logoff_Follow(object sender, LogoffEventArgs e) {
-            if (e.Type == LogoffEventType.Requested) UB_Follow_Clear();
+            try {
+                if (e.Type == LogoffEventType.Requested) UB_Follow_Clear();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         private void CharacterFilter_LoginComplete_Follow(object sender, EventArgs e) {
-            UB_Follow_Clear();
+            try {
+                UB_Follow_Clear();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         private void UB_Follow_Clear() {
             if (UBHelper.vTank.Instance != null && UBHelper.vTank.Instance.GetNavProfile().Equals("UBFollow"))
@@ -838,18 +844,21 @@ namespace UtilityBelt.Tools {
             }
         }
         private void Core_WindowMessage_VideoPatchFocusToggle(object sender, WindowMessageEventArgs e) {
-            switch (e.Msg) {
-                case 0x0007: // WM_SETFOCUS
-                case 0x0021: // WM_MOUSEACTIVATE
-                case 0x0086: // WM_NCACTIVATE
-                    UBHelper.VideoPatch.Disable();
-                    break;
-                case 0x0008: // WM_KILLFOCUS
-                    UBHelper.VideoPatch.Enable();
-                    break;
-                default:
-                    break;
+            try {
+                switch (e.Msg) {
+                    case 0x0007: // WM_SETFOCUS
+                    case 0x0021: // WM_MOUSEACTIVATE
+                    case 0x0086: // WM_NCACTIVATE
+                        UBHelper.VideoPatch.Disable();
+                        break;
+                    case 0x0008: // WM_KILLFOCUS
+                        UBHelper.VideoPatch.Enable();
+                        break;
+                    default:
+                        break;
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         #endregion
         #region /ub fixbusy
