@@ -1,4 +1,5 @@
-![Build Status](https://gitlab.com/pages/hugo/badges/master/build.svg)
+
+[![pipeline status](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/badges/master/pipeline.svg)](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/commits/master)
 
 # UtilityBelt
 For documentation and latest install files, check out [http://utilitybelt.gitlab.io/](http://utilitybelt.gitlab.io)
