@@ -965,19 +965,18 @@ Draws an overlay with dungeon maps on your screen
                 }
 
                 DrawLabels();
-
-                if (Debug) {
-                    try {
-                        hud.Texture.BeginText(fontFace, 10f, 150, false, 1, (int)byte.MaxValue);
+                try {
+                    hud.Texture.BeginText(fontFace, 10f, 150, false, 1, (int)byte.MaxValue);
+                    if (DungeonName.Enabled) {
+                        hud.Texture.WriteText(dungeon.Name, Color.FromArgb(DungeonName.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
+                    }
+                    if (Debug) {
                         var text = $"Objs:{trackedObjects.Keys.Count} Icons:{TextureCache.iconCache.Count} Tiles:{TextureCache.tileCache.Count} Markers:{TextureCache.markerCache.Count} Texts:{TextureCache.textCache.Count} - {lastDrawDuration:D8}";
-                        if (DungeonName.Enabled) {
-                            hud.Texture.WriteText(dungeon.Name, Color.FromArgb(DungeonName.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
-                        }
                         hud.Texture.WriteText(text, Color.White, VirindiViewService.WriteTextFormats.Center, new Rectangle(0, hud.Texture.Height - 20, hud.Texture.Width, 20));
                     }
-                    finally {
-                        hud.Texture.EndText();
-                    }
+                }
+                finally {
+                    hud.Texture.EndText();
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
