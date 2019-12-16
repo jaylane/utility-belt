@@ -748,7 +748,7 @@ namespace UtilityBelt.Tools {
                 try {
                     var elapsed = DateTime.UtcNow - lastResolutionChange;
                     var didMove = false;
-                    if ((e.Msg == 0x0046 || e.Msg == 0x0047) && elapsed < TimeSpan.FromSeconds(2)) {
+                    if ((e.Msg == 0x0046 || e.Msg == 0x0047) && elapsed < TimeSpan.FromSeconds(1)) {
                         Util.Rect windowCurrentRect = new Util.Rect();
                         Util.GetWindowRect(UB.Core.Decal.Hwnd, ref windowCurrentRect);
                         if (windowCurrentRect.Left != windowStartRect.Left || windowCurrentRect.Top != windowStartRect.Top) {
