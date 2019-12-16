@@ -273,7 +273,7 @@ For portals, it will show the destination.
             if (needsProcess) {
                 switch (oc) {
                     case ObjectClass.Player:
-                        if (wo.HasIdData) {
+                        if (wo.Values(LongValueKey.CreatureLevel, -1) > 0) {
                             int level = wo.Values(LongValueKey.CreatureLevel, 1);
                             if (level != lastLevel) {
                                 lastLevel = level;
@@ -303,7 +303,7 @@ For portals, it will show the destination.
                         } else UtilityBeltPlugin.Instance.Assessor.Queue(id);
                         break;
                     case ObjectClass.Monster:
-                        if (wo.HasIdData) {
+                        if (wo.Values(LongValueKey.CreatureLevel, -1) > 0) {
                             needsProcess = false;
                             int level = wo.Values(LongValueKey.CreatureLevel, 1);
                             tag.SetText(D3DTextType.Text3D, $"{wo.Name} [{level}]", "Arial", 0);
