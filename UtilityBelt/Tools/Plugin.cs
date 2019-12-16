@@ -735,12 +735,38 @@ namespace UtilityBelt.Tools {
         [Example("/ub resolution 640 600", "Set client resolution to 640 x 600")]
         [CommandPattern("resolution", @"^(?<Width>\d+)[x ](?<Height>\d+)$")]
         public void DoResolution(string _, Match args) {
+            Util.Rect windowStartRect = new Util.Rect();
+            DateTime lastResolutionChange = DateTime.MinValue;
             ushort.TryParse(args.Groups["Width"].Value, out ushort width);
             ushort.TryParse(args.Groups["Height"].Value, out ushort height);
             if (height < 100 || height > 10000 || width < 100 || width > 10000) {
                 LogError($"Requested resolution was not valid ({width}x{height})");
                 return;
             }
+
+            void core_WindowMessage(object sender, WindowMessageEventArgs e) {
+                try {
+                    var elapsed = DateTime.UtcNow - lastResolutionChange;
+                    var didMove = false;
+                    if ((e.Msg == 0x0046 || e.Msg == 0x0047) && elapsed < TimeSpan.FromSeconds(2)) {
+                        Util.Rect windowCurrentRect = new Util.Rect();
+                        Util.GetWindowRect(UB.Core.Decal.Hwnd, ref windowCurrentRect);
+                        if (windowCurrentRect.Left != windowStartRect.Left || windowCurrentRect.Top != windowStartRect.Top) {
+                            Util.SetWindowPos(UB.Core.Decal.Hwnd, 0, windowStartRect.Left, windowStartRect.Top, 0, 0, 0x0005);
+                            didMove = true;
+                        }
+                    }
+                    if (didMove || elapsed > TimeSpan.FromSeconds(1)) {
+                        UB.Core.WindowMessage -= core_WindowMessage;
+                    }
+                }
+                catch (Exception ex) { Logger.LogException(ex); }
+            }
+
+            Util.GetWindowRect(UB.Core.Decal.Hwnd, ref windowStartRect);
+            UB.Core.WindowMessage += core_WindowMessage;
+            lastResolutionChange = DateTime.UtcNow;
+
             WriteToChat($"Setting Resolution {width}x{height}");
             UBHelper.Core.SetResolution(width, height);
         }

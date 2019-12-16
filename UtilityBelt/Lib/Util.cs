@@ -594,6 +594,18 @@ namespace UtilityBelt
 
             return matrix[bounds.Height - 1, bounds.Width - 1];
         }
+        [DllImport("user32.dll")]
+        public static extern IntPtr SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int y, int width, int height, int wFlags);
+
+        [DllImport("user32.dll")]
+        public static extern bool GetWindowRect(IntPtr hwnd, ref Rect rectangle);
+
+        public struct Rect {
+            public int Left { get; set; }
+            public int Top { get; set; }
+            public int Right { get; set; }
+            public int Bottom { get; set; }
+        }
 
         #region IsClientActive()
         public static bool IsClientActive() {
