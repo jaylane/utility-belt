@@ -60,7 +60,7 @@ namespace UtilityBelt.Tools {
 
 
         private bool disposed = false;
-        private const int assessDelay = 150;
+        private const int assessDelay = 75;
         private static DateTime nextIdentWindow = DateTime.MinValue;
         public static readonly Queue<int> IdentQueue = new Queue<int>();
         private static readonly Dictionary<int, DateTime> IdentSent = new Dictionary<int, DateTime>();
@@ -130,7 +130,7 @@ namespace UtilityBelt.Tools {
                     UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
                     UB.Core.RenderFrame -= Core_RenderFrame;
                     foreach (Job j in jobs) j.Dispose();
-                    jobs = null;
+                    //jobs = null;
                 }
                 disposed = true;
             }
@@ -198,7 +198,7 @@ namespace UtilityBelt.Tools {
                         m(thisid);
                     }
                     else {
-                        Logger.Debug($"Assessor: 0x{thisid:X8} Failed");
+                        //Logger.Debug($"Assessor: 0x{thisid:X8} Failed");
                     }
                 }
                 var identKeys = IdentSent.Keys.ToArray();
