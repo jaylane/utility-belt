@@ -77,6 +77,11 @@ namespace UBLoader {
         /// </summary>
         protected override void Startup() {
             try {
+                System.Resources.ResourceManager rm = new System.Resources.ResourceManager(GetType().Namespace + ".Properties.Resources", System.Reflection.Assembly.GetExecutingAssembly());
+                System.Reflection.Assembly.Load((byte[])rm.GetObject("UBHelper"));
+                System.Reflection.Assembly.Load((byte[])rm.GetObject("Newtonsoft_Json"));
+                System.Reflection.Assembly.Load((byte[])rm.GetObject("SharedMemory"));
+
                 ServerDispatch += FilterCore_ServerDispatch;
                 ClientDispatch += FilterCore_ClientDispatch;
                 Core.PluginInitComplete += Core_PluginInitComplete;
