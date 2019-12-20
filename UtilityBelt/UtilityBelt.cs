@@ -95,12 +95,6 @@ namespace UtilityBelt {
 
         public UtilityBeltPlugin() {
             Instance = this;
-            System.Resources.ResourceManager rm = new System.Resources.ResourceManager(GetType().Namespace + ".Properties.Resources", System.Reflection.Assembly.GetExecutingAssembly());
-
-            // if you add a new embedded assembly, you should load it here.
-            System.Reflection.Assembly.Load((byte[])rm.GetObject("UBHelper"));
-            System.Reflection.Assembly.Load((byte[])rm.GetObject("Newtonsoft_Json"));
-            System.Reflection.Assembly.Load((byte[])rm.GetObject("SharedMemory"));
         }
 
 

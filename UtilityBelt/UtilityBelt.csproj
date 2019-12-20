@@ -65,9 +65,8 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="UBHelper, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Resources\UBHelper.dll</HintPath>
+    <Reference Include="UBHelper">
+      <HintPath>..\UBLoader\Deps\UBHelper.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="utank2-i">
@@ -135,11 +134,6 @@
     <Compile Include="Lib\VTNav\Waypoints\VTNRecall.cs" />
     <Compile Include="Lib\VTNav\Waypoints\VTNUseNPC.cs" />
     <Compile Include="Lib\Logger.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="UtilityBelt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tools\Assessor.cs" />
@@ -169,10 +163,6 @@
     <Compile Include="Views\MainView.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
     <EmbeddedResource Include="Views\MainView.xml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -878,13 +868,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\dungeons.csv" />
-    <None Include="Resources\SharedMemory.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\Newtonsoft.Json.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Resources\UBHelper.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
