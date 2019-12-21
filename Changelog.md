@@ -11,10 +11,11 @@
 - Rewrite DungeonMaps with performance in mind
 - Fix equip mgr command pattern, default profile selection, and clean up event handling
 - Fix `/ub count item` output when no items were found
-- add `/ub resolution <width> <height>` to change the client resolution
-- add `/ub textures <landscape> <landscapeDetail> <environment> <environmentDetail> <sceneryDraw> <landscapeDraw>` to set the client texture options
+- Add `/ub resolution <width> <height>` to change the client resolution
+- Add `/ub textures <landscape> <landscapeDetail> <environment> <environmentDetail> <sceneryDraw> <landscapeDraw>` to set the client texture options
 - Fixed a few potential crash to desktop bugs
 - Nav routes now properly show on dungeon maps when video patch is enabled
+- Add `/ub professor <type> <level>` command to learn spells from professorsin Arwic
 
 ## 0.1.1 (2019-12-03) [UtilityBeltInstaller-0.1.1.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/c94b459edb29649f99f1d84eae3f76ce/UtilityBeltInstaller-0.1.1.exe)
 - Increase AutoStack/AutoCram timeout to 30s

@@ -87,6 +87,7 @@ namespace UtilityBelt {
         public InventoryManager InventoryManager { get; private set; }
         public Jumper Jumper { get; private set; }
         public Nametags Nametags { get; private set; }
+        public Spells Spells { get; private set; }
         public QuestTracker QuestTracker { get; private set; }
         public VisualNav VisualNav { get; private set; }
         public VTankControl VTank { get; private set; }
