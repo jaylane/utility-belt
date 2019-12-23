@@ -92,6 +92,7 @@ namespace UtilityBelt {
         public VisualNav VisualNav { get; private set; }
         public VTankControl VTank { get; private set; }
         public VTankFellowHeals VTankFellowHeals { get; private set; }
+        public PrepClick PrepClick { get; private set; }
         #endregion
 
         public UtilityBeltPlugin() {
