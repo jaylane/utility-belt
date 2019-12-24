@@ -12,7 +12,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
         public string Message = "";
 
         public VTNChat(StreamReader reader, VTNavRoute parentRoute, int index) : base(reader, parentRoute, index) {
-            Type = eWaypointType.Pause;
+            Type = eWaypointType.ChatCommand;
         }
 
         new public bool Parse() {
