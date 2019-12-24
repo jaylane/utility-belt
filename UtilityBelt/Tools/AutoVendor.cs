@@ -499,6 +499,9 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             if (merchantId == 0)
                 merchantId = vendorId;
 
+            if (!string.IsNullOrEmpty(useProfilePath) && merchantId == 0)
+                merchantId = UBHelper.Vendor.Id;
+
             if (merchantId == 0 || UB.Core.WorldFilter[merchantId] == null) {
                 Util.ThinkOrWrite("AutoVendor Fatal - no vendor, cannot start", Think);
                 return;
