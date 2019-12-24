@@ -17,6 +17,7 @@
 - Nav routes now properly show on dungeon maps when video patch is enabled
 - Add `/ub professor <type> <level>` command to learn spells from professors in Arwic
 - Add the ability to view any dungeon map, with data courtesy of lifestoned.org
+- Fix issue where AutoTrade/AutoVendor/ItemGiver was not respecting red loot rules for ObjectClass.Misc (summoning essences)
 
 ## 0.1.1 (2019-12-03) [UtilityBeltInstaller-0.1.1.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/c94b459edb29649f99f1d84eae3f76ce/UtilityBeltInstaller-0.1.1.exe)
 - Increase AutoStack/AutoCram timeout to 30s

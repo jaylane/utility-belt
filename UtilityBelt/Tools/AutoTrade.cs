@@ -50,7 +50,7 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
         private object lootProfile = null;
         private bool waitingForIds = false;
         private DateTime lastIdSpam = DateTime.MinValue;
-        private readonly List<int> itemsToId = new List<int>();
+        private List<int> itemsToId = new List<int>();
         private int traderId = 0;
         private string traderName = null;
         private bool running = false;
@@ -58,7 +58,6 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
         private Dictionary<string, int> keepUpToCounts = new Dictionary<string, int>();
         private readonly List<int> pendingAddItems = new List<int>();
         private readonly List<int> addedItems = new List<int>();
-        private int lastIdCount = 0;
         private DateTime bailTimer = DateTime.MinValue;
 
         #region Settings
@@ -274,7 +273,6 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
             keepUpToCounts.Clear();
             addedItems.Clear();
             bailTimer = DateTime.UtcNow;
-            lastIdCount = 0;
 
             if (!UB.Core.Actions.IsValidObject(traderId)) {
                 LogError($"You must open a trade with someone first!");
@@ -323,7 +321,7 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
             itemsToId.AddRange(inventory.Select(item => item.Id));
 
             if (UB.Assessor.NeedsInventoryData(itemsToId)) {
-                UB.Assessor.RequestAll(itemsToId);
+                new Assessor.Job(UB.Assessor, ref itemsToId, (_) => { bailTimer = DateTime.UtcNow; }, () => { waitingForIds = false; }, false);
                 waitingForIds = true;
                 lastIdSpam = DateTime.UtcNow;
             }
@@ -378,26 +376,8 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
                     UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
                 }
 
-                if (waitingForIds) {
-                    if (UB.Assessor.NeedsInventoryData(itemsToId)) {
-                        if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15)) {
-                            lastIdSpam = DateTime.UtcNow;
-
-                            WriteToChat(string.Format("waiting to id {0} items, this will take approximately {0} seconds.", UB.Assessor.GetNeededIdCount(itemsToId)));
-                        }
-
-                        var neededIdCount = UB.Assessor.GetNeededIdCount(itemsToId);
-                        if (lastIdCount != neededIdCount) {
-                            lastIdCount = neededIdCount;
-                            bailTimer = DateTime.UtcNow;
-                        }
-
-                        // waiting
-                        return;
-                    }
-                    else
-                        waitingForIds = false;
-                }
+                if (waitingForIds)
+                    return;
 
                 if (TestMode) {
                     DoTestMode();
