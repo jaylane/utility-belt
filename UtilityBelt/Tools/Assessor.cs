@@ -88,7 +88,6 @@ namespace UtilityBelt.Tools {
             ObjectClass.CraftedAlchemy,
             ObjectClass.CraftedCooking,
             ObjectClass.CraftedFletching,
-            ObjectClass.Misc,
             ObjectClass.Key
         };
 
