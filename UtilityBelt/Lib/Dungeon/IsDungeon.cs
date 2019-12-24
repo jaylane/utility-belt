@@ -63,5 +63,12 @@ namespace UtilityBelt.Lib.Dungeon {
             mIsDungeonCache.Add(dungeonId, isDungeon);
             return isDungeon;
         }
+
+        internal double GetZLevelIndex(double drawZ) {
+            // -6 0 6 12
+            //     2
+            //  4
+            return (Math.Abs(minZ) + Math.Ceiling(drawZ)) / (maxZ - minZ);
+        }
     }
 }

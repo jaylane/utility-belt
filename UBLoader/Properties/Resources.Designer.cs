@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace UBLoader.Properties {
+namespace UtilityBelt.Properties {
     using System;
     
     
@@ -57,6 +57,16 @@ namespace UBLoader.Properties {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] LiteDB {
+            get {
+                object obj = ResourceManager.GetObject("LiteDB", resourceCulture);
+                return ((byte[])(obj));
             }
         }
         

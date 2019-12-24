@@ -19,7 +19,7 @@ namespace UBLoader {
         public FileSystemWatcher PluginWatcher = null;
 
         private bool needsReload = false;
-        private bool pluginsReady = false;
+        public bool pluginsReady = false;
         private DateTime lastFileChange = DateTime.UtcNow;
 
         public string PluginName { get { return "UtilityBelt"; } }
@@ -78,6 +78,7 @@ namespace UBLoader {
         protected override void Startup() {
             try {
                 System.Resources.ResourceManager rm = new System.Resources.ResourceManager(GetType().Namespace + ".Properties.Resources", System.Reflection.Assembly.GetExecutingAssembly());
+                System.Reflection.Assembly.Load((byte[])rm.GetObject("LiteDB"));
                 System.Reflection.Assembly.Load((byte[])rm.GetObject("UBHelper"));
                 System.Reflection.Assembly.Load((byte[])rm.GetObject("Newtonsoft_Json"));
                 System.Reflection.Assembly.Load((byte[])rm.GetObject("SharedMemory"));
@@ -204,7 +205,7 @@ namespace UBLoader {
             catch (Exception ex) { LogException(ex); }
         }
 
-        private void LoadPluginAssembly() {
+        internal void LoadPluginAssembly() {
             try {
                 if (!pluginsReady) {
                     needsReload = true;

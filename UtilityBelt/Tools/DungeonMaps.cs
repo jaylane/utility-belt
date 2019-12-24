@@ -3,16 +3,14 @@ using Decal.Adapter.Wrappers;
 using Microsoft.DirectX;
 using Newtonsoft.Json;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
+using System.Windows.Forms;
 using UtilityBelt.Lib;
-using UtilityBelt.Lib.Constants;
 using UtilityBelt.Lib.Dungeon;
 using UtilityBelt.Lib.Settings;
 using UtilityBelt.Lib.VTNav.Waypoints;
@@ -21,14 +19,18 @@ using VirindiViewService.Controls;
 
 namespace UtilityBelt.Tools {
     [Name("DungeonMaps")]
-    [Summary("Draws an overlay with dungeon maps on your screen")]
+    [Summary("Draws an overlay with dungeon maps on your screen, with data courtesy of lifestoned.org")]
     [FullDescription(@"
-Draws an overlay with dungeon maps on your screen
+Draws an overlay with dungeon maps on your screen, with data courtesy of lifestoned.org
 
-* Open the UtilityBelt decal window, go to the DungeonMaps tab and enable maps.
+* Open the UtilityBelt decal window, and click the Dungeon Maps button to enable.
 * A new flashlight icon will appear on the virindi bar under the utilitybelt icon.
-* Use the new map window to resize/move the map.
-* When the maps window is open you can use your scrollwheel to zoom.
+* Open the maps window to be able to view any dungeon map, or access the controls.
+* Checking the 'All' checkbox will draw all dungeon levels at once, or you can use the slider to switch between levels.
+* When the maps window is open you can use your scrollwheel to zoom, or click and drag to pan the map. Holding shift while dragging will rotate the map.
+* Click the follow button to snap the map to your character position and have it follow you around as you move.
+* If a lever/button is connected to a door, both the door and lever will get a [A] tag appended to it.  IE Lever[A] opens Door[A], Button[C] opens Door[C].
+* If a Chest or a door is locked and has a difficulty, it will be displayed as (D:50). IE Door(D:50) has a lockpick difficulty of 50.
     ")]
 
     public class DungeonMaps : ToolBase {
@@ -39,6 +41,7 @@ Draws an overlay with dungeon maps on your screen
         private TimeSpan mapUpdateInterval = TimeSpan.FromMilliseconds(1000 / 30);
         private DateTime lastDraw = DateTime.MinValue;
         private uint currentLandblock = 0;
+        private bool isManualLoad;
         private Dungeon dungeon;
         private long lastDrawDuration = 0;
         private Rectangle tileRect = new Rectangle(0,0,10 * TextureCache.TileScale,10 * TextureCache.TileScale);
@@ -46,17 +49,24 @@ Draws an overlay with dungeon maps on your screen
         private int fontWeight;
         private float scale = 3.0f;
         private bool needsMapDraw = true;
+        private double drawZ = 0f;
         private double lastPlayerZ = 0.0f;
 
         private Dictionary<int, DxTexture> zLayerCache = new Dictionary<int, DxTexture>();
         private Dictionary<int, DxTexture> dynamicZLayerCache = new Dictionary<int, DxTexture>();
         private List<int> visitedTiles = new List<int>();
 
+        HudTabView UIMapNotebook;
         HudButton UIFollowCharacter;
         HudHSlider UIOpacitySlider;
+        HudHSlider UIZSlider;
+        HudList UIDungeonList;
+        HudTextBox UISearch;
+        HudCheckBox UIShowAllLayers;
         private bool needsClear = false;
         private bool isPanning = false;
         private bool isFollowingCharacter = true;
+        private double rotationStart;
         private float dragOffsetX;
         private float dragOffsetY;
         private float dragOffsetStartX;
@@ -71,6 +81,9 @@ Draws an overlay with dungeon maps on your screen
         private bool isPortaling = true;
 
         Dictionary<int, TrackedObject> trackedObjects = new Dictionary<int, TrackedObject>();
+        private int spawnId;
+        private bool isRotating;
+        private bool needsNewHud;
         public const int LABEL_HEIGHT = 10;
 
         #region Config
@@ -156,14 +169,14 @@ Draws an overlay with dungeon maps on your screen
         }
 
         [Summary("Map Window Y")]
-        [DefaultValue(150)]
+        [DefaultValue(200)]
         public int MapWindowY {
             get { return (int)GetSetting("MapWindowY"); }
             set { UpdateSetting("MapWindowY", value); }
         }
 
         [Summary("Map Window width")]
-        [DefaultValue(300)]
+        [DefaultValue(320)]
         public int MapWindowWidth {
             get { return (int)GetSetting("MapWindowWidth"); }
             set { UpdateSetting("MapWindowWidth", value); }
@@ -412,53 +425,53 @@ Draws an overlay with dungeon maps on your screen
                 Name = "Markers";
             }
 
-            public int GetMarkerColor(WorldObject wo) {
-                var propName = GetMarkerNameFromWO(wo);
+            public int GetMarkerColor(TrackedObject obj) {
+                var propName = GetMarkerNameFromTO(obj);
                 var prop = (MarkerToggleOption)(this.GetPropValue(propName));
 
                 return prop == null ? Color.White.ToArgb() : prop.Color;
             }
 
-            public bool ShouldShowlabel(WorldObject wo) {
-                var propName = GetMarkerNameFromWO(wo);
+            public bool ShouldShowlabel(TrackedObject wo) {
+                var propName = GetMarkerNameFromTO(wo);
                 var prop = (MarkerToggleOption)(this.GetPropValue(propName));
 
                 return prop == null ? false : prop.ShowLabel;
             }
 
-            internal bool ShouldDraw(WorldObject wo) {
-                var propName = GetMarkerNameFromWO(wo);
+            internal bool ShouldDraw(TrackedObject wo) {
+                var propName = GetMarkerNameFromTO(wo);
                 var prop = (MarkerToggleOption)(this.GetPropValue(propName));
 
                 return prop == null ? false : prop.Enabled;
             }
 
-            internal int GetLabelColor(WorldObject wo) {
-                var propName = GetMarkerNameFromWO(wo);
+            internal int GetLabelColor(TrackedObject wo) {
+                var propName = GetMarkerNameFromTO(wo);
                 var prop = (MarkerToggleOption)(this.GetPropValue(propName));
 
                 return prop == null ? Color.White.ToArgb() : prop.Color;
             }
 
-            internal bool ShouldUseIcon(WorldObject wo) {
-                var propName = GetMarkerNameFromWO(wo);
+            internal bool ShouldUseIcon(TrackedObject wo) {
+                var propName = GetMarkerNameFromTO(wo);
                 var prop = (MarkerToggleOption)(this.GetPropValue(propName));
 
                 return prop == null ? true : prop.UseIcon;
             }
 
-            internal int GetSize(WorldObject wo) {
-                var propName = GetMarkerNameFromWO(wo);
+            internal int GetSize(TrackedObject wo) {
+                var propName = GetMarkerNameFromTO(wo);
                 var prop = (MarkerToggleOption)(this.GetPropValue(propName));
 
                 return prop == null ? 4 : prop.Size;
             }
 
-            public string GetMarkerNameFromWO(WorldObject wo) {
+            public string GetMarkerNameFromTO(TrackedObject obj) {
                 // check marker display settings
-                switch (wo.ObjectClass) {
+                switch (obj.ObjectClass) {
                     case ObjectClass.Player:
-                        if (wo.Id == UtilityBeltPlugin.Instance.Core.CharacterFilter.Id) {
+                        if (obj.Id == UtilityBeltPlugin.Instance.Core.CharacterFilter.Id) {
                             return "You";
                         }
                         else {
@@ -476,7 +489,7 @@ Draws an overlay with dungeon maps on your screen
                         return "Portals";
 
                     case ObjectClass.Corpse:
-                        if (wo.Name == $"Corpse of {UtilityBeltPlugin.Instance.Core.CharacterFilter.Name}") {
+                        if (obj.Name == $"Corpse of {UtilityBeltPlugin.Instance.Core.CharacterFilter.Name}") {
                             return "MyCorpse";
                         }
                         else {
@@ -491,9 +504,9 @@ Draws an overlay with dungeon maps on your screen
 
                     default:
                         // draw anything not "stuck" as an item
-                        if ((wo.Values(LongValueKey.Behavior, 0) & (int)BehaviorFlag.Stuck) == 0) {
-                            return "Items";
-                        }
+                        //if ((wo.Values(LongValueKey.Behavior, 0) & (int)BehaviorFlag.Stuck) == 0) {
+                        //    return "Items";
+                        //}
 
                         return "EverythingElse";
                 }
@@ -514,14 +527,23 @@ Draws an overlay with dungeon maps on your screen
         public override void Init() {
             base.Init();
 
+            UIMapNotebook = (HudTabView)UB.MapView.view["MapNotebook"];
+            UISearch = (HudTextBox)UB.MapView.view["Search"];
+            UIDungeonList = (HudList)UB.MapView.view["DungeonList"];
             UIFollowCharacter = (HudButton)UB.MapView.view["FollowCharacter"];
             UIOpacitySlider = (HudHSlider)UB.MapView.view["OpacitySlider"];
+            UIZSlider = (HudHSlider)UB.MapView.view["ZSlider"];
+            UIShowAllLayers = (HudCheckBox)UB.MapView.view["ShowAllLayers"];
 
             UIOpacitySlider.Changed += UIOpacitySlider_Changed;
             UIOpacitySlider.Position = Opacity;
+            UIZSlider.Changed += UIZSlider_Changed;
             UIFollowCharacter.Hit += UIFollowCharacter_Hit;
+            UISearch.Change += UISearch_Change;
+            UIDungeonList.Click += UIDungeonList_Click;
 
             UB.MapView.view["DungeonMapsRenderContainer"].MouseEvent += DungeonMaps_MouseEvent;
+            UIShowAllLayers.Change += UIShowAllLayers_Change;
 
             scale = (5f - MapZoom);
             fontFace = (string)((HudControl)UB.MapView.view.MainControl).Theme.GetVal<string>("DefaultTextFontFace");
@@ -539,6 +561,8 @@ Draws an overlay with dungeon maps on your screen
             }
 
             PropertyChanged += DungeonMaps_PropertyChanged;
+
+            UpdateDungeonList();
         }
 
         #region Event Handlers
@@ -552,6 +576,31 @@ Draws an overlay with dungeon maps on your screen
                     break;
             }
             needsClear = true;
+        }
+
+        private void UISearch_Change(object sender, EventArgs e) {
+            try {
+                UpdateDungeonList();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void UIShowAllLayers_Change(object sender, EventArgs e) {
+            try {
+                needsClear = true;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void UIDungeonList_Click(object sender, int row, int col) {
+            try {
+                if (int.TryParse(((HudStaticText)UIDungeonList[row][0]).Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int lb)) {
+                    mapRotation = 0;
+                    LoadLandblock(lb << 16);
+                    UIMapNotebook.CurrentTab = 0;
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void VisualNav_NavChanged(object sender, EventArgs e) {
@@ -584,12 +633,33 @@ Draws an overlay with dungeon maps on your screen
         private void UIFollowCharacter_Hit(object sender, EventArgs e) {
             try {
                 isFollowingCharacter = true;
+                isManualLoad = false;
+                if ((UB.Core.Actions.Landcell & 0xFFFF0000) != currentLandblock) {
+                    LoadLandblock(UB.Core.Actions.Landcell);
+                }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
+
         private void UIOpacitySlider_Changed(int min, int max, int pos) {
             try {
                 Opacity = pos;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void UIZSlider_Changed(int min, int max, int pos) {
+            try {
+                if (dungeon != null) {
+                    drawZ = (double)dungeon.minZ + ((double)dungeon.Depth * ((double)pos/100.0));
+                    if (isFollowingCharacter) {
+                        dragOffsetX = (float)UB.Core.Actions.LocationX;
+                        dragOffsetY = -(float)UB.Core.Actions.LocationY;
+                        dragOffsetStartX = dragOffsetX;
+                        dragOffsetStartY = dragOffsetY;
+                    }
+                    isFollowingCharacter = false;
+                }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -620,13 +690,20 @@ Draws an overlay with dungeon maps on your screen
                         dragOffsetStartY = dragOffsetY;
                         dragStartX = e.X;
                         dragStartY = e.Y;
-
-                        isPanning = true;
                         isFollowingCharacter = false;
+
+                        if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift) {
+                            isRotating = true;
+                            rotationStart = mapRotation;
+                        }
+                        else {
+                            isPanning = true;
+                        }
                         break;
 
                     case ControlMouseEventArgs.MouseEventType.MouseUp:
                         isPanning = false;
+                        isRotating = false;
                         break;
 
                     case ControlMouseEventArgs.MouseEventType.MouseMove:
@@ -637,6 +714,10 @@ Draws an overlay with dungeon maps on your screen
 
                             dragOffsetX = np.X;
                             dragOffsetY = np.Y;
+                        }
+                        if (isRotating) {
+                            var distance = dragStartX - e.X + dragStartY - e.Y;
+                            mapRotation = rotationStart + distance;
                         }
                         break;
                 }
@@ -654,7 +735,7 @@ Draws an overlay with dungeon maps on your screen
 
         private void Core_RegionChange3D(object sender, Decal.Adapter.RegionChange3DEventArgs e) {
             try {
-                UB.MapView.ResizeMapHud();
+                needsNewHud = true;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -676,10 +757,15 @@ Draws an overlay with dungeon maps on your screen
                 if (dungeon == null || DateTime.UtcNow - lastDraw < mapUpdateInterval) return;
                 lastDraw = DateTime.UtcNow;
 
+                if (isFollowingCharacter) {
+                    drawZ = UB.Core.Actions.LocationZ;
+                }
+
                 var watch = System.Diagnostics.Stopwatch.StartNew();
-                if (Math.Abs(lastPlayerZ - UB.Core.Actions.LocationZ) > Z_REDRAW_DISTANCE) {
-                    lastPlayerZ = UB.Core.Actions.LocationZ;
+                if (Math.Abs(lastPlayerZ - drawZ) > Z_REDRAW_DISTANCE) {
+                    lastPlayerZ = drawZ;
                     needsMapDraw = true;
+                    UIZSlider.Position = (int)(dungeon.GetZLevelIndex(drawZ) * 100);
                 }
 
                 if (!visitedTiles.Contains(UB.Core.Actions.Landcell)) {
@@ -721,8 +807,17 @@ Draws an overlay with dungeon maps on your screen
 
         private void Core_RadarUpdate(double uptime) {
             try {
+                if (needsNewHud) {
+                    needsNewHud = false;
+                    isRunning = false;
+                    CreateHud(MapWindowWidth, MapWindowHeight, MapWindowX, MapWindowY);
+                }
+
                 if (isPortaling && (UB.Core.Actions.Landcell & 0xFFFF0000) != currentLandblock) {
-                    LoadLandblock(UB.Core.Actions.Landcell);
+                    if (isFollowingCharacter)
+                        LoadLandblock(UB.Core.Actions.Landcell, true);
+                    else
+                        isManualLoad = true;
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -741,6 +836,18 @@ Draws an overlay with dungeon maps on your screen
         #endregion
 
         #region misc
+        private void UpdateDungeonList() {
+            var search = UISearch.Text.ToLower();
+            UIDungeonList.ClearRows();
+            foreach (var kv in Dungeon.DungeonNames) {
+                var lb = (((uint)kv.Key >> 16)).ToString("X4");
+                if (lb.ToLower().Contains(search) || kv.Value.ToLower().Contains(search)) {
+                    var row = UIDungeonList.AddRow();
+                    ((HudStaticText)row[0]).Text = lb;
+                    ((HudStaticText)row[1]).Text = kv.Value;
+                }
+            }
+        }
         private void UpdateTrackedObjects() {
             var dirtyLayers = new List<int>();
             var dirtyDynamicLayers = new List<int>();
@@ -801,9 +908,28 @@ Draws an overlay with dungeon maps on your screen
             needsMapDraw = true;
         }
 
+        private int GetTint(int zLayer) {
+            if (UIShowAllLayers.Checked) return -1;
+
+            // floors directly above your character
+            if (drawZ - zLayer < -3) {
+                return Color.FromArgb(121, 151, 151, 151).ToArgb();
+            }
+            // current floor
+            else if (Math.Abs(drawZ - zLayer) < 3) {
+                return -1;
+            }
+            // floors below
+            else {
+                var d = (int)(Math.Min(1, (Math.Abs(drawZ - zLayer) / 6f) * 0.4f) * 255);
+                return Color.FromArgb(255, 255 - d, 255 - d, 255 - d).ToArgb();
+            }
+        }
+
         private void LoadLandblock(int landcell, bool loadExisting=false) {
             var dungeonWatch = System.Diagnostics.Stopwatch.StartNew();
             currentLandblock = (uint)(landcell & 0xFFFF0000);
+            isManualLoad = (UB.Core.Actions.Landcell & 0xFFFF0000) != currentLandblock;
             dungeon = new Dungeon(landcell);
 
             ClearCache(true);
@@ -811,29 +937,87 @@ Draws an overlay with dungeon maps on your screen
             if (mapTexture != null) mapTexture.Dispose();
             if (labelsTexture != null) labelsTexture.Dispose();
 
-            if (!dungeon.IsDungeon()) {
+            TrackedObject.Clear();
+
+            if (!isManualLoad && !dungeon.IsDungeon()) {
                 dungeon = null;
                 ClearHud();
             }
-            else {
+            else if (dungeon.Width > 0 && dungeon.Height > 0) {
                 mapTexture = new DxTexture(new Size(dungeon.Width * TextureCache.TileScale, dungeon.Height * TextureCache.TileScale));
                 labelsTexture = new DxTexture(new Size(dungeon.Width * TextureCache.TileScale, dungeon.Height * TextureCache.TileScale));
-                var landscape = CoreManager.Current.WorldFilter.GetLandscape();
-                foreach (var wo in landscape) {
-                    if (!CoreManager.Current.Actions.IsValidObject(wo.Id)) continue;
-                    if (trackedObjects.ContainsKey(wo.Id)) continue;
-                    if ((PhysicsObject.GetLandcell(wo.Id) & 0xFFFF0000) == currentLandblock) {
-                        trackedObjects.Add(wo.Id, new TrackedObject(wo.Id));
+
+                if (!isManualLoad) {
+                    var landscape = CoreManager.Current.WorldFilter.GetLandscape();
+                    foreach (var wo in landscape) {
+                        if (!CoreManager.Current.Actions.IsValidObject(wo.Id)) continue;
+                        if (trackedObjects.ContainsKey(wo.Id)) continue;
+                        if ((PhysicsObject.GetLandcell(wo.Id) & 0xFFFF0000) == currentLandblock) {
+                            trackedObjects.Add(wo.Id, new TrackedObject(wo.Id));
+                        }
                     }
+
+                    if (!trackedObjects.ContainsKey(UB.Core.CharacterFilter.Id)) {
+                        trackedObjects.Add(UB.Core.CharacterFilter.Id, new TrackedObject(UB.Core.CharacterFilter.Id));
+                    }
+                    drawZ = UB.Core.Actions.LocationZ;
+                    UIZSlider.Position = (int)(dungeon.GetZLevelIndex(drawZ) * 100);
+                }
+                else {
+                    isFollowingCharacter = false;
+                    drawZ = dungeon.maxZ;
+                    UIZSlider.Position = 100;
+                    dragOffsetX = dungeon.minX + (dungeon.Width / 2);
+                    dragOffsetY = -(dungeon.minY + (dungeon.Height / 2));
+                    dragOffsetStartX = dragOffsetX;
+                    dragOffsetStartY = dragOffsetY;
                 }
 
-                if (!trackedObjects.ContainsKey(UB.Core.CharacterFilter.Id)) {
-                    trackedObjects.Add(UB.Core.CharacterFilter.Id, new TrackedObject(UB.Core.CharacterFilter.Id));
+                if (UB.LSD.EnsureLandblockSpawnsReady(currentLandblock)) {
+                    LoadLSDObjects();
+                }
+                else {
+                    UB.LSD.DataUpdated += LSD_DataUpdated;
                 }
             }
 
             dungeonWatch.Stop();
             LogDebug($"Took {dungeonWatch.ElapsedTicks / 10000f:N4}ms to check landblock {currentLandblock:X8}");
+        }
+
+        private void LoadLSDObjects() {
+            var lb = UB.Database.Landblocks.Include(new string[] { "$.Weenies[*].Weenie" }).FindById((int)currentLandblock);
+            if (lb == null)
+                return;
+
+            var startSpawnId = spawnId;
+            var lbNeedsUpdate = false;
+            foreach (var spawn in lb.Weenies) {
+                if (spawn.Weenie == null) {
+                    spawn.Weenie = UB.Database.Weenies.FindById(spawn.Wcid);
+                    if (spawn.Weenie == null)
+                        LogDebug($"Weenie {spawn.Wcid}({spawn.Description}) needs downloading");
+                    else
+                        lbNeedsUpdate = true;
+                }
+                if (spawn.Weenie == null || (!isManualLoad && spawn.Weenie.GetObjectClass() == ObjectClass.Monster))
+                    continue;
+                trackedObjects.Add(++spawnId, new TrackedObject(spawn, lb));
+            }
+
+            if (lbNeedsUpdate)
+                UB.Database.Landblocks.Update(lb);
+
+            needsClear = true;
+            needsMapDraw = true;
+        }
+
+        private void LSD_DataUpdated(object sender, DataUpdatedEventArgs e) {
+            try {
+                UB.LSD.DataUpdated -= LSD_DataUpdated;
+                LoadLSDObjects();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void ClearCache(bool clearTracked=false) {
@@ -871,51 +1055,45 @@ Draws an overlay with dungeon maps on your screen
         internal void CreateHud(int width, int height, int x, int y) {
             try {
                 if (hud != null) {
+                    ClearHud();
                     hud.Dispose();
                 }
 
-                if (UB.Core.Actions.Landcell == 0) return;
-
-                if (!Enabled || (!DrawWhenClosed) && !UB.MapView.view.Visible) {
-                    if (isRunning) {
-                        zoomSaveTimer.Stop();
-                        UB.VisualNav.NavChanged -= VisualNav_NavChanged;
-                        UB.VisualNav.NavUpdated -= VisualNav_NavUpdated;
-                        UB.Core.RenderFrame -= Core_RenderFrame;
-                        UB.Core.RegionChange3D -= Core_RegionChange3D;
-                        UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
-                        UB.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
-                        UB.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
-                        UB.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
-                        UBHelper.Core.RadarUpdate -= Core_RadarUpdate;
-
+                if (isRunning) {
+                    if (!Enabled || (!DrawWhenClosed && !UB.MapView.view.Visible)) {
                         foreach (var to in trackedObjects.Values) {
                             to.Dispose();
                         }
                         trackedObjects.Clear();
+                        return;
                     }
+
+                    UB.VisualNav.NavChanged -= VisualNav_NavChanged;
+                    UB.VisualNav.NavUpdated -= VisualNav_NavUpdated;
+                    UB.Core.RenderFrame -= Core_RenderFrame;
+                    UB.Core.RegionChange3D -= Core_RegionChange3D;
+                    UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
+                    UB.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
+                    UB.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                    UB.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
+                    UBHelper.Core.RadarUpdate -= Core_RadarUpdate;
                     isRunning = false;
-                    return;
                 }
 
+                if (UB.Core.Actions.Landcell == 0) return;
 
-                if (!isRunning) {
-                    UB.VisualNav.NavChanged += VisualNav_NavChanged;
-                    UB.VisualNav.NavUpdated += VisualNav_NavUpdated;
-                    UB.Core.RenderFrame += Core_RenderFrame;
-                    UB.Core.RegionChange3D += Core_RegionChange3D;
-                    UB.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
-                    UB.Core.CharacterFilter.ChangePortalMode += CharacterFilter_ChangePortalMode;
-                    UB.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
-                    UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
-                    UBHelper.Core.RadarUpdate += Core_RadarUpdate;
-                    needsMapDraw = true;
-                    LoadLandblock(UB.Core.Actions.Landcell);
-                }
+                UB.VisualNav.NavChanged += VisualNav_NavChanged;
+                UB.VisualNav.NavUpdated += VisualNav_NavUpdated;
+                UB.Core.RenderFrame += Core_RenderFrame;
+                UB.Core.RegionChange3D += Core_RegionChange3D;
+                UB.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
+                UB.Core.CharacterFilter.ChangePortalMode += CharacterFilter_ChangePortalMode;
+                UB.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
+                UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
+                UBHelper.Core.RadarUpdate += Core_RadarUpdate;
 
-                hud = new DxHud(new Point(x + 5, y + 45), new Size(width - 10, height - 50), 0);
+                hud = new DxHud(new Point(x + 5, y + 69), new Size(width - 10, height - 74), 0);
                 hud.Enabled = true;
-
                 isRunning = true;
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -926,7 +1104,20 @@ Draws an overlay with dungeon maps on your screen
         private void RenderHud() {
             if (hud == null || hud.Texture == null || hud.Texture.IsDisposed || mapTexture == null || mapTexture.IsDisposed) return;
 
-            PrecacheLabels();
+            if (UB.MapView.view.Visible && UIMapNotebook.CurrentTab != 0) {
+                hud.Enabled = false;
+                return;
+            }
+            hud.Enabled = true;
+
+            if (UIShowAllLayers.Checked) {
+                foreach (var key in TrackedObject.ByZLayer.Keys) {
+                    PrecacheLabels(key);
+                }
+            }
+            else {
+                PrecacheLabels((int)(Math.Floor((drawZ + 3) / 6) * 6));
+            }
 
             if (ShowCompass && compassTexture == null) {
                 LoadCompassTexture();
@@ -961,14 +1152,25 @@ Draws an overlay with dungeon maps on your screen
                 hud.Texture.DrawTextureWithTransform(mapTexture, transform, tint);
 
                 if (ShowCompass && compassTexture != null && !compassTexture.IsDisposed) {
-                    hud.Texture.DrawTextureRotated(compassTexture, new Rectangle(0, 0, compassTexture.Width, compassTexture.Height), new Point(hud.Texture.Width - (compassTexture.Width / 2), (compassTexture.Height / 2)), tint, (float)(Math.PI - UB.Core.Actions.HeadingRadians + Math.PI));
+                    hud.Texture.DrawTextureRotated(compassTexture, new Rectangle(0, 0, compassTexture.Width, compassTexture.Height), new Point(hud.Texture.Width - (compassTexture.Width / 2), (compassTexture.Height / 2)), tint, (float)((360f - mapRotation) * (Math.PI / 180)));
                 }
 
-                DrawLabels();
+                if (UIShowAllLayers.Checked) {
+                    foreach (var key in TrackedObject.ByZLayer.Keys) {
+                        DrawLabels(key);
+                    }
+                }
+                else {
+                    DrawLabels((int)(Math.Floor((drawZ + 3) / 6) * 6));
+                }
+
+                if (isManualLoad)
+                    DrawLegend();
+
                 try {
                     hud.Texture.BeginText(fontFace, 10f, 150, false, 1, (int)byte.MaxValue);
                     if (DungeonName.Enabled) {
-                        hud.Texture.WriteText(dungeon.Name, Color.FromArgb(DungeonName.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
+                        hud.Texture.WriteText(dungeon.Name + $" (z{(int)(Math.Floor((drawZ + 3) / 6))})", Color.FromArgb(DungeonName.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
                     }
                     if (Debug) {
                         var text = $"Objs:{trackedObjects.Keys.Count} Icons:{TextureCache.iconCache.Count} Tiles:{TextureCache.tileCache.Count} Markers:{TextureCache.markerCache.Count} Texts:{TextureCache.textCache.Count} - {lastDrawDuration:D8}";
@@ -982,6 +1184,28 @@ Draws an overlay with dungeon maps on your screen
             catch (Exception ex) { Logger.LogException(ex); }
             finally {
                 hud.Texture.EndRender();
+            }
+        }
+
+        private void DrawLegend() {
+            try {
+                hud.Texture.BeginText(fontFace, 8f, fontWeight, false, 1, (int)byte.MaxValue);
+                var offset = 0;
+                foreach (var kv in TrackedObject.Legend) {
+                    var icon = TextureCache.GetIcon(kv.Value.Icon);
+                    if (icon == null)
+                        continue;
+                    hud.Texture.DrawTextureTinted(icon, new Rectangle(0, 0, icon.Width, icon.Height), new Rectangle(0, offset, 25, 25), kv.Value.Color.ToArgb());
+                    hud.Texture.WriteText(kv.Value.Name,
+                        kv.Value.Color,
+                        VirindiViewService.WriteTextFormats.VerticalCenter,
+                        new Rectangle(25, offset, 200, 25));
+                    offset += 25;
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+            finally {
+                hud.Texture.EndText();
             }
         }
 
@@ -1005,33 +1229,33 @@ Draws an overlay with dungeon maps on your screen
             }
         }
 
-        private void PrecacheLabels() {
-            var z = (int)(Math.Floor((PhysicsObject.GetPosition(UB.Core.CharacterFilter.Id).Z + 3) / 6) * 6);
+        private void PrecacheLabels(int z) {
             if (TrackedObject.ByZLayer.ContainsKey(z)) {
                 if (!dungeon.ZLayers.ContainsKey(z)) return;
+                var objs = TrackedObject.ByZLayer[z].ToArray();
+                foreach (var obj in objs) {
+                    if (!ShouldDrawLabel(obj))
+                        continue;
+                    Color color = Color.FromArgb(Display.Markers.GetMarkerColor(obj));
 
-                foreach (var obj in TrackedObject.ByZLayer[z]) {
-                    var wo = UB.Core.WorldFilter[obj.Id];
-                    if (wo == null || !ShouldDrawLabel(wo)) continue;
-
-                    var color = Color.FromArgb(Display.Markers.GetMarkerColor(wo));
                     TextureCache.GetText(obj.Name, LABEL_HEIGHT, color, fontFace, fontWeight);
                 }
             }
         }
 
-        private void DrawLabels() {
-            var z = (int)(Math.Floor((PhysicsObject.GetPosition(UB.Core.CharacterFilter.Id).Z + 3) / 6) * 6);
-
+        private void DrawLabels(int z) {
             if (TrackedObject.ByZLayer.ContainsKey(z)) {
                 if (!dungeon.ZLayers.ContainsKey(z)) return; 
 
                 try {
                     foreach (var obj in TrackedObject.ByZLayer[z]) {
-                        var wo = UB.Core.WorldFilter[obj.Id];
-                        if (wo == null || !ShouldDrawLabel(wo)) continue;
+                        if (!ShouldDrawLabel(obj))
+                            continue;
 
-                        var color = Color.FromArgb(Display.Markers.GetMarkerColor(wo));
+                        Color color = Color.FromArgb(Display.Markers.GetMarkerColor(obj));
+                        if (obj.IsLSD && obj.ObjectClass == ObjectClass.Monster) {
+                                continue;
+                        }
                         var textTexture = TextureCache.GetText(obj.Name, LABEL_HEIGHT, color, fontFace, fontWeight, 1, false);
 
                         if (textTexture == null) continue;
@@ -1073,7 +1297,7 @@ Draws an overlay with dungeon maps on your screen
             needsMapDraw = false;
             foreach (var kp in dungeon.ZLayers) {
                 // floors more than one level above or four levels below your char are not drawn
-                if (UB.Core.Actions.LocationZ - kp.Key < -10 || UB.Core.Actions.LocationZ - kp.Key > 24) {
+                if (!UIShowAllLayers.Checked && (drawZ - kp.Key < -10 || drawZ - kp.Key > 24)) {
                     continue;
                 }
 
@@ -1104,7 +1328,7 @@ Draws an overlay with dungeon maps on your screen
 
                 foreach (var kp in dungeon.ZLayers) {
                     // floors more than one level above or four levels below your char are not drawn
-                    if (UB.Core.Actions.LocationZ - kp.Key < -10 || UB.Core.Actions.LocationZ - kp.Key > 24) {
+                    if (!UIShowAllLayers.Checked && (drawZ - kp.Key < -10 || drawZ - kp.Key > 24)) {
                         continue;
                     }
 
@@ -1227,22 +1451,6 @@ Draws an overlay with dungeon maps on your screen
             }
         }
 
-        private int GetTint(int zLayer) {
-            // floors directly above your character
-            if (UB.Core.Actions.LocationZ - zLayer < -3) {
-                return Color.FromArgb(141, 151, 151, 151).ToArgb();
-            }
-            // current floor
-            else if (Math.Abs(UB.Core.Actions.LocationZ - zLayer) < 3) {
-                return -1;
-            }
-            // floors below
-            else {
-                var d = (int)(Math.Min(1,(Math.Abs(UB.Core.Actions.LocationZ - zLayer) / 6f) * 0.4f) * 255);
-                return Color.FromArgb(255, 255-d, 255-d, 255-d).ToArgb();
-            }
-        }
-
         private void DrawMarkers(DxTexture texture, int zLayer) {
             if (!TrackedObject.ByZLayer.ContainsKey(zLayer)) return;
 
@@ -1251,53 +1459,69 @@ Draws an overlay with dungeon maps on your screen
             }
         }
 
-        private bool ShouldDrawMarker(WorldObject wo) {
+        private bool ShouldDrawMarker(TrackedObject obj) {
+            if (obj.IsLSD && isManualLoad)
+                return obj.Type > 1;
+
+            if (obj.IsLSD && obj.Type <= 1)
+                return false;
+
             // make sure the client knows about this object
-            if (!UB.Core.Actions.IsValidObject(wo.Id)) return false;
+            var valid = UB.Core.Actions.IsValidObject(obj.Id);
+            if ((!obj.IsLSD && !valid) || (isManualLoad && valid))
+                return false;
 
             // too far?
             // TODO: get distance from physics object
-            if (UB.Core.WorldFilter.Distance(wo.Id, UB.Core.CharacterFilter.Id) * 240 > 300) return false;
+            if (UB.Core.WorldFilter.Distance(obj.Id, UB.Core.CharacterFilter.Id) * 240 > 300) return false;
 
-            return Display.Markers.ShouldDraw(wo);
+            return Display.Markers.ShouldDraw(obj);
         }
 
-        private bool ShouldDrawLabel(WorldObject wo) {
-            // make sure the client knows about this object
-            if (!UB.Core.Actions.IsValidObject(wo.Id)) return false;
+        private bool ShouldDrawLabel(TrackedObject obj) {
+            if (obj.IsLSD && isManualLoad)
+                return obj.Type > 1;
 
-            // too far?
-            // TODO: get distance from physics object
-            if (UB.Core.WorldFilter.Distance(wo.Id, UB.Core.CharacterFilter.Id) * 240 > 300) return false;
+            if (obj.IsLSD && obj.Type <= 1)
+                return false;
 
-            return Display.Markers.ShouldShowlabel(wo);
+            return Display.Markers.ShouldShowlabel(obj) && ShouldDrawMarker(obj);
         }
 
         private void DrawTrackedObject(TrackedObject obj, int roundedZ, DxTexture texture) {
             try {
-                DungeonLayer zLayer = dungeon.ZLayers[roundedZ];
-                var wo = UB.Core.WorldFilter[obj.Id];
+                if (!ShouldDrawMarker(obj))
+                    return;
 
-                if (wo == null || !ShouldDrawMarker(wo)) return;
+                DungeonLayer zLayer = dungeon.ZLayers[roundedZ];
+                bool shouldUseIcon = Display.Markers.ShouldUseIcon(obj);
+                Color color = Color.FromArgb(Display.Markers.GetMarkerColor(obj));
+                Color tintColor = Color.White;
+                var size = Display.Markers.GetSize(obj) / 5f;
+                if (TrackedObject.Legend.ContainsKey(obj.Wcid)) {
+                    color = TrackedObject.Legend[obj.Wcid].Color;
+                    tintColor = color;
+                }
+
+                if (obj.IsLSD && !isManualLoad && obj.ObjectClass == ObjectClass.Monster)
+                    return;
 
                 float x = (float)((zLayer.Width - 5 - (obj.Position.X - zLayer.minX)) * TextureCache.TileScale);
                 float y = (float)((obj.Position.Y + 5 - zLayer.minY) * TextureCache.TileScale);
 
                 Matrix transform = new Matrix();
-                var useIcon = Display.Markers.ShouldUseIcon(wo);
 
                 DxTexture marker;
-                if (Display.Markers.ShouldUseIcon(wo) && TextureCache.GetIcon(obj.Icon) != null) {
+                if (shouldUseIcon && TextureCache.GetIcon(obj.Icon) != null) {
                     marker = TextureCache.GetIcon(obj.Icon);
                 }
                 else {
-                    marker = TextureCache.GetMarker(Display.Markers.GetMarkerColor(wo));
+                    marker = TextureCache.GetMarker(color.ToArgb());
                 }
 
-                Quaternion q = Geometry.HeadingToQuaternion(0);
-                var s = Display.Markers.GetSize(wo) / 5f;
-                transform.AffineTransformation(s, new Vector3((marker.Width * s / 2), (marker.Height * s / 2), 0), q, new Vector3(x - (marker.Width / 2) * s, y - (marker.Height / 2) * s, 0));
-                texture.DrawTextureWithTransform(marker, transform, -1);
+                Quaternion q = Geometry.HeadingToQuaternion(180);
+                transform.AffineTransformation(size, new Vector3((marker.Width * size / 2), (marker.Height * size / 2), 0), q, new Vector3(x - (marker.Width / 2) * size, y - (marker.Height / 2) * size, 0));
+                texture.DrawTextureWithTransform(marker, transform, tintColor.ToArgb());
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -1388,6 +1612,7 @@ Draws an overlay with dungeon maps on your screen
                     zoomSaveTimer.Stop();
                     UB.VisualNav.NavChanged -= VisualNav_NavChanged;
                     UB.VisualNav.NavUpdated -= VisualNav_NavUpdated;
+                    UB.LSD.DataUpdated -= LSD_DataUpdated;
                     UB.Core.RenderFrame -= Core_RenderFrame;
                     UB.Core.RegionChange3D -= Core_RegionChange3D;
                     UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;

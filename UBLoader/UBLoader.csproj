@@ -72,6 +72,7 @@
   <ItemGroup>
     <None Include="Deps\Newtonsoft.Json.dll" />
     <None Include="Deps\SharedMemory.dll" />
+    <Content Include="Deps\LiteDB.dll" />
     <Content Include="Deps\UBHelper.dll" />
   </ItemGroup>
   <ItemGroup>

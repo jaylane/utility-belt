@@ -15,7 +15,8 @@
 - Add `/ub textures <landscape> <landscapeDetail> <environment> <environmentDetail> <sceneryDraw> <landscapeDraw>` to set the client texture options
 - Fixed a few potential crash to desktop bugs
 - Nav routes now properly show on dungeon maps when video patch is enabled
-- Add `/ub professor <type> <level>` command to learn spells from professorsin Arwic
+- Add `/ub professor <type> <level>` command to learn spells from professors in Arwic
+- Add the ability to view any dungeon map, with data courtesy of lifestoned.org
 
 ## 0.1.1 (2019-12-03) [UtilityBeltInstaller-0.1.1.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/c94b459edb29649f99f1d84eae3f76ce/UtilityBeltInstaller-0.1.1.exe)
 - Increase AutoStack/AutoCram timeout to 30s

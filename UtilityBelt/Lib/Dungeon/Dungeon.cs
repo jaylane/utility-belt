@@ -17,15 +17,53 @@ namespace UtilityBelt.Lib.Dungeon {
         public int Width { get { return maxX - minX + 10; } }
         public int Height { get { return maxY - minY + 10; } }
 
+        public int Depth { get { return maxZ - minZ; } }
+
         private List<string> filledCoords = new List<string>();
         public int minX = 0;
         public int maxX = 0;
         public int minY = 0;
         public int maxY = 0;
+        public int minZ = 0;
+        public int maxZ = 0;
         public int offsetX { get { return 0; } }
         public int offsetY { get { return 0; } }
 
         private static Dictionary<int, string> dungeonNames;
+        public static Dictionary<int, string> DungeonNames {
+            get {
+                if (dungeonNames == null) {
+                    string filePath = Path.Combine(Util.GetResourcesDirectory(), "dungeons.csv");
+                    Stream fileStream = null;
+                    if (File.Exists(filePath)) {
+                        fileStream = new FileStream(filePath, FileMode.Open);
+                    }
+                    else {
+                        fileStream = typeof(Dungeon).Assembly.GetManifestResourceStream($"UtilityBelt.Resources.dungeons.csv");
+                    }
+
+                    dungeonNames = new Dictionary<int, string>();
+
+                    using (var reader = new StreamReader(fileStream, true)) {
+                        string line;
+                        while ((line = reader.ReadLine()) != null) {
+                            var parts = line.Split(',');
+                            if (parts.Length != 2) continue;
+
+                            if (int.TryParse(parts[0], System.Globalization.NumberStyles.HexNumber, null, out int parsed)) {
+                                if (!dungeonNames.ContainsKey(parsed)) {
+                                    dungeonNames[parsed << 16] = parts[1];
+                                }
+                            }
+                        }
+                    }
+
+                    fileStream.Dispose();
+                }
+
+                return dungeonNames;
+            }
+        }
 
         public Dungeon(int landcell) {
             Landcell = landcell;
@@ -35,37 +73,8 @@ namespace UtilityBelt.Lib.Dungeon {
         }
 
         private void LoadName() {
-            if (dungeonNames == null) {
-                string filePath = Path.Combine(Util.GetResourcesDirectory(), "dungeons.csv");
-                Stream fileStream = null;
-                if (File.Exists(filePath)) {
-                    fileStream = new FileStream(filePath, FileMode.Open);
-                }
-                else {
-                    fileStream = typeof(Dungeon).Assembly.GetManifestResourceStream($"UtilityBelt.Resources.dungeons.csv");
-                }
-
-                dungeonNames = new Dictionary<int, string>();
-
-                using (var reader = new StreamReader(fileStream, true)) {
-                    string line;
-                    while ((line = reader.ReadLine()) != null) {
-                        var parts = line.Split(',');
-                        if (parts.Length != 2) continue;
-
-                        if (int.TryParse(parts[0], System.Globalization.NumberStyles.HexNumber, null, out int parsed)) {
-                            if (!dungeonNames.ContainsKey(parsed)) {
-                                dungeonNames[parsed << 16] = parts[1];
-                            }
-                        }
-                    }
-                }
-
-                fileStream.Dispose();
-            }
-
-            if (dungeonNames.ContainsKey((Landblock))) {
-                Name = dungeonNames[Landblock];
+            if (DungeonNames.ContainsKey(Landblock)) {
+                Name = DungeonNames[Landblock];
             }
             else {
                 Name += $" {Landblock:X4}";
@@ -93,6 +102,13 @@ namespace UtilityBelt.Lib.Dungeon {
 
                         if (!ZLayers.ContainsKey(cell.Z)) {
                             ZLayers.Add(cell.Z, new DungeonLayer(this, cell.Z));
+                            if (filledCoords.Count == 0) {
+                                minZ = cell.Z;
+                                maxZ = cell.Z;
+                            }
+
+                            if (cell.Z < minZ) minZ = cell.Z;
+                            if (cell.Z > maxZ) maxZ = cell.Z;
                         }
 
                         if (filledCoords.Count == 0) {

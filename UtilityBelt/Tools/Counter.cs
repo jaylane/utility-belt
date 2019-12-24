@@ -23,8 +23,6 @@ Counter is used to count items based on text or utl profiles as well as players 
         private bool scanComplete = false;
         private Dictionary<string, int> matchedRule = new Dictionary<string, int>();
         private Dictionary<string, int> itemList = new Dictionary<string, int>();
-        bool doThink;
-        bool doDebug;
 
         #region Commands
         #region /ub count
@@ -77,8 +75,6 @@ Counter is used to count items based on text or utl profiles as well as players 
                 ChatThink("Total Item Count: " + totalCount.ToString());
 
                 itemList.Clear();
-                doThink = false;
-                doDebug = false;
             }
             else if (args.Groups["Command"].Value.ToLower() == "profile") {
                 utlProfile = args.Groups["Name"].Value.Trim();
