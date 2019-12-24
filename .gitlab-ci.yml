@@ -1,6 +1,7 @@
 variables:
   NUGET_PATH: 'C:\Tools\nuget.exe'
   MSBUILD_PATH: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\msbuild.exe'
+  VSTEST_PATH: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\Extensions\TestPlatform\vstest.console.exe'
   NSIS_PATH: 'C:\Program Files (x86)\NSIS\makensis.exe'
   HUGO_PATH: 'C:\Tools\hugo.exe'
   CURL_PATH: 'C:\Tools\curl.exe'
@@ -9,6 +10,7 @@ variables:
 
 stages:
   - build
+  - test
   - deploy staging
 
 build:
@@ -22,6 +24,12 @@ build:
     expire_in: 30 days
     paths:
       - '$env:BUILD_PATH\'
+
+test:
+  stage: test
+  script:
+    - '& "$env:VSTEST_PATH" "$env:BUILD_PATH\tests\UBLoader.Tests.dll"'
+    - '& "$env:VSTEST_PATH" "$env:BUILD_PATH\tests\UtilityBelt.Tests.dll"'
 
 deploy staging:
   stage: deploy staging

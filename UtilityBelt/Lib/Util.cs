@@ -112,6 +112,10 @@ namespace UtilityBelt
             File.AppendAllText(Path.Combine(Util.GetLogDirectory(), logFileName), message + Environment.NewLine);
         }
 
+        internal static int UnixTimeStamp() {
+            return (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+        }
+
         internal static double GetDistance(CoordsObject c1, CoordsObject c2) {
             return Math.Abs(Math.Sqrt(Math.Pow(c1.NorthSouth - c2.NorthSouth, 2) + Math.Pow(c1.EastWest - c2.EastWest, 2))) * 240;
         }

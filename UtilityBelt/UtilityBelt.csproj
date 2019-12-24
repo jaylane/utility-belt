@@ -50,6 +50,10 @@
     <Reference Include="Decal.Interop.Filters, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="LiteDB, Version=4.1.4.0, Culture=neutral, PublicKeyToken=4ee40123013c9f27, processorArchitecture=MSIL">
+      <HintPath>..\packages\LiteDB.4.1.4\lib\net35\LiteDB.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\UBLoader\Deps\Newtonsoft.Json.dll</HintPath>
@@ -85,15 +89,27 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Lib\Attributes.cs" />
+    <Compile Include="Lib\Constants\WeenieType.cs" />
     <Compile Include="Lib\Dungeon\Dungeon.cs" />
     <Compile Include="Lib\Dungeon\DungeonCell.cs" />
     <Compile Include="Lib\Dungeon\DungeonLayer.cs" />
     <Compile Include="Lib\Dungeon\IsDungeon.cs" />
+    <Compile Include="Lib\Models\Angles.cs" />
+    <Compile Include="Lib\Models\Frame.cs" />
+    <Compile Include="Lib\Models\Landblock.cs" />
+    <Compile Include="Lib\Models\Link.cs" />
+    <Compile Include="Lib\Models\Origin.cs" />
+    <Compile Include="Lib\Models\Position.cs" />
+    <Compile Include="Lib\Models\Weenie.cs" />
+    <Compile Include="Lib\Models\WeenieAttribute.cs" />
+    <Compile Include="Lib\Models\WeenieSpawn.cs" />
     <Compile Include="Lib\TextureCache.cs" />
     <Compile Include="Lib\Dungeon\TrackedObject.cs" />
     <Compile Include="Lib\Mp3Player.cs" />
     <Compile Include="Lib\ToolBase.cs" />
+    <Compile Include="Lib\Database.cs" />
     <Compile Include="Tools\DungeonMaps.cs" />
+    <Compile Include="Tools\LSD.cs" />
     <Compile Include="Tools\Nametags.cs" />
     <Compile Include="Lib\ChatLog\ChatLog.cs" />
     <Compile Include="Lib\ChatLog\ChatLogWriter.cs" />

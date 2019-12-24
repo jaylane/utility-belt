@@ -88,7 +88,7 @@ namespace UtilityBelt {
 
                 using (StreamWriter writer = new StreamWriter(Path.Combine(Util.GetPluginDirectory(), "exceptions.txt"), true)) {
 
-                    writer.WriteLine(" ============================================================================");
+                    writer.WriteLine($"== {DateTime.Now} ==================================================");
                     writer.WriteLine(ex.ToString());
                     writer.WriteLine("============================================================================");
                     writer.WriteLine("");

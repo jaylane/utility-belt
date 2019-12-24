@@ -85,7 +85,7 @@ namespace UtilityBelt.Lib.Dungeon {
             try {
                 if (iconCache.ContainsKey(icon)) return iconCache[icon];
 
-                byte[] portalFile = Util.FileService.GetPortalFile(0x06000000 + icon);
+                byte[] portalFile = Util.FileService.GetPortalFile(icon);
                 byte[] bytes = portalFile.Skip(28).Take(4096).ToArray();
 
                 Bitmap bmp = new Bitmap(32, 32, PixelFormat.Format32bppArgb);

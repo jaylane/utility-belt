@@ -68,6 +68,7 @@ namespace UtilityBelt {
         internal MainView MainView;
         internal MapView MapView;
         internal Settings Settings;
+        internal Database Database;
 
         internal List<ToolBase> LoadedTools = new List<ToolBase>();
 
@@ -86,6 +87,7 @@ namespace UtilityBelt {
         public EquipmentManager EquipmentManager { get; private set; }
         public InventoryManager InventoryManager { get; private set; }
         public Jumper Jumper { get; private set; }
+        public LSD LSD { get; private set; }
         public Nametags Nametags { get; private set; }
         public Spells Spells { get; private set; }
         public QuestTracker QuestTracker { get; private set; }
@@ -167,6 +169,7 @@ namespace UtilityBelt {
 
             Logger.Init();
             Settings = new Settings();
+            Database = new Database();
 
             MainView = new MainView(this);
             MapView = new MapView(this);

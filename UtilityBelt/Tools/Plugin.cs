@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Constants;
+using UtilityBelt.Lib.Dungeon;
 
 namespace UtilityBelt.Tools {
     public class DelayedCommand {
