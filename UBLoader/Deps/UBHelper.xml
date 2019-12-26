@@ -1,0 +1,428 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>UBHelper</name>
+    </assembly>
+    <members>
+        <member name="T:UBHelper.ActionQueue">
+            <summary>
+            A queue for managing inventory actions
+            </summary>
+        </member>
+        <member name="T:UBHelper.Jumper">
+            <summary>
+            Helper class to assist with jumping
+            </summary>
+        </member>
+        <member name="M:UBHelper.Jumper.Jump(System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Tells your character to jump.
+            </summary>
+            <param name="power">how much power to put into the jump, between 0-1</param>
+            <param name="holdSHIFT">set to true to perform a "walk" jump</param>
+            <param name="holdW">set to true to hold the move forward button while jumping</param>
+            <param name="holdX">set to true to hold the move backward button while jumping</param>
+            <param name="holdZ">set to true to hold the left strafe button while jumping</param>
+            <param name="holdC">set to true to hold the right strafe button while jumping</param>
+        </member>
+        <member name="M:UBHelper.Jumper.JumpCancel">
+            <summary>
+            Cancel the current jump attempt
+            </summary>
+        </member>
+        <member name="E:UBHelper.Jumper.JumpComplete">
+            <summary>
+            Raised when the jump has been completed, and you hit the ground.
+            </summary>
+        </member>
+        <member name="T:UBHelper.vTank">
+            <summary>
+            Helper class for working with the VTank plugin
+            </summary>
+        </member>
+        <member name="P:UBHelper.vTank.Instance">
+            <summary>
+            The TrustedRelay interface for VTank control
+            </summary>
+        </member>
+        <member name="F:UBHelper.vTank.locks">
+            <summary>
+            Current VTank action locks.  Key is lock type, Value is when the lock is set to expire.
+            </summary>
+        </member>
+        <member name="M:UBHelper.vTank.Enable">
+            <summary>
+            Enables VTank helper functionality
+            </summary>
+        </member>
+        <member name="M:UBHelper.vTank.Disable">
+            <summary>
+            Disables VTank helper functionality
+            </summary>
+        </member>
+        <member name="M:UBHelper.vTank.Decision_Lock(uTank2.ActionLockType,System.TimeSpan)">
+            <summary>
+            Lock VTank from performing actions. Use Decision_UnLock to cancel.
+            </summary>
+            <param name="actionLockType">the type of action to put a lock on</param>
+            <param name="timeSpan">time to lock vtank for</param>
+        </member>
+        <member name="M:UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType)">
+            <summary>
+            Cancel a VTank lock
+            </summary>
+            <param name="actionLockType">the type of action to unlock</param>
+        </member>
+        <member name="M:UBHelper.vTank.Tell(System.String,System.Int32,System.Int32)">
+            <summary>
+            Sends a chat message to VTank so that it will be capturable by metas.
+            </summary>
+            <param name="message">message to send</param>
+            <param name="color">color of the chat text</param>
+            <param name="target">chat window target</param>
+        </member>
+        <member name="T:UBHelper.InventoryManager">
+            <summary>
+            Helper class for working with your inventory
+            </summary>
+        </member>
+        <member name="M:UBHelper.InventoryManager.AutoCram">
+            <summary>
+            Crams all backpack items into sidepacks
+            </summary>
+            <returns>true if it did something</returns>
+        </member>
+        <member name="M:UBHelper.InventoryManager.AutoStack">
+            <summary>
+            Stacks all items in your backpack and sidepacks into as few stacks as possible
+            </summary>
+            <returns>true if it did something</returns>
+        </member>
+        <member name="M:UBHelper.InventoryManager.UnStack(System.Int32,System.Int32)">
+            <summary>
+            Unstacks splitItem or the currently selected item in your inventory if splitItem is 0
+            </summary>
+            <param name="splitItem">the item id to split, if 0 it will use currently selected item</param>
+            <param name="splitCount">how many splits to do</param>
+            <returns>true if it did anything</returns>
+        </member>
+        <member name="M:UBHelper.InventoryManager.GetInventory(System.Collections.Generic.List{System.Int32}@,UBHelper.InventoryManager.GetInventoryType,UBHelper.Weenie.INVENTORY_LOC)">
+            <summary>
+            Gets a list of itemIds from your inventory, filterable by wield and inventory location
+            </summary>
+            <param name="inventory">ref inventory array to fill with ids</param>
+            <param name="invType">inventory location</param>
+            <param name="loc">wield location</param>
+        </member>
+        <member name="M:UBHelper.InventoryManager.IsDoorOpen(System.Int32)">
+            <summary>
+            Checks if a door weenie is open
+            </summary>
+            <param name="weenie_id">weenie id of the door to check</param>
+            <returns>true if door is open</returns>
+        </member>
+        <member name="T:UBHelper.PCap">
+            <summary>
+            Adds functionality to capture packets ingame, and save to pcap format.
+            </summary>
+        </member>
+        <member name="M:UBHelper.PCap.Enable(System.Int32)">
+            <summary>
+            Enable capturing packet data to a rolling buffer
+            </summary>
+            <param name="bufferDepth">the amount of packets to store in teh buffer</param>
+        </member>
+        <member name="M:UBHelper.PCap.Disable">
+            <summary>
+            Disable packet capturing
+            </summary>
+        </member>
+        <member name="M:UBHelper.PCap.Print(System.String)">
+            <summary>
+            Print the packet capture buffer to a file.
+            </summary>
+            <param name="filename"></param>
+        </member>
+        <member name="T:UBHelper.Fellow">
+            <summary>
+            Helper methods for managing a ac fellowship
+            </summary>
+        </member>
+        <member name="M:UBHelper.Fellow.Create(System.String)">
+            <summary>
+            Create an ac fellowship
+            </summary>
+            <param name="name">name of the fellowship to create</param>
+        </member>
+        <member name="M:UBHelper.Fellow.Quit">
+            <summary>
+            Quit the current ac fellowship
+            </summary>
+        </member>
+        <member name="M:UBHelper.Fellow.Disband">
+            <summary>
+            Disband the current ac fellowship
+            </summary>
+        </member>
+        <member name="M:UBHelper.Fellow.GiveLeader(System.Int32)">
+            <summary>
+            Give the leader position of the current fellowship to character_id. This only works if you
+            are the fellowship leader.
+            </summary>
+            <param name="character_id">the id of the character to give the leadership position to</param>
+        </member>
+        <member name="M:UBHelper.Fellow.Open">
+            <summary>
+            Open the current ac fellowship so that anyone in the fellowship can invite new members. This
+            only works if you are the fellowship leader.
+            </summary>
+        </member>
+        <member name="M:UBHelper.Fellow.Close">
+            <summary>
+            Close the current ac fellowship so that only the leader can invite new members. This
+            only works if you are the fellowship leader.
+            </summary>
+        </member>
+        <member name="M:UBHelper.Fellow.Dismiss(System.Int32)">
+            <summary>
+            Dismiss a character from the fellowship.  Only works if you are the fellowship leader.
+            </summary>
+            <param name="character_id">character id to dismiss</param>
+        </member>
+        <member name="M:UBHelper.Fellow.Recruit(System.Int32)">
+            <summary>
+            Recruit a character into the current ac fellowship. The fellowship must be open, or you must
+            be the leader.
+            </summary>
+            <param name="character_id"></param>
+        </member>
+        <member name="M:UBHelper.Fellow.Update(System.Boolean)">
+            <summary>
+            Request a fellowship update from the server
+            </summary>
+            <param name="i_on">Set to true to get full data (player vitals)</param>
+        </member>
+        <member name="T:UBHelper.Vendor">
+            <summary>
+            Helper class for working with vendors
+            </summary>
+        </member>
+        <member name="P:UBHelper.Vendor.Id">
+            <summary>
+            Id of the currently opened vendor. Will be 0 if no vendor is open.
+            </summary>
+        </member>
+        <member name="E:UBHelper.Vendor.VendorClosed">
+            <summary>
+            Raised when the vendor window has been closed
+            </summary>
+        </member>
+        <member name="T:UBHelper.Player">
+            <summary>
+            Provides helper methods for the current player
+            </summary>
+        </member>
+        <member name="M:UBHelper.Player.SetOption(UBHelper.Player.PlayerOption,System.Boolean)">
+            <summary>
+            Sets a player option
+            </summary>
+            <param name="playerOption">PlayerOption to set</param>
+            <param name="value">new value</param>
+        </member>
+        <member name="M:UBHelper.Player.GetOption(UBHelper.Player.PlayerOption)">
+            <summary>
+            Gets a player option
+            </summary>
+            <param name="playerOption">PlayerOption to get</param>
+            <returns>current value</returns>
+        </member>
+        <member name="T:UBHelper.ConfirmationRequest">
+            <summary>
+            Helper class for working with confirmation requests. These are the ingame
+            popups that require a user to click yes/no for example.
+            </summary>
+        </member>
+        <member name="E:UBHelper.ConfirmationRequest.ConfirmationRequestEvent">
+            <summary>
+            Raised when a confirmation request (yes/no popup) is wanting to be shown on the client
+            </summary>
+        </member>
+        <member name="T:UBHelper.ConfirmationRequest.ConfirmationRequestEventArgs">
+            <summary>
+            Holds information about a confirmation request.  Setting either ClickYes or ClickNo
+            to true will skip showing the dialog to the user, and perform that action.  If both
+            ClickYes and ClickNo are set to the default values of false, nothing will happen
+            and the confirmation request will be shown to the user as normal.
+            </summary>
+        </member>
+        <member name="P:UBHelper.ConfirmationRequest.ConfirmationRequestEventArgs.Confirm">
+            <summary>
+            The type of confirmation request.
+            </summary>
+        </member>
+        <member name="P:UBHelper.ConfirmationRequest.ConfirmationRequestEventArgs.Text">
+            <summary>
+            The text that would be shown to the user
+            </summary>
+        </member>
+        <member name="P:UBHelper.ConfirmationRequest.ConfirmationRequestEventArgs.ClickYes">
+            <summary>
+            Set to true to automatically click yes before the popup is shown to the user
+            </summary>
+        </member>
+        <member name="P:UBHelper.ConfirmationRequest.ConfirmationRequestEventArgs.ClickNo">
+            <summary>
+            Set to true to automatically click no before the popup is shown to the user.
+            </summary>
+        </member>
+        <member name="T:UBHelper.Core">
+            <summary>
+            Core UBHelper class
+            </summary>
+        </member>
+        <member name="F:UBHelper.Core.version">
+            <summary>
+            UBHelper api version
+            </summary>
+        </member>
+        <member name="M:UBHelper.Core.Startup(System.String,System.String,System.String)">
+            <summary>
+            Plugins should call this once at startup to intialize UBHelper
+            </summary>
+            <param name="assemblyPath">absolute file path to the calling plugin assembly</param>
+            <param name="storagePath">calling plugin file storage path</param>
+            <param name="characterName">name of the currently logged in character</param>
+        </member>
+        <member name="M:UBHelper.Core.Shutdown">
+            <summary>
+            Plugins should call this once on shutdown to clean up
+            </summary>
+        </member>
+        <member name="T:UBHelper.Core.callback">
+            <summary>
+            Generic callbackback delegate with no arguments
+            </summary>
+        </member>
+        <member name="P:UBHelper.Core.Uptime">
+            <summary>
+            AC client uptime in seconds
+            </summary>
+        </member>
+        <member name="E:UBHelper.Core.RadarUpdate">
+            <summary>
+            Fired roughly once a second when the radar system updates. Useful for things that don't
+            need to be checked on every frame.
+            </summary>
+        </member>
+        <member name="T:UBHelper.Core.Del_RadarUpdate">
+            <summary>
+            RadarUpdate event handler delegate
+            </summary>
+            <param name="uptime">AC client uptime in seconds</param>
+        </member>
+        <member name="M:UBHelper.Core.ClearBusyCount">
+            <summary>
+            Clears the client busy count
+            </summary>
+        </member>
+        <member name="M:UBHelper.Core.GetBusyState">
+            <summary>
+            Gets the clients current busy state
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UBHelper.Core.GetBusyStateId">
+            <summary>
+            Gets the clients current busy state id
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UBHelper.Core.GetBusyStateTime">
+            <summary>
+            Gets the clients current busy state time
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UBHelper.Core.ClearBusyState(System.Boolean)">
+            <summary>
+            Clears the client busy state. This will also perform a *teapot* emote.
+            </summary>
+            <param name="force"></param>
+        </member>
+        <member name="M:UBHelper.Core.SendTellByGUID(System.Int32,System.String)">
+            <summary>
+            Send a tell to an objectGUID.  This is helpful for automating spell professors at least.
+            </summary>
+            <param name="targetId">object id to send a tell to</param>
+            <param name="message">message to send</param>
+        </member>
+        <member name="M:UBHelper.Core.LogException(System.Exception)">
+            <summary>
+            Log an exception
+            </summary>
+            <param name="ex">exception to log</param>
+        </member>
+        <member name="M:UBHelper.Core.WriteToDebugLog(System.String)">
+            <summary>
+            Writes a string to the characters debug log
+            </summary>
+            <param name="message">debug message to write</param>
+        </member>
+        <member name="M:UBHelper.Core.TurnToHeading(System.Single)">
+            <summary>
+            Turns your character to a specific heading in degrees. 0 is North, 90 is East.
+            </summary>
+            <param name="head">the heading to face your character towards, in degrees. 0 is North, 90 is East.</param>
+        </member>
+        <member name="M:UBHelper.Core.SetResolution(System.UInt16,System.UInt16)">
+            <summary>
+            Sets the game clients resolution to a custom window size
+            </summary>
+            <param name="width">new client width in pixels</param>
+            <param name="height">new client height in pixels</param>
+        </member>
+        <member name="M:UBHelper.Core.SetTextures(System.UInt32,System.Byte,System.UInt32,System.Byte,System.UInt32,System.UInt32)">
+            <summary>
+            TODO: Sets texture details?
+            </summary>
+            <param name="landscape"></param>
+            <param name="landscapeDetail"></param>
+            <param name="environment"></param>
+            <param name="environmentDetail"></param>
+            <param name="sceneryDraw"></param>
+            <param name="landscapeDraw"></param>
+        </member>
+        <member name="T:UBHelper.VideoPatch">
+            <summary>
+            Controls enabling/disabling the 3d rendering window of the game client.
+            Useful for lowering cpu consumption.
+            </summary>
+        </member>
+        <member name="M:UBHelper.VideoPatch.Enable">
+            <summary>
+            Enables VideoPatch by disabling the 3d rendering window of the game client.
+            </summary>
+        </member>
+        <member name="M:UBHelper.VideoPatch.Disable">
+            <summary>
+            Disables VideoPatch
+            </summary>
+        </member>
+        <member name="M:UBHelper.VideoPatch.Toggle">
+            <summary>
+            Toggles VideoPatch
+            </summary>
+        </member>
+        <member name="M:UBHelper.VideoPatch.IsEnabled">
+            <summary>
+            Checks if VideoPatch is enabled
+            </summary>
+            <returns>true if VideoPatch is enabled</returns>
+        </member>
+        <member name="E:UBHelper.VideoPatch.Changed">
+            <summary>
+            Raised when VideoPatch has been enabled/disabled
+            </summary>
+        </member>
+    </members>
+</doc>
