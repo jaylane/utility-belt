@@ -4,13 +4,14 @@ title: Configuration Files
 
 
 ### UtilityBelt.dll.config
-This is an (optional) XML file, that goes in the same folder as UtilityBelt.dll. It allows you to change the location that all of the other UtilityBelt files are read from/saved to. Default is `%USERPROFILE%\Documents\Decal Plugins\UtilityBelt`
+This is an (optional) XML file, that goes in the same folder as UtilityBelt.dll. It allows you to change the location that all of the other UtilityBelt files are read from/saved to. Default is `%USERPROFILE%\Documents\Decal Plugins\UtilityBelt`.  You can also specify a DataBaseFile path to customize where the database will be saved.
 Example:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
     <appSettings>
         <add key="PluginDirectory" value="C:\Projects\UtilityBelt\bin" />
+        <add key="DatabaseFile" value="C:\Projects\UtilityBelt\bin\utilitybelt.db" />
     </appSettings>
 </configuration>
 ```

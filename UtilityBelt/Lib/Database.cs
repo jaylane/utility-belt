@@ -12,14 +12,35 @@ using UtilityBelt.Lib.Models;
 namespace UtilityBelt.Lib {
     public class Database : IDisposable {
         internal LiteDatabase ldb;
-        internal LiteCollection<Landblock> Landblocks;
-        internal LiteCollection<Weenie> Weenies;
-        public static string DBPath { get { return Path.Combine(Util.GetPluginDirectory(), "utilitybelt.db"); } }
+        private LiteCollection<Landblock> landblocks;
+        internal LiteCollection<Landblock> Landblocks {
+            get {
+                if (landblocks == null)
+                    Init();
+                return landblocks;
+            }
+        }
+        private LiteCollection<Weenie> weenies;
+        internal LiteCollection<Weenie> Weenies {
+            get {
+                if (weenies == null)
+                    Init();
+                return weenies;
+            }
+        }
+        public static string DBPath { get; private set; }
 
-        public Database() {
+        public Database(string dbPath) {
+            DBPath = dbPath;
+        }
+
+        private void Init() {
+            if (ldb != null)
+                return;
+
             ldb = new LiteDatabase(DBPath);
-            Weenies = ldb.GetCollection<Weenie>("weenies");
-            Landblocks = ldb.GetCollection<Landblock>("landblocks");
+            weenies = ldb.GetCollection<Weenie>("weenies");
+            landblocks = ldb.GetCollection<Landblock>("landblocks");
         }
 
         #region IDisposable Support
@@ -37,6 +58,11 @@ namespace UtilityBelt.Lib {
         }
         public void Dispose() {
             Dispose(true);
+        }
+
+        internal void Shrink() {
+            Init();
+            ldb.Shrink();
         }
         #endregion
     }

@@ -62,6 +62,7 @@ namespace UtilityBelt {
         internal CoreManager Core;
         internal NetServiceHost Host;
         internal string PluginName = "UtilityBelt";
+        internal string DatabaseFile;
         internal string AccountName;
         internal string ServerName;
         internal string CharacterName;
@@ -107,15 +108,17 @@ namespace UtilityBelt {
         /// </summary>
         /// <param name="assemblyLocation">The full path including filename to this assembly dll</param>
         /// <param name="storagePath">The directory where this plugin should store files</param>
+        /// <param name="databaseFile">The absolute file name where the database should be stored</param>
         /// <param name="host">NetServiceHost instance passed from UBLoader filter</param>
         /// <param name="core">CoreManager instance passed from UBLoader filter</param>
         /// <param name="accountName">Account name for the current session</param>
         /// <param name="characterName">Name of the logged in character</param>
         /// <param name="serverName">Name of the server currently logged in to</param>
-        public void Startup(string assemblyLocation, string storagePath, NetServiceHost host, CoreManager core, string accountName, string characterName, string serverName) {
+        public void Startup(string assemblyLocation, string storagePath, string databaseFile, NetServiceHost host, CoreManager core, string accountName, string characterName, string serverName) {
 			try {
                 Core = core;
                 Host = host;
+                DatabaseFile = databaseFile;
                 AccountName = accountName;
                 ServerName = serverName;
                 CharacterName = characterName;
@@ -169,7 +172,7 @@ namespace UtilityBelt {
 
             Logger.Init();
             Settings = new Settings();
-            Database = new Database();
+            Database = new Database(DatabaseFile);
 
             MainView = new MainView(this);
             MapView = new MapView(this);
