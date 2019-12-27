@@ -37,33 +37,8 @@ namespace UBLoader {
             }
         }
 
-        private string pluginStorageDirectory;
-        public string PluginStorageDirectory {
-            get {
-                if (!string.IsNullOrEmpty(pluginStorageDirectory)) return pluginStorageDirectory;
-
-                System.Configuration.Configuration config = null;
-                System.Configuration.KeyValueConfigurationElement element = null;
-                try {
-                    config = System.Configuration.ConfigurationManager.OpenExeConfiguration(PluginAssemblyPath);
-                    element = config.AppSettings.Settings["PluginDirectory"];
-                }
-                catch { }
-                if (element != null && !string.IsNullOrEmpty(element.Value)) {
-                    pluginStorageDirectory = element.Value;
-                }
-                else {
-                    pluginStorageDirectory = System.IO.Path.Combine(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins"), PluginName);
-                    try {
-                        config.AppSettings.Settings.Add("PluginDirectory", pluginStorageDirectory);
-                        config.Save();
-                    }
-                    catch { }
-                }
-
-                return pluginStorageDirectory;
-            }
-        }
+        public string PluginStorageDirectory { get; private set; }
+        public string DatabaseFile { get; private set; }
 
         public string AccountName;
         public string CharacterName;
@@ -83,12 +58,43 @@ namespace UBLoader {
                 System.Reflection.Assembly.Load((byte[])rm.GetObject("Newtonsoft_Json"));
                 System.Reflection.Assembly.Load((byte[])rm.GetObject("SharedMemory"));
 
+                LoadAssemblyConfig();
+
                 ServerDispatch += FilterCore_ServerDispatch;
                 ClientDispatch += FilterCore_ClientDispatch;
                 Core.PluginInitComplete += Core_PluginInitComplete;
                 Core.PluginTermComplete += Core_PluginTermComplete;
             }
             catch (Exception ex) { LogException(ex); }
+        }
+
+        private void LoadAssemblyConfig() {
+            System.Configuration.Configuration config = null;
+            try {
+                config = System.Configuration.ConfigurationManager.OpenExeConfiguration(PluginAssemblyPath);
+                var keys = config.AppSettings.Settings.AllKeys;
+                if (keys.Contains("PluginDirectory"))
+                    PluginStorageDirectory = config.AppSettings.Settings["PluginDirectory"].Value;
+                if (keys.Contains("DatabaseFile"))
+                    DatabaseFile = config.AppSettings.Settings["DatabaseFile"].Value;
+            }
+            catch { }
+            if (string.IsNullOrEmpty(PluginStorageDirectory)) {
+                PluginStorageDirectory = System.IO.Path.Combine(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins"), PluginName);
+                try {
+                    config.AppSettings.Settings.Add("PluginDirectory", PluginStorageDirectory);
+                    config.Save();
+                }
+                catch { }
+            }
+            if (string.IsNullOrEmpty(DatabaseFile)) {
+                DatabaseFile = System.IO.Path.Combine(PluginStorageDirectory, "utilitybelt.db");
+                try {
+                    config.AppSettings.Settings.Add("DatabaseFile", DatabaseFile);
+                    config.Save();
+                }
+                catch { }
+            }
         }
 
         private void FilterCore_ClientDispatch(object sender, NetworkMessageEventArgs e) {
@@ -220,6 +226,7 @@ namespace UBLoader {
                 startupMethod.Invoke(PluginInstance, new object[] {
                     PluginAssemblyPath,
                     PluginStorageDirectory,
+                    DatabaseFile,
                     Host,
                     Core,
                     AccountName,

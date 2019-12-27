@@ -575,7 +575,8 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                     UB.MapView.ResizeMapHud();
                     break;
             }
-            needsClear = true;
+            if (Enabled)
+                needsClear = true;
         }
 
         private void UISearch_Change(object sender, EventArgs e) {
@@ -1059,15 +1060,15 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                     hud.Dispose();
                 }
 
-                if (isRunning) {
-                    if (!Enabled || (!DrawWhenClosed && !UB.MapView.view.Visible)) {
-                        foreach (var to in trackedObjects.Values) {
-                            to.Dispose();
-                        }
-                        trackedObjects.Clear();
-                        return;
+                if (!Enabled || (!DrawWhenClosed && !UB.MapView.view.Visible)) {
+                    foreach (var to in trackedObjects.Values) {
+                        to.Dispose();
                     }
+                    trackedObjects.Clear();
+                    return;
+                }
 
+                if (isRunning) {
                     UB.VisualNav.NavChanged -= VisualNav_NavChanged;
                     UB.VisualNav.NavUpdated -= VisualNav_NavUpdated;
                     UB.Core.RenderFrame -= Core_RenderFrame;
@@ -1170,7 +1171,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                 try {
                     hud.Texture.BeginText(fontFace, 10f, 150, false, 1, (int)byte.MaxValue);
                     if (DungeonName.Enabled) {
-                        hud.Texture.WriteText(dungeon.Name + $" (z{(int)(Math.Floor((drawZ + 3) / 6))})", Color.FromArgb(DungeonName.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
+                        hud.Texture.WriteText(dungeon.Name + $" (Z:{(int)(Math.Floor((drawZ + 3) / 6))})", Color.FromArgb(DungeonName.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
                     }
                     if (Debug) {
                         var text = $"Objs:{trackedObjects.Keys.Count} Icons:{TextureCache.iconCache.Count} Tiles:{TextureCache.tileCache.Count} Markers:{TextureCache.markerCache.Count} Texts:{TextureCache.textCache.Count} - {lastDrawDuration:D8}";

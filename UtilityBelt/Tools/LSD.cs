@@ -93,7 +93,7 @@ namespace UtilityBelt.Tools {
             var weenieCount = UB.Database.Weenies.Count();
             UB.Database.Landblocks.Delete(x => true);
             UB.Database.Weenies.Delete(x => true);
-            UB.Database.ldb.Shrink();
+            UB.Database.Shrink();
             WriteToChat($"Cleared {lbCount} landblocks and {weenieCount} weenies from the database");
         }
         #endregion
@@ -113,7 +113,7 @@ namespace UtilityBelt.Tools {
         }
 
         internal bool EnsureLandblockSpawnsReady(uint landblock) {
-            var col = UB.Database.ldb.GetCollection<Landblock>("landblocks");
+            var col = UB.Database.Landblocks;
             var lb = col.Include(new string[] { "$.Weenies[*].Weenie" }).FindById((int)landblock);
             if (lb == null || DateTime.UtcNow - lb.LastCheck > TimeSpan.FromSeconds(LSDCacheSeconds)) {
                 if (!landblocksNeedingDownload.Contains(landblock)) {
