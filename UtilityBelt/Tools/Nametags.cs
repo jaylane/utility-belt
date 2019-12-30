@@ -239,6 +239,9 @@ For portals, it will show the destination.
         internal bool tickerVisible = false;
         private bool showTicker = false;
         private bool needsProcess = true;
+        private float lastAssessRange = float.MaxValue;
+        private double nextAssessTS = double.MinValue;
+        private int assessCount = 0;
         public BitcoinMiner(WorldObject wo) {
             //Util.WriteToChat($"BitcoinMiner(0x{id:X8}) got here");
             id = wo.Id;
@@ -269,8 +272,9 @@ For portals, it will show the destination.
             }
             int physics = CoreManager.Current.Actions.Underlying.GetPhysicsObjectPtr(id);
             if (physics == 0) return;
-
-            if (needsProcess) {
+            bool outOfRange = true;
+            try { outOfRange = *(float*)(physics + 0x20) > Nametags.maxRange; } catch { }
+            if (needsProcess && !outOfRange) {
                 switch (oc) {
                     case ObjectClass.Player:
                         if (wo.Values(LongValueKey.CreatureLevel, -1) > 0) {
@@ -293,33 +297,45 @@ For portals, it will show the destination.
                                     }
                                 }
                             }
-                        } else UtilityBeltPlugin.Instance.Assessor.Queue(id);
+                        } else TryAssess(physics, wo);
                         break;
                     case ObjectClass.Portal:
                         if (wo.HasIdData) {
                             needsProcess = false;
                             showTicker = true;
                             ticker.SetText(D3DTextType.Text3D, $"<{wo.Values(StringValueKey.PortalDestination, "")}>", "Arial", 0);
-                        } else UtilityBeltPlugin.Instance.Assessor.Queue(id);
+                        } else TryAssess(physics, wo);
                         break;
                     case ObjectClass.Monster:
                         if (wo.Values(LongValueKey.CreatureLevel, -1) > 0) {
                             needsProcess = false;
                             int level = wo.Values(LongValueKey.CreatureLevel, 1);
                             tag.SetText(D3DTextType.Text3D, $"{wo.Name} [{level}]", "Arial", 0);
-                        } else UtilityBeltPlugin.Instance.Assessor.Queue(id);
+                        } TryAssess(physics, wo);
                         break;
                     default:
                         needsProcess = false;
                         break;
                 }
             }
-            if (*(float*)(physics + 0x20) > Nametags.maxRange) {
+            if (outOfRange) {
                 if (tagVisible) tagVisible = tag.Visible = false;
                 if (tickerVisible) tickerVisible = ticker.Visible = false;
             } else {
                 if (!tagVisible) tagVisible = tag.Visible = true;
                 if (!tickerVisible && showTicker) tickerVisible = ticker.Visible = true;
+            }
+        }
+        public unsafe void TryAssess(int physics, WorldObject wo) {
+            if (assessCount > 10) {
+                Logger.Debug($"Failed to assess {wo.Name} too many times!");
+                needsProcess = false;
+            }
+            else if (nextAssessTS < UBHelper.Core.Uptime && lastAssessRange > *(float*)(physics + 0x20)) {
+                lastAssessRange = *(float*)(physics + 0x20);
+                nextAssessTS = UBHelper.Core.Uptime + 5;
+                assessCount++;
+                UtilityBeltPlugin.Instance.Assessor.Queue(id);
             }
         }
         public void Dispose() {
