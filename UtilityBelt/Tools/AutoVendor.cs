@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Decal.Adapter;
 using Decal.Adapter.Wrappers;
+using UBHelper;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.VendorCache;
 using UtilityBelt.Views;
@@ -79,9 +80,12 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         private string vendorName = "";
         private float vendorSellRate = 1;
         private float vendorBuyRate = 1;
-        private UBHelper.Weenie.ITEM_TYPE vendorCategories;
+        private Weenie.ITEM_TYPE vendorCategories;
         private bool waitingForAutoStackCram = false;
-        private bool shouldAutoStackCram = false;
+        private bool waitingForSplit = false;
+        private ActionQueue.Item splitQueue;
+        private bool shouldAutoStack = false;
+        private bool shouldAutoCram = false;
         private bool showMerchantInfoCooldown = false;
         private List<int> itemsToId = new List<int>();
 
@@ -166,6 +170,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         private DateTime vendorTimestamp = DateTime.MinValue;
         private int vendorOpening = 0;
         private static WorldObject vendor = null;
+
         public void UB_vendor(string parameters) {
             char[] stringSplit = { ' ' };
             string[] parameter = parameters.Split(stringSplit, 2);
@@ -308,9 +313,11 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             }
         }
         private void CheckDone() {
+            //Util.WriteToChat($"CheckDone {((double)((DateTime.UtcNow.ToFileTimeUtc() - 116444736000000000) / 10) / 1000000):n6} expectedPyreals:{expectedPyreals} pendingSell({pendingSell.Count}):{string.Join(",",pendingSell.Select(x=>x.ToString("X8")).ToArray())} pendingBuy({pendingBuy.Count}):{string.Join(",", pendingBuy.Select(x=>x.Key.ToString("X8")+"*"+x.Value).ToArray())}");
             if (Math.Abs(expectedPyreals) < 50 && pendingSell.Count() == 0 && pendingBuy.Count() == 0) {
                 lastEvent = DateTime.MinValue;
-                shouldAutoStackCram = true;
+                shouldAutoStack = UB.InventoryManager.AutoStack;
+                shouldAutoCram = UB.InventoryManager.AutoCram;
             }
             else
                 lastEvent = DateTime.UtcNow;
@@ -318,11 +325,13 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         }
         private void EchoFilter_ClientDispatch(object sender, NetworkMessageEventArgs e) {
             try {
+                // 0x005F: Vendor_Buy
                 if (e.Message.Type == 0xF7B1 && (int)e.Message["action"] == 0x005F) {
                     //Logger.Debug("Server has Buy");
                     Reset_myPyreals();
                     lastEvent = DateTime.UtcNow;
                 }
+                // 0x0060: Vendor_Sell
                 if (e.Message.Type == 0xF7B1 && (int)e.Message["action"] == 0x0060) {
                     //Logger.Debug("Server has Sell");
                     Reset_myPyreals();
@@ -410,13 +419,10 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     // VTankControl.Nav_UnBlock(); Let it bleed over into AutoVendor; odds are there's a reason this vendor was opened, and letting vtank run off prolly isn't it.
                 }
 
-                if (isRunning) return;
-
                 VendorCache.AddVendor(e.Vendor);
 
-                if (UB.Core.WorldFilter[e.MerchantId] == null) {
+                if (isRunning || UB.Core.WorldFilter[e.MerchantId] == null)
                     return;
-                }
 
                 if (vendorId != e.Vendor.MerchantId) {
                     vendorId = UB.Core.WorldFilter[e.MerchantId].Id;
@@ -473,12 +479,6 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         }
 
         public void Start(int merchantId = 0, string useProfilePath = "") {
-            if (Util.GetFreeMainPackSpace() < 1) {
-                Util.ThinkOrWrite("AutoVendor Fatal - insufficient pack space", Think);
-                Stop();
-                return;
-            }
-
             var hasLootCore = false;
             if (lootProfile == null) {
                 try {
@@ -551,6 +551,8 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             UB.Core.EchoFilter.ClientDispatch += EchoFilter_ClientDispatch;
             UB.Core.RenderFrame += Core_RenderFrame;
             new Assessor.Job(UB.Assessor, ref itemsToId, (_) => { bailTimer = DateTime.UtcNow; }, () => { isRunning = true; });
+            shouldAutoCram = UB.InventoryManager.AutoCram;
+            shouldAutoStack = UB.InventoryManager.AutoStack;
         }
 
         public void Stop(bool silent = false) {
@@ -591,55 +593,68 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     WriteToChat("bail, Timeout expired");
                     Stop();
                 }
-                if (!isRunning) return;
 
-                if (UB.Core.Actions.BusyState == 0) {
-                    //if autovendor is running, and nav block has less than a second plus thinkInterval remaining, refresh it
-                    if (UBHelper.vTank.locks[uTank2.ActionLockType.Navigation] < DateTime.UtcNow + TimeSpan.FromMilliseconds(1250)) {
-                        UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
-                        UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
-                    }
+                if (!isRunning)
+                    return;
 
-                    if (TestMode) {
-                        DoTestMode();
-                        Stop();
-                        return;
-                    }
-                    if (waitingForAutoStackCram) return;
+                //if autovendor is running, and nav block has less than a second plus thinkInterval remaining, refresh it
+                if (UBHelper.vTank.locks[uTank2.ActionLockType.Navigation] < DateTime.UtcNow + TimeSpan.FromMilliseconds(1250)) {
+                    UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
+                    UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
+                }
 
-                    if (shouldAutoStackCram && (UB.InventoryManager.AutoStack && UBHelper.InventoryManager.AutoStack())||(UB.InventoryManager.AutoCram && UBHelper.InventoryManager.AutoCram())) {
+                if (TestMode) {
+                    DoTestMode();
+                    Stop();
+                    return;
+                }
+
+                if (waitingForAutoStackCram || waitingForSplit || UB.Core.Actions.BusyState != 0)
+                    return;
+
+                if (shouldAutoStack) {
+                    shouldAutoStack = false;
+                    if (UB.InventoryManager.AutoStack && UBHelper.InventoryManager.AutoStack()) {
                         UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent;
                         waitingForAutoStackCram = true;
-                        shouldAutoStackCram = false;
                         return;
                     }
-
-                    if (DateTime.UtcNow - lastEvent >= TimeSpan.FromMilliseconds(15000)) {
-                        if (lastEvent != DateTime.MinValue) // minvalue was not set, so it expired naturally:
-                            Logger.Debug($"Event Timeout. Pyreals: {expectedPyreals:n0}, Sell List: {pendingSell.Count():n0}, Buy List: {pendingBuy.Count():n0}");
-                        if (HasVendorOpen()) { // not needed any more, but leaving it in for good measure.
-                            if (needsToBuy) {
-                                needsToBuy = false;
-                                UB.Core.Actions.VendorBuyAll();
-                                CheckDone();
-                            }
-                            else if (needsToSell) {
-                                needsToSell = false;
-                                UB.Core.Actions.VendorSellAll();
-                                CheckDone();
-                            }
-                            else {
-                                DoVendoring();
-                            }
-                        }
-                        // vendor closed?
-                        else if (DateTime.UtcNow - bailTimer > TimeSpan.FromMilliseconds(500)) {
-                            LogDebug("Stop because no vendor");
-                            Stop();
-                        }
+                }
+                if (shouldAutoCram) {
+                    shouldAutoCram = false;
+                    if (UB.InventoryManager.AutoCram && UBHelper.InventoryManager.AutoCram()) {
+                        UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent;
+                        waitingForAutoStackCram = true;
+                        return;
                     }
                 }
-            } catch (Exception ex) { Logger.LogException(ex); }
+
+                if (DateTime.UtcNow - lastEvent >= TimeSpan.FromMilliseconds(15000)) {
+                    if (lastEvent != DateTime.MinValue) // minvalue was not set, so it expired naturally:
+                        Logger.Debug($"Event Timeout. Pyreals: {expectedPyreals:n0}, Sell List: {pendingSell.Count():n0}, Buy List: {pendingBuy.Count():n0}");
+                    if (HasVendorOpen()) { // not needed any more, but leaving it in for good measure.
+                        if (needsToBuy) {
+                            needsToBuy = false;
+                            UB.Core.Actions.VendorBuyAll();
+                            CheckDone();
+                        }
+                        else if (needsToSell) {
+                            needsToSell = false;
+                            UB.Core.Actions.VendorSellAll();
+                            CheckDone();
+                        }
+                        else {
+                            DoVendoring();
+                        }
+                    }
+                    // vendor closed?
+                    else if (DateTime.UtcNow - bailTimer > TimeSpan.FromMilliseconds(500)) {
+                        LogDebug("Stop because no vendor");
+                        Stop();
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void ActionQueue_InventoryEvent(object sender, EventArgs e) {
@@ -674,8 +689,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                         Stop();
                         return;
                     }
-
-                    if ((totalBuyPyreals + vendorPrice) <= pyrealCount && (freeSlots - totalBuySlots) > 1) {
+                    if ((totalBuyPyreals + vendorPrice) <= pyrealCount && (freeSlots - totalBuySlots) > (buyItem.Item.ObjectClass == ObjectClass.TradeNote ? 0 : 1)) {
                         int buyCount = (int)((pyrealCount - totalBuyPyreals) / vendorPrice);
                         if (buyCount > buyItem.Amount)
                             buyCount = buyItem.Amount;
@@ -758,22 +772,16 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                             }
                         }
                         if (nestedBreak) break;
-                        UB.Core.Actions.SelectItem(item.Id);
-                        UB.Core.Actions.SelectedStackCount = 1;
-                        UB.Core.Actions.MoveItem(item.Id, UB.Core.CharacterFilter.Id, 0, false);
-                        Logger.Debug($"AutoVendor Splitting {Util.GetObjectName(item.Id)}. old: {item.Values(LongValueKey.StackCount)} new: 1");
+                        DoSplit(item, 1);
                         return;
                     }
 
                     // cant sell the whole stack? split it into what we can sell
-                    if (!PyrealsWillFitInMainPack(totalSellValue + (int)(value * stackSize + 0.1))) {
+                    if (!PyrealsWillFitInMainPack(totalSellValue + (int)(value * stackSize))) {
                         if (sellItemCount < 1) {
-                            // the whole stack won't fit, and there is nothing else in the sell list.
-                            if (item.Values(LongValueKey.StackCount, 1) > 1) { // good news- this is a stack. try lobbing one off, and running again!
-                                UB.Core.Actions.SelectItem(item.Id);
-                                UB.Core.Actions.SelectedStackCount = 1;
-                                UB.Core.Actions.MoveItem(item.Id, UB.Core.CharacterFilter.Id, 0, false);
-                                Logger.Debug($"AutoVendor Splitting {Util.GetObjectName(item.Id)}. old: {item.Values(LongValueKey.StackCount)} new: 1");
+                            stackSize = (int)((Util.GetFreeMainPackSpace() - 2) * PYREAL_STACK_SIZE / value);
+                            if (stackSize > 0) {
+                                DoSplit(item, stackSize);
                                 return;
                             }
                             Util.ThinkOrWrite($"AutoVendor Fatal - No inventory room to sell {Util.GetObjectName(item.Id)}", UB.AutoVendor.Think);
@@ -789,7 +797,6 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
 
                     pendingSell.Add(item.Id);
                     UB.Core.Actions.SelectItem(item.Id);
-                    UB.Core.Actions.SelectedStackCount = item.Values(LongValueKey.StackCount, 1);
                     UB.Core.Actions.VendorAddSellList(item.Id);
                     totalSellValue += (int)(value * stackSize);
                     ++sellItemCount;
@@ -803,6 +810,27 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                 }
                 Stop();
             } catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void DoSplit(WorldObject item, int newStackSize) {
+            splitQueue = new UBHelper.ActionQueue.Item();
+            var weenie = new UBHelper.Weenie(item.Id);
+            UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_DoSplit;
+            weenie.Split(UB.Core.CharacterFilter.Id, 0, newStackSize);
+            splitQueue.Queue(weenie.Id);
+            waitingForSplit = true;
+            LogDebug($"DoSplit Splitting {Util.GetObjectName(item.Id)}:{item.Id:X8}. old: {item.Values(LongValueKey.StackCount)} new: {newStackSize}");
+        }
+
+        private void ActionQueue_InventoryEvent_DoSplit(object sender, EventArgs e) {
+            try {
+                if (sender.Equals(splitQueue)) {
+                    waitingForSplit = false;
+                    splitQueue = null;
+                    UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_DoSplit;
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private float GetVendorSellPrice(VendorItem item) {
