@@ -1456,9 +1456,10 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
 
         private void DrawMarkers(DxTexture texture, int zLayer) {
             if (!TrackedObject.ByZLayer.ContainsKey(zLayer)) return;
-
-            foreach (TrackedObject to in TrackedObject.ByZLayer[zLayer]) {
-                if (to.Static) DrawTrackedObject(to, zLayer, texture);
+            var tobjs = TrackedObject.ByZLayer[zLayer].ToArray();
+            foreach (TrackedObject to in tobjs) {
+                if (to.Static)
+                    DrawTrackedObject(to, zLayer, texture);
             }
         }
 
