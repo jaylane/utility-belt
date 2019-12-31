@@ -1038,6 +1038,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                 }
                 trackedObjects.Clear();
             }
+            TextureCache.Clear();
         }
         #endregion
 
@@ -1381,13 +1382,14 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
             catch (Exception ex) { Logger.LogException(ex); }
             finally { texture.EndRender(); }
 
-            if (!dynamicZLayerCache.ContainsKey(kp.Key)) dynamicZLayerCache.Add(kp.Key, texture);
+            if (!dynamicZLayerCache.ContainsKey(kp.Key))
+                dynamicZLayerCache.Add(kp.Key, texture);
         }
 
         private void DrawZLayer(KeyValuePair<int, DungeonLayer> kp) {
             DxTexture zLayerTexture;
             if (zLayerCache.ContainsKey(kp.Key)) {
-                zLayerTexture = dynamicZLayerCache[kp.Key];
+                zLayerTexture = zLayerCache[kp.Key];
             }
             else {
                 zLayerTexture = new DxTexture(new Size(kp.Value.Width * TextureCache.TileScale, kp.Value.Height * TextureCache.TileScale));

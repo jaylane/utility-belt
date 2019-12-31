@@ -25,15 +25,16 @@ namespace UtilityBelt.Lib.Dungeon {
                 string bitmapFile = Path.Combine(Util.GetTilePath(), environmentId + ".bmp");
 
                 ColorMap[] colorMap = GetColorMap();
-                ImageAttributes attr = new ImageAttributes();
-                attr.SetRemapTable(colorMap);
+                using (ImageAttributes attr = new ImageAttributes()) {
+                    attr.SetRemapTable(colorMap);
 
-                using (Stream manifestResourceStream = typeof(TextureCache).Assembly.GetManifestResourceStream($"UtilityBelt.Resources.tiles.{environmentId}.bmp")) {
-                    if (manifestResourceStream != null) {
-                        using (Bitmap bitmap = new Bitmap(manifestResourceStream)) {
-                            if (bitmap != null) {
-                                bitmap.MakeTransparent(Color.White);
-                                image = new Bitmap(bitmap, bitmap.Width, bitmap.Height);
+                    using (Stream manifestResourceStream = typeof(TextureCache).Assembly.GetManifestResourceStream($"UtilityBelt.Resources.tiles.{environmentId}.bmp")) {
+                        if (manifestResourceStream != null) {
+                            using (Bitmap bitmap = new Bitmap(manifestResourceStream)) {
+                                if (bitmap != null) {
+                                    bitmap.MakeTransparent(Color.White);
+                                    image = new Bitmap(bitmap, bitmap.Width, bitmap.Height);
+                                }
                             }
                         }
                     }
@@ -51,6 +52,7 @@ namespace UtilityBelt.Lib.Dungeon {
                         texture.EndRender();
                     }
                     tileCache.Add(environmentId, texture);
+                    image.Dispose();
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -88,17 +90,17 @@ namespace UtilityBelt.Lib.Dungeon {
                 byte[] portalFile = Util.FileService.GetPortalFile(icon);
                 byte[] bytes = portalFile.Skip(28).Take(4096).ToArray();
 
-                Bitmap bmp = new Bitmap(32, 32, PixelFormat.Format32bppArgb);
+                using (Bitmap bmp = new Bitmap(32, 32, PixelFormat.Format32bppArgb)) {
+                    BitmapData bmpData = bmp.LockBits(
+                                         new Rectangle(0, 0, bmp.Width, bmp.Height),
+                                         ImageLockMode.WriteOnly, bmp.PixelFormat);
 
-                BitmapData bmpData = bmp.LockBits(
-                                     new Rectangle(0, 0, bmp.Width, bmp.Height),
-                                     ImageLockMode.WriteOnly, bmp.PixelFormat);
+                    System.Runtime.InteropServices.Marshal.Copy(bytes, 0, bmpData.Scan0, bytes.Length);
+                    bmp.UnlockBits(bmpData);
+                    bmp.MakeTransparent(Color.White);
 
-                System.Runtime.InteropServices.Marshal.Copy(bytes, 0, bmpData.Scan0, bytes.Length);
-                bmp.UnlockBits(bmpData);
-                bmp.MakeTransparent(Color.White);
-
-                iconCache.Add(icon, new DxTexture(bmp));
+                    iconCache.Add(icon, new DxTexture(bmp));
+                }
 
                 return iconCache[icon];
             }
