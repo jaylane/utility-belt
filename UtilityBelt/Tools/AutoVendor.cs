@@ -405,6 +405,8 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                         } else {
                             pendingBuy[wo.Type] = pbq;
                         }
+                    } else if (waitingForSplit) {
+                        waitingForSplit = false;
                     }
                 }
             } catch { }
@@ -756,7 +758,9 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                         }
 
                         // see if we already have a single stack of this item
-                        foreach (var wo in UB.Core.WorldFilter.GetInventory()) {
+                        var inventoryNotes = UB.Core.WorldFilter.GetInventory();
+                        inventoryNotes.SetFilter(new ByObjectClassFilter(ObjectClass.TradeNote));
+                        foreach (var wo in inventoryNotes) {
                             if (wo.Name == item.Name && wo.Values(LongValueKey.StackCount, 0) == 1) {
                                 Logger.Debug($"AutoVendor Selling single {Util.GetObjectName(wo.Id)} so we can afford to buy: " + nextBuyItem.Name);
                                 needsToSell = true;
@@ -771,7 +775,8 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                                 break;
                             }
                         }
-                        if (nestedBreak) break;
+                        if (nestedBreak)
+                            break;
                         DoSplit(item, 1);
                         return;
                     }
@@ -813,6 +818,10 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         }
 
         private void DoSplit(WorldObject item, int newStackSize) {
+            if (splitQueue != null) {
+                LogDebug("Attempted to split item while another split was in progress");
+                return;
+            }
             splitQueue = new UBHelper.ActionQueue.Item();
             var weenie = new UBHelper.Weenie(item.Id);
             UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_DoSplit;
@@ -825,7 +834,6 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         private void ActionQueue_InventoryEvent_DoSplit(object sender, EventArgs e) {
             try {
                 if (sender.Equals(splitQueue)) {
-                    waitingForSplit = false;
                     splitQueue = null;
                     UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_DoSplit;
                 }
