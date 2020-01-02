@@ -21,7 +21,7 @@ namespace UtilityBelt {
         public static void Debug(string message) {
             try {
                 if (UtilityBeltPlugin.Instance != null && UtilityBeltPlugin.Instance.Plugin != null && UtilityBeltPlugin.Instance.Plugin.Debug) {
-                    Util.WriteToChat(message);
+                    Util.WriteToChat(message, 14);
                 }
                 else {
                     Util.WriteToDebugLog(message);
