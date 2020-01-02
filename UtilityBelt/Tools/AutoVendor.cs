@@ -596,6 +596,11 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     Stop();
                 }
 
+                if (!Enabled) {
+                    Stop();
+                    return;
+                }
+
                 if (!isRunning)
                     return;
 
