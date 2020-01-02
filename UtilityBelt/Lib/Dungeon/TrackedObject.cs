@@ -180,8 +180,9 @@ namespace UtilityBelt.Lib.Dungeon {
 
             if (!disposedValue) {
                 if (disposing) {
-                    var z = (int)Math.Floor((Position.Z + 1) / 6) * 6;
-                    if (ByZLayer.ContainsKey(z)) ByZLayer[z].Remove(this);
+                    foreach (var kv in TrackedObject.ByZLayer) {
+                        kv.Value.Remove(this);
+                    }
                 }
                 disposedValue = true;
             }
@@ -200,7 +201,7 @@ namespace UtilityBelt.Lib.Dungeon {
                     obj.Dispose();
                 }
             }
-            TrackedObject.ByZLayer = new Dictionary<int, List<TrackedObject>>();
+            ByZLayer.Clear();
         }
         #endregion
     }

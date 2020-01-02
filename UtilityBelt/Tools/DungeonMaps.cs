@@ -755,7 +755,8 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
 
         private void Core_RenderFrame(object sender, EventArgs e) {
             try {
-                if (dungeon == null || DateTime.UtcNow - lastDraw < mapUpdateInterval) return;
+                if (dungeon == null || DateTime.UtcNow - lastDraw < mapUpdateInterval)
+                    return;
                 lastDraw = DateTime.UtcNow;
 
                 if (isFollowingCharacter) {
@@ -890,9 +891,9 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
         }
 
         private void RemoveTrackedObject(int id) {
-            if (!trackedObjects.ContainsKey(id)) return;
+            if (!trackedObjects.ContainsKey(id))
+                return;
 
-            trackedObjects[id].Dispose();
             if (trackedObjects[id].Static) {
                 if (zLayerCache.ContainsKey(trackedObjects[id].ZLayer)) {
                     zLayerCache[trackedObjects[id].ZLayer].Dispose();
@@ -905,6 +906,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                     dynamicZLayerCache.Remove(trackedObjects[id].ZLayer);
                 }
             }
+            trackedObjects[id].Dispose();
             trackedObjects.Remove(id);
             needsMapDraw = true;
         }
@@ -934,11 +936,10 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
             dungeon = new Dungeon(landcell);
 
             ClearCache(true);
+            TrackedObject.Clear();
             visitedTiles.Clear();
             if (mapTexture != null) mapTexture.Dispose();
             if (labelsTexture != null) labelsTexture.Dispose();
-
-            TrackedObject.Clear();
 
             if (!isManualLoad && !dungeon.IsDungeon()) {
                 dungeon = null;
@@ -1044,9 +1045,9 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
 
         #region Hud
         private void ClearHud() {
-            if (hud == null || hud.Texture == null || hud.Texture.IsDisposed) return;
+            if (hud == null || hud.Texture == null || hud.Texture.IsDisposed)
+                return;
             try {
-                if (hud.Texture.IsDisposed) return;
                 hud.Texture.BeginRender();
                 hud.Texture.Fill(new Rectangle(0, 0, hud.Texture.Width, hud.Texture.Height), Color.Transparent);
             }
@@ -1062,10 +1063,8 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                 }
 
                 if (!Enabled || (!DrawWhenClosed && !UB.MapView.view.Visible)) {
-                    foreach (var to in trackedObjects.Values) {
-                        to.Dispose();
-                    }
-                    trackedObjects.Clear();
+                    ClearCache();
+                    TrackedObject.Clear();
                     return;
                 }
 
@@ -1175,7 +1174,10 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                         hud.Texture.WriteText(dungeon.Name + $" (Z:{(int)(Math.Floor((drawZ + 3) / 6))})", Color.FromArgb(DungeonName.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
                     }
                     if (Debug) {
-                        var text = $"Objs:{trackedObjects.Keys.Count} Icons:{TextureCache.iconCache.Count} Tiles:{TextureCache.tileCache.Count} Markers:{TextureCache.markerCache.Count} Texts:{TextureCache.textCache.Count} - {lastDrawDuration:D8}";
+                        var sobjCount = 0;
+                        foreach (var kv in TrackedObject.ByZLayer)
+                            sobjCount += kv.Value.Count;
+                        var text = $"Obj:{trackedObjects.Keys.Count} SObj:{sobjCount} Ico:{TextureCache.iconCache.Count} Tile:{TextureCache.tileCache.Count} Mark:{TextureCache.markerCache.Count} Text:{TextureCache.textCache.Count} - {lastDrawDuration:D8}";
                         hud.Texture.WriteText(text, Color.White, VirindiViewService.WriteTextFormats.Center, new Rectangle(0, hud.Texture.Height - 20, hud.Texture.Width, 20));
                     }
                 }
@@ -1630,8 +1632,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                 if (mapTexture != null) mapTexture.Dispose();
                 if (hud != null) hud.Dispose();
 
-                ClearCache();
-                TextureCache.Clear();
+                ClearCache(true);
 
                 dungeon = null;
                 base.Dispose(disposing);
