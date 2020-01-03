@@ -20,6 +20,7 @@
 - Fix issue where AutoTrade/AutoVendor/ItemGiver was not respecting red loot rules for ObjectClass.Misc (summoning essences)
 - Fix AutoVendor only selling stacks one at a time (still sells mmds one at a time)
 - Fix AutoVendor selling until your inventory was full and not buying mmds on gdle
+- Fix AutoVendor now stops when disabling it mid session
 
 ## 0.1.1 (2019-12-03) [UtilityBeltInstaller-0.1.1.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/c94b459edb29649f99f1d84eae3f76ce/UtilityBeltInstaller-0.1.1.exe)
 - Increase AutoStack/AutoCram timeout to 30s
