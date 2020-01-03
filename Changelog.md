@@ -1,4 +1,4 @@
-## 0.1.2 (2020-01-02) [UtilityBeltInstaller-0.1.2.exe](/uploads/b1bcdf8401543ba32afd4cf480ff6408/UtilityBeltInstaller-0.1.2.exe)
+## 0.1.2 (2020-01-02) [UtilityBeltInstaller-0.1.2.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/b1bcdf8401543ba32afd4cf480ff6408/UtilityBeltInstaller-0.1.2.exe)
 - "Fix" `/ub playeroption` on ACE, by sending the entire PlayerSystem packet
 - Feed all UB messages to vTank, so they can be scraped by metas without needing a /think
 - Fix manually typing /myquests not updating questtracker
