@@ -49,6 +49,7 @@ namespace UtilityBelt.Lib.Dungeon {
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
+            cellFile = null;
         }
 
         public string GetCoords() {

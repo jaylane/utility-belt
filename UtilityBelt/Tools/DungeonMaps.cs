@@ -1064,7 +1064,6 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
 
                 if (!Enabled || (!DrawWhenClosed && !UB.MapView.view.Visible)) {
                     ClearCache();
-                    TrackedObject.Clear();
                     return;
                 }
 

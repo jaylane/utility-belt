@@ -84,9 +84,10 @@ namespace UtilityBelt.Lib.Dungeon {
         private void LoadCells() {
             try {
                 int cellCount;
+                byte[] cellFile = Util.FileService.GetCellFile(65534 + Landblock);
 
                 try {
-                    cellCount = BitConverter.ToInt32(Util.FileService.GetCellFile(65534 + Landblock), 4);
+                    cellCount = BitConverter.ToInt32(cellFile, 4);
                 }
                 catch {
                     return;
@@ -129,6 +130,7 @@ namespace UtilityBelt.Lib.Dungeon {
                         ZLayers[cell.Z].AddCell(cell);
                     }
                 }
+                cellFile = null;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
