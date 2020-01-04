@@ -136,24 +136,49 @@ Counter is used to count items based on text or utl profiles as well as players 
 
         public void Core_RenderFrame(object sender, EventArgs e) {
             try {
-                if (isRunning && DateTime.UtcNow - lastScanUpdate > TimeSpan.FromSeconds(10)) {
+                if (!isRunning)
+                    return;
+
+                if (DateTime.UtcNow - lastScanUpdate > TimeSpan.FromSeconds(10)) {
                     lastScanUpdate = DateTime.UtcNow;
                     matchedWOList = CountItems();
                     WriteToChat("Items remaining to ID: " + idItems.Count());
-                    if (idItems.Count == 0 && isRunning) {
-                        WriteToChat("Finished IDing Items");
-                        scanComplete = true;
-                    }
-                    if (scanComplete && idItems.Count == 0) {
-                        foreach (KeyValuePair<string, int> entry in matchedRule) {
-                            LogDebug("Matched Rule: " + entry.Key + " ---- " + entry.Value);
-                            scanComplete = false;
-                            isRunning = false;
-
+                }
+                if (idItems.Count == 0) {
+                    WriteToChat("Finished IDing Items");
+                    scanComplete = true;
+                }
+                if (scanComplete && idItems.Count == 0) {
+                    var totalCount = 0;
+                    foreach (var item in matchedWOList) {
+                        var stackCount = item.Values(LongValueKey.StackCount, 1);
+                        if (!itemList.ContainsKey(item.Name)) {
+                            itemList[item.Name] = stackCount;
+                            totalCount += stackCount;
                         }
-                        matchedWOList.Clear();
-                        matchedRule.Clear();
+                        else if (itemList[item.Name] > 0) {
+                            itemList[item.Name] += stackCount;
+                            totalCount += stackCount;
+                        }
+                        else {
+                            continue;
+                        }
                     }
+
+                    if (itemList.Count == 0) {
+                        ChatThink("Item Count: " + utlProfile + " - 0");
+                    }
+                    else {
+                        foreach (KeyValuePair<string, int> entry in itemList) {
+                            ChatThink("Item Count: " + entry.Key + " - " + entry.Value.ToString());
+                        }
+                    }
+
+                    ChatThink("Total Item Count: " + totalCount.ToString());
+
+                    matchedWOList.Clear();
+                    matchedRule.Clear();
+                    isRunning = false;
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
