@@ -142,7 +142,7 @@ namespace UtilityBelt.Tools {
             }
         }
         #endregion
-        
+
         #region Commands
         #region /ub
         [Summary("Prints current build version to chat")]
@@ -296,6 +296,27 @@ namespace UtilityBelt.Tools {
             return results;
         }
 
+        #endregion
+        #region /ub date [format]
+        [Summary("Prints current date with an optional format. See https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings for formatting options.")]
+        [Usage("/ub date[utc] [format]")]
+        [Example("/ub date hh:mm:ss tt", "Prints current local time '06:09:01 PM'")]
+        [Example("/ub dateutc dddd dd MMMM", "Prints current utc date 'Friday 29 August'")]
+        [CommandPattern("date", @"^(?<format>.*)$")]
+        public void PrintDate(string cmd, Match args) {
+            try {
+                var format = args.Groups["format"].Value;
+                if (string.IsNullOrEmpty(format))
+                    format = "dddd dd MMMM HH:mm:ss";
+                if (cmd.Contains("utc"))
+                    Util.WriteToChat("Current Date: " + DateTime.UtcNow.ToString(format));
+                else 
+                    Util.WriteToChat("Current Date: " + DateTime.Now.ToString(format));
+            }
+            catch (Exception ex) {
+                Util.WriteToChat(ex.Message);
+            }
+        }
         #endregion
         #region /ub delay <millisecondDelay> <command>
         [Summary("Thinks to yourself with your current vitae percentage")]

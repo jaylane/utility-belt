@@ -1,5 +1,6 @@
 ## 0.1.3 (TBD)
 - Fix `/ub count profile <profile>` to actually output results to chat
+- Add `/ub date[utc] [format]` command to echo the current date, with optional format
 
 ## 0.1.2 (2020-01-02) [UtilityBeltInstaller-0.1.2.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/b1bcdf8401543ba32afd4cf480ff6408/UtilityBeltInstaller-0.1.2.exe)
 - "Fix" `/ub playeroption` on ACE, by sending the entire PlayerSystem packet
