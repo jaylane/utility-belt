@@ -45,27 +45,30 @@ namespace UtilityBelt.Tools {
         [Example("/ub quests check blankaug", "Think to yourself with the status of all quest flags matching blankaug")]
         [CommandPattern("quests", @"^ *check +(?<QuestFlag>.+)$")]
         public void DoQuestsFlagCheck(string command, Match args) {
-            var searchText = args.Groups["QuestFlag"].Value.Trim();
+            var searchText = args.Groups["QuestFlag"].Value.Trim().ToLower();
             var searchRe = new Regex(searchText, RegexOptions.IgnoreCase);
             var thoughts = 0;
 
             var keys = new List<string>(questFlags.Keys);
             keys.AddRange(new List<string>(QuestFlag.FriendlyNamesLookup.Keys));
             keys = new List<string>(keys.Distinct());
-
+            var foundExact = false;
             foreach (var key in keys) {
                 if (searchRe.IsMatch(key)) {
                     ThinkQuestFlag(key);
                     thoughts++;
 
+                    if (key.ToLower().Equals(searchText))
+                        foundExact = true;
+
                     if (thoughts >= 5) {
                         Util.WriteToChat("Quests output has been truncated to the first 5 matching quest flags.");
-                        return;
+                        break;
                     }
                 }
             }
 
-            if (thoughts == 0) {
+            if (thoughts == 0 || !foundExact) {
                 Util.Think($"Quest: {searchText} has not been completed");
             }
         }
