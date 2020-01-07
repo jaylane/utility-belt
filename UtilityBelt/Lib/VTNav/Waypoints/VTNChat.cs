@@ -34,6 +34,9 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             var rp = GetPreviousPoint();
             rp = rp == null ? GetNextPoint() : rp;
             rp = rp == null ? this : rp;
+            if (Message.Length > 53)
+                Message = Message.Substring(0, 47) + "...";
+
             DrawText($"Chat: {Message}", rp, 0, Color.FromArgb(UtilityBeltPlugin.Instance.VisualNav.Display.ChatText.Color));
         }
     }
