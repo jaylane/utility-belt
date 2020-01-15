@@ -177,10 +177,13 @@ namespace UtilityBelt {
             MainView = new MainView(this);
             MapView = new MapView(this);
 
+            HotkeyWrapperManager.Startup("UB");
+
             LoadTools();
             Settings.Load();
             InitTools();
             InitCommands();
+            InitHotkeys();
 
             MainView.Init();
             MapView.Init();
@@ -343,13 +346,53 @@ namespace UtilityBelt {
         }
         #endregion
 
+        #region Hotkeys
+        /// <summary>
+        /// Looks through all the loaded tools and initializes all defined hotkeys
+        /// </summary>
+        private void InitHotkeys() {
+            var toolProps = GetToolProps();
+
+            // toggle boolean settings
+            foreach (var toolProp in toolProps) {
+                foreach (var prop in toolProp.PropertyType.GetProperties()) {
+                    var hotkeyAttrs = prop.GetCustomAttributes(typeof(HotkeyAttribute), true);
+
+                    foreach (var attr in hotkeyAttrs) {
+                        var title = ((HotkeyAttribute)attr).Title;
+                        var description = ((HotkeyAttribute)attr).Description;
+                        try {
+                            delHotkeyAction del = () => {
+                                try {
+                                    prop.SetValue(toolProp.GetValue(this, null), !(bool)prop.GetValue(toolProp.GetValue(this, null), null), null);
+                                    Util.WriteToChat($"Toggle Hotkey Pressed: {toolProp.Name}.{prop.Name} = {prop.GetValue(toolProp.GetValue(this, null), null)}");
+                                }
+                                catch (Exception ex) {
+                                    Logger.LogException(ex);
+                                    Logger.Error(ex.Message);
+                                }
+                                return true;
+                            };
+                            Util.WriteToChat($"Adding hotkey: {title}: {description}");
+                            HotkeyWrapperManager.AddHotkey(del, title, description, 0, false, false, false);
+                        }
+                        catch (Exception ex) {
+                            Logger.LogException(ex);
+                            Logger.Error($"Unable to add hotkey {title}: {ex.Message}");
+                        }
+                    }
+                }
+            }
+        }
+        #endregion
+
         /// <summary>
         /// Called once during plugin shutdown
         /// </summary>
         public void Shutdown() {
             try {
                 Core.CommandLineText -= Core_CommandLineText;
-
+                HotkeyWrapperManager.Shutdown();
                 foreach (var tool in LoadedTools) {
                     try {
                         tool.Dispose();

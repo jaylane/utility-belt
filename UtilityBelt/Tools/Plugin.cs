@@ -49,6 +49,7 @@ namespace UtilityBelt.Tools {
 
         [Summary("Show debug messages")]
         [DefaultValue(false)]
+        [Hotkey("Debug", "Toggle Debug logging")]
         public bool Debug {
             get { return (bool)GetSetting("Debug"); }
             set { UpdateSetting("Debug", value); }
@@ -91,6 +92,7 @@ namespace UtilityBelt.Tools {
 
         [Summary("Patches the client (in realtime) to disable 3d rendering")]
         [DefaultValue(false)]
+        [Hotkey("VideoPatch", "Toggle VideoPatch functionality")]
         public bool VideoPatch {
             get { return (bool)GetSetting("VideoPatch"); }
             set {

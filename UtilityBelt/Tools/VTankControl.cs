@@ -16,6 +16,7 @@ namespace UtilityBelt.Tools {
         #region Config
         [Summary("VitalSharing")]
         [DefaultValue(true)]
+        [Hotkey("VitalSharing", "Toggle VitalSharing functionality")]
         public bool VitalSharing {
             get { return (bool)GetSetting("VitalSharing"); }
             set { UpdateSetting("VitalSharing", value); }

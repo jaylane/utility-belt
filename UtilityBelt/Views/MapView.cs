@@ -78,8 +78,16 @@ namespace UtilityBelt.Views {
         }
 
         private void DungeonMaps_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
+            if (e.PropertyName != "Enabled")
+                return;
             view.Icon = GetIcon();
             view.ShowInBar = UB.DungeonMaps.Enabled;
+            if (UB.DungeonMaps.Enabled && !UB.DungeonMaps.DrawWhenClosed) {
+                view.Visible = true;
+            }
+            else if (!UB.DungeonMaps.Enabled && view.Visible) {
+                view.Visible = false;
+            }
         }
 
         public void ResizeMapHud() {

@@ -121,4 +121,15 @@ namespace UtilityBelt.Lib {
             Description = description;
         }
     }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    public class HotkeyAttribute : Attribute {
+        public string Title { get; }
+        public string Description { get; }
+
+        public HotkeyAttribute(string title, string description) {
+            Title = title;
+            Description = description;
+        }
+    }
 }

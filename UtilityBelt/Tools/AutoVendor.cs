@@ -99,6 +99,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         #region Config
         [Summary("Enabled")]
         [DefaultValue(true)]
+        [Hotkey("AutoVendor", "Toggle AutoVendor functionality")]
         public bool Enabled {
             get { return (bool)GetSetting("Enabled"); }
             set { UpdateSetting("Enabled", value); }
@@ -113,6 +114,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
 
         [Summary("Test mode (don't actually sell/buy, just echo to the chat window)")]
         [DefaultValue(false)]
+        [Hotkey("AutoVendorTestMode", "Toggle AutoVendor TestMode functionality")]
         public bool TestMode {
             get { return (bool)GetSetting("TestMode"); }
             set { UpdateSetting("TestMode", value); }

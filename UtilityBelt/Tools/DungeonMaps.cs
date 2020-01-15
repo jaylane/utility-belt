@@ -94,6 +94,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
 
         [Summary("Enabled")]
         [DefaultValue(false)]
+        [Hotkey("DungeonMaps", "Toggle DungeonMaps display")]
         public bool Enabled {
             get { return (bool)GetSetting("Enabled"); }
             set { UpdateSetting("Enabled", value); }

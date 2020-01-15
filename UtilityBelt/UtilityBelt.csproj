@@ -77,6 +77,9 @@
       <HintPath>C:\Games\VirindiPlugins\VirindiTank\utank2-i.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="VirindiHotkeySystem">
+      <HintPath>C:\Games\VirindiPlugins\VirindiHotkeySystem\VirindiHotkeySystem.dll</HintPath>
+    </Reference>
     <Reference Include="VirindiViewService">
       <HintPath>C:\Games\VirindiPlugins\VirindiViewService\VirindiViewService.dll</HintPath>
       <Private>False</Private>
@@ -94,6 +97,7 @@
     <Compile Include="Lib\Dungeon\DungeonCell.cs" />
     <Compile Include="Lib\Dungeon\DungeonLayer.cs" />
     <Compile Include="Lib\Dungeon\IsDungeon.cs" />
+    <Compile Include="Lib\HotkeyWrapper.cs" />
     <Compile Include="Lib\Models\Angles.cs" />
     <Compile Include="Lib\Models\Frame.cs" />
     <Compile Include="Lib\Models\Landblock.cs" />
@@ -108,6 +112,7 @@
     <Compile Include="Lib\Mp3Player.cs" />
     <Compile Include="Lib\ToolBase.cs" />
     <Compile Include="Lib\Database.cs" />
+    <Compile Include="Lib\VHS_Connector.cs" />
     <Compile Include="Tools\DungeonMaps.cs" />
     <Compile Include="Tools\LSD.cs" />
     <Compile Include="Tools\Nametags.cs" />
