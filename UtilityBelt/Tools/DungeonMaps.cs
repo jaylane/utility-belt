@@ -84,6 +84,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
         private int spawnId;
         private bool isRotating;
         private bool needsNewHud;
+        private int landcell = 0;
         public const int LABEL_HEIGHT = 10;
 
         #region Config
@@ -755,9 +756,32 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
 
         private void Core_RenderFrame(object sender, EventArgs e) {
             try {
-                if (dungeon == null || DateTime.UtcNow - lastDraw < mapUpdateInterval)
+                if (DateTime.UtcNow - lastDraw < mapUpdateInterval)
                     return;
                 lastDraw = DateTime.UtcNow;
+
+                if (dungeon == null) {
+                    if (Debug == true && hud != null && !hud.Texture.IsDisposed && landcell != UB.Core.Actions.Landcell) {
+                        landcell = UB.Core.Actions.Landcell;
+                        hud.Texture.Clear();
+                        try {
+                            hud.Texture.BeginRender();
+                            hud.Texture.Fill(new Rectangle(0, 0, hud.Texture.Width, hud.Texture.Height), Color.Transparent);
+                            try {
+                                hud.Texture.BeginText(fontFace, 10f, 150, false, 1, (int)byte.MaxValue);
+                                if (DungeonName.Enabled) {
+                                    hud.Texture.WriteText(UB.Core.Actions.Landcell.ToString("X8"), Color.FromArgb(DungeonName.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
+                                }
+                            }
+                            finally {
+                                hud.Texture.EndText();
+                            }
+                        }
+                        catch (Exception ex) { Logger.LogException(ex); }
+                        finally { hud.Texture.EndRender(); }
+                    }
+                    return;
+                }
 
                 if (isFollowingCharacter) {
                     drawZ = UB.Core.Actions.LocationZ;
@@ -933,7 +957,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
             var dungeonWatch = System.Diagnostics.Stopwatch.StartNew();
             currentLandblock = (uint)(landcell & 0xFFFF0000);
             isManualLoad = (UB.Core.Actions.Landcell & 0xFFFF0000) != currentLandblock;
-            dungeon = new Dungeon(landcell);
+            dungeon = Dungeon.GetCached(landcell);
 
             ClearCache(true);
             TrackedObject.Clear();
@@ -946,6 +970,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                 ClearHud();
             }
             else if (dungeon.Width > 0 && dungeon.Height > 0) {
+                dungeon.LoadCells();
                 mapTexture = new DxTexture(new Size(dungeon.Width * TextureCache.TileScale, dungeon.Height * TextureCache.TileScale));
                 labelsTexture = new DxTexture(new Size(dungeon.Width * TextureCache.TileScale, dungeon.Height * TextureCache.TileScale));
 
@@ -1170,7 +1195,10 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                 try {
                     hud.Texture.BeginText(fontFace, 10f, 150, false, 1, (int)byte.MaxValue);
                     if (DungeonName.Enabled) {
-                        hud.Texture.WriteText(dungeon.Name + $" (Z:{(int)(Math.Floor((drawZ + 3) / 6))})", Color.FromArgb(DungeonName.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
+                        var name = dungeon.Name + $" (Z:{(int)(Math.Floor((drawZ + 3) / 6))})";
+                        if (Debug)
+                            name += $" {UB.Core.Actions.Landcell:X8}";
+                        hud.Texture.WriteText(name, Color.FromArgb(DungeonName.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
                     }
                     if (Debug) {
                         var sobjCount = 0;
@@ -1213,6 +1241,9 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
         }
 
         private void LoadCompassTexture() {
+            if (compassTexture != null)
+                return;
+
             using (Stream manifestResourceStream = typeof(TextureCache).Assembly.GetManifestResourceStream($"UtilityBelt.Resources.icons.compass.png")) {
                 if (manifestResourceStream != null) {
                     using (Bitmap bitmap = new Bitmap(manifestResourceStream)) {

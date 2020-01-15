@@ -11,6 +11,7 @@ namespace UtilityBelt.Lib.Dungeon {
         public int Landcell;
 
         public int Landblock { get { return (int)(Landcell & 0xFFFF0000); } }
+        private static Dictionary<int, Dungeon> cache = new Dictionary<int, Dungeon>();
         public Dictionary<int, DungeonLayer> ZLayers = new Dictionary<int, DungeonLayer>();
         public string Name { get; private set; } = "Unknown Dungeon";
 
@@ -30,6 +31,8 @@ namespace UtilityBelt.Lib.Dungeon {
         public int offsetY { get { return 0; } }
 
         private static Dictionary<int, string> dungeonNames;
+        private bool didLoadCells = false;
+
         public static Dictionary<int, string> DungeonNames {
             get {
                 if (dungeonNames == null) {
@@ -65,11 +68,18 @@ namespace UtilityBelt.Lib.Dungeon {
             }
         }
 
+        public static Dungeon GetCached(int landcell) {
+            int lb = landcell & 0xFFF0000;
+            if (cache.ContainsKey(lb))
+                return cache[lb];
+            cache.Add(lb, new Dungeon(landcell));
+            return cache[lb];
+        }
+
         public Dungeon(int landcell) {
             Landcell = landcell;
 
             LoadName();
-            LoadCells();
         }
 
         private void LoadName() {
@@ -81,8 +91,11 @@ namespace UtilityBelt.Lib.Dungeon {
             }
         }
 
-        private void LoadCells() {
+        internal void LoadCells() {
             try {
+                if (didLoadCells)
+                    return;
+                didLoadCells = true;
                 int cellCount;
                 byte[] cellFile = Util.FileService.GetCellFile(65534 + Landblock);
 
