@@ -976,12 +976,13 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                 labelsTexture = new DxTexture(new Size(dungeon.Width * TextureCache.TileScale, dungeon.Height * TextureCache.TileScale));
 
                 if (!isManualLoad) {
-                    var landscape = CoreManager.Current.WorldFilter.GetLandscape();
-                    foreach (var wo in landscape) {
-                        if (!CoreManager.Current.Actions.IsValidObject(wo.Id)) continue;
-                        if (trackedObjects.ContainsKey(wo.Id)) continue;
-                        if ((PhysicsObject.GetLandcell(wo.Id) & 0xFFFF0000) == currentLandblock) {
-                            trackedObjects.Add(wo.Id, new TrackedObject(wo.Id));
+                    using (var landscape = CoreManager.Current.WorldFilter.GetLandscape()) {
+                        foreach (var wo in landscape) {
+                            if (!CoreManager.Current.Actions.IsValidObject(wo.Id)) continue;
+                            if (trackedObjects.ContainsKey(wo.Id)) continue;
+                            if ((PhysicsObject.GetLandcell(wo.Id) & 0xFFFF0000) == currentLandblock) {
+                                trackedObjects.Add(wo.Id, new TrackedObject(wo.Id));
+                            }
                         }
                     }
 

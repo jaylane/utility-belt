@@ -93,21 +93,22 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             EW = PortalEW;
             Z = PortalZ;
 
-            var wos = CoreManager.Current.WorldFilter.GetByName(Name);
-            foreach (var wo in wos) {
-                if (wo.ObjectClass == ObjectClass) {
-                    var c = wo.Coordinates();
-                    var rc = wo.RawCoordinates();
-                    var distance = Util.GetDistance(new Vector3Object(c.EastWest, c.NorthSouth, rc.Z / 240), new Vector3Object(PortalEW, PortalNS, PortalZ));
+            using (var wos = CoreManager.Current.WorldFilter.GetByName(Name)) {
+                foreach (var wo in wos) {
+                    if (wo.ObjectClass == ObjectClass) {
+                        var c = wo.Coordinates();
+                        var rc = wo.RawCoordinates();
+                        var distance = Util.GetDistance(new Vector3Object(c.EastWest, c.NorthSouth, rc.Z / 240), new Vector3Object(PortalEW, PortalNS, PortalZ));
 
-                    if (distance < closestDistance) {
-                        closestDistance = distance;
-                        NS = wo.Coordinates().NorthSouth;
-                        EW = wo.Coordinates().EastWest;
-                        Z = wo.RawCoordinates().Z / 240;
-                        Id = wo.Id;
-                        
-                        CoreManager.Current.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                            NS = wo.Coordinates().NorthSouth;
+                            EW = wo.Coordinates().EastWest;
+                            Z = wo.RawCoordinates().Z / 240;
+                            Id = wo.Id;
+
+                            CoreManager.Current.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                        }
                     }
                 }
             }

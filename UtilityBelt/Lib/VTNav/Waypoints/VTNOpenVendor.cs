@@ -63,22 +63,22 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
 
             Name = base.sr.ReadLine();
 
-            var wos = CoreManager.Current.WorldFilter.GetByName(Name);
+            using (var wos = CoreManager.Current.WorldFilter.GetByName(Name)) {
+                foreach (var wo in wos) {
+                    if (wo.ObjectClass == ObjectClass.Vendor) {
+                        var c = wo.Coordinates();
+                        var rc = wo.RawCoordinates();
+                        var distance = Util.GetDistance(new Vector3Object(c.EastWest, c.NorthSouth, rc.Z / 240), new Vector3Object(EW, NS, Z));
 
-            foreach (var wo in wos) {
-                if (wo.ObjectClass == ObjectClass.Vendor) {
-                    var c = wo.Coordinates();
-                    var rc = wo.RawCoordinates();
-                    var distance = Util.GetDistance(new Vector3Object(c.EastWest, c.NorthSouth, rc.Z / 240), new Vector3Object(EW, NS, Z));
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
 
-                    if (distance < closestDistance) {
-                        closestDistance = distance;
+                            NS = wo.Coordinates().NorthSouth;
+                            EW = wo.Coordinates().EastWest;
+                            Z = wo.RawCoordinates().Z / 240;
 
-                        NS = wo.Coordinates().NorthSouth;
-                        EW = wo.Coordinates().EastWest;
-                        Z = wo.RawCoordinates().Z / 240;
-                        
-                        CoreManager.Current.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                            CoreManager.Current.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                        }
                     }
                 }
             }

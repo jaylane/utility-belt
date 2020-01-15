@@ -292,8 +292,10 @@ namespace UtilityBelt.Tools {
                 dmgTypeID = (uint)Enum.Parse(typeof(DamageTypes), dmgTypeString.Trim());
 
 
-                foreach (var item in CoreManager.Current.WorldFilter.GetInventory()) {
+                using (var inv = CoreManager.Current.WorldFilter.GetInventory()) {
+                    foreach (var item in inv) {
                         itemsToId.Add(item.Id);
+                    }
                 }
 
                 if (UB.Assessor.NeedsInventoryData(itemsToId)) {
@@ -303,70 +305,71 @@ namespace UtilityBelt.Tools {
                     startTime = DateTime.UtcNow;
                 }
 
-                foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetInventory()) {
-                    if (wo.Values(LongValueKey.Material) == materialID && wo.Values(LongValueKey.UsesRemaining) == 100) {
-                        if (!PotentialSalvageList.ContainsKey(wo.Id)) {
-                            PotentialSalvageList.Add(wo.Id, wo.Values(DoubleValueKey.SalvageWorkmanship));
+                using (var inv = CoreManager.Current.WorldFilter.GetInventory()) {
+                    foreach (WorldObject wo in inv) {
+                        if (wo.Values(LongValueKey.Material) == materialID && wo.Values(LongValueKey.UsesRemaining) == 100) {
+                            if (!PotentialSalvageList.ContainsKey(wo.Id)) {
+                                PotentialSalvageList.Add(wo.Id, wo.Values(DoubleValueKey.SalvageWorkmanship));
+                            }
                         }
                     }
-                }
 
-                foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetInventory()) {
+                    foreach (WorldObject wo in inv) {
+                        if (!wo.HasIdData) {
+                            continue;
+                        }
 
-                    if (!wo.HasIdData) {
-                        continue;
-                    }
+                        if (wo.Values(LongValueKey.Material) <= 0) {
+                            //Util.WriteToChat(Util.GetObjectName(wo.Id).ToString() + " ---- item is not loot gen");
+                            continue;
+                        }
 
-                    if (wo.Values(LongValueKey.Material) <= 0) {
-                        //Util.WriteToChat(Util.GetObjectName(wo.Id).ToString() + " ---- item is not loot gen");
-                        continue;
-                    }
+                        if (wo.Values(LongValueKey.Imbued) >= 1) {
+                            //Util.WriteToChat(Util.GetObjectName(wo.Id).ToString() + " ---- item is imbued");
+                            continue;
+                        }
 
-                    if (wo.Values(LongValueKey.Imbued) >= 1) {
-                        //Util.WriteToChat(Util.GetObjectName(wo.Id).ToString() + " ---- item is imbued");
-                        continue;
-                    }
+                        if (wo.Values(LongValueKey.NumberTimesTinkered) >= 10) {
+                            //Util.WriteToChat(Util.GetObjectName(wo.Id).ToString() + " ---- item is imbued");
+                            continue;
+                        }
 
-                    if (wo.Values(LongValueKey.NumberTimesTinkered) >= 10) {
-                        //Util.WriteToChat(Util.GetObjectName(wo.Id).ToString() + " ---- item is imbued");
-                        continue;
-                    }
+                        if (wo.ObjectClass != ObjectClass.MissileWeapon && wo.ObjectClass != ObjectClass.MeleeWeapon && wo.ObjectClass != ObjectClass.WandStaffOrb) {
+                            //Util.WriteToChat(Util.GetObjectName(wo.Id).ToString() + " ---- not the right weapon type");
+                            continue;
+                        }
 
-                    if (wo.ObjectClass != ObjectClass.MissileWeapon && wo.ObjectClass != ObjectClass.MeleeWeapon && wo.ObjectClass != ObjectClass.WandStaffOrb) {
-                        //Util.WriteToChat(Util.GetObjectName(wo.Id).ToString() + " ---- not the right weapon type");
-                        continue;
-                    }
+                        if (wo.ObjectClass == ObjectClass.MissileWeapon && wo.Values(LongValueKey.DamageType) != dmgTypeID) {
+                            continue;
+                        }
 
-                    if (wo.ObjectClass == ObjectClass.MissileWeapon && wo.Values(LongValueKey.DamageType) != dmgTypeID) {
-                        continue;
-                    }
+                        if (wo.ObjectClass == ObjectClass.MeleeWeapon && wo.Values(LongValueKey.DamageType) != dmgTypeID) {
+                            continue;
+                        }
 
-                    if (wo.ObjectClass == ObjectClass.MeleeWeapon && wo.Values(LongValueKey.DamageType) != dmgTypeID) {
-                        continue;
-                    }
+                        if (wo.ObjectClass == ObjectClass.WandStaffOrb && wo.Values(LongValueKey.WandElemDmgType) != dmgTypeID) {
+                            continue;
+                        }
 
-                    if (wo.ObjectClass == ObjectClass.WandStaffOrb && wo.Values(LongValueKey.WandElemDmgType) != dmgTypeID) {
-                        continue;
-                    }
-                    
-                    if (skipWands && wo.ObjectClass == ObjectClass.WandStaffOrb) {
-                        continue;
-                    }
+                        if (skipWands && wo.ObjectClass == ObjectClass.WandStaffOrb) {
+                            continue;
+                        }
 
 
-                    if (!PotentialWeaponList.ContainsKey(wo.Id)) {
-                        PotentialWeaponList.Add(wo.Id, wo.Values(LongValueKey.Workmanship));
-                    }
+                        if (!PotentialWeaponList.ContainsKey(wo.Id)) {
+                            PotentialWeaponList.Add(wo.Id, wo.Values(LongValueKey.Workmanship));
+                        }
 
-                    if (PotentialWeaponList.Count >= 1 && PotentialSalvageList.Count >= 1) {
+                        if (PotentialWeaponList.Count >= 1 && PotentialSalvageList.Count >= 1) {
 
-                        imbueCount++;
-                        targetItem = PotentialWeaponList.First().Key;
-                        targetSalvage = PotentialSalvageList.First().Key;
-                        imbueChance = tinkerCalc.DoCalc(targetSalvage, CoreManager.Current.WorldFilter[targetItem], CoreManager.Current.WorldFilter[targetItem].Values(LongValueKey.NumberTimesTinkered));
-                        UpdateImbueList();
-                        PotentialWeaponList.Remove(targetItem);
-                        PotentialSalvageList.Remove(targetSalvage);
+                            imbueCount++;
+                            targetItem = PotentialWeaponList.First().Key;
+                            targetSalvage = PotentialSalvageList.First().Key;
+                            imbueChance = tinkerCalc.DoCalc(targetSalvage, CoreManager.Current.WorldFilter[targetItem], CoreManager.Current.WorldFilter[targetItem].Values(LongValueKey.NumberTimesTinkered));
+                            UpdateImbueList();
+                            PotentialWeaponList.Remove(targetItem);
+                            PotentialSalvageList.Remove(targetSalvage);
+                        }
                     }
                 }
             }

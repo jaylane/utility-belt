@@ -86,18 +86,18 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
                 return false;
             }
 
-            var wos = CoreManager.Current.WorldFilter.GetByName(Name);
             WorldObject closestWO = null;
+            using (var wos = CoreManager.Current.WorldFilter.GetByName(Name)) {
+                foreach (var wo in wos) {
+                    if (wo.ObjectClass == ObjectClass) {
+                        var c = wo.Coordinates();
+                        var rc = wo.RawCoordinates();
+                        var distance = Util.GetDistance(new Vector3Object(c.EastWest, c.NorthSouth, rc.Z / 240), new Vector3Object(NpcEW, NpcNS, NpcZ));
 
-            foreach (var wo in wos) {
-                if (wo.ObjectClass == ObjectClass) {
-                    var c = wo.Coordinates();
-                    var rc = wo.RawCoordinates();
-                    var distance = Util.GetDistance(new Vector3Object(c.EastWest, c.NorthSouth, rc.Z / 240), new Vector3Object(NpcEW, NpcNS, NpcZ));
-
-                    if (distance < closestDistance) {
-                        closestDistance = distance;
-                        closestWO = wo;
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                            closestWO = wo;
+                        }
                     }
                 }
             }
