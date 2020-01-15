@@ -3,6 +3,7 @@
 - Add `/ub date[utc] [format]` command to echo the current date, with optional format
 - Fix bug where long chat nav point texts would crash the client when visualnav is enabled
 - Show current landcell when `DungeonMaps.Debug` is set to true
+- Add `/ub opt toggle <setting>` command to toggle boolean values
 
 ## 0.1.2 (2020-01-02) [UtilityBeltInstaller-0.1.2.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/b1bcdf8401543ba32afd4cf480ff6408/UtilityBeltInstaller-0.1.2.exe)
 - "Fix" `/ub playeroption` on ACE, by sending the entire PlayerSystem packet
