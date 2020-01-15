@@ -28,6 +28,7 @@ For portals, it will show the destination.
         #region Config
         [Summary("Enabled")]
         [DefaultValue(true)]
+        [Hotkey("NameTags", "Toggle NameTags display")]
         public bool Enabled {
             get { return (bool)GetSetting("Enabled"); }
             set { UpdateSetting("Enabled", value); }

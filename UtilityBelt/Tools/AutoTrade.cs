@@ -63,6 +63,7 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
         #region Settings
         [Summary("Enable AutoTrade when Trade Window is Opened")]
         [DefaultValue(false)]
+        [Hotkey("AutoTrade", "Toggle AutoTrade functionality")]
         public bool Enabled {
             get { return (bool)GetSetting("Enabled"); }
             set { UpdateSetting("Enabled", value); }

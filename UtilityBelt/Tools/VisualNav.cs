@@ -162,6 +162,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
         #region Config
         [Summary("Enabled")]
         [DefaultValue(true)]
+        [Hotkey("VisualNav", "Toggle VisualNav display")]
         public bool Enabled {
             get { return (bool)GetSetting("Enabled"); }
             set { UpdateSetting("Enabled", value); }
