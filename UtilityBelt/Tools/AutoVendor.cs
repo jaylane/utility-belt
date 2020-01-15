@@ -765,21 +765,22 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                         }
 
                         // see if we already have a single stack of this item
-                        var inventoryNotes = UB.Core.WorldFilter.GetInventory();
-                        inventoryNotes.SetFilter(new ByObjectClassFilter(ObjectClass.TradeNote));
-                        foreach (var wo in inventoryNotes) {
-                            if (wo.Name == item.Name && wo.Values(LongValueKey.StackCount, 0) == 1) {
-                                Logger.Debug($"AutoVendor Selling single {Util.GetObjectName(wo.Id)} so we can afford to buy: " + nextBuyItem.Name);
-                                needsToSell = true;
-                                if (sellItemCount > 0)
-                                    sellAdded.Append(", ");
-                                sellAdded.Append(Util.GetObjectName(wo.Id));
-                                pendingSell.Add(wo.Id);
-                                UB.Core.Actions.VendorAddSellList(wo.Id);
-                                totalSellValue += (int)(value);
-                                sellItemCount++;
-                                nestedBreak = true;
-                                break;
+                        using (var inventoryNotes = UB.Core.WorldFilter.GetInventory()) {
+                            inventoryNotes.SetFilter(new ByObjectClassFilter(ObjectClass.TradeNote));
+                            foreach (var wo in inventoryNotes) {
+                                if (wo.Name == item.Name && wo.Values(LongValueKey.StackCount, 0) == 1) {
+                                    Logger.Debug($"AutoVendor Selling single {Util.GetObjectName(wo.Id)} so we can afford to buy: " + nextBuyItem.Name);
+                                    needsToSell = true;
+                                    if (sellItemCount > 0)
+                                        sellAdded.Append(", ");
+                                    sellAdded.Append(Util.GetObjectName(wo.Id));
+                                    pendingSell.Add(wo.Id);
+                                    UB.Core.Actions.VendorAddSellList(wo.Id);
+                                    totalSellValue += (int)(value);
+                                    sellItemCount++;
+                                    nestedBreak = true;
+                                    break;
+                                }
                             }
                         }
                         if (nestedBreak)
@@ -892,14 +893,16 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
 
             if (vendor == null || lootProfile == null) return sellObjects;
 
-            foreach (WorldObject wo in UB.Core.WorldFilter.GetInventory()) {
-                if (!ItemIsSafeToGetRidOf(wo)) continue;
-                uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(wo.Id);
-                if (itemInfo == null) continue;
-                uTank2.LootPlugins.LootAction result = lootProfile.GetLootDecision(itemInfo);
-                if (!result.IsSell || !vendor.WillBuyItem(wo))
-                    continue;
-                sellObjects.Add(wo);
+            using (var inv = UB.Core.WorldFilter.GetInventory()) {
+                foreach (WorldObject wo in inv) {
+                    if (!ItemIsSafeToGetRidOf(wo)) continue;
+                    uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(wo.Id);
+                    if (itemInfo == null) continue;
+                    uTank2.LootPlugins.LootAction result = lootProfile.GetLootDecision(itemInfo);
+                    if (!result.IsSell || !vendor.WillBuyItem(wo))
+                        continue;
+                    sellObjects.Add(wo);
+                }
             }
 
             sellObjects.Sort(delegate (WorldObject wo1, WorldObject wo2) {

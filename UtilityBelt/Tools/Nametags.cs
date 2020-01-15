@@ -222,7 +222,9 @@ For portals, it will show the destination.
                 if (DateTime.UtcNow > evaluate_tags_time) {
                     evaluate_tags_time = DateTime.MaxValue;
                     EvaluateTags();
-                    foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetLandscape()) AddTag(wo);
+                    using (var landscape = CoreManager.Current.WorldFilter.GetLandscape()) {
+                        foreach (WorldObject wo in landscape) AddTag(wo);
+                    }
                 }
             } catch (Exception ex) { Logger.LogException(ex); }
         }

@@ -312,14 +312,14 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
             ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
 
             itemsToId.Clear();
-            var inventory = UB.Core.WorldFilter.GetInventory();
+            using (var inventory = UB.Core.WorldFilter.GetInventory()) {
+                // filter inventory beforehand if we are only trading from the main pack
+                if (OnlyFromMainPack == true) {
+                    inventory.SetFilter(new ByContainerFilter(UB.Core.CharacterFilter.Id));
+                }
 
-            // filter inventory beforehand if we are only trading from the main pack
-            if (OnlyFromMainPack == true) {
-                inventory.SetFilter(new ByContainerFilter(UB.Core.CharacterFilter.Id));
+                itemsToId.AddRange(inventory.Select(item => item.Id));
             }
-
-            itemsToId.AddRange(inventory.Select(item => item.Id));
 
             if (UB.Assessor.NeedsInventoryData(itemsToId)) {
                 new Assessor.Job(UB.Assessor, ref itemsToId, (_) => { bailTimer = DateTime.UtcNow; }, () => { waitingForIds = false; }, false);

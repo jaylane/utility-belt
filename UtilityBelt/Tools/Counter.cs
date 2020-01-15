@@ -39,27 +39,29 @@ Counter is used to count items based on text or utl profiles as well as players 
                 LogDebug("Regex String: " + searchRegex);
                 int stackCount = 0;
                 int totalCount = 0;
-                foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetInventory()) {
-                    string itemName = Util.GetObjectName(wo.Id);
-                    if (searchRegex.IsMatch(itemName)) {
-                        LogDebug("Matched Item: " + itemName);
-                        stackCount = wo.Values(LongValueKey.StackCount, 1);
-                        if (!itemList.ContainsKey(itemName)) {
-                            itemList[itemName] = stackCount;
-                            totalCount += stackCount;
-                            LogDebug("Count In Progress: " + itemName + " - " + stackCount);
-                        }
-                        else if (itemList[itemName] > 0) {
-                            itemList[itemName] += stackCount;
-                            totalCount += stackCount;
-                            LogDebug("Count In Progress: " + itemName + " - " + stackCount);
+                using (var inv = CoreManager.Current.WorldFilter.GetInventory()) {
+                    foreach (WorldObject wo in inv) {
+                        string itemName = Util.GetObjectName(wo.Id);
+                        if (searchRegex.IsMatch(itemName)) {
+                            LogDebug("Matched Item: " + itemName);
+                            stackCount = wo.Values(LongValueKey.StackCount, 1);
+                            if (!itemList.ContainsKey(itemName)) {
+                                itemList[itemName] = stackCount;
+                                totalCount += stackCount;
+                                LogDebug("Count In Progress: " + itemName + " - " + stackCount);
+                            }
+                            else if (itemList[itemName] > 0) {
+                                itemList[itemName] += stackCount;
+                                totalCount += stackCount;
+                                LogDebug("Count In Progress: " + itemName + " - " + stackCount);
+                            }
+                            else {
+                                continue;
+                            }
                         }
                         else {
-                            continue;
+                            //Util.WriteToChat("no match for " + item);
                         }
-                    }
-                    else {
-                        //Util.WriteToChat("no match for " + item);
                     }
                 }
 
@@ -117,10 +119,12 @@ Counter is used to count items based on text or utl profiles as well as players 
                     return;
                 }
 
-                foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetLandscape()) {
-                    if (wo.Type == 1 && (CoreManager.Current.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, wo.Id) * 240) < rangeInt) {
-                        LogDebug("object : " + wo.Name + " id: " + wo.Id + " type: " + wo.Type);
-                        playerCount++;
+                using (var landscape = CoreManager.Current.WorldFilter.GetLandscape()) {
+                    foreach (WorldObject wo in landscape) {
+                        if (wo.Type == 1 && (CoreManager.Current.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, wo.Id) * 240) < rangeInt) {
+                            LogDebug("object : " + wo.Name + " id: " + wo.Id + " type: " + wo.Type);
+                            playerCount++;
+                        }
                     }
                 }
                 ChatThink("Player Count: " + playerCount.ToString());
@@ -186,51 +190,52 @@ Counter is used to count items based on text or utl profiles as well as players 
 
         private List<WorldObject> CountItems() {
             try {
-                foreach (WorldObject item in CoreManager.Current.WorldFilter.GetInventory()) {
+                using (var inv = CoreManager.Current.WorldFilter.GetInventory()) {
+                    foreach (WorldObject item in inv) {
+                        // If the item is equipped or wielded, don't process it.
+                        if (item.Values(LongValueKey.EquippedSlots, 0) > 0 || item.Values(LongValueKey.Slot, -1) == -1)
+                            continue;
+                        uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item.Id);
 
-                    // If the item is equipped or wielded, don't process it.
-                    if (item.Values(LongValueKey.EquippedSlots, 0) > 0 || item.Values(LongValueKey.Slot, -1) == -1)
-                        continue;
-                    uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item.Id);
-
-                    if (itemInfo == null) {
-                        // This happens all the time for aetheria that has been converted
-                        continue;
-                    }
-
-                    if (!((VTClassic.LootCore)lootProfile).DoesPotentialItemNeedID(itemInfo) && idItems.Contains(item)) {
-                        idItems.Remove(item);
-                    }
-
-                    if (((VTClassic.LootCore)lootProfile).DoesPotentialItemNeedID(itemInfo)) {
-                        if (UB.Assessor.Queue(item.Id) && !idItems.Contains(item)) {
-                            idItems.Add(item);
+                        if (itemInfo == null) {
+                            // This happens all the time for aetheria that has been converted
+                            continue;
                         }
-                        continue;
-                    }
 
-                    if (matchedWOList.Contains(item)) {
-                        continue;
-                    }
+                        if (!((VTClassic.LootCore)lootProfile).DoesPotentialItemNeedID(itemInfo) && idItems.Contains(item)) {
+                            idItems.Remove(item);
+                        }
 
-                    uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
-                    if (!result.IsKeep && !result.IsKeepUpTo) {
-                        continue;
-                    }
+                        if (((VTClassic.LootCore)lootProfile).DoesPotentialItemNeedID(itemInfo)) {
+                            if (UB.Assessor.Queue(item.Id) && !idItems.Contains(item)) {
+                                idItems.Add(item);
+                            }
+                            continue;
+                        }
 
-                    //Util.WriteToChat("matched keep up to...");
-                    if (!matchedRule.ContainsKey(result.RuleName)) {
-                        matchedRule[result.RuleName] = 1;
-                        //Util.WriteToChat("Rule: " + result.RuleName + " matched " + result.Data1 + " times");
+                        if (matchedWOList.Contains(item)) {
+                            continue;
+                        }
+
+                        uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
+                        if (!result.IsKeep && !result.IsKeepUpTo) {
+                            continue;
+                        }
+
+                        //Util.WriteToChat("matched keep up to...");
+                        if (!matchedRule.ContainsKey(result.RuleName)) {
+                            matchedRule[result.RuleName] = 1;
+                            //Util.WriteToChat("Rule: " + result.RuleName + " matched " + result.Data1 + " times");
+                        }
+                        else if (matchedRule[result.RuleName] > 0) {
+                            matchedRule[result.RuleName]++;
+                            //Util.WriteToChat("Rule: " + result.RuleName + " Count: " + matchedRule[result.RuleName]);
+                        }
+                        else {
+                            continue;
+                        }
+                        matchedWOList.Add(item);
                     }
-                    else if (matchedRule[result.RuleName] > 0) {
-                        matchedRule[result.RuleName]++;
-                        //Util.WriteToChat("Rule: " + result.RuleName + " Count: " + matchedRule[result.RuleName]);
-                    }
-                    else {
-                        continue;
-                    }
-                    matchedWOList.Add(item);
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }

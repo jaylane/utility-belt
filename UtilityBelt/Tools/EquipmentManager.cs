@@ -231,11 +231,11 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
 
         private List<WorldObject> GetEquippedItems() {
             var list = new List<WorldObject>();
-            foreach (var item in UB.Core.WorldFilter.GetInventory())
-            {
-                if (item.Values(LongValueKey.Slot, -1) == -1)
-                {
-                    list.Add(item);
+            using (var inv = UB.Core.WorldFilter.GetInventory()) {
+                foreach (var item in inv) {
+                    if (item.Values(LongValueKey.Slot, -1) == -1) {
+                        list.Add(item);
+                    }
                 }
             }
             return list;
@@ -458,15 +458,17 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
 
         private bool TryDequipItem() {
             try {
-                foreach (var item in UB.Core.WorldFilter.GetInventory()) {
-                    // skip items in profile since they are going to be equipped
-                    if (itemList.Contains(item.Id))
-                        continue;
+                using (var inv = UB.Core.WorldFilter.GetInventory()) {
+                    foreach (var item in inv) {
+                        // skip items in profile since they are going to be equipped
+                        if (itemList.Contains(item.Id))
+                            continue;
 
-                    if (item.Values(LongValueKey.Slot, -1) == -1) {
-                        LogDebug($"Dequipping item - {Util.GetObjectName(item.Id)}");
-                        UB.Core.Actions.MoveItem(item.Id, UB.Core.CharacterFilter.Id);
-                        return true;
+                        if (item.Values(LongValueKey.Slot, -1) == -1) {
+                            LogDebug($"Dequipping item - {Util.GetObjectName(item.Id)}");
+                            UB.Core.Actions.MoveItem(item.Id, UB.Core.CharacterFilter.Id);
+                            return true;
+                        }
                     }
                 }
             }
@@ -518,15 +520,16 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
         }
 
         private IEnumerable<WorldObject> GetEquippableItems() {
+            using (var inv = UB.Core.WorldFilter.GetInventory()) {
+                foreach (var item in inv) {
+                    if (!ValidEquippableObjectClasses.Contains(item.ObjectClass)) {
+                        continue;
+                    }
+                    if (item.Values(LongValueKey.EquipableSlots, 0) == 0)
+                        continue;
 
-            foreach (var item in UB.Core.WorldFilter.GetInventory()) {
-                if (!ValidEquippableObjectClasses.Contains(item.ObjectClass)) {
-                    continue;
+                    yield return item;
                 }
-                if (item.Values(LongValueKey.EquipableSlots, 0) == 0)
-                    continue;
-
-                yield return item;
             }
         }
 

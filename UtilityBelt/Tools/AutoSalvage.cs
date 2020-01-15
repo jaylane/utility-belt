@@ -115,17 +115,18 @@ This plugin will attempt to salvage all items in your inventory that match loot 
         }
 
         public void LoadInventory() {
-            var inventory = UB.Core.WorldFilter.GetInventory();
+            using (var inventory = UB.Core.WorldFilter.GetInventory()) {
 
-            // prefilter inventory if we are only selling from the main pack
-            if (OnlyFromMainPack == true) {
-                inventory.SetFilter(new ByContainerFilter(UB.Core.CharacterFilter.Id));
-            }
+                // prefilter inventory if we are only selling from the main pack
+                if (OnlyFromMainPack == true) {
+                    inventory.SetFilter(new ByContainerFilter(UB.Core.CharacterFilter.Id));
+                }
 
-            foreach (var item in inventory) {
-                if (!AllowedToSalvageItem(item)) continue;
+                foreach (var item in inventory) {
+                    if (!AllowedToSalvageItem(item)) continue;
 
-                inventoryItems.Add(item.Id);
+                    inventoryItems.Add(item.Id);
+                }
             }
 
             UB.Assessor.RequestAll(inventoryItems);
@@ -151,11 +152,13 @@ This plugin will attempt to salvage all items in your inventory that match loot 
         private bool OpenSalvageWindow() {
             var foundUst = false;
 
-            foreach (var item in UB.Core.WorldFilter.GetInventory()) {
-                if (item != null && item.Name == "Ust") {
-                    foundUst = true;
-                    UB.Core.Actions.UseItem(item.Id, 0);
-                    break;
+            using (var inv = UB.Core.WorldFilter.GetInventory()) {
+                foreach (var item in inv) {
+                    if (item != null && item.Name == "Ust") {
+                        foundUst = true;
+                        UB.Core.Actions.UseItem(item.Id, 0);
+                        break;
+                    }
                 }
             }
 

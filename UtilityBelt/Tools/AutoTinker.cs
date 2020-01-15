@@ -213,9 +213,11 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
                 HudStaticText c = (HudStaticText)(AutoTinkCombo[AutoTinkCombo.Current]);
                 var materialID = SalvageList[c.Text.ToString()];
 
-                foreach (var item in CoreManager.Current.WorldFilter.GetInventory()) {
-                    if (!item.HasIdData) {
-                        itemsToId.Add(item.Id);
+                using (var inv = CoreManager.Current.WorldFilter.GetInventory()) {
+                    foreach (var item in inv) {
+                        if (!item.HasIdData) {
+                            itemsToId.Add(item.Id);
+                        }
                     }
                 }
 
@@ -227,10 +229,12 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
                     startTime = DateTime.UtcNow;
                 }
 
-                foreach (WorldObject wo in CoreManager.Current.WorldFilter.GetInventory()) {
-                    if (wo.Values(LongValueKey.Material) == materialID && wo.Values(LongValueKey.UsesRemaining) == 100) {
-                        if (!PotentialSalvageList.ContainsKey(wo.Id)) {
-                            PotentialSalvageList.Add(wo.Id,wo.Values(DoubleValueKey.SalvageWorkmanship));
+                using (var inv = CoreManager.Current.WorldFilter.GetInventory()) {
+                    foreach (WorldObject wo in inv) {
+                        if (wo.Values(LongValueKey.Material) == materialID && wo.Values(LongValueKey.UsesRemaining) == 100) {
+                            if (!PotentialSalvageList.ContainsKey(wo.Id)) {
+                                PotentialSalvageList.Add(wo.Id, wo.Values(DoubleValueKey.SalvageWorkmanship));
+                            }
                         }
                     }
                 }

@@ -195,25 +195,31 @@ namespace UtilityBelt
 
             // side pack count
             if (container.Id != UB.Core.CharacterFilter.Id) {
-                return packSlots - UB.Core.WorldFilter.GetByContainer(container.Id).Count;
+                int total = 0;
+                using (var packwoc = UB.Core.WorldFilter.GetByContainer(container.Id)) {
+                    total = packSlots - packwoc.Count;
+                }
+                return total;
             }
 
             // main pack count
-            foreach (var wo in UB.Core.WorldFilter.GetByContainer(container.Id)) {
-                if (wo != null) {
-                    // skip packs
-                    if (wo.ObjectClass == ObjectClass.Container) continue;
+            using (var woc = UB.Core.WorldFilter.GetByContainer(container.Id)) {
+                foreach (var wo in woc) {
+                    if (wo != null) {
+                        // skip packs
+                        if (wo.ObjectClass == ObjectClass.Container) continue;
 
-                    // skip foci
-                    if (wo.ObjectClass == ObjectClass.Foci) continue;
+                        // skip foci
+                        if (wo.ObjectClass == ObjectClass.Foci) continue;
 
-                    // skip equipped
-                    if (wo.Values(LongValueKey.EquippedSlots, 0) > 0) continue;
+                        // skip equipped
+                        if (wo.Values(LongValueKey.EquippedSlots, 0) > 0) continue;
 
-                    // skip wielded
-                    if (wo.Values(LongValueKey.Slot, -1) == -1) continue;
+                        // skip wielded
+                        if (wo.Values(LongValueKey.Slot, -1) == -1) continue;
 
-                    --packSlots;
+                        --packSlots;
+                    }
                 }
             }
 
@@ -269,14 +275,18 @@ namespace UtilityBelt
 
         internal static void StackItem(WorldObject stackThis) {
             // try to stack in side pack
-            foreach (var container in UB.Core.WorldFilter.GetInventory()) {
-                if (container.ObjectClass == ObjectClass.Container && container.Values(LongValueKey.Slot, -1) >= 0) {
-                    foreach (var wo in UB.Core.WorldFilter.GetByContainer(container.Id)) {
-                        if (wo.Name == stackThis.Name && wo.Id != stackThis.Id) {
-                            if (wo.Values(LongValueKey.StackCount, 1) + stackThis.Values(LongValueKey.StackCount, 1) <= wo.Values(LongValueKey.StackMax)) {
-                                UB.Core.Actions.SelectItem(stackThis.Id);
-                                UB.Core.Actions.MoveItem(stackThis.Id, container.Id, container.Values(LongValueKey.Slot), true);
-                                return;
+            using (var inv = UB.Core.WorldFilter.GetInventory()) {
+                foreach (var container in inv) {
+                    if (container.ObjectClass == ObjectClass.Container && container.Values(LongValueKey.Slot, -1) >= 0) {
+                        using (var woc = UB.Core.WorldFilter.GetByContainer(container.Id)) {
+                            foreach (var wo in woc) {
+                                if (wo.Name == stackThis.Name && wo.Id != stackThis.Id) {
+                                    if (wo.Values(LongValueKey.StackCount, 1) + stackThis.Values(LongValueKey.StackCount, 1) <= wo.Values(LongValueKey.StackMax)) {
+                                        UB.Core.Actions.SelectItem(stackThis.Id);
+                                        UB.Core.Actions.MoveItem(stackThis.Id, container.Id, container.Values(LongValueKey.Slot), true);
+                                        return;
+                                    }
+                                }
                             }
                         }
                     }
@@ -284,13 +294,15 @@ namespace UtilityBelt
             }
 
             // try to stack in main pack
-            foreach (var wo in UB.Core.WorldFilter.GetInventory()) {
-                if (wo.Container == UB.Core.CharacterFilter.Id) {
-                    if (wo.Name == stackThis.Name && wo.Id != stackThis.Id) {
-                        if (wo.Values(LongValueKey.StackCount, 1) + stackThis.Values(LongValueKey.StackCount, 1) <= wo.Values(LongValueKey.StackMax)) {
-                            UB.Core.Actions.SelectItem(stackThis.Id);
-                            UB.Core.Actions.MoveItem(stackThis.Id, UB.Core.CharacterFilter.Id, 0, true);
-                            return;
+            using (var inv = UB.Core.WorldFilter.GetInventory()) {
+                foreach (var wo in inv) {
+                    if (wo.Container == UB.Core.CharacterFilter.Id) {
+                        if (wo.Name == stackThis.Name && wo.Id != stackThis.Id) {
+                            if (wo.Values(LongValueKey.StackCount, 1) + stackThis.Values(LongValueKey.StackCount, 1) <= wo.Values(LongValueKey.StackMax)) {
+                                UB.Core.Actions.SelectItem(stackThis.Id);
+                                UB.Core.Actions.MoveItem(stackThis.Id, UB.Core.CharacterFilter.Id, 0, true);
+                                return;
+                            }
                         }
                     }
                 }
@@ -300,13 +312,15 @@ namespace UtilityBelt
         internal static int GetItemCountInInventoryByName(string name) {
             int count = 0;
 
-            foreach (var wo in UB.Core.WorldFilter.GetInventory()) {
-                if (wo.Name == name) {
-                    if (wo.Values(LongValueKey.StackCount, 0) > 0) {
-                        count += wo.Values(LongValueKey.StackCount);
-                    }
-                    else {
-                        ++count;
+            using (var inv = UB.Core.WorldFilter.GetInventory()) {
+                foreach (var wo in inv) {
+                    if (wo.Name == name) {
+                        if (wo.Values(LongValueKey.StackCount, 0) > 0) {
+                            count += wo.Values(LongValueKey.StackCount);
+                        }
+                        else {
+                            ++count;
+                        }
                     }
                 }
             }
@@ -353,9 +367,11 @@ namespace UtilityBelt
         internal static int PyrealCount() {
             int total = 0;
 
-            foreach (var wo in CoreManager.Current.WorldFilter.GetInventory()) {
-                if (wo.Values(LongValueKey.Type, 0) == 273/* pyreals */) {
-                    total += wo.Values(LongValueKey.StackCount, 1);
+            using (var inv = UB.Core.WorldFilter.GetInventory()) {
+                foreach (var wo in inv) {
+                    if (wo.Values(LongValueKey.Type, 0) == 273/* pyreals */) {
+                        total += wo.Values(LongValueKey.StackCount, 1);
+                    }
                 }
             }
 
@@ -468,18 +484,20 @@ namespace UtilityBelt
 
             double lastDistance = double.MaxValue;
             double thisDistance;
-            foreach (WorldObject thisOne in CoreManager.Current.WorldFilter.GetLandscape()) {
-                if (!CheckObjectClassArray(thisOne.ObjectClass, oc)) continue;
-                thisDistance = UB.Core.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, thisOne.Id);
-                if (thisOne.Id != UB.Core.CharacterFilter.Id && (found == null || lastDistance > thisDistance)) {
-                    string thisLowerName = thisOne.Name.ToLower();
-                    if (partial && thisLowerName.Contains(searchname) && CheckObjectClassArray(thisOne.ObjectClass, oc)) {
-                        found = thisOne;
-                        lastDistance = thisDistance;
-                    }
-                    else if (thisLowerName.Equals(searchname) && CheckObjectClassArray(thisOne.ObjectClass, oc)) {
-                        found = thisOne;
-                        lastDistance = thisDistance;
+            using (var woc = CoreManager.Current.WorldFilter.GetLandscape()) {
+                foreach (WorldObject thisOne in woc) {
+                    if (!CheckObjectClassArray(thisOne.ObjectClass, oc)) continue;
+                    thisDistance = UB.Core.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, thisOne.Id);
+                    if (thisOne.Id != UB.Core.CharacterFilter.Id && (found == null || lastDistance > thisDistance)) {
+                        string thisLowerName = thisOne.Name.ToLower();
+                        if (partial && thisLowerName.Contains(searchname) && CheckObjectClassArray(thisOne.ObjectClass, oc)) {
+                            found = thisOne;
+                            lastDistance = thisDistance;
+                        }
+                        else if (thisLowerName.Equals(searchname) && CheckObjectClassArray(thisOne.ObjectClass, oc)) {
+                            found = thisOne;
+                            lastDistance = thisDistance;
+                        }
                     }
                 }
             }
