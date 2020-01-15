@@ -180,18 +180,19 @@ namespace UtilityBelt.Tools {
         }
 
         #endregion
-        #region /ub opt {list | get <option> | set <option> <newValue>}
+        #region /ub opt {list | get <option> | set <option> <newValue> | toggle <option>}
         [Summary("Manage plugin settings from the command line")]
-        [Usage("/ub opt {list | get <option> | set <option> <newValue>}")]
+        [Usage("/ub opt {list | get <option> | set <option> <newValue> | toggle <options>}")]
         [Example("/ub opt list", "Lists all available settings.")]
         [Example("/ub get Plugin.Debug", "Gets the current value for the \"Plugin.Debug\" setting")]
+        [Example("/ub toggle Plugin.Debug", "Toggles the current value for the \"Plugin.Debug\" setting")]
         [Example("/ub set Plugin.Debug true", "Sets the \"Plugin.Debug\" setting to True")]
-        [CommandPattern("opt", @"^ *(?<params>(list|get \S+|set \S+ \S+)) *$")]
+        [CommandPattern("opt", @"^ *(?<params>(list|toggle \S+|get \S+|set \S+ \S+)) *$")]
         public void DoOpt(string command, Match args) {
             UB_opt(args.Groups["params"].Value);
         }
 
-        readonly private Regex optionRe = new Regex(@"^((get|set) )?(?<option>[^\s]+)\s?(?<value>.*)", RegexOptions.IgnoreCase);
+        readonly private Regex optionRe = new Regex(@"^((get|set|toggle) )?(?<option>[^\s]+)\s?(?<value>.*)", RegexOptions.IgnoreCase);
         private void UB_opt(string args) {
             try {
                 if (args.ToLower().Trim() == "list") {
@@ -208,6 +209,15 @@ namespace UtilityBelt.Tools {
 
                 if (option == null || option.Object == null) {
                     Util.WriteToChat("Invalid option: " + name);
+                    return;
+                }
+
+                if (args.ToLower().Trim().StartsWith("toggle ")) {
+                    try {
+                        option.Property.SetValue(option.Parent, Convert.ChangeType(!(bool)option.Property.GetValue(option.Parent, null), option.Property.PropertyType), null);
+                        if (!UB.Plugin.Debug) Util.WriteToChat(name + " = " + UB.Settings.DisplayValue(name));
+                    }
+                    catch (Exception ex) { Util.WriteToChat($"Unable to toggle setting {name}: {ex.Message}"); }
                     return;
                 }
 
