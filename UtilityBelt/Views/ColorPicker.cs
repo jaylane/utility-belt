@@ -41,6 +41,7 @@ namespace UtilityBelt.Views {
 
         public Color DefaultColor;
         bool disposed = false;
+        private ACImage colorPreviewImage;
 
         public event EventHandler<ColorPickerSaveEventArgs> RaiseColorPickerSaveEvent;
         public event EventHandler<ColorPickerChangeEventArgs> RaiseColorPickerChangeEvent;
@@ -95,15 +96,19 @@ namespace UtilityBelt.Views {
         }
 
         private ACImage GetColorPreviewImage() {
-            var bmp = new Bitmap(ColorPreview.ClipRegion.Width, ColorPreview.ClipRegion.Height);
+            if (colorPreviewImage != null)
+                return colorPreviewImage;
+            using (var bmp = new Bitmap(ColorPreview.ClipRegion.Width, ColorPreview.ClipRegion.Height)) {
 
-            using (Graphics gfx = Graphics.FromImage(bmp)) {
-                using (SolidBrush brush = new SolidBrush(Color)) {
-                    gfx.FillRectangle(brush, 0, 0, ColorPreview.ClipRegion.Width, ColorPreview.ClipRegion.Height);
+                using (Graphics gfx = Graphics.FromImage(bmp)) {
+                    using (SolidBrush brush = new SolidBrush(Color)) {
+                        gfx.FillRectangle(brush, 0, 0, ColorPreview.ClipRegion.Width, ColorPreview.ClipRegion.Height);
+                    }
                 }
+                colorPreviewImage = new ACImage(bmp);
             }
 
-            return new ACImage(bmp);
+            return colorPreviewImage;
         }
 
         private ACImage GetIconImage() {
