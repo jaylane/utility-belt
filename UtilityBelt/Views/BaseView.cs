@@ -77,7 +77,6 @@ namespace UtilityBelt.Views {
 
         protected ACImage GetIcon(string resourcePath) {
             ACImage acImage = null;
-
             try {
                 using (Stream manifestResourceStream = typeof(MainView).Assembly.GetManifestResourceStream(resourcePath)) {
                    using (Bitmap bitmap = new Bitmap(manifestResourceStream))

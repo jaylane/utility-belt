@@ -25,6 +25,7 @@ namespace UtilityBelt.Views {
         private HudButton CheckForUpdate;
         internal HudButton ExportPCap;
         Timer timer;
+        private ACImage icon;
         private const int descriptionHeight = 40;
 
         private readonly Dictionary<string, string> buttons = new Dictionary<string, string>() {
@@ -242,10 +243,14 @@ namespace UtilityBelt.Views {
         }
 
         internal override ACImage GetIcon() {
-            return GetIcon("UtilityBelt.Resources.icons.utilitybelt.png");
+            if (icon != null)
+                return icon;
+            icon = GetIcon("UtilityBelt.Resources.icons.utilitybelt.png");
+            return icon;
         }
         ~MainView() {
             if (timer != null) timer.Dispose();
+            if (icon != null) icon.Dispose();
         }
     }
 }

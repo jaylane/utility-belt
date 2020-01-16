@@ -96,7 +96,7 @@ namespace UtilityBelt.Views {
 
         internal override ACImage GetIcon() {
             if (icon != null)
-                icon.Dispose();
+                return icon;
             icon = GetIcon("UtilityBelt.Resources.icons.dungeonmaps.png");
             return icon;
         }
