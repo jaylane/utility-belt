@@ -373,7 +373,6 @@ namespace UtilityBelt {
                                 }
                                 return true;
                             };
-                            Util.WriteToChat($"Adding hotkey: {title}: {description}");
                             HotkeyWrapperManager.AddHotkey(del, title, description, 0, false, false, false);
                         }
                         catch (Exception ex) {

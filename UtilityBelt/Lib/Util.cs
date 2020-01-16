@@ -184,48 +184,6 @@ namespace UtilityBelt
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        public static int GetFreeMainPackSpace() {
-            WorldObject mainPack = UB.Core.WorldFilter[CoreManager.Current.CharacterFilter.Id];
-
-            return GetFreePackSpace(mainPack);
-        }
-
-        public static int GetFreePackSpace(WorldObject container) {
-            int packSlots = container.Values(LongValueKey.ItemSlots, 0);
-
-            // side pack count
-            if (container.Id != UB.Core.CharacterFilter.Id) {
-                int total = 0;
-                using (var packwoc = UB.Core.WorldFilter.GetByContainer(container.Id)) {
-                    total = packSlots - packwoc.Count;
-                }
-                return total;
-            }
-
-            // main pack count
-            using (var woc = UB.Core.WorldFilter.GetByContainer(container.Id)) {
-                foreach (var wo in woc) {
-                    if (wo != null) {
-                        // skip packs
-                        if (wo.ObjectClass == ObjectClass.Container) continue;
-
-                        // skip foci
-                        if (wo.ObjectClass == ObjectClass.Foci) continue;
-
-                        // skip equipped
-                        if (wo.Values(LongValueKey.EquippedSlots, 0) > 0) continue;
-
-                        // skip wielded
-                        if (wo.Values(LongValueKey.Slot, -1) == -1) continue;
-
-                        --packSlots;
-                    }
-                }
-            }
-
-            return packSlots;
-        }
-
         public static int GetOverallSlot(WorldObject wo) { //Just for sorting for now. TODO: math real numbers, based on actual pack slots
             if (wo.Container == UB.Core.CharacterFilter.Id)
                 return wo.Values(LongValueKey.Slot, 0);
@@ -271,42 +229,6 @@ namespace UtilityBelt
             catch (Exception ex) { Logger.LogException(ex); }
 
             return defaultPath;
-        }
-
-        internal static void StackItem(WorldObject stackThis) {
-            // try to stack in side pack
-            using (var inv = UB.Core.WorldFilter.GetInventory()) {
-                foreach (var container in inv) {
-                    if (container.ObjectClass == ObjectClass.Container && container.Values(LongValueKey.Slot, -1) >= 0) {
-                        using (var woc = UB.Core.WorldFilter.GetByContainer(container.Id)) {
-                            foreach (var wo in woc) {
-                                if (wo.Name == stackThis.Name && wo.Id != stackThis.Id) {
-                                    if (wo.Values(LongValueKey.StackCount, 1) + stackThis.Values(LongValueKey.StackCount, 1) <= wo.Values(LongValueKey.StackMax)) {
-                                        UB.Core.Actions.SelectItem(stackThis.Id);
-                                        UB.Core.Actions.MoveItem(stackThis.Id, container.Id, container.Values(LongValueKey.Slot), true);
-                                        return;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // try to stack in main pack
-            using (var inv = UB.Core.WorldFilter.GetInventory()) {
-                foreach (var wo in inv) {
-                    if (wo.Container == UB.Core.CharacterFilter.Id) {
-                        if (wo.Name == stackThis.Name && wo.Id != stackThis.Id) {
-                            if (wo.Values(LongValueKey.StackCount, 1) + stackThis.Values(LongValueKey.StackCount, 1) <= wo.Values(LongValueKey.StackMax)) {
-                                UB.Core.Actions.SelectItem(stackThis.Id);
-                                UB.Core.Actions.MoveItem(stackThis.Id, UB.Core.CharacterFilter.Id, 0, true);
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         internal static int GetItemCountInInventoryByName(string name) {

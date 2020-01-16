@@ -688,7 +688,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                 var totalBuyCount = 0;
                 var totalBuyPyreals = 0;
                 var totalBuySlots = 0;
-                var freeSlots = Util.GetFreeMainPackSpace();
+                var freeSlots = (new Weenie(UB.Core.CharacterFilter.Id)).FreeSpace;
                 var pyrealCount = Util.PyrealCount();
                 StringBuilder buyAdded = new StringBuilder("Autovendor Buy List: ");
                 foreach (var buyItem in buyItems.OrderBy(o => o.Item.Value).ToList()) {
@@ -792,7 +792,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     // cant sell the whole stack? split it into what we can sell
                     if (!PyrealsWillFitInMainPack(totalSellValue + (int)(value * stackSize))) {
                         if (sellItemCount < 1) {
-                            stackSize = (int)((Util.GetFreeMainPackSpace() - 2) * PYREAL_STACK_SIZE / value);
+                            stackSize = (int)(((new Weenie(UB.Core.CharacterFilter.Id)).FreeSpace - 2) * PYREAL_STACK_SIZE / value);
                             if (stackSize > 0) {
                                 DoSplit(item, stackSize);
                                 return;
@@ -858,7 +858,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         }
 
         private bool PyrealsWillFitInMainPack(float amount) { // fixed for ACE's bad pyreal management.
-            return ((Util.GetFreeMainPackSpace() - Math.Ceiling(amount / PYREAL_STACK_SIZE)) > 0); // ensures 1 pack slot always remains free.
+            return ((new Weenie(UB.Core.CharacterFilter.Id).FreeSpace - Math.Ceiling(amount / PYREAL_STACK_SIZE)) > 0); // ensures 1 pack slot always remains free.
         }
 
         private List<BuyItem> GetBuyItems() {
