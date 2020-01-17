@@ -41,7 +41,7 @@ namespace UtilityBelt.Views {
 
             view.VisibleChanged += View_VisibleChanged;
 
-            ChildList = view != null ? (HudList)view["ChildList"] : new HudList();
+            ChildList = (HudList)view["ChildList"];
 
             Draw();
         }

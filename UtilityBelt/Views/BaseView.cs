@@ -79,8 +79,9 @@ namespace UtilityBelt.Views {
             ACImage acImage = null;
             try {
                 using (Stream manifestResourceStream = typeof(MainView).Assembly.GetManifestResourceStream(resourcePath)) {
-                   using (Bitmap bitmap = new Bitmap(manifestResourceStream))
-                       acImage = new ACImage(bitmap);
+                    using (Bitmap bitmap = new Bitmap(manifestResourceStream)) {
+                        acImage = new ACImage(bitmap);
+                    }
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }

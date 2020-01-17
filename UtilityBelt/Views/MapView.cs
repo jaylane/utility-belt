@@ -15,7 +15,6 @@ namespace UtilityBelt.Views {
     public class MapView : BaseView {
         Timer timer;
         HudFixedLayout DungeonMapsRenderContainer;
-        private ACImage icon;
 
         public MapView(UtilityBeltPlugin ub) : base(ub) {
             CreateFromXMLResource("UtilityBelt.Views.MapView.xml");
@@ -95,13 +94,9 @@ namespace UtilityBelt.Views {
         }
 
         internal override ACImage GetIcon() {
-            if (icon != null)
-                return icon;
-            icon = GetIcon("UtilityBelt.Resources.icons.dungeonmaps.png");
-            return icon;
+            return GetIcon("UtilityBelt.Resources.icons.dungeonmaps.png");
         }
         ~MapView() {
-            if (icon != null) icon.Dispose();
             if (timer != null) timer.Dispose();
         }
     }
