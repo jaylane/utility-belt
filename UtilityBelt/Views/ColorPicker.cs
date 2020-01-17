@@ -67,19 +67,19 @@ namespace UtilityBelt.Views {
             view.Icon = GetIconImage();
             view.Visible = true;
 
-            Cancel = view != null ? (HudButton)view["Cancel"] : new HudButton();
-            Save = view != null ? (HudButton)view["Save"] : new HudButton();
+            Cancel = (HudButton)view["Cancel"];
+            Save = (HudButton)view["Save"];
 
-            ColorPreviewLayout = view != null ? (HudFixedLayout)view["ColorPreviewLayout"] : new HudFixedLayout();
+            ColorPreviewLayout = (HudFixedLayout)view["ColorPreviewLayout"];
             ColorPreview = new HudPictureBox();
             ColorPreview.Image = GetIconImage();
 
             ColorPreviewLayout.AddControl(ColorPreview, new Rectangle(0, 0, 100, 100));
 
-            Alpha = view != null ? (HudHSlider)view["Alpha"] : new HudHSlider();
-            Red = view != null ? (HudHSlider)view["Red"] : new HudHSlider();
-            Green = view != null ? (HudHSlider)view["Green"] : new HudHSlider();
-            Blue = view != null ? (HudHSlider)view["Blue"] : new HudHSlider();
+            Alpha = (HudHSlider)view["Alpha"];
+            Red = (HudHSlider)view["Red"];
+            Green = (HudHSlider)view["Green"];
+            Blue = (HudHSlider)view["Blue"];
 
             Alpha.Position = Color.A;
             Red.Position = Color.R;

@@ -48,10 +48,10 @@ namespace UtilityBelt.Views {
             view.ForcedZOrder = 9999;
             view.Visible = true;
 
-            ChildList = view != null ? (HudList)view["ChildList"] : new HudList();
-            SettingsFormLayout = view != null ? (HudFixedLayout)view["SettingsForm"] : new HudFixedLayout();
-            Cancel = view != null ? (HudButton)view["Cancel"] : new HudButton();
-            AddOrUpdate = view != null ? (HudButton)view["AddOrUpdate"] : new HudButton();
+            ChildList = (HudList)view["ChildList"];
+            SettingsFormLayout = (HudFixedLayout)view["SettingsForm"];
+            Cancel = (HudButton)view["Cancel"];
+            AddOrUpdate = (HudButton)view["AddOrUpdate"];
 
             Cancel.Visible = false;
 

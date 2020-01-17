@@ -130,21 +130,21 @@ Chat logger supports the following message types:
 
         public ChatLogger(UtilityBeltPlugin ub, string name) : base(ub, name) {
             try {
-                UIChatLogFilter = UB.MainView.view != null ? (HudTextBox)UB.MainView.view["ChatLogFilterText"] : new HudTextBox();
+                UIChatLogFilter = (HudTextBox)UB.MainView.view["ChatLogFilterText"];
                 UIChatLogFilter.Change += UIChatLogFilter_Change;
 
-                UIChatLogLogList = UB.MainView.view != null ? (HudList)UB.MainView.view["ChatLogLogList"] : new HudList();
+                UIChatLogLogList = (HudList)UB.MainView.view["ChatLogLogList"];
                 UIChatLogLogList.Click += UIChatLogLogList_Click;
 
-                UIChatLogClear = UB.MainView.view != null ? (HudButton)UB.MainView.view["ChatLogClear"] : new HudButton();
+                UIChatLogClear = (HudButton)UB.MainView.view["ChatLogClear"];
                 UIChatLogClear.Hit += UIChatLogClear_Hit;
 
-                UIChatLogSaveToFile = UB.MainView.view != null ? (HudCheckBox)UB.MainView.view["ChatLogSaveToFile"] : new HudCheckBox();
+                UIChatLogSaveToFile = (HudCheckBox)UB.MainView.view["ChatLogSaveToFile"];
                 UIChatLogSaveToFile.Change += UIChatLogSaveToFile_Change;
 
-                UIChatLogMessageFilter = UB.MainView.view != null ? (HudTextBox)UB.MainView.view["ChatLogMessageFilter"] : new HudTextBox();
+                UIChatLogMessageFilter = (HudTextBox)UB.MainView.view["ChatLogMessageFilter"];
 
-                UIChatLogTypeList = UB.MainView.view != null ? (HudList)UB.MainView.view["ChatLogTypeList"] : new HudList();
+                UIChatLogTypeList = (HudList)UB.MainView.view["ChatLogTypeList"];
 
                 // Initialize chat types
                 UIChatLogTypeList.ClearRows();
@@ -171,10 +171,10 @@ Chat logger supports the following message types:
                     }
                 }
 
-                UIChatLogRuleAddButton = UB.MainView.view != null ? (HudButton)UB.MainView.view["ChatLogRuleAddButton"] : new HudButton();
+                UIChatLogRuleAddButton = (HudButton)UB.MainView.view["ChatLogRuleAddButton"];
                 UIChatLogRuleAddButton.Hit += UIChatLogRuleAddButton_Hit;
 
-                UIChatLogRuleList = UB.MainView.view != null ? (HudList)UB.MainView.view["ChatLogRuleList"] : new HudList();
+                UIChatLogRuleList = (HudList)UB.MainView.view["ChatLogRuleList"];
                 UIChatLogRuleList.Click += UIChatLogRuleList_Click;
 
                 UB.Core.ChatBoxMessage += Core_ChatBoxMessage;
