@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using uTank2;
 using UtilityBelt.Lib;
+using UtilityBelt.Lib.VTNav;
 using static uTank2.PluginCore;
 
 namespace UtilityBelt.Tools {
@@ -20,6 +21,20 @@ namespace UtilityBelt.Tools {
         public bool VitalSharing {
             get { return (bool)GetSetting("VitalSharing"); }
             set { UpdateSetting("VitalSharing", value); }
+        }
+
+        [Summary("Detect and fix vtank nav portal loops")]
+        [DefaultValue(false)]
+        public bool FixPortalLoops {
+            get { return (bool)GetSetting("FixPortalLoops"); }
+            set { UpdateSetting("FixPortalLoops", value); }
+        }
+
+        [Summary("Number of portal loops to the same location to trigger portal loop fix")]
+        [DefaultValue(3)]
+        public int PortalLoopCount {
+            get { return (int)GetSetting("PortalLoopCount"); }
+            set { UpdateSetting("PortalLoopCount", value); }
         }
         #endregion
 
@@ -85,10 +100,56 @@ namespace UtilityBelt.Tools {
         }
         #endregion
 
+        private bool isFixingPortalLoops = false;
+        private int portalExitCount = 0;
+        private int lastPortalExitLandcell = 0;
+
         public VTankControl(UtilityBeltPlugin ub, string name) : base(ub, name) {
             if (UB.Core.CharacterFilter.LoginStatus != 0) Enable();
             else UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
+
+            PropertyChanged += VTankControl_PropertyChanged;
+
+            if (FixPortalLoops) {
+                UB.Core.CharacterFilter.ChangePortalMode += CharacterFilter_ChangePortalMode;
+                isFixingPortalLoops = true;
+            }
         }
+
+        private void VTankControl_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+            if (e.PropertyName.Equals("FixPortalLoops")) {
+                if (FixPortalLoops && !isFixingPortalLoops) {
+                    UB.Core.CharacterFilter.ChangePortalMode += CharacterFilter_ChangePortalMode;
+                    isFixingPortalLoops = true;
+                }
+                else if (!FixPortalLoops && isFixingPortalLoops) {
+                    UB.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
+                    isFixingPortalLoops = false;
+                }
+            }
+        }
+
+        private void CharacterFilter_ChangePortalMode(object sender, Decal.Adapter.Wrappers.ChangePortalModeEventArgs e) {
+            try {
+                if (e.Type != Decal.Adapter.Wrappers.PortalEventType.ExitPortal)
+                    return;
+
+                if (lastPortalExitLandcell == UB.Core.Actions.Landcell) {
+                    portalExitCount++;
+                }
+                else {
+                    portalExitCount = 1;
+                    lastPortalExitLandcell = UB.Core.Actions.Landcell;
+                }
+                
+                if (portalExitCount >= PortalLoopCount) {
+                    DoPortalLoopFix();
+                    return;
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
         private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
             try {
                 UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
@@ -109,11 +170,22 @@ namespace UtilityBelt.Tools {
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
+
+        private void DoPortalLoopFix() {
+            Util.WriteToChat($"Nav: {UBHelper.vTank.Instance.NavCurrent}");
+            Util.DispatchChatToBoxWithPluginIntercept($"/vt nav save {VTNavRoute.NoneNavName}");
+            UBHelper.vTank.Instance.NavDeletePoint(0);
+        }
+
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
                     UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
                     UB.Core.CharacterFilter.Logoff -= CharacterFilter_Logoff;
+                    
+                    if (isFixingPortalLoops)
+                        UB.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
+
                     base.Dispose(disposing);
                 }
                 disposedValue = true;
