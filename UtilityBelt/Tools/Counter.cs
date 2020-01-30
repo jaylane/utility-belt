@@ -32,6 +32,8 @@ Counter is used to count items based on text or utl profiles as well as players 
         [Example("/ub count recomp.utl", "Counts the number of items matching recomp.utl in your inventory, thinking to yourself when finished")]
         [CommandPattern("count", @"^ *(?<Command>(item|profile|player)) (?<Name>.*?) ?(?<Options>(debug|think|\s)*)$")]
         public void DoCount(string command, Match args) {
+            itemList.Clear();
+
             if (args.Groups["Command"].Value.ToLower() == "item") {
                 string item = args.Groups["Name"].Value;
 
@@ -75,8 +77,6 @@ Counter is used to count items based on text or utl profiles as well as players 
                 }
 
                 ChatThink("Total Item Count: " + totalCount.ToString());
-
-                itemList.Clear();
             }
             else if (args.Groups["Command"].Value.ToLower() == "profile") {
                 utlProfile = args.Groups["Name"].Value.Trim();
