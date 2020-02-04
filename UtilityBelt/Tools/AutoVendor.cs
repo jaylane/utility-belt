@@ -152,12 +152,22 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         #region Commands
         #region /ub autovendor <lootProfile>
         [Summary("Auto buy/sell from vendors.")]
-        [Usage("/ub autovendor <lootProfile>")]
+        [Usage("/ub autovendor <cancel|lootProfile>")]
         [Example("/ub autovendor", "Loads VendorName.utl and starts the AutoVendor process.")]
+        [Example("/ub autovendor cancel", "Cancels the current autovendor session.")]
         [Example("/ub autovendor recomp.utl", "Loads recomp.utl and starts the AutoVendor process.")]
         [CommandPattern("autovendor", @"^ *(?<LootProfile>.*)$")]
         public void DoAutoVendor(string _, Match args) {
-            Start(0, args.Groups["LootProfile"].Value);
+            switch (args.Groups["LootProfile"].Value) {
+                case "cancel":
+                case "stop":
+                case "quit":
+                    Stop();
+                    break;
+                default:
+                    Start(0, args.Groups["LootProfile"].Value);
+                    break;
+            }
         }
         #endregion
         #region /ub vendor {open[p] [vendorname,vendorid,vendorhex],opencancel,buyall,sellall,clearbuy,clearsell}
