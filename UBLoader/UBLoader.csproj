@@ -33,6 +33,10 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="0Harmony, Version=1.2.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Deps\0Harmony.dll</HintPath>
+    </Reference>
     <Reference Include="Decal.Adapter">
       <HintPath>C:\Program Files (x86)\Decal 3.0\Decal.Adapter.dll</HintPath>
       <Private>False</Private>
@@ -72,6 +76,10 @@
   <ItemGroup>
     <None Include="Deps\Newtonsoft.Json.dll" />
     <None Include="Deps\SharedMemory.dll" />
+    <Content Include="Deps\0Harmony.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Deps\Antlr4.Runtime.dll" />
     <Content Include="Deps\LiteDB.dll" />
     <Content Include="Deps\UBHelper.dll" />
   </ItemGroup>

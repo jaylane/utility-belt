@@ -105,6 +105,18 @@ namespace UtilityBelt.Lib {
             return (float)yOffset;
         }
 
+        public static float LandblockToNS(uint landcell, float yOffset) {
+            uint l = (uint)((landcell & 0x00FF0000) / 0x2000);
+            var ns = ((yOffset / 24) + l - 1019.5) / 10;
+            return (float)ns;
+        }
+
+        public static float LandblockToEW(uint landcell, float xOffset) {
+            uint l = (uint)((landcell & 0xFF000000) / 0x200000);
+            var ew = ((xOffset / 24) + l - 1019.5) / 10;
+            return (float)ew;
+        }
+
         public static float Distance2d(float x1, float y1, float x2, float y2) {
             return (float)Math.Sqrt(Math.Pow(x2 - x1, 2) + Math.Pow(y2 - y1, 2));
         }

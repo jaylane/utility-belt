@@ -53,11 +53,63 @@ namespace UtilityBelt {
     }
     #endregion
 
+    #region Expression wrapper
+    public class ExpressionMethod {
+        public string Name { get; }
+        public Type[] ArgumentTypes { get; }
+        public Type ReturnType { get; }
+        public PropertyInfo PropInfo { get; }
+        public MethodInfo Method { get; }
+        public string Usage { get; }
+        public Dictionary<string, string> Examples = new Dictionary<string, string>();
+        public string Summary { get; }
+
+        public ExpressionMethod(PropertyInfo propInfo, MethodInfo method) {
+            PropInfo = propInfo;
+            Method = method;
+
+            var expressionMethodAttrs = method.GetCustomAttributes(typeof(ExpressionMethodAttribute), true);
+            foreach (var attr in expressionMethodAttrs) {
+                Name = ((ExpressionMethodAttribute)attr).Name;
+            }
+
+            var expressionParameterAttrs = method.GetCustomAttributes(typeof(ExpressionParameterAttribute), true);
+            var argTypes = new List<Type>();
+            foreach (var attr in expressionParameterAttrs) {
+                argTypes.Add(((ExpressionParameterAttribute)attr).Type);
+            }
+            ArgumentTypes = argTypes.ToArray();
+
+            var expressionReturnAttrs = method.GetCustomAttributes(typeof(ExpressionReturnAttribute), true);
+            foreach (var attr in expressionReturnAttrs) {
+                ReturnType = ((ExpressionReturnAttribute)attr).Type;
+            }
+
+            var usageAttrs = method.GetCustomAttributes(typeof(UsageAttribute), true);
+            foreach (var attr in usageAttrs) {
+                Usage = ((UsageAttribute)attr).Usage;
+            }
+
+            var exampleAttrs = method.GetCustomAttributes(typeof(ExampleAttribute), true);
+            foreach (var attr in exampleAttrs) {
+                Examples.Add(((ExampleAttribute)attr).Command, ((ExampleAttribute)attr).Description);
+            }
+
+            var summaryAttrs = method.GetCustomAttributes(typeof(SummaryAttribute), true);
+            foreach (var attr in summaryAttrs) {
+                Summary = ((SummaryAttribute)attr).Summary;
+            }
+        }
+    }
+    #endregion
+
     public class UtilityBeltPlugin {
         internal static UtilityBeltPlugin Instance;
         private bool didInit = false;
         internal delegate void CommandHandlerDelegate(string verb, Match args);
         internal readonly Dictionary<string, Command> RegisteredCommands = new Dictionary<string, Command>();
+
+        internal readonly Dictionary<string, ExpressionMethod> RegisteredExpressions = new Dictionary<string, ExpressionMethod>();
 
         internal CoreManager Core;
         internal NetServiceHost Host;
@@ -67,6 +119,7 @@ namespace UtilityBelt {
         internal string ServerName;
         internal string CharacterName;
         internal MainView MainView;
+        internal ItemGiverView ItemGiverView;
         internal MapView MapView;
         internal Settings Settings;
         internal Database Database;
@@ -86,11 +139,12 @@ namespace UtilityBelt {
         public Counter Counter { get; private set; }
         public DungeonMaps DungeonMaps { get; private set; }
         public EquipmentManager EquipmentManager { get; private set; }
+        public FellowshipManager FellowshipManager { get; private set; }
         public InventoryManager InventoryManager { get; private set; }
         public Jumper Jumper { get; private set; }
         public LSD LSD { get; private set; }
         public Nametags Nametags { get; private set; }
-        public Spells Spells { get; private set; }
+        public Professors Professors { get; private set; }
         public QuestTracker QuestTracker { get; private set; }
         public VisualNav VisualNav { get; private set; }
         public VTankControl VTank { get; private set; }
@@ -175,6 +229,7 @@ namespace UtilityBelt {
             Database = new Database(DatabaseFile);
 
             MainView = new MainView(this);
+            ItemGiverView = new ItemGiverView(this);
             MapView = new MapView(this);
 
             HotkeyWrapperManager.Startup("UB");
@@ -184,8 +239,10 @@ namespace UtilityBelt {
             InitTools();
             InitCommands();
             InitHotkeys();
+            InitExpressions();
 
             MainView.Init();
+            ItemGiverView.Init();
             MapView.Init();
 
             Logger.Debug($"UB Initialized {DateTime.UtcNow} v{Util.GetVersion(true)}.");
@@ -235,6 +292,7 @@ namespace UtilityBelt {
                 }
                 catch (Exception ex) {
                     Logger.LogException(ex);
+                    Logger.Error(ex.ToString());
                     Logger.Error($"Error loading tool: {toolProp.PropertyType}");
                 }
             }
@@ -346,6 +404,74 @@ namespace UtilityBelt {
         }
         #endregion
 
+        #region Expressions
+        /// <summary>
+        /// Looks through all the loaded tools and initializes all defined expression methods
+        /// </summary>
+        private void InitExpressions() {
+            var toolProps = GetToolProps();
+
+            foreach (var toolProp in toolProps) {
+                foreach (var method in toolProp.PropertyType.GetMethods()) {
+                    var expressionMethodAttrs = method.GetCustomAttributes(typeof(ExpressionMethodAttribute), true);
+
+                    foreach (var attr in expressionMethodAttrs) {
+                        var name = ((ExpressionMethodAttribute)attr).Name;
+                        var key = $"{name}";
+
+
+                        var expressionParameterAttrs = method.GetCustomAttributes(typeof(ExpressionParameterAttribute), true);
+                        var argCount = 0;
+                        foreach (var expressionParameterAttr in expressionParameterAttrs) {
+                            argCount++;
+                            //key += $":{((ExpressionParameterAttribute)expressionParameterAttr).Type.ToString().Split('.').Last().ToLower()}";
+                        }
+
+                        key += $":{argCount}";
+
+                        try {
+                            if (RegisteredExpressions.ContainsKey(key)) {
+                                Logger.Error($"Unable to register expression {key} from {toolProp.PropertyType} because it was already registered by {RegisteredExpressions[name].PropInfo.DeclaringType}.");
+                                continue;
+                            }
+
+                            RegisteredExpressions.Add(key, new ExpressionMethod(toolProp, method));
+                        }
+                        catch (Exception ex) {
+                            Logger.LogException(ex);
+                            Util.WriteToChat(ex.ToString());
+                            Logger.Error($"Unable to register expression: {key} from {toolProp.PropertyType}");
+                        }
+                    }
+                }
+            }
+        }
+
+        private static List<string> expressionExceptions = new List<string>();
+        /// <summary>
+        /// Runs a registered expression method
+        /// </summary>
+        /// <param name="expressionMethod">expression method to run</param>
+        /// <param name="args">method arguments</param>
+        /// <returns></returns>
+        public object RunExpressionMethod(ExpressionMethod expressionMethod, object[] args) {
+            try {
+                var instance = expressionMethod.PropInfo.GetValue(this, null);
+                return expressionMethod.Method.Invoke(instance, args);
+            }
+            catch (Exception ex) {
+                if (expressionExceptions.Contains(ex.ToString()))
+                    return 0;
+                expressionExceptions.Add(ex.ToString());
+                Logger.LogException(ex);
+                Logger.Error($"Error running expression method: {expressionMethod.Name}");
+                Logger.Error(ex.InnerException.ToString());
+            }
+
+            return 0;
+        }
+        #endregion
+
         #region Hotkeys
         /// <summary>
         /// Looks through all the loaded tools and initializes all defined hotkeys
@@ -390,7 +516,8 @@ namespace UtilityBelt {
         /// </summary>
         public void Shutdown() {
             try {
-                Core.CommandLineText -= Core_CommandLineText;
+                if (Core != null)
+                    Core.CommandLineText -= Core_CommandLineText;
                 HotkeyWrapperManager.Shutdown();
                 foreach (var tool in LoadedTools) {
                     try {
@@ -399,8 +526,12 @@ namespace UtilityBelt {
                     catch (Exception ex) { Logger.LogException(ex); }
                 }
 
-                MainView.Dispose();
-                MapView.Dispose();
+                if (MainView != null)
+                    MainView.Dispose();
+                if (MapView != null)
+                    MapView.Dispose();
+                if (ItemGiverView != null)
+                    ItemGiverView.Dispose();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

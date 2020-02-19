@@ -1,4 +1,5 @@
-﻿using Decal.Adapter;
+﻿using Antlr4.Runtime;
+using Decal.Adapter;
 using Decal.Adapter.Wrappers;
 using Decal.Filters;
 using System;
@@ -11,6 +12,8 @@ using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Constants;
 using UtilityBelt.Lib.Dungeon;
+using UtilityBelt.Lib.Expressions;
+using static UtilityBelt.Tools.VTankControl;
 
 namespace UtilityBelt.Tools {
     public class DelayedCommand {
@@ -445,7 +448,9 @@ namespace UtilityBelt.Tools {
         [Usage("/ub fixbusy")]
         [CommandPattern("fixbusy", @"^$")]
         public void DoFixBusy(string _, Match _1) {
-            UB_fixbusy();
+            UBHelper.Core.ClearBusyCount();
+            UBHelper.Core.ClearBusyState();
+            Util.WriteToChat($"Busy State and Busy Count have been reset");
         }
         #endregion
         #region /ub follow [name]
@@ -921,14 +926,59 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
         #endregion
-        #region /ub fixbusy
-        public void UB_fixbusy() {
-            UBHelper.Core.ClearBusyCount();
-            UBHelper.Core.ClearBusyState();
-            Util.WriteToChat($"Busy State and Busy Count have been reset");
+        #endregion
+
+        #region Expressions
+        #region vitae[]
+        [ExpressionMethod("vitae")]
+        [ExpressionReturn(typeof(double), "Returns a number")]
+        [Summary("Gets your character's current vitae percentage as a number")]
+        [Example("vitae[]", "returns your current vitae % as a number")]
+        public object Vitae() {
+            return UB.Core.CharacterFilter.Vitae;
         }
-        #endregion
-        #endregion
+        #endregion //vitae[]
+        #region wobjectfindnearestbytemplatetype[int templatetype]
+        [ExpressionMethod("wobjectfindnearestbytemplatetype")]
+        [ExpressionParameter(0, typeof(double), "templatetype", "templatetype to filter by")]
+        [ExpressionReturn(typeof(Wobject), "Returns a worldobject")]
+        [Summary("Attempted to find the nearest landscape world object with the specified template type")]
+        [Example("wobjectfindnearestbytemplatetype[42137]", "Returns a worldobject with templaye type 42137 (level 10 ice tachi warden)")]
+        public object Wobjectfindnearestbytemplatetype(double templateType) {
+            WorldObject closest = null;
+            var closestDistance = float.MaxValue;
+            var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetLandscape();
+            var typeInt = Convert.ToInt32(templateType);
+            foreach (var wo in wos) {
+                if (wo.Type == typeInt) {
+                    if (wo.Id == UtilityBeltPlugin.Instance.Core.CharacterFilter.Id)
+                        continue;
+                    if (PhysicsObject.GetDistance(wo.Id) < closestDistance) {
+                        closest = wo;
+                        closestDistance = PhysicsObject.GetDistance(wo.Id);
+                    }
+                }
+            }
+            wos.Dispose();
+
+            if (closest != null)
+                return new Wobject(closest.Id);
+
+            return 0;
+        }
+        #endregion //wobjectfindnearestbytemplatetype[int templatetype]
+        #region wobjectgetintprop[wobject obj, int property]
+        [ExpressionMethod("wobjectgetintprop")]
+        [ExpressionParameter(0, typeof(double), "obj", "World object to get intproperty of")]
+        [ExpressionParameter(1, typeof(double), "property", "IntProperty to return")]
+        [ExpressionReturn(typeof(double), "Returns an int property value")]
+        [Summary("Returns an int property from a specific world object, or 0 if it's undefined")]
+        [Example("wobjectgetintprop[wobjectgetselection[],218103808]", "Returns the template type of the currently selected object")]
+        public object Wobjectgetintprop(Wobject wobject, double property) {
+            return wobject.Wo.Values((LongValueKey)Convert.ToInt32(property), 0);
+        }
+        #endregion //wobjectgetintprop[int property]
+        #endregion //Expressions
 
         public Plugin(UtilityBeltPlugin ub, string name) : base(ub, name) {
             try {

@@ -14,6 +14,7 @@ using Microsoft.Win32;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.DirectX;
+using UtilityBelt.Lib;
 
 namespace UtilityBelt
 {
@@ -174,14 +175,26 @@ namespace UtilityBelt
             return (T)retval;
         }
 
-        public static void WriteToChat(string message, int color = 5) {
+        public static void WriteToChat(string message, int color = 5, bool addUBTag = true, bool sendToVTank=true) {
             try {
-                string msg = "[UB] " + message;
+                string msg = (addUBTag ? "[UB] " : "") + message;
+                UB?.Host?.Actions?.AddChatText(msg, color);
+                if (sendToVTank)
+                    UBHelper.vTank.Tell(msg, color, 0);
+                Util.WriteToDebugLog(message);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        public static bool WriteToChat2(string message, int color = 5, bool addUBTag = true) {
+            try {
+                string msg = (addUBTag ? "[UB] " : "") + message;
                 UB?.Host?.Actions?.AddChatText(msg, color);
                 UBHelper.vTank.Tell(msg, color, 0);
                 Util.WriteToDebugLog(message);
             }
             catch (Exception ex) { Logger.LogException(ex); }
+            return false;
         }
 
         public static int GetOverallSlot(WorldObject wo) { //Just for sorting for now. TODO: math real numbers, based on actual pack slots
@@ -425,6 +438,22 @@ namespace UtilityBelt
             }
             return found;
         }
+
+        public static WorldObject FindClosestByObjectClass(ObjectClass objectclass) {
+            WorldObject closest = null;
+            var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetByObjectClass(objectclass);
+            var closestDistance = float.MaxValue;
+            foreach (var wo in wos) {
+                if (PhysicsObject.GetDistance(wo.Id) < closestDistance) {
+                    closest = wo;
+                    closestDistance = PhysicsObject.GetDistance(wo.Id);
+                }
+            }
+            wos.Dispose();
+
+            return closest;
+        }
+
         private static bool CheckObjectClassArray(ObjectClass needle, ObjectClass[] haystack) {
             if (haystack.Length == 0) return true;
             foreach (ObjectClass o in haystack)

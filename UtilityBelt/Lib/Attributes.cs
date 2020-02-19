@@ -132,4 +132,39 @@ namespace UtilityBelt.Lib {
             Description = description;
         }
     }
+
+    [AttributeUsage(AttributeTargets.Method)]
+    public class ExpressionMethodAttribute : Attribute {
+        public string Name { get; }
+
+        public ExpressionMethodAttribute(string name) {
+            Name = name;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    public class ExpressionParameterAttribute : Attribute {
+        public int Index { get; }
+        public Type Type { get; }
+        public string Name { get; }
+        public string Description { get; }
+
+        public ExpressionParameterAttribute(int index, Type type, string name, string description) {
+            Index = index;
+            Type = type;
+            Name = name;
+            Description = description;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Method)]
+    public class ExpressionReturnAttribute : Attribute {
+        public Type Type { get; }
+        public string Description { get; }
+
+        public ExpressionReturnAttribute(Type type, string description) {
+            Type = type;
+            Description = description;
+        }
+    }
 }
