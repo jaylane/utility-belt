@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- todo: move these somewhere easier to get to? -->
+  <Import Project="..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.props" Condition="Exists('..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.props')" />
   <PropertyGroup>
     <Major>0</Major>
     <Minor>1</Minor>
@@ -36,6 +37,10 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Antlr4.Runtime, Version=4.6.0.0, Culture=neutral, PublicKeyToken=09abb75b9ed49849, processorArchitecture=MSIL">
+      <HintPath>..\packages\Antlr4.Runtime.4.6.6\lib\net35-client\Antlr4.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Decal.Adapter">
       <HintPath>C:\Program Files (x86)\Decal 3.0\Decal.Adapter.dll</HintPath>
       <Private>False</Private>
@@ -79,6 +84,7 @@
     </Reference>
     <Reference Include="VirindiHotkeySystem">
       <HintPath>C:\Games\VirindiPlugins\VirindiHotkeySystem\VirindiHotkeySystem.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="VirindiViewService">
       <HintPath>C:\Games\VirindiPlugins\VirindiViewService\VirindiViewService.dll</HintPath>
@@ -97,7 +103,9 @@
     <Compile Include="Lib\Dungeon\DungeonCell.cs" />
     <Compile Include="Lib\Dungeon\DungeonLayer.cs" />
     <Compile Include="Lib\Dungeon\IsDungeon.cs" />
+    <Compile Include="Lib\Expressions\ExpressionVisitor.cs" />
     <Compile Include="Lib\HotkeyWrapper.cs" />
+    <Compile Include="Lib\Inventory.cs" />
     <Compile Include="Lib\Models\Angles.cs" />
     <Compile Include="Lib\Models\Frame.cs" />
     <Compile Include="Lib\Models\Landblock.cs" />
@@ -107,6 +115,7 @@
     <Compile Include="Lib\Models\Weenie.cs" />
     <Compile Include="Lib\Models\WeenieAttribute.cs" />
     <Compile Include="Lib\Models\WeenieSpawn.cs" />
+    <Compile Include="Lib\Spells.cs" />
     <Compile Include="Lib\TextureCache.cs" />
     <Compile Include="Lib\Dungeon\TrackedObject.cs" />
     <Compile Include="Lib\Mp3Player.cs" />
@@ -114,6 +123,7 @@
     <Compile Include="Lib\Database.cs" />
     <Compile Include="Lib\VHS_Connector.cs" />
     <Compile Include="Tools\DungeonMaps.cs" />
+    <Compile Include="Tools\FellowshipManager.cs" />
     <Compile Include="Tools\LSD.cs" />
     <Compile Include="Tools\Nametags.cs" />
     <Compile Include="Lib\ChatLog\ChatLog.cs" />
@@ -156,7 +166,7 @@
     <Compile Include="Lib\VTNav\Waypoints\VTNUseNPC.cs" />
     <Compile Include="Lib\Logger.cs" />
     <Compile Include="Tools\PrepClick.cs" />
-    <Compile Include="Tools\Spells.cs" />
+    <Compile Include="Tools\Professors.cs" />
     <Compile Include="UtilityBelt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tools\Assessor.cs" />
@@ -181,6 +191,7 @@
     <Compile Include="Views\BaseView.cs" />
     <Compile Include="Views\ColorPicker.cs" />
     <Compile Include="Views\EnumFlagEditor.cs" />
+    <Compile Include="Views\ItemGiver.cs" />
     <Compile Include="Views\ListEditor.cs" />
     <Compile Include="Views\MapView.cs" />
     <Compile Include="Views\MainView.cs" />
@@ -194,6 +205,10 @@
     <EmbeddedResource Include="Resources\icons\utilitybelt.png" />
   </ItemGroup>
   <ItemGroup>
+    <Antlr4 Include="Lib\Expressions\MetaExpressions.g4">
+      <Abstract>False</Abstract>
+      <ForceAtn>False</ForceAtn>
+    </Antlr4>
     <None Include="Installer\Install.nsi" />
     <None Include="packages.config" />
   </ItemGroup>
@@ -892,6 +907,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\dungeons.csv" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\ItemGiver.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -906,6 +924,8 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets'))" />
+    <Error Condition="!Exists('..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.props'))" />
+    <Error Condition="!Exists('..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.targets'))" />
   </Target>
   <Target Name="BeforeBuild">
     <GitVersion LocalPath="$(MSBuildProjectDirectory)">
@@ -916,4 +936,5 @@
     </GitBranch>
     <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.cs" AssemblyTitle="UtilityBelt" AssemblyDescription="Hack the Planet" AssemblyCompany="Ellingson Mineral Company" AssemblyProduct="UtilityBelt" AssemblyCopyright="Copyright 1337 Zero Cool" ComVisible="false" CLSCompliant="false" AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Branch).$(Revision) ($([System.DateTime]::UTCNow.ToString(`yyyy-MM-dd HH:mm:ss`)))" AssemblyVersion="$(Major).$(Minor).$(Build)" AssemblyFileVersion="$(Major).$(Minor).$(Build)" Guid="d00fa5e5-e034-4c5a-ac9b-397875a8b788" />
   </Target>
+  <Import Project="..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.targets" Condition="Exists('..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.targets')" />
 </Project>

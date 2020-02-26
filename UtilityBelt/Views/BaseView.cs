@@ -36,11 +36,13 @@ namespace UtilityBelt.Views {
             UB = ub;
         }
 
-        protected void CreateFromXMLResource(string resourcePath) {
+        protected void CreateFromXMLResource(string resourcePath, bool doIcon=true, bool doTitle=true) {
             new Decal3XMLParser().ParseFromResource(resourcePath, out properties, out controls);
 
-            properties.Icon = GetIcon("UtilityBelt.Resources.icons.utilitybelt.png");
-            properties.Title = string.Format("UtilityBelt - v{0}", Util.GetVersion());
+            if (doIcon)
+                properties.Icon = GetIcon("UtilityBelt.Resources.icons.utilitybelt.png");
+            if (doTitle)
+                properties.Title = string.Format("UtilityBelt - v{0}", Util.GetVersion());
 
             view = new VirindiViewService.HudView(properties, controls);
 

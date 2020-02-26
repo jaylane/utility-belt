@@ -43,36 +43,114 @@ namespace UtilityBelt.Tools {
         [Summary("Checks quest flags, and thinks to yourself with the status.  To find a quest flag, open quest tracker and click on something to print the name to the chatbox. Note: If you recently completed a quest, you need to run `/myquests` first.")]
         [Usage("/ub quests check <questFlag>")]
         [Example("/ub quests check blankaug", "Think to yourself with the status of all quest flags matching blankaug")]
-        [CommandPattern("quests", @"^ *check +(?<QuestFlag>.+)$")]
+        [CommandPattern("quests", @"^ *(?<Verb>(check|parse)) +(?<QuestFlag>.+)$")]
         public void DoQuestsFlagCheck(string command, Match args) {
-            var searchText = args.Groups["QuestFlag"].Value.Trim().ToLower();
-            var searchRe = new Regex(searchText, RegexOptions.IgnoreCase);
-            var thoughts = 0;
+            var verb = args.Groups["Verb"].Value.Trim().ToLower();
+            var text = args.Groups["QuestFlag"].Value.Trim().ToLower();
 
-            var keys = new List<string>(questFlags.Keys);
-            keys.AddRange(new List<string>(QuestFlag.FriendlyNamesLookup.Keys));
-            keys = new List<string>(keys.Distinct());
-            var foundExact = false;
-            foreach (var key in keys) {
-                if (searchRe.IsMatch(key)) {
-                    ThinkQuestFlag(key);
-                    thoughts++;
+            switch (verb) {
+                case "check":
+                    var searchRe = new Regex(text, RegexOptions.IgnoreCase);
+                    var thoughts = 0;
 
-                    if (key.ToLower().Equals(searchText))
-                        foundExact = true;
+                    var keys = new List<string>(questFlags.Keys);
+                    keys.AddRange(new List<string>(QuestFlag.FriendlyNamesLookup.Keys));
+                    keys = new List<string>(keys.Distinct());
+                    var foundExact = false;
+                    foreach (var key in keys) {
+                        if (searchRe.IsMatch(key)) {
+                            ThinkQuestFlag(key);
+                            thoughts++;
 
-                    if (thoughts >= 5) {
-                        Util.WriteToChat("Quests output has been truncated to the first 5 matching quest flags.");
-                        break;
+                            if (key.ToLower().Equals(text))
+                                foundExact = true;
+
+                            if (thoughts >= 5) {
+                                Util.WriteToChat("Quests output has been truncated to the first 5 matching quest flags.");
+                                break;
+                            }
+                        }
                     }
-                }
-            }
 
-            if (thoughts == 0 || !foundExact) {
-                Util.Think($"Quest: {searchText} has not been completed");
+                    if (thoughts == 0 || !foundExact) {
+                        Util.Think($"Quest: {text} has not been completed");
+                    }
+                    break;
+
+                case "parse":
+                    if (QuestFlag.MyQuestRegex.IsMatch(text)) {
+                        var questFlag = QuestFlag.FromMyQuestsLine(text);
+
+                        if (questFlag != null) {
+                            UpdateQuestFlag(questFlag);
+                        }
+
+                        Util.WriteToChat($"Quest {questFlag.Name} repeat:{questFlag.RepeatTime} available:{questFlag.NextAvailable()} solves:{questFlag.Solves}/{questFlag.MaxSolves}");
+                    }
+                    else {
+                        Util.WriteToChat($"Could not parse MyQuestLine");
+                    }
+                    break;
             }
         }
         #endregion
+        //regaliamaskuber - 1 solves (1522807913)"Player has collected the mask from a Virinidi Profatrix." -1 72000
+        #endregion
+
+        #region Expressions
+        #region testquestflag[string questflag]
+        [ExpressionMethod("testquestflag")]
+        [ExpressionParameter(0, typeof(string), "questflag", "quest flag to check")]
+        [ExpressionReturn(typeof(double), "Returns 1 if you have ever completed this quest flag, 0 otherwise")]
+        [Summary("Checks if a quest flag has ever been completed. You must manually refresh `/myquests` after completing a quest, for these values to be up to date.  UB will call `/myquests` once on login automatically.")]
+        [Example("testquestflag[spokenbobo]", "Checks if your character is flagged for bobo")]
+        public object Testquestflag(string questflag) {
+            return questFlags.ContainsKey(questflag);
+        }
+        #endregion //testquestflag[string questflag]
+        #region getqueststatus[string questflag]
+        [ExpressionMethod("getqueststatus")]
+        [ExpressionParameter(0, typeof(string), "questflag", "quest flag to check")]
+        [ExpressionReturn(typeof(double), "Returns status of a quest flag. 0 = Not Ready, 1 = Ready")]
+        [Summary("Checks if a quest flag has a timer on it. If there is a timer it returns 0, if it's ready it returns 0. You must manually refresh `/myquests` after completing a quest, for these values to be up to date.  UB will call `/myquests` once on login automatically.")]
+        [Example("getqueststatus[blankaug]", "Checks if your character is ready to run the blankaug quest again.")]
+        public object Getqueststatus(string questflag) {
+            if (questFlags.ContainsKey(questflag)) {
+                return questFlags[questflag].IsReady();
+            }
+
+            // quests with no flag stored are ready
+            return true;
+        }
+        #endregion //getqueststatus[string questflag]
+        #region getquestktprogress[string questflag]
+        [ExpressionMethod("getquestktprogress")]
+        [ExpressionParameter(0, typeof(string), "questflag", "quest flag to check")]
+        [ExpressionReturn(typeof(double), "Returns a progress count")]
+        [Summary("Checks progress of a killtask quest. You must manually refresh `/myquests` after completing a quest, for these values to be up to date.  UB will call `/myquests` once on login automatically.")]
+        [Example("getquestktprogress[totalgolemmagmaexarchdead]", "Checks how many exarch kills you currently have")]
+        public object Getquestktprogress(string questflag) {
+            if (questFlags.ContainsKey(questflag)) {
+                return questFlags[questflag].Solves;
+            }
+
+            return 0;
+        }
+        #endregion //getquestktprogress[string questflag]
+        #region getquestktrequired[string questflag]
+        [ExpressionMethod("getquestktrequired")]
+        [ExpressionParameter(0, typeof(string), "questflag", "quest flag to check")]
+        [ExpressionReturn(typeof(double), "Returns a required count")]
+        [Summary("Checks total required solves of a killtask quest.  If you have not started the killtask, this will return 0. You must manually refresh `/myquests` after completing a quest, for these values to be up to date.  UB will call `/myquests` once on login automatically.")]
+        [Example("getquestktrequired[totalgolemmagmaexarchdead]", "Checks required total exarch kills for this kill task")]
+        public object Getquestktrequired(string questflag) {
+            if (questFlags.ContainsKey(questflag)) {
+                return questFlags[questflag].MaxSolves;
+            }
+
+            return 0;
+        }
+        #endregion //getquestktrequired[string questflag]
         #endregion
 
         public QuestTracker(UtilityBeltPlugin ub, string name) : base(ub, name) {
@@ -83,7 +161,7 @@ namespace UtilityBelt.Tools {
             UITimedQuestList = (HudList)UB.MainView.view["TimedQuestList"];
             UIKillTaskQuestList = (HudList)UB.MainView.view["KillTaskQuestList"];
             UIOnceQuestList = (HudList)UB.MainView.view["OnceQuestList"];
-
+            
             UIQuestsListFilter.Change += (s, e) => { DrawQuestLists(); };
 
             UIQuestListRefresh.Hit += (s, e) => { GetMyQuestsList(1); };

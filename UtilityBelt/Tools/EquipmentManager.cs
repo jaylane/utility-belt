@@ -1,4 +1,5 @@
 ﻿using Decal.Adapter.Wrappers;
+using Decal.Filters;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -62,6 +63,27 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
         private Queue<int> itemList = new Queue<int>();
         private int lastEquippingItem = 0;
 
+        #region SpellInfo
+        struct SpellInfo<T> {
+            public readonly T Key;
+            public readonly double Change;
+            public readonly double Bonus;
+
+            public SpellInfo(T key, double change)
+                : this(key, change, 0) {
+            }
+
+            public SpellInfo(T key, double change, double bonus) {
+                Key = key;
+                Change = change;
+                Bonus = bonus;
+            }
+        }
+        #endregion
+
+        Dictionary<int, SpellInfo<LongValueKey>> LongValueKeySpellEffects = new Dictionary<int, SpellInfo<LongValueKey>>();
+        Dictionary<int, SpellInfo<DoubleValueKey>> DoubleValueKeySpellEffects = new Dictionary<int, SpellInfo<DoubleValueKey>>();
+
         #region Config
         [Summary("Think to yourself when done equipping items")]
         [DefaultValue(false)]
@@ -112,6 +134,60 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
         }
 
         #endregion
+        #region /ub calcdamage
+        [Summary("Calculates the buffed damage of the currently selected item. Only cantrip buffs are included in the calculation.")]
+        [Usage("/ub calcdamage")]
+        [Example("/ub calcdamage", "calcdamage")]
+        [CommandPattern("calcdamage", @".*")]
+        public void UB_CalcDamage(string command, Match args) {
+            try {
+                var wo = UB.Core.WorldFilter[UB.Core.Actions.CurrentSelection];
+
+                if (wo == null) {
+                    Logger.Error($"Nothing selected");
+                    return;
+                }
+
+                if (!wo.HasIdData) {
+                    Logger.Error($"{Util.GetObjectName(wo.Id)} does not have id data, please examine it first.");
+                    return;
+                }
+
+                switch (wo.ObjectClass) {
+                    case ObjectClass.MissileWeapon:
+                        CalculatePotentialMissileWeaponDamage(wo, false);
+                        return;
+
+                    default:
+                        Logger.Error($"Calc Damage: {wo.ObjectClass} is not currently supported");
+                        break;
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); Logger.Error(ex.ToString()); }
+        }
+
+        private double CalculatePotentialMissileWeaponDamage(WorldObject wo, bool silent=true) {
+            var maxDamage = wo.Values(LongValueKey.MaxDamage, 0);
+            var damageBonus = Math.Round(wo.Values(DoubleValueKey.DamageBonus), 2);
+            var elementalBonus = wo.Values(LongValueKey.ElementalDmgBonus);
+            var maxDamageSpellBonus = GetSpellBonuses(wo, LongValueKey.MaxDamage, 0, silent);
+            var numberTimesTinkered = wo.Values(LongValueKey.NumberTimesTinkered, 0);
+            var isImbued = wo.Values(LongValueKey.Imbued, 0) > 0;
+            var tinkersAvailable = 10 - Math.Min(10, numberTimesTinkered + (isImbued ? 0 : 1));
+            var dmg = (maxDamage + maxDamageSpellBonus + elementalBonus) * (damageBonus + (tinkersAvailable * 0.04)- 1);
+
+            if (!silent) {
+                if (tinkersAvailable > 0 && !silent)
+                    Util.WriteToChat($"{tinkersAvailable} mahogany salvage adds {(tinkersAvailable * 0.04)} to DamageModifier");
+                
+                Util.WriteToChat($"Formula: (DamageBonus + ElementalBonus) * DamageModifier");
+                Util.WriteToChat($"Calculated Formula: ({maxDamage}(+{maxDamageSpellBonus} from cantrips) + {elementalBonus}) * {damageBonus - 1}(+{(tinkersAvailable * 0.04)} from {tinkersAvailable} tinkers)");
+                Util.WriteToChat($"Calculated (after tinks): {dmg}");
+            }
+
+            return dmg;
+        }
+        #endregion
         #endregion
 
         public EquipmentManager(UtilityBeltPlugin ub, string name) : base(ub, name) {
@@ -119,6 +195,45 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
                 Directory.CreateDirectory(Path.Combine(Util.GetPluginDirectory(), "equip"));
                 Directory.CreateDirectory(Path.Combine(Util.GetCharacterDirectory(), "equip"));
                 Directory.CreateDirectory(Path.Combine(Util.GetServerDirectory(), "equip"));
+
+
+                // from http://www.virindi.net/repos/virindi_public/trunk/VirindiTankLootPlugins/VTClassic/VTClassic/ComputedItemInfo.cs
+                LongValueKeySpellEffects[2598] = new SpellInfo<LongValueKey>(LongValueKey.MaxDamage, 2, 2); // Minor Blood Thirst
+                LongValueKeySpellEffects[2586] = new SpellInfo<LongValueKey>(LongValueKey.MaxDamage, 4, 4); // Major Blood Thirst
+                LongValueKeySpellEffects[4661] = new SpellInfo<LongValueKey>(LongValueKey.MaxDamage, 7, 7); // Epic Blood Thirst
+                LongValueKeySpellEffects[6089] = new SpellInfo<LongValueKey>(LongValueKey.MaxDamage, 10, 10); // Legendary Blood Thirst
+                LongValueKeySpellEffects[3688] = new SpellInfo<LongValueKey>(LongValueKey.MaxDamage, 300); // Prodigal Blood Drinker
+                LongValueKeySpellEffects[2604] = new SpellInfo<LongValueKey>(LongValueKey.ArmorLevel, 20, 20); // Minor Impenetrability
+                LongValueKeySpellEffects[2592] = new SpellInfo<LongValueKey>(LongValueKey.ArmorLevel, 40, 40); // Major Impenetrability
+                LongValueKeySpellEffects[4667] = new SpellInfo<LongValueKey>(LongValueKey.ArmorLevel, 60, 60); // Epic Impenetrability
+                LongValueKeySpellEffects[6095] = new SpellInfo<LongValueKey>(LongValueKey.ArmorLevel, 80, 80); // Legendary Impenetrability
+                
+                DoubleValueKeySpellEffects[3251] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ElementalDamageVersusMonsters, .01, .01); // Minor Spirit Thirst
+                DoubleValueKeySpellEffects[3250] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ElementalDamageVersusMonsters, .03, .03); // Major Spirit Thirst
+                DoubleValueKeySpellEffects[4670] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ElementalDamageVersusMonsters, .05, .05); // Epic Spirit Thirst
+                DoubleValueKeySpellEffects[6098] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ElementalDamageVersusMonsters, .07, .07); // Legendary Spirit Thirst
+
+                DoubleValueKeySpellEffects[3735] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ElementalDamageVersusMonsters, .15); // Prodigal Spirit Drinker
+                
+                DoubleValueKeySpellEffects[2603] = new SpellInfo<DoubleValueKey>(DoubleValueKey.AttackBonus, .03, .03); // Minor Heart Thirst
+                DoubleValueKeySpellEffects[2591] = new SpellInfo<DoubleValueKey>(DoubleValueKey.AttackBonus, .05, .05); // Major Heart Thirst
+                DoubleValueKeySpellEffects[4666] = new SpellInfo<DoubleValueKey>(DoubleValueKey.AttackBonus, .07, .07); // Epic Heart Thirst
+                DoubleValueKeySpellEffects[6094] = new SpellInfo<DoubleValueKey>(DoubleValueKey.AttackBonus, .09, .09); // Legendary Heart Thirst
+                
+                DoubleValueKeySpellEffects[2600] = new SpellInfo<DoubleValueKey>(DoubleValueKey.MeleeDefenseBonus, .03, .03); // Minor Defender
+                DoubleValueKeySpellEffects[3985] = new SpellInfo<DoubleValueKey>(DoubleValueKey.MeleeDefenseBonus, .04, .04); // Mukkir Sense
+                DoubleValueKeySpellEffects[2588] = new SpellInfo<DoubleValueKey>(DoubleValueKey.MeleeDefenseBonus, .05, .05); // Major Defender
+                DoubleValueKeySpellEffects[4663] = new SpellInfo<DoubleValueKey>(DoubleValueKey.MeleeDefenseBonus, .07, .07); // Epic Defender
+                DoubleValueKeySpellEffects[6091] = new SpellInfo<DoubleValueKey>(DoubleValueKey.MeleeDefenseBonus, .09, .09); // Legendary Defender
+
+                DoubleValueKeySpellEffects[3699] = new SpellInfo<DoubleValueKey>(DoubleValueKey.MeleeDefenseBonus, .25); // Prodigal Defender
+                
+                DoubleValueKeySpellEffects[3201] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ManaCBonus, 1.05, 1.05); // Feeble Hermetic Link
+                DoubleValueKeySpellEffects[3199] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ManaCBonus, 1.10, 1.10); // Minor Hermetic Link
+                DoubleValueKeySpellEffects[3202] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ManaCBonus, 1.15, 1.15); // Moderate Hermetic Link
+                DoubleValueKeySpellEffects[3200] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ManaCBonus, 1.20, 1.20); // Major Hermetic Link
+                DoubleValueKeySpellEffects[6086] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ManaCBonus, 1.25, 1.25); // Epic Hermetic Link
+                DoubleValueKeySpellEffects[6087] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ManaCBonus, 1.30, 1.30); // Legendary Hermetic Link
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -147,6 +262,38 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
             }
 
             return true;
+        }
+
+        public int GetSpellBonuses(WorldObject wo, LongValueKey key, int defaultValue=0, bool silent=true) {
+            int bonus = 0;
+            FileService service = UB.Core.Filter<FileService>();
+            for (int i = 0; i < wo.SpellCount; i++) {
+                var spell = service.SpellTable.GetById(wo.Spell(i));
+                if (LongValueKeySpellEffects.ContainsKey(wo.Spell(i)) && LongValueKeySpellEffects[wo.Spell(i)].Key == key && LongValueKeySpellEffects[wo.Spell(i)].Bonus != 0) {
+                    bonus += (int)LongValueKeySpellEffects[wo.Spell(i)].Bonus;
+                    if (!silent)
+                        Util.WriteToChat($"Spell {spell.Name} buffs {key} by {(int)LongValueKeySpellEffects[wo.Spell(i)].Bonus}");
+                }
+            }
+
+            return bonus;
+        }
+
+        public int GetSpellBonuses(WorldObject wo, DoubleValueKey key, int defaultValue=0, bool silent=true) {
+            int bonus = 0;
+            FileService service = UB.Core.Filter<FileService>();
+            for (int i = 0; i < wo.SpellCount; i++) {
+                var spell = service.SpellTable.GetById(wo.Spell(i));
+                if (DoubleValueKeySpellEffects.ContainsKey(wo.Spell(i)) && DoubleValueKeySpellEffects[wo.Spell(i)].Key == key && DoubleValueKeySpellEffects[wo.Spell(i)].Bonus != 0) {
+                    bonus += (int)DoubleValueKeySpellEffects[wo.Spell(i)].Bonus;
+                    if (!silent) {
+                        var mod = wo.ObjectClass == ObjectClass.MissileWeapon ? "DamageBonus" : key.ToString();
+                        Util.WriteToChat($"Spell {spell.Name} buffs {mod} by {(int)DoubleValueKeySpellEffects[wo.Spell(i)].Bonus}");
+                    }
+                }
+            }
+
+            return bonus;
         }
 
         private void WorldFilter_ChangeObject(object sender, ChangeObjectEventArgs e) {

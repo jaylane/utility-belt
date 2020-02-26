@@ -21,7 +21,7 @@ namespace UtilityBelt.Tools {
     }
 
     [Name("Spells")]
-    public class Spells : ToolBase {
+    public class Professors : ToolBase {
         private bool isRunning = false;
         private double lastTellSent = 0;
         private ProfessorCommand currentCommand;
@@ -81,7 +81,7 @@ namespace UtilityBelt.Tools {
         #endregion
         #endregion
 
-        public Spells(UtilityBeltPlugin ub, string name) : base(ub, name) {
+        public Professors(UtilityBeltPlugin ub, string name) : base(ub, name) {
             //UBHelper.Core.SendTellByGUID();
         }
 

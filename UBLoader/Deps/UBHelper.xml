@@ -60,6 +60,12 @@
             Disables VTank helper functionality
             </summary>
         </member>
+        <member name="T:UBHelper.vTank.Del_EvaluateExpression">
+            <summary>
+            EvaluateExpression delegate
+            </summary>
+            <param name="expressionString">Expression string to evaluate</param>
+        </member>
         <member name="M:UBHelper.vTank.Decision_Lock(uTank2.ActionLockType,System.TimeSpan)">
             <summary>
             Lock VTank from performing actions. Use Decision_UnLock to cancel.

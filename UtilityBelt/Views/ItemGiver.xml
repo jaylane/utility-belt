@@ -1,0 +1,40 @@
+﻿<?xml version="1.0"?>
+<view icon="24389" title="UtilityBelt: ItemGiver" width="240" height="200">
+  <control progid="DecalControls.Notebook" name="ItemGiverTabs">
+
+    <page label="Give Item  ">
+      <control progid="DecalControls.FixedLayout" clipped="">
+        <control progid="DecalControls.StaticText" name="Target" left="5" top="5" width="140" height="18" text="[None]" />
+        <control progid="DecalControls.PushButton" name="SetTargetButton" left="145" top="5" width="80" height="18" text="Set Target" />
+
+        <control progid="DecalControls.StaticText" name="Item" left="5" top="30" width="140" height="18" text="[None]" />
+        <control progid="DecalControls.PushButton" name="SetItemButton" left="145" top="30" width="80" height="18" text="Set Item" />
+
+        <control progid="DecalControls.StaticText" name="DelayIntervalLabel" left="5" top="55" width="40" height="18" text="Delay:" />
+        <control progid="DecalControls.Edit" name="GiveItemDelay" left="50" top="55" width="40" height="18" text="200" />
+
+        <control progid="DecalControls.StaticText" name="ItemCountLabel" left="135" top="55" width="80" height="18" text="Count:" />
+        <control progid="DecalControls.Edit" name="ItemCount" left="185" top="55" width="40" height="18" text="0" />
+
+        <control progid="DecalControls.PushButton" name="StartGiveItems" left="5" top="80" width="90" height="20" text="Start" />
+
+        <control progid="DecalControls.StaticText" name="StatusLabel" left="5" top="105" width="220" height="60" text="[Count] gives that many of the selected item. [Count]=0 for all items in your inventory." />
+      </control>
+    </page>
+
+    <page label="   Give Loot Profile   ">
+      <control progid="DecalControls.FixedLayout" clipped="">
+        <control progid="DecalControls.StaticText" name="LP_Target" left="5" top="5" width="140" height="18" text="[None]" />
+        <control progid="DecalControls.PushButton" name="LP_SetTarget" left="145" top="5" width="80" height="18" text="Set Target" />
+
+        <control progid="DecalControls.StaticText" name="LP_LootProfileLabel" left="5" top="30" width="140" height="18" text="Profile:" />
+        <control progid="DecalControls.Choice" name="LP_LootProfile" left="60" top="30" width="165" height="18" />
+
+        <control progid="DecalControls.StaticText" name="LP_DelayIntervalLabel" left="5" top="55" width="40" height="18" text="Delay:" />
+        <control progid="DecalControls.Edit" name="LP_GiveItemDelay" left="50" top="55" width="40" height="18" text="200" />
+
+        <control progid="DecalControls.PushButton" name="LP_StartGiveItems" left="5" top="80" width="90" height="20" text="Start" />
+      </control>
+    </page>
+  </control>
+</view>

@@ -54,6 +54,7 @@ Section "" CoreSection
 	File "${BUILDPATH}\${APPNAME}.pdb"
 	File "${BUILDPATH}\UtilityBelt.dll"
 	File "${BUILDPATH}\UtilityBelt.pdb"
+	File "${BUILDPATH}\0Harmony.dll"
 
 SectionEnd
 
@@ -121,6 +122,7 @@ Section Uninstall
 	Delete "$INSTDIR\UBLoader.pdb"
 	Delete "$INSTDIR\UtilityBelt.dll"
 	Delete "$INSTDIR\UtilityBelt.pdb"
+	Delete "$INSTDIR\0Harmony.dll"
 	Delete "$INSTDIR\SharedMemory.dll"
 	Delete "$INSTDIR\Newtonsoft.Json.dll"
 	Delete "${BUILDPATH}\Resources\tiles\*.bmp"

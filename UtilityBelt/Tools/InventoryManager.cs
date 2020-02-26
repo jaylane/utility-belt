@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using UBHelper;
 using uTank2.LootPlugins;
 using UtilityBelt.Lib;
 using VTClassic;
@@ -37,16 +38,20 @@ Provides a command-line interface to inventory management.
 
         private static readonly Dictionary<int, int> giveObjects = new Dictionary<int, int>();
         private List<int> idItems = new List<int>();
-        private static DateTime lastIdSpam = DateTime.MinValue, bailTimer = DateTime.MinValue, reloadLootProfileTS = DateTime.MinValue;
-        private static bool igRunning = false, givePartialItem, isRegex = false;
-        private static int currentItem, retryCount, destinationId, failedItems, totalFailures, maxGive, itemsGiven, lastIdCount, pendingGiveCount;
+        private static DateTime lastIdSpam = DateTime.MinValue, bailTimer = DateTime.MinValue, reloadLootProfileTS = DateTime.MinValue, lastAction = DateTime.MinValue;
+        public bool IGRunning = false;
+        private static bool givePartialItem, isRegex = false;
+        private static int currentItem, retryCount, destinationId, failedItems, totalFailures, maxGive, itemsGiven, lastIdCount, pendingGiveCount, giveDelay;
         private LootCore lootProfile = null;
-        private static string targetPlayer = "", utlProfile = "", profilePath = "";
+        private static string utlProfile = "", targetPlayer="", profilePath = "";
         private static readonly Dictionary<string, int> poorlyNamedKeepUptoDictionary = new Dictionary<string, int>();
         private static readonly List<int> keptObjects = new List<int>();
         private Stopwatch giveTimer;
         private Assessor.Job assessor = null;
         private static FileSystemWatcher profilesWatcher = null;
+
+        public event EventHandler Started;
+        public event EventHandler Finished;
 
         #region Config
         [Summary("Automatically cram items into side packs")]
@@ -87,6 +92,24 @@ Provides a command-line interface to inventory management.
             get { return (float)GetSetting("IGRange"); }
             set { UpdateSetting("IGRange", value); }
         }
+        [Summary("Enable the ItemGiver UI window")]
+        [DefaultValue(true)]
+        public bool IGUIEnabled {
+            get { return (bool)GetSetting("IGUIEnabled"); }
+            set { UpdateSetting("IGUIEnabled", value); }
+        }
+        [Summary("ItemGiver window X position")]
+        [DefaultValue(250)]
+        public int IGWindowX {
+            get { return (int)GetSetting("IGWindowX"); }
+            set { UpdateSetting("IGWindowX", value); }
+        }
+        [Summary("ItemGiver window Y position")]
+        [DefaultValue(250)]
+        public int IGWindowY {
+            get { return (int)GetSetting("IGWindowY"); }
+            set { UpdateSetting("IGWindowY", value); }
+        }
         [Summary("Treat stacks as single item")]
         [DefaultValue(true)]
         public bool TreatStackAsSingleItem {
@@ -118,22 +141,31 @@ Provides a command-line interface to inventory management.
                 IGStop();
             }
             else {
-                UB_give_Start(command, args);
+                var partialMatchTarget = command.Contains('P');
+                var partialMatchItem = command.Contains('P');
+                var isRegex = command.Contains("r");
+                int count = 0;
+                if (!string.IsNullOrEmpty(args.Groups["count"].Value))
+                    Int32.TryParse(args.Groups["count"].Value, out count);
+                GiveItem(args.Groups["Target"].Value, partialMatchTarget, args.Groups["Item"].Value, partialMatchItem, isRegex, count, 0);
             }
         }
-        private void UB_give_Start(string command, Match giveMatch) {
-            if (igRunning) {
+
+        public void GiveItem(string targetName, bool partialMatchTarget, string itemName, bool partialMatchItem, bool isRegex, int count=0, int delay=0 ) {
+            if (IGRunning) {
                 LogError("Already running.  Please wait until it completes or use /ub give stop to quit previous session");
                 return;
             }
-            targetPlayer = giveMatch.Groups["Target"].Value;
-            var destination = Util.FindName(targetPlayer, command.Contains("p"), new Decal.Adapter.Wrappers.ObjectClass[] { Decal.Adapter.Wrappers.ObjectClass.Player, Decal.Adapter.Wrappers.ObjectClass.Npc });
+            var destination = Util.FindName(targetName, partialMatchTarget, new Decal.Adapter.Wrappers.ObjectClass[] { Decal.Adapter.Wrappers.ObjectClass.Player, Decal.Adapter.Wrappers.ObjectClass.Npc });
 
             if (destination == null) {
-                LogError($"player {targetPlayer} not found");
+                LogError($"player {targetName} not found");
                 return;
             }
             destinationId = destination.Id;
+            InventoryManager.isRegex = isRegex;
+            InventoryManager.givePartialItem = partialMatchItem;
+            InventoryManager.giveDelay = delay;
 
             if (destinationId == UB.Core.CharacterFilter.Id) {
                 LogError("You can't give to yourself");
@@ -142,19 +174,17 @@ Provides a command-line interface to inventory management.
 
             var playerDistance = (float)UB.Core.WorldFilter.Distance(UB.Core.CharacterFilter.Id, destinationId) * 240;
             if (playerDistance > IGRange) {
-                LogError($"{targetPlayer} is {playerDistance:n2} meters away, IGRange is set to {IGRange}. bailing.");
+                LogError($"{targetName} is {playerDistance:n2} meters away, IGRange is set to {IGRange}. bailing.");
                 return;
             }
-            isRegex = command.Contains("r");
-            givePartialItem = command.Contains("P");
-            int.TryParse(giveMatch.Groups["Count"].Value, out maxGive);
+            maxGive = count;
             if (maxGive < 1)
                 maxGive = int.MaxValue;
 
             if (isRegex)
-                utlProfile = giveMatch.Groups["Item"].Value; //NOT a profile name. just re-purposing this.
+                utlProfile = itemName; //NOT a profile name. just re-purposing this.
             else
-                utlProfile = giveMatch.Groups["Item"].Value.ToLower(); //NOT a profile name. just re-purposing this.
+                utlProfile = itemName.ToLower(); //NOT a profile name. just re-purposing this.
 
 
             LogDebug($"ItemGiver GIVE {(maxGive == int.MaxValue ? "∞" : maxGive.ToString())} {(givePartialItem ? "(partial)" : "")}{utlProfile} to {UB.Core.WorldFilter[destinationId].Name}");
@@ -165,8 +195,10 @@ Provides a command-line interface to inventory management.
             lastIdCount = int.MaxValue;
             bailTimer = DateTime.UtcNow;
             giveTimer = Stopwatch.StartNew();
-            igRunning = true;
+            IGRunning = true;
             UB.Core.RenderFrame += Core_RenderFrame_ig;
+
+            Started?.Invoke(this, new EventArgs());
         }
 
         private void GetGiveItems() {
@@ -201,7 +233,6 @@ Provides a command-line interface to inventory management.
                             pendingGiveCount = maxGive;
                         }
                         else {
-                            LogDebug($"Giving {stackCount} * {w.Name}");
                             giveObjects.Add(item, 0);
                             pendingGiveCount += stackCount;
                         }
@@ -223,36 +254,35 @@ Provides a command-line interface to inventory management.
                 IGStop();
             }
             else {
-                UB_ig_Start(command, args);
+                UB_ig_Start(args.Groups["Target"].Value, command.Contains("p"), args.Groups["utlProfile"].Value);
             }
         }
-        private void UB_ig_Start(string command, Match igMatch) {
-            if (igRunning) {
+
+        public void UB_ig_Start(string target, bool partialTargetMatch, string utlProfile, int delay=0) {
+            if (IGRunning) {
                 LogError("Already running.  Please wait until it completes or use /ub ig stop to quit previous session");
                 return;
             }
-            targetPlayer = igMatch.Groups["Target"].Value;
 
-            var destination = Util.FindName(targetPlayer, command.Equals("igp"), new Decal.Adapter.Wrappers.ObjectClass[] { Decal.Adapter.Wrappers.ObjectClass.Player, Decal.Adapter.Wrappers.ObjectClass.Npc });
+            targetPlayer = target;
+
+            var destination = Util.FindName(targetPlayer, partialTargetMatch, new Decal.Adapter.Wrappers.ObjectClass[] { Decal.Adapter.Wrappers.ObjectClass.Player, Decal.Adapter.Wrappers.ObjectClass.Npc });
 
             if (destination == null) {
                 LogError($"player {targetPlayer} not found");
                 return;
             }
-            destinationId = destination.Id;
 
-            if (destinationId == UB.Core.CharacterFilter.Id) {
+            if (destination.Id == UB.Core.CharacterFilter.Id) {
                 LogError("You can't give to yourself");
                 return;
             }
 
-            var playerDistance = UB.Core.WorldFilter.Distance(UB.Core.CharacterFilter.Id, destinationId) * 240;
+            var playerDistance = UB.Core.WorldFilter.Distance(UB.Core.CharacterFilter.Id, destination.Id) * 240;
             if (playerDistance > IGRange) {
                 LogError($"ItemGiver {targetPlayer} is {playerDistance:n2} meters away. IGRange is set to {IGRange}");
                 return;
             }
-
-            utlProfile = igMatch.Groups["utlProfile"].Value;
 
             if (!File.Exists(Path.Combine(profilePath, utlProfile))) {
                 if (File.Exists(Path.Combine(profilePath, utlProfile + ".utl"))) {
@@ -287,8 +317,13 @@ Provides a command-line interface to inventory management.
 
             bailTimer = DateTime.UtcNow;
             giveTimer = Stopwatch.StartNew();
-            igRunning = true;
+            IGRunning = true;
+            destinationId = destination.Id;
+            InventoryManager.utlProfile = utlProfile;
+            giveDelay = delay;
             UB.Core.RenderFrame += Core_RenderFrame_ig;
+
+            Started?.Invoke(this, new EventArgs());
         }
 
         private void GetIGItems() {
@@ -431,6 +466,74 @@ Provides a command-line interface to inventory management.
         #endregion
         #endregion
 
+        #region Expressions
+        #region getitemcountininventorybyname[string name]
+        [ExpressionMethod("getitemcountininventorybyname")]
+        [ExpressionParameter(0, typeof(string), "name", "Exact item name to match")]
+        [ExpressionReturn(typeof(double), "Returns a count of the number of items found. stack size is counted")]
+        [Summary("Counts how many items you have in your inventory exactly matching `name`. Stack sizes are counted")]
+        [Example("getitemcountininventorybyname[Prismatic Taper]", "Returns total count of prismatic tapers in your inventory")]
+        public object Getitemcountininventorybyname(string name) {
+            double count = 0;
+            List<int> weenies = new List<int>();
+            UBHelper.InventoryManager.GetInventory(ref weenies, UBHelper.InventoryManager.GetInventoryType.AllItems);
+
+            foreach (var id in weenies) {
+                var weenie = new Weenie(id);
+                if (weenie.Name.ToLower().Equals(name.ToLower()))
+                    count += (weenie.StackCount >= 1) ? weenie.StackCount : 1;
+            }
+
+            return count;
+        }
+        #endregion //getitemcountininventorybyname[string namerx]
+        #region getitemcountininventorybynamerx[string name]
+        [ExpressionMethod("getitemcountininventorybynamerx")]
+        [ExpressionParameter(0, typeof(string), "namerx", "Regex item name to match")]
+        [ExpressionReturn(typeof(double), "Returns a count of the number of items found. stack size is counted")]
+        [Summary("Counts how many items you have in your inventory matching regex `namerx`. Stack sizes are counted")]
+        [Example("getitemcountininventorybynamerx[Scarab]", "Returns total count of scarabs in your inventory")]
+        public object Getitemcountininventorybynamerx(string namerx) {
+            Regex re = new Regex(namerx, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            double count = 0;
+            List<int> weenies = new List<int>();
+            UBHelper.InventoryManager.GetInventory(ref weenies, UBHelper.InventoryManager.GetInventoryType.AllItems);
+            foreach (var id in weenies) {
+                var weenie = new Weenie(id);
+                if (re.IsMatch(weenie.Name)) {
+                    count += (weenie.StackCount >= 1) ? weenie.StackCount : 1;
+                }
+            }
+
+            return count;
+        }
+        #endregion //getitemcountininventorybynamerx[string name]
+        #region actiontrygiveprofile[string lootprofile, string target]
+        [ExpressionMethod("actiontrygiveprofile")]
+        [ExpressionParameter(0, typeof(string), "lootprofile", "loot profile to give")]
+        [ExpressionParameter(0, typeof(string), "target", "target npc/player name to give to")]
+        [ExpressionReturn(typeof(double), "Returns 1 if an attempt was made, 0 if it was not (busy)")]
+        [Summary("Gives all items matching the specified loot profile to a character or npc")]
+        [Example(@"actiontrygiveprofile[salvage\.utl,My Salvage Mule]", "Gives all items matching loot profile salvage.utl to a character named My Salvage Mule")]
+        public object Actiontrygiveprofile(string lootprofile, string target) {
+            if (IGRunning) {
+                LogError("Already running.  Please wait until it completes or use /ub ig stop to quit previous session");
+                return 0;
+            }
+
+            var destination = Util.FindName(target, false, new Decal.Adapter.Wrappers.ObjectClass[] { Decal.Adapter.Wrappers.ObjectClass.Player, Decal.Adapter.Wrappers.ObjectClass.Npc });
+
+            if (destination == null) {
+                LogError($"actiontrygiveprofile[] {target} not found");
+                return 0;
+            }
+
+            UB_ig_Start(destination.Name, false, lootprofile);
+            return 1;
+        }
+        #endregion //actiontrygiveprofile[string lootprofile, string target]
+        #endregion //Expressions
+
         // TODO: support AutoPack profiles when cramming
         public InventoryManager(UtilityBeltPlugin ub, string name) : base(ub, name) {
             profilePath = Path.Combine(Util.GetPluginDirectory(), "itemgiver");
@@ -524,7 +627,7 @@ Provides a command-line interface to inventory management.
         #endregion
         private void WorldFilter_ChangeObject(object sender, ChangeObjectEventArgs e) {
             try{
-                if (igRunning && e.Changed.Id == currentItem && (e.Change == WorldChangeType.SizeChange || e.Changed.Container == -1)) {
+                if (IGRunning && e.Changed.Id == currentItem && (e.Change == WorldChangeType.SizeChange || e.Changed.Container == -1)) {
                     // Partial stack give - keep the rest
                     if (e.Change == WorldChangeType.SizeChange)
                         keptObjects.Add(e.Changed.Id);
@@ -539,7 +642,7 @@ Provides a command-line interface to inventory management.
         //TODO: Split this up, and disable when not in use
         public void Core_RenderFrame_ig(object sender, EventArgs e) {
             try {
-                if (!igRunning) {
+                if (!IGRunning) {
                     UB.Core.RenderFrame -= Core_RenderFrame_ig;
                     LogError("InventoryManager: Core_RenderFrame_ig called with igRunning==false");
                     return;
@@ -549,6 +652,9 @@ Provides a command-line interface to inventory management.
                     UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
                     UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
                 }
+
+                if (DateTime.UtcNow - lastAction < TimeSpan.FromMilliseconds(giveDelay))
+                    return;
 
                 if (UB.Core.Actions.BusyState == 0) {
                     if (UB.Core.WorldFilter[destinationId] == null) {
@@ -586,6 +692,8 @@ Provides a command-line interface to inventory management.
                             failedItems++;
                         }
 
+                        lastAction = DateTime.UtcNow;
+
                         if (failedItems > IGFailure) IGStop();
 
                         return;
@@ -602,8 +710,8 @@ Provides a command-line interface to inventory management.
             } catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void IGStop() {
-            if (!igRunning) {
+        public void IGStop() {
+            if (!IGRunning) {
                 Util.WriteToChat("ItemGiver is not running.");
                 return;
             }
@@ -613,12 +721,14 @@ Provides a command-line interface to inventory management.
             UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.ItemUse);
             UB.Core.RenderFrame -= Core_RenderFrame_ig;
             itemsGiven = totalFailures = failedItems = pendingGiveCount = 0;
-            igRunning = isRegex = false;
+            IGRunning = isRegex = false;
             lootProfile = null;
             poorlyNamedKeepUptoDictionary.Clear();
             giveObjects.Clear();
             keptObjects.Clear();
             assessor = null;
+
+            Finished?.Invoke(this, new EventArgs());
         }
 
         protected override void Dispose(bool disposing) {
