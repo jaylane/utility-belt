@@ -105,6 +105,20 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             set { UpdateSetting("Enabled", value); }
         }
 
+        [Summary("EnableBuying")]
+        [DefaultValue(true)]
+        public bool EnableBuying {
+            get { return (bool)GetSetting("EnableBuying"); }
+            set { UpdateSetting("EnableBuying", value); }
+        }
+
+        [Summary("EnableSelling")]
+        [DefaultValue(true)]
+        public bool EnableSelling {
+            get { return (bool)GetSetting("EnableSelling"); }
+            set { UpdateSetting("EnableSelling", value); }
+        }
+
         [Summary("Think to yourself when auto vendor is completed")]
         [DefaultValue(false)]
         public bool Think {
@@ -445,7 +459,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     vendorBuyRate = e.Vendor.BuyRate;
                     vendorCategories = (UBHelper.Weenie.ITEM_TYPE)e.Vendor.Categories;
                     vendorOpened = DateTime.UtcNow;
-                    var vendorInfo = $"{UB.Core.WorldFilter[e.Vendor.MerchantId].Name}[0x{e.Vendor.MerchantId:X8}]: BuyRate: {e.Vendor.BuyRate * 100:n0}% SellRate: {e.Vendor.SellRate * 100:n0}% MaxValue: {e.Vendor.MaxValue:n0}";
+                    var vendorInfo = $"{UB.Core.WorldFilter[e.Vendor.MerchantId].Name}[0x{e.Vendor.MerchantId:X8}]: BuyRate: {e.Vendor.BuyRate * 100:n0}% SellRate: {e.Vendor.SellRate * 100:n0}% MaxValue: {e.Vendor.MaxValue:n0} Buy: {(EnableBuying&&Enabled?"Enabled":"Disabled")} Sell: {(EnableSelling&&Enabled?"Enabled":"Disabled")}";
                     if (!showMerchantInfoCooldown && ShowMerchantInfo) {
                         showMerchantInfoCooldown = true;
                         UB.Core.RenderFrame += Core_RenderFrame_VendorSpam;
@@ -872,6 +886,9 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         }
 
         private List<BuyItem> GetBuyItems() {
+            if (!EnableBuying)
+                return new List<BuyItem>();
+
             VendorInfo vendor = VendorCache.GetVendor(vendorId);
             List<BuyItem> buyItems = new List<BuyItem>();
 
@@ -898,6 +915,9 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         }
 
         private List<WorldObject> GetSellItems() {
+            if (!EnableSelling)
+                return new List<WorldObject>();
+
             List<WorldObject> sellObjects = new List<WorldObject>();
             var vendor = VendorCache.GetVendor(vendorId);
 
