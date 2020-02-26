@@ -80,11 +80,14 @@ namespace UtilityBelt.Lib {
             if (UsingDHS) Shutdown_DHS();
             if (UsingVHS) Shutdown_VHS();
 
-            RemoveAllHotkeys();
+            //RemoveAllHotkeys();
         }
 
         static void Shutdown_DHS() {
-            Decal.Adapter.CoreManager.Current.HotkeySystem.Hotkey -= new EventHandler<Decal.Adapter.Wrappers.HotkeyEventArgs>(HotkeySystem_Hotkey);
+            try {
+                Decal.Adapter.CoreManager.Current.HotkeySystem.Hotkey -= new EventHandler<Decal.Adapter.Wrappers.HotkeyEventArgs>(HotkeySystem_Hotkey);
+            }
+            catch { }
         }
 
         static void Shutdown_VHS() {
@@ -137,10 +140,9 @@ namespace UtilityBelt.Lib {
         }
 
         static void AddHotkey_VHS(delHotkeyAction paction, string ptitle, string pdescription, int pvirtualKey, bool paltState, bool pcontrolState, bool pshiftState) {
-            if (RegisteredVHSHotkeys.ContainsKey(ptitle)) {
-                VirindiHotkeySystem.VHotkeySystem.InstanceReal.RemoveHotkey(RegisteredVHSHotkeys[ptitle]);
-                RegisteredVHSHotkeys.Remove(ptitle);
-            }
+            var existingHotkey = VirindiHotkeySystem.VHotkeySystem.InstanceReal.GetHotkeyByName("UtilityBelt", ptitle);
+            if (existingHotkey != null)
+                return;
 
             VirindiHotkeySystem.VHotkeyInfo ii = new VirindiHotkeySystem.VHotkeyInfo(ptitle, pdescription, pvirtualKey, paltState, pcontrolState, pshiftState);
             VirindiHotkeySystem.VHotkeySystem.InstanceReal.AddHotkey(ii);
