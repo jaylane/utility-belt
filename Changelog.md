@@ -11,6 +11,8 @@
 - Add ItemGiver UI
 - Optionally replace vtanks meta expression system with one from UB. Read more here: [TODO_LINK](http://utilitybelty.gitlab.io/)
 - Add settings for `AutoVendor.EnableBuying` and `AutoVendor.EnableSelling` to disable specific autovendor functionality
+- Fix AutoTinker now supports quest/pathwarden salvage
+- Fix AutoTinker now works with tailored items that no longer have a material
 
 ## 0.1.2 (2020-01-02) [UtilityBeltInstaller-0.1.2.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/b1bcdf8401543ba32afd4cf480ff6408/UtilityBeltInstaller-0.1.2.exe)
 - "Fix" `/ub playeroption` on ACE, by sending the entire PlayerSystem packet

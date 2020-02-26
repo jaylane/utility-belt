@@ -214,22 +214,7 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
                 var materialID = SalvageList[c.Text.ToString()];
 
                 using (var inv = CoreManager.Current.WorldFilter.GetInventory()) {
-                    foreach (var item in inv) {
-                        if (!item.HasIdData) {
-                            itemsToId.Add(item.Id);
-                        }
-                    }
-                }
-
-                if (UB.Assessor.NeedsInventoryData(itemsToId)) {
-                    Util.WriteToChat("requesting all ids");
-                    UB.Assessor.RequestAll(itemsToId);
-                    waitingForIds = true;
-                    lastIdSpam = DateTime.UtcNow;
-                    startTime = DateTime.UtcNow;
-                }
-
-                using (var inv = CoreManager.Current.WorldFilter.GetInventory()) {
+                    inv.SetFilter(new ByObjectClassFilter(ObjectClass.Salvage));
                     foreach (WorldObject wo in inv) {
                         if (wo.Values(LongValueKey.Material) == materialID && wo.Values(LongValueKey.UsesRemaining) == 100) {
                             if (!PotentialSalvageList.ContainsKey(wo.Id)) {
@@ -323,7 +308,7 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
                 ClearAllTinks();
                 itemWO = CoreManager.Current.WorldFilter[CoreManager.Current.Actions.CurrentSelection];
                 targetItemUpdated = true;
-                if (itemWO.HasIdData && itemWO.Values(DoubleValueKey.SalvageWorkmanship) > 0 && itemWO.Values(LongValueKey.Material) > 0 && itemWO.Values(LongValueKey.NumberTimesTinkered) < 10) {
+                if (itemWO.HasIdData && CanBeTinkered(itemWO)) {
                     AutoTinkItemNameLabel.Text = Util.GetObjectName(itemWO.Id);
                     FilterSalvage(itemWO);
                 }
@@ -334,6 +319,28 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private static List<ObjectClass> ValidTinkeringObjectClasses = new List<ObjectClass>() {
+            ObjectClass.Armor,
+            ObjectClass.Clothing,
+            ObjectClass.Jewelry,
+            ObjectClass.MeleeWeapon,
+            ObjectClass.MissileWeapon,
+            ObjectClass.WandStaffOrb
+        };
+        
+        private bool CanBeTinkered(WorldObject wo) {
+            if (!ValidTinkeringObjectClasses.Contains(wo.ObjectClass))
+                return false;
+
+            if (wo.Values(DoubleValueKey.SalvageWorkmanship, 0) <= 0)
+                return false;
+
+            if (wo.Values(LongValueKey.NumberTimesTinkered, 0) >= 10)
+                return false;
+
+            return true;
         }
 
         private void FilterSalvageCombo(string[] salvageArray) {
@@ -454,7 +461,7 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
 
                 if (intSalvId != 0) {
                     currentSalvageWK = Math.Round(CoreManager.Current.WorldFilter[intSalvId].Values(DoubleValueKey.SalvageWorkmanship), 2, MidpointRounding.AwayFromZero);
-                    currentSalvage = Util.GetObjectName(intSalvId).Replace(" Salvage", "").Replace(" (100)", "");
+                    currentSalvage = Util.FileService.MaterialTable.GetById(CoreManager.Current.WorldFilter[intSalvId].Values(LongValueKey.Material)).Name;
                 }
 
                 CoreManager.Current.Actions.SelectItem(intSalvId);
