@@ -379,7 +379,6 @@ namespace UBDocsGen {
 
                     if (releaseDate == "TBD") {
                         // we want this to throw an exception if it fails, so the build will fail
-                        /*
                         using (StreamReader file = File.OpenText(@"./bin/installer.json"))
                         using (JsonTextReader reader = new JsonTextReader(file)) {
                             JObject o2 = (JObject)JToken.ReadFrom(reader);
@@ -387,7 +386,6 @@ namespace UBDocsGen {
                         }
 
                         releaseDate = DateTime.Now.ToString("yyyy-MM-dd");
-                        */
                     }
                     else {
                         // todo: read from changelog header
