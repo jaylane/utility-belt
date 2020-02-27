@@ -345,6 +345,7 @@ UBLoader/Deps/Mapping.txt
 Site/content/docs/tools/*.md
 Site/content/docs/command-line.md
 Site/content/docs/plugin-settings.md
+Site/content/docs/expressions.md
 Site/content/releases/*.md
 Site/layouts/partials/*.html
 

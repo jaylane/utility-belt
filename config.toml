@@ -63,6 +63,12 @@ disableKinds = ["taxonomy", "taxonomyTerm"]
 
 [[menu.main]]
     parent = "Documentation"
+    name = "Expressions"
+    url = "docs/expressions/"
+    weight = 3
+
+[[menu.main]]
+    parent = "Documentation"
     name = "Config Files"
     url = "docs/config-files/"
     weight = 3

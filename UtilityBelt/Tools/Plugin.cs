@@ -506,6 +506,26 @@ namespace UtilityBelt.Tools {
         }
 
         #endregion
+        #region /ub mexec
+        [Summary("Evaluates a meta expression")]
+        [Usage("/ub mexec <expression>")]
+        [Example("/ub mexec <expression>", "Evaluates expression")]
+        [CommandPattern("mexec", @"^(?<Expression>.*)?$")]
+        public void EvaluateExpression(string command, Match args) {
+            var watch = new System.Diagnostics.Stopwatch();
+            watch.Start();
+            try {
+                var input = args.Groups["Expression"].Value;
+                var res = UB.VTank.EvaluateExpression(input);
+                watch.Stop();
+                Util.WriteToChat($"Result: [{res.GetType().ToString().Split('.').Last().ToLower()}] {res} ({Math.Round(watch.ElapsedTicks / 10000.0, 3)}ms)");
+            }
+            catch (Exception ex) {
+                Logger.LogException(ex);
+                LogError(ex.ToString());
+            }
+        }
+        #endregion
         #region /ub pos
         [Summary("Prints position information for the currently selected object")]
         [Usage("/ub pos")]
