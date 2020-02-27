@@ -41,20 +41,70 @@ namespace UBDocsGen {
         }
     }
 
+    class ExpressionParameterInfo {
+        public string Name { get; }
+        public Type Type { get; }
+        public string Description { get; }
+        public string FriendlyType {
+            get {
+                return Type.ToString().ToLower().Split('.').Last().Split('+').Last().Replace("double", "number");
+            }
+        }
+
+        public ExpressionParameterInfo(string name, Type type, string description) {
+            Name = name;
+            Type = type;
+            Description = description;
+        }
+    }
+
+    class ExpressionReturnInfo {
+        public Type Type { get; }
+        public string Description { get; }
+        public string FriendlyType {
+            get {
+                return Type.ToString().ToLower().Split('.').Last().Split('+').Last().Replace("double", "number");
+            }
+        }
+
+        public ExpressionReturnInfo(Type type, string description) {
+            Type = type;
+            Description = description;
+        }
+    }
+
+    class ExpressionInfo {
+        public string MethodName { get; }
+        public List<ExpressionParameterInfo> Parameters { get; }
+        public string Summary { get; }
+        public Dictionary<string, string> Examples { get; }
+        public ExpressionReturnInfo ReturnInfo { get; }
+
+        public ExpressionInfo(string methodName, string summary, List<ExpressionParameterInfo> parameters, Dictionary<string, string> examples, ExpressionReturnInfo returnInfo) {
+            MethodName = methodName;
+            Parameters = parameters;
+            Summary = summary;
+            Examples = examples;
+            ReturnInfo = returnInfo;
+        }
+    }
+
     class ToolInfo {
         public string Name { get; }
         public string Summary { get; }
         public string Description { get; }
         public List<CommandInfo> Commands { get; }
         public List<SettingInfo> Settings { get; }
+        public List<ExpressionInfo> ExpressionMethods { get; }
 
-        public ToolInfo(string name, string summary, string description, List<CommandInfo> commands, List<SettingInfo> settings) {
+        public ToolInfo(string name, string summary, string description, List<CommandInfo> commands, List<SettingInfo> settings, List<ExpressionInfo> expressions) {
             Name = name;
             Summary = summary;
             Description = description;
             Commands = commands;
             Settings = settings;
-            Console.WriteLine($"Added tool {Name} with {Commands.Count} commands and {Settings.Count} settings.");
+            ExpressionMethods = expressions;
+            Console.WriteLine($"Added tool {Name} with {Commands.Count} commands, {ExpressionMethods.Count} expression methods, and {Settings.Count} settings.");
         }
     }
     #endregion
@@ -74,6 +124,7 @@ namespace UBDocsGen {
                 GenerateToolPages("./Site/content/docs/tools/");
                 GenerateSettingsPage("./Site/content/docs/plugin-settings.md");
                 GenerateCommandLinePage("./Site/content/docs/command-line.md");
+                GenerateExpressionsPage("./Site/content/docs/expressions.md");
             }
             catch (Exception ex) {
                 LogException(ex);
@@ -93,8 +144,9 @@ namespace UBDocsGen {
                     var description = GetFullDescription(toolProp);
                     var commands = GetCommands(toolProp);
                     var settings = GetSettings(toolProp);
+                    var expressions = GetExpressions(toolProp);
 
-                    var info = new ToolInfo(name, summary, description, commands, settings);
+                    var info = new ToolInfo(name, summary, description, commands, settings, expressions);
 
                     AvailableTools.Add(name, info);
                 }
@@ -135,6 +187,16 @@ namespace UBDocsGen {
             return usage;
         }
 
+        private static ExpressionReturnInfo GetReturnInfo(MethodInfo methodInfo) {
+            var attrs = methodInfo.GetCustomAttributes(typeof(ExpressionReturnAttribute), true);
+
+            if (attrs.Length == 1) {
+                return new ExpressionReturnInfo(((ExpressionReturnAttribute)attrs[0]).Type, ((ExpressionReturnAttribute)attrs[0]).Description);
+            }
+
+            return null;
+        }
+
         private static Dictionary<string, string> GetExamples(MethodInfo methodInfo) {
             var examples = new Dictionary<string, string>();
             var attrs = methodInfo.GetCustomAttributes(typeof(ExampleAttribute), true);
@@ -144,6 +206,20 @@ namespace UBDocsGen {
             }
 
             return examples;
+        }
+
+        private static List<ExpressionParameterInfo> GetParameters(MethodInfo methodInfo) {
+            var parameters = new List<ExpressionParameterInfo>();
+            var attrs = methodInfo.GetCustomAttributes(typeof(ExpressionParameterAttribute), true);
+
+            foreach (var attr in attrs) {
+                var name = ((ExpressionParameterAttribute)attr).Name;
+                var type = ((ExpressionParameterAttribute)attr).Type;
+                var description = ((ExpressionParameterAttribute)attr).Description;
+                parameters.Add(new ExpressionParameterInfo(name, type, description));
+            }
+
+            return parameters;
         }
 
         private static string GetFullDescription(PropertyInfo toolProp) {
@@ -202,6 +278,28 @@ namespace UBDocsGen {
             }
 
             return settings;
+        }
+
+        private static List<ExpressionInfo> GetExpressions(PropertyInfo toolProp) {
+            var expresionInfos = new List<ExpressionInfo>();
+
+            foreach (var method in toolProp.PropertyType.GetMethods()) {
+                var expressionMethodAttrs = method.GetCustomAttributes(typeof(ExpressionMethodAttribute), true);
+
+                foreach (var attr in expressionMethodAttrs) {
+                    var name = ((ExpressionMethodAttribute)attr).Name;
+                    var parameters = GetParameters(method);
+                    var summary = GetSummary(method);
+                    var usage = GetUsage(method);
+                    var examples = GetExamples(method);
+                    var returnInfo = GetReturnInfo(method);
+
+                    var expressionInfo = new ExpressionInfo(name, summary, parameters, examples, returnInfo);
+                    expresionInfos.Add(expressionInfo);
+                }
+            }
+
+            return expresionInfos;
         }
         #endregion
 
@@ -281,6 +379,7 @@ namespace UBDocsGen {
 
                     if (releaseDate == "TBD") {
                         // we want this to throw an exception if it fails, so the build will fail
+                        /*
                         using (StreamReader file = File.OpenText(@"./bin/installer.json"))
                         using (JsonTextReader reader = new JsonTextReader(file)) {
                             JObject o2 = (JObject)JToken.ReadFrom(reader);
@@ -288,6 +387,7 @@ namespace UBDocsGen {
                         }
 
                         releaseDate = DateTime.Now.ToString("yyyy-MM-dd");
+                        */
                     }
                     else {
                         // todo: read from changelog header
@@ -358,6 +458,22 @@ All settings take immediate effect on the plugin, and will save to your [charact
 
             File.WriteAllText(v, stringWriter.ToString());
         }
+
+        private static void GenerateExpressionsPage(string v) {
+            var stringWriter = new StringWriter();
+
+            WritePageHeader(stringWriter, "Expressions", "", "");
+
+            stringWriter.WriteLine(File.ReadAllText(@"./Site/content/docs/_expressions_summary.md"));
+
+            foreach (var tool in AvailableTools) {
+                foreach (var method in tool.Value.ExpressionMethods) {
+                    WriteExpressionMethod(stringWriter, method);
+                }
+            }
+
+            File.WriteAllText(v, stringWriter.ToString());
+        }
         #endregion
 
         #region Template Writers
@@ -383,7 +499,45 @@ All settings take immediate effect on the plugin, and will save to your [charact
                 stringWriter.WriteLine("> ");
 
                 foreach (var example in command.Examples) {
-                    stringWriter.WriteLine($"> * `{example.Key}` - {example.Value}");
+                    stringWriter.WriteLine($"> * ```{example.Key}``` - {example.Value}");
+                }
+            }
+
+            stringWriter.WriteLine("");
+        }
+
+        private static void WriteExpressionMethod(StringWriter stringWriter, ExpressionInfo method) {
+            var parameters = new List<string>();
+            foreach (var p in method.Parameters) {
+                parameters.Add($"<span style=\"color:#27436F\">{p.FriendlyType} {p.Name}</span>");
+            }
+
+            stringWriter.WriteLine($"#### {HttpUtility.HtmlEncode(method.MethodName)}[{string.Join(", ", parameters.ToArray())}]");
+            stringWriter.WriteLine("> ");
+            stringWriter.WriteLine("> " + method.Summary);
+
+            if (method.Parameters.Count > 0) {
+                stringWriter.WriteLine("> ");
+                stringWriter.WriteLine("> **Parameters:**<br />");
+                stringWriter.WriteLine("> ");
+
+                var i = 0;
+                foreach (var p in method.Parameters) {
+                    stringWriter.WriteLine($"> * Param #{i++}: {p.Name} ({p.FriendlyType}) - {p.Description}");
+                }
+            }
+
+            stringWriter.WriteLine("> ");
+            stringWriter.WriteLine($"> **Returns:** {method.ReturnInfo.FriendlyType} - {method.ReturnInfo.Description}");
+            stringWriter.WriteLine("> ");
+
+            if (method.Examples.Count > 0) {
+                stringWriter.WriteLine("> ");
+                stringWriter.WriteLine("> **Examples:**<br />");
+                stringWriter.WriteLine("> ");
+
+                foreach (var example in method.Examples) {
+                    stringWriter.WriteLine($"> * ```{example.Key}``` - {example.Value}");
                 }
             }
 
@@ -425,6 +579,14 @@ All settings take immediate effect on the plugin, and will save to your [charact
                     stringWriter.WriteLine("> " + setting.Summary);
 
                     stringWriter.WriteLine("");
+                }
+            }
+
+            if (kp.Value.ExpressionMethods.Count > 0) {
+                stringWriter.WriteLine("### Expression Methods");
+                stringWriter.WriteLine();
+                foreach (var expressionMethod in kp.Value.ExpressionMethods) {
+                    WriteExpressionMethod(stringWriter, expressionMethod);
                 }
             }
         }

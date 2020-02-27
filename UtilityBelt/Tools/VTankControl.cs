@@ -184,41 +184,6 @@ namespace UtilityBelt.Tools {
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
-        #region /ub mexec
-        [Summary("Evaluates a meta expression")]
-        [Usage("/ub mexec <expression>")]
-        [Example("/ub mexec <expression>", "Evaluates expression")]
-        [CommandPattern("mexec", @"^(?<Expression>.*)?$")]
-        public void EvaluateExpression(string command, Match args) {
-            var watch = new System.Diagnostics.Stopwatch();
-            watch.Start();
-            try {
-                var input = args.Groups["Expression"].Value;
-                var res = EvaluateExpression(input);
-                watch.Stop();
-                Util.WriteToChat($"Result: [{res.GetType().ToString().Split('.').Last().ToLower()}] {res} ({watch.ElapsedTicks / 10000.0}ms)");
-            }
-            catch (Exception ex) {
-                Logger.LogException(ex);
-                LogError(ex.ToString());
-            }
-        }
-        #endregion
-        #region /ub test
-        [Summary("test")]
-        [Usage("/ub test")]
-        [Example("/ub test", "test")]
-        [CommandPattern("test", @"^(?<Expression>.*)?$")]
-        public void Test(string command, Match args) {
-            try {
-                Util.WriteToChat("Blah");
-            }
-            catch (Exception ex) {
-                Logger.LogException(ex);
-                LogError(ex.ToString());
-            }
-        }
-        #endregion
         #endregion
 
         #region Expressions
