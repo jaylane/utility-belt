@@ -57,7 +57,6 @@
     </Reference>
     <Reference Include="LiteDB, Version=4.1.4.0, Culture=neutral, PublicKeyToken=4ee40123013c9f27, processorArchitecture=MSIL">
       <HintPath>..\packages\LiteDB.4.1.4\lib\net35\LiteDB.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="Newtonsoft.Json">
@@ -108,9 +107,11 @@
     <Compile Include="Lib\Inventory.cs" />
     <Compile Include="Lib\Models\Angles.cs" />
     <Compile Include="Lib\Models\Frame.cs" />
+    <Compile Include="Lib\Models\GlobalVariable.cs" />
     <Compile Include="Lib\Models\Landblock.cs" />
     <Compile Include="Lib\Models\Link.cs" />
     <Compile Include="Lib\Models\Origin.cs" />
+    <Compile Include="Lib\Models\PersistentVariable.cs" />
     <Compile Include="Lib\Models\Position.cs" />
     <Compile Include="Lib\Models\Weenie.cs" />
     <Compile Include="Lib\Models\WeenieAttribute.cs" />

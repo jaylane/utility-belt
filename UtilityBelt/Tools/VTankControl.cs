@@ -268,6 +268,272 @@ namespace UtilityBelt.Tools {
             return false;
         }
         #endregion //clearvar[string varname]
+        #region testpvar[string varname]
+        [ExpressionMethod("testpvar")]
+        [ExpressionParameter(0, typeof(string), "varname", "Variable name to check")]
+        [ExpressionReturn(typeof(double), "Returns 1 if the variable is defined, 0 if it isn't")]
+        [Summary("Checks if a persistent variable is defined")]
+        [Example("testpvar[myvar]", "Returns 1 if `myvar` persistent variable is defined")]
+        public object Testpvar(string varname) {
+            var variable = UB.Database.PersistentVariables.FindOne(
+                LiteDB.Query.And(
+                    LiteDB.Query.EQ("Name", varname),
+                    LiteDB.Query.And(
+                        LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server),
+                        LiteDB.Query.EQ("Character", UB.Core.CharacterFilter.Name)
+                    )
+                )
+            );
+
+            return variable != null;
+        }
+        #endregion //testpvar[string varname]
+        #region getpvar[string varname]
+        [ExpressionMethod("getpvar")]
+        [ExpressionParameter(0, typeof(string), "varname", "Variable name to get")]
+        [ExpressionReturn(typeof(double), "Returns the value of a variable, or 0 if undefined")]
+        [Summary("Returns the value stored in a variable")]
+        [Example("getpvar[myvar]", "Returns the value stored in `myvar` variable")]
+        public object Getpvar(string varname) {
+            var variable = UB.Database.PersistentVariables.FindOne(
+                LiteDB.Query.And(
+                    LiteDB.Query.EQ("Name", varname),
+                    LiteDB.Query.And(
+                        LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server),
+                        LiteDB.Query.EQ("Character", UB.Core.CharacterFilter.Name)
+                    )
+                )
+            );
+
+            return EvaluateExpression(variable == null ? "0" : variable.Value);
+        }
+        #endregion //getpvar[string varname]
+        #region setpvar[string varname, object value]
+        [ExpressionMethod("setpvar")]
+        [ExpressionParameter(0, typeof(string), "varname", "Variable name to set")]
+        [ExpressionParameter(1, typeof(object), "value", "Value to store")]
+        [ExpressionReturn(typeof(object), "Returns the newly set value")]
+        [Summary("Stores a value in a persistent variable that is available ever after relogging.  Persistent variables are not shared between characters.")]
+        [Example("setpvar[myvar,1]", "Stores the number value `1` inside of `myvar` variable")]
+        public object Setpvar(string varname, object value) {
+            string expressionValue = "";
+            var type = value.GetType();
+
+            if (type == typeof(Boolean))
+                expressionValue = ((Boolean)value) ? "1" : "0";
+            else if (type == typeof(string))
+                expressionValue = (string)value;
+            else if (type == typeof(double))
+                expressionValue = ((double)value).ToString();
+            else {
+                Logger.Error("Persistent variables can currently only store strings/numbers");
+                return 0;
+            }
+            var variable = UB.Database.PersistentVariables.FindOne(
+                LiteDB.Query.And(
+                    LiteDB.Query.EQ("Name", varname),
+                    LiteDB.Query.And(
+                        LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server),
+                        LiteDB.Query.EQ("Character", UB.Core.CharacterFilter.Name)
+                    )
+                )
+            );
+
+            if (variable == null) {
+                UB.Database.PersistentVariables.Insert(new Lib.Models.PersistentVariable() {
+                    Server = UB.Core.CharacterFilter.Server,
+                    Character = UB.Core.CharacterFilter.Name,
+                    Name = varname,
+                    Value = expressionValue
+                });
+            }
+            else {
+                variable.Value = expressionValue;
+                UB.Database.PersistentVariables.Update(variable);
+            }
+
+            return EvaluateExpression(expressionValue);
+        }
+        #endregion //setpvar[string varname, object value]
+        #region touchpvar[string varname]
+        [ExpressionMethod("touchpvar")]
+        [ExpressionParameter(0, typeof(string), "varname", "Variable name to touch")]
+        [ExpressionReturn(typeof(double), "Returns 1 if the variable was previously defined, 0 otherwise")]
+        [Summary("Sets the value of a persistent variable to 0 if the variable was previously undefined")]
+        [Example("touchpvar[myvar]", "Ensures that `myvar` has a value set")]
+        public object Touchpvar(string varname) {
+            if ((bool)Testpvar(varname)) {
+                return true;
+            }
+            else {
+                Setpvar(varname, 0);
+                return false;
+            }
+        }
+        #endregion //touchpvar[string varname]
+        #region clearallpvars[]
+        [ExpressionMethod("clearallpvars")]
+        [Summary("Unsets all persistent variables")]
+        [ExpressionReturn(typeof(double), "Returns 1")]
+        [Example("clearallpvars[]", "Unset all persistent variables")]
+        public object Clearallpvars() {
+            UB.Database.PersistentVariables.Delete(
+                LiteDB.Query.And(
+                    LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server),
+                    LiteDB.Query.EQ("Character", UB.Core.CharacterFilter.Name)
+                )
+            );
+            return true;
+        }
+        #endregion //clearallpvars[]
+        #region clearpvar[string varname]
+        [ExpressionMethod("clearpvar")]
+        [ExpressionParameter(0, typeof(string), "varname", "Variable name to clear")]
+        [Summary("Clears the value of a persistent variable")]
+        [ExpressionReturn(typeof(double), "Returns 1 if the variable was defined, 0 otherwise")]
+        [Example("clearpvar[myvar]", "Clears the value stored in `myvar` persistent variable")]
+        public object Clearpvar(string varname) {
+            if ((bool)Testpvar(varname)) {
+                UB.Database.PersistentVariables.Delete(
+                    LiteDB.Query.And(
+                        LiteDB.Query.EQ("Name", varname),
+                        LiteDB.Query.And(
+                            LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server),
+                            LiteDB.Query.EQ("Character", UB.Core.CharacterFilter.Name)
+                        )
+                    )
+                );
+                return true;
+            }
+
+            return false;
+        }
+        #endregion //clearpvar[string varname]
+        #region testgvar[string varname]
+        [ExpressionMethod("testgvar")]
+        [ExpressionParameter(0, typeof(string), "varname", "Variable name to check")]
+        [ExpressionReturn(typeof(double), "Returns 1 if the variable is defined, 0 if it isn't")]
+        [Summary("Checks if a global variable is defined")]
+        [Example("testgvar[myvar]", "Returns 1 if `myvar` global variable is defined")]
+        public object Testgvar(string varname) {
+            var variable = UB.Database.GlobalVariables.FindOne(
+                LiteDB.Query.And(
+                    LiteDB.Query.EQ("Name", varname),
+                    LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server)
+                )
+            );
+
+            return variable != null;
+        }
+        #endregion //testgvar[string varname]
+        #region getgvar[string varname]
+        [ExpressionMethod("getgvar")]
+        [ExpressionParameter(0, typeof(string), "varname", "Variable name to get")]
+        [ExpressionReturn(typeof(double), "Returns the value of a variable, or 0 if undefined")]
+        [Summary("Returns the value stored in a variable")]
+        [Example("getgvar[myvar]", "Returns the value stored in `myvar` global variable")]
+        public object Getgvar(string varname) {
+            var variable = UB.Database.GlobalVariables.FindOne(
+                LiteDB.Query.And(
+                    LiteDB.Query.EQ("Name", varname),
+                    LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server)
+                )
+            );
+
+            return EvaluateExpression(variable == null ? "0" : variable.Value);
+        }
+        #endregion //getgvar[string varname]
+        #region setgvar[string varname, object value]
+        [ExpressionMethod("setgvar")]
+        [ExpressionParameter(0, typeof(string), "varname", "Variable name to set")]
+        [ExpressionParameter(1, typeof(object), "value", "Value to store")]
+        [ExpressionReturn(typeof(object), "Returns the newly set value")]
+        [Summary("Stores a value in a global variable. This variable is shared between all characters on the same server.")]
+        [Example("setgvar[myvar,1]", "Stores the number value `1` inside of `myvar` variable")]
+        public object Setgvar(string varname, object value) {
+            string expressionValue = "";
+            var type = value.GetType();
+
+            if (type == typeof(Boolean))
+                expressionValue = ((Boolean)value) ? "1" : "0";
+            else if (type == typeof(string))
+                expressionValue = (string)value;
+            else if (type == typeof(double))
+                expressionValue = ((double)value).ToString();
+            else {
+                Logger.Error("Global variables can currently only store strings/numbers");
+                return 0;
+            }
+            var variable = UB.Database.GlobalVariables.FindOne(
+                LiteDB.Query.And(
+                    LiteDB.Query.EQ("Name", varname),
+                    LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server)
+                )
+            );
+
+            if (variable == null) {
+                UB.Database.GlobalVariables.Insert(new Lib.Models.GlobalVariable() {
+                    Server = UB.Core.CharacterFilter.Server,
+                    Name = varname,
+                    Value = expressionValue
+                });
+            }
+            else {
+                variable.Value = expressionValue;
+                UB.Database.GlobalVariables.Update(variable);
+            }
+
+            return EvaluateExpression(expressionValue);
+        }
+        #endregion //setgvar[string varname, object value]
+        #region touchgvar[string varname]
+        [ExpressionMethod("touchgvar")]
+        [ExpressionParameter(0, typeof(string), "varname", "Variable name to touch")]
+        [ExpressionReturn(typeof(double), "Returns 1 if the variable was previously defined, 0 otherwise")]
+        [Summary("Sets the value of a global variable to 0 if the variable was previously undefined")]
+        [Example("touchgvar[myvar]", "Ensures that `myvar` global variable has a value set")]
+        public object Touchgvar(string varname) {
+            if ((bool)Testgvar(varname)) {
+                return true;
+            }
+            else {
+                Setgvar(varname, 0);
+                return false;
+            }
+        }
+        #endregion //touchgvar[string varname]
+        #region clearallgvars[]
+        [ExpressionMethod("clearallgvars")]
+        [Summary("Unsets all global variables")]
+        [ExpressionReturn(typeof(double), "Returns 1")]
+        [Example("clearallgvars[]", "Unset all global variables")]
+        public object Clearallgvars() {
+            UB.Database.GlobalVariables.Delete(
+                LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server)
+            );
+            return true;
+        }
+        #endregion //clearallgvars[]
+        #region cleargvar[string varname]
+        [ExpressionMethod("cleargvar")]
+        [ExpressionParameter(0, typeof(string), "varname", "Variable name to clear")]
+        [Summary("Clears the value of a global variable")]
+        [ExpressionReturn(typeof(double), "Returns 1 if the variable was defined, 0 otherwise")]
+        [Example("cleargvar[myvar]", "Clears the value stored in `myvar` global variable")]
+        public object Cleargvar(string varname) {
+            if ((bool)Testpvar(varname)) {
+                UB.Database.GlobalVariables.Delete(
+                    LiteDB.Query.And(
+                        LiteDB.Query.EQ("Name", varname),
+                        LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server)
+                    )    
+                );
+                return true;
+            }
+
+            return false;
+        }
+        #endregion //cleargvar[string varname]
         #endregion //Variables
         #region Chat
         #region chatbox[string message]

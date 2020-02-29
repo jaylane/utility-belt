@@ -28,6 +28,22 @@ namespace UtilityBelt.Lib {
                 return weenies;
             }
         }
+        private LiteCollection<PersistentVariable> persistentVariables;
+        internal LiteCollection<PersistentVariable> PersistentVariables {
+            get {
+                if (persistentVariables == null)
+                    Init();
+                return persistentVariables;
+            }
+        }
+        private LiteCollection<GlobalVariable> globalVariables;
+        internal LiteCollection<GlobalVariable> GlobalVariables {
+            get {
+                if (globalVariables == null)
+                    Init();
+                return globalVariables;
+            }
+        }
         public static string DBPath { get; private set; }
 
         public Database(string dbPath) {
@@ -41,6 +57,15 @@ namespace UtilityBelt.Lib {
             ldb = new LiteDatabase(DBPath);
             weenies = ldb.GetCollection<Weenie>("weenies");
             landblocks = ldb.GetCollection<Landblock>("landblocks");
+            persistentVariables = ldb.GetCollection<PersistentVariable>("persistent_variables");
+            globalVariables = ldb.GetCollection<GlobalVariable>("global_variables");
+
+            persistentVariables.EnsureIndex("Server");
+            persistentVariables.EnsureIndex("Character");
+            persistentVariables.EnsureIndex("Name");
+
+            globalVariables.EnsureIndex("Server");
+            globalVariables.EnsureIndex("Name");
         }
 
         #region IDisposable Support
