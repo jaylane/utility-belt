@@ -365,23 +365,23 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
             switch (category) {
                 case ObjectClass.MissileWeapon:
                     //Util.WriteToChat("Missile");
-                    filteredSalvage = new string[] { "Mahogany", "Brass" };
+                    filteredSalvage = new string[] { "Mahogany", "Brass", "Gold", "Moonstone", "Linen", "Pine" };
                     break;
                 case ObjectClass.MeleeWeapon:
                     //Util.WriteToChat("Melee");
-                    filteredSalvage = new string[] { "Brass", "Granite", "Iron" };
+                    filteredSalvage = new string[] { "Brass", "Granite", "Iron", "Gold", "Moonstone", "Linen", "Pine" };
                     break;
                 case ObjectClass.WandStaffOrb:
                     //Util.WriteToChat("Wand");
-                    filteredSalvage = new string[] { "Brass", "Green Garnet" };
+                    filteredSalvage = new string[] { "Brass", "Green Garnet", "Gold", "Moonstone", "Linen", "Pine" };
                     break;
                 case ObjectClass.Armor:
                     //Util.WriteToChat("Armor");
-                    filteredSalvage = new string[] { "Steel" };
+                    filteredSalvage = new string[] { "Steel", "Linen", "Moonstone", "Pine"  };
                     break;
                 case ObjectClass.Jewelry:
                     //Util.WriteToChat("Jewelry");
-                    filteredSalvage = new string[] { "Gold" };
+                    filteredSalvage = new string[] { "Gold", "Linen", "Moonstone", "Pine" };
                     break;
                 default:
                     Console.WriteLine("Select an item");
