@@ -1188,8 +1188,13 @@ namespace UtilityBelt.Tools {
         [ExpressionReturn(typeof(double), "Returns 1 if value is false, 0 otherwise")]
         [Summary("Checks if a value is equal to false (0)")]
         [Example("isfalse[0]", "Checks that 0 is false, and returns true because it is")]
-        public object Isfalse(double value) {
-            return value.Equals(0);
+        public object Isfalse(object value) {
+            if (value.GetType() == typeof(double))
+                return ((double)value).Equals(0);
+            else if (value.GetType() == typeof(Boolean))
+                return ((bool)value).Equals(false);
+
+            return false;
         }
         #endregion //isfalse[int value]
         #region istrue[int value]
@@ -1198,8 +1203,13 @@ namespace UtilityBelt.Tools {
         [ExpressionReturn(typeof(double), "Returns 1 if value is true, 0 otherwise")]
         [Summary("Checks if a value is equal to true (1)")]
         [Example("istrue[1]", "Checks that 0 is true, and returns true because it is")]
-        public object Istrue(double value) {
-            return value.Equals(0);
+        public object Istrue(object value) {
+            if (value.GetType() == typeof(double))
+                return ((double)value).Equals(1);
+            else if (value.GetType() == typeof(Boolean))
+                return ((bool)value).Equals(true);
+
+            return false;
         }
         #endregion //istrue[int value]
         #region iif[int value, object truevalue, object falsevalue]
