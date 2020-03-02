@@ -145,8 +145,8 @@ Provides a command-line interface to inventory management.
                 var partialMatchItem = command.Contains('P');
                 var isRegex = command.Contains("r");
                 int count = 0;
-                if (!string.IsNullOrEmpty(args.Groups["count"].Value))
-                    Int32.TryParse(args.Groups["count"].Value, out count);
+                if (!string.IsNullOrEmpty(args.Groups["Count"].Value))
+                    Int32.TryParse(args.Groups["Count"].Value, out count);
                 GiveItem(args.Groups["Target"].Value, partialMatchTarget, args.Groups["Item"].Value, partialMatchItem, isRegex, count, 0);
             }
         }
