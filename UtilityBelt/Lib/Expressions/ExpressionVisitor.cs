@@ -231,7 +231,7 @@ namespace UtilityBelt.Lib.Expressions {
                 if (left.GetType() == typeof(double))
                     return (double)left + (double)right;
                 if (left.GetType() == typeof(string))
-                    return (string)left + (string)right;
+                    return (string)left + right.ToString();
             }
 
             if (context.MINUS() != null && left.GetType() == typeof(double)) {
