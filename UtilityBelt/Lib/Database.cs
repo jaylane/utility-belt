@@ -44,6 +44,14 @@ namespace UtilityBelt.Lib {
                 return globalVariables;
             }
         }
+        private LiteCollection<QuestFlag> questFlags;
+        internal LiteCollection<QuestFlag> QuestFlags {
+            get {
+                if (questFlags == null)
+                    Init();
+                return questFlags;
+            }
+        }
         public static string DBPath { get; private set; }
 
         public Database(string dbPath) {
@@ -59,6 +67,7 @@ namespace UtilityBelt.Lib {
             landblocks = ldb.GetCollection<Landblock>("landblocks");
             persistentVariables = ldb.GetCollection<PersistentVariable>("persistent_variables");
             globalVariables = ldb.GetCollection<GlobalVariable>("global_variables");
+            questFlags = ldb.GetCollection<QuestFlag>("quest_flags");
 
             persistentVariables.EnsureIndex("Server");
             persistentVariables.EnsureIndex("Character");
@@ -66,6 +75,10 @@ namespace UtilityBelt.Lib {
 
             globalVariables.EnsureIndex("Server");
             globalVariables.EnsureIndex("Name");
+
+            questFlags.EnsureIndex("Server");
+            questFlags.EnsureIndex("Character");
+            questFlags.EnsureIndex("Key");
         }
 
         #region IDisposable Support
