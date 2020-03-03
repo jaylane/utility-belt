@@ -1434,7 +1434,10 @@ namespace UtilityBelt.Tools {
             }
             catch (Exception ex) {
                 Logger.LogException(ex);
+                Logger.Error($"Error in expression: {expression}");
                 Logger.Error(ex.Message.ToString());
+                if (UB.Plugin.Debug)
+                    Logger.Error(ex.ToString());
             }
 
             return 0;

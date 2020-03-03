@@ -16,7 +16,16 @@ namespace UtilityBelt.Lib.Expressions {
         /// <returns></returns>
         ///
         public override object Visit([NotNull] IParseTree tree) {
-            var v = base.Visit(tree);
+            object v;
+            try {
+                v = base.Visit(tree);
+            }
+            catch (NullReferenceException) {
+                return (double)0;
+            }
+
+            if (v == null)
+                return (double)0;
 
             // all bools should be doubles
             if (v.GetType() == typeof(bool))
@@ -36,8 +45,8 @@ namespace UtilityBelt.Lib.Expressions {
 
             return v;
         }
-        
-        
+
+
         /// <summary>
         /// Entry parse rule. This will run multiple statements seperated by semicolon
         /// </summary>
@@ -66,7 +75,7 @@ namespace UtilityBelt.Lib.Expressions {
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        
+
         public override object VisitStringAtomExp(MetaExpressionsParser.StringAtomExpContext context) {
             var str = context.GetText();
             if (str.StartsWith("`"))
@@ -74,7 +83,7 @@ namespace UtilityBelt.Lib.Expressions {
             else
                 return Regex.Replace(str, @"\\(.)", "$1");
         }
-        
+
         /// <summary>
         /// Handle bool atoms
         /// </summary>
@@ -83,7 +92,7 @@ namespace UtilityBelt.Lib.Expressions {
         public override object VisitBoolAtomExp(MetaExpressionsParser.BoolAtomExpContext context) {
             return (context.GetText().ToLower().Trim() == "true");
         }
-        
+
         /// <summary>
         /// Handle parenthesis
         /// </summary>
@@ -98,7 +107,7 @@ namespace UtilityBelt.Lib.Expressions {
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        
+
         public override object VisitFunctionCall([NotNull] MetaExpressionsParser.FunctionCallContext context) {
             var methodName = context.ID().GetText().Replace("[", "");
             var arguments = new List<object>();
@@ -152,10 +161,16 @@ namespace UtilityBelt.Lib.Expressions {
             object left = Visit(context.expression(0));
             object right = Visit(context.expression(1));
 
-            if (context.AND() != null)
-                return (double)((IsTruthy(left) && IsTruthy(right)) ? 1 : 0);
-            if (context.OR() != null)
-                return (double)((IsTruthy(left) || IsTruthy(right)) ? 1 : 0);
+            if (context.AND() != null) {
+                if (!IsTruthy(left)) return false;
+                if (!IsTruthy(right)) return false;
+                return true;
+            }
+            if (context.OR() != null) {
+                if (IsTruthy(left)) return true;
+                if (IsTruthy(right)) return true;
+                return false;
+            }
 
             return false;
         }
@@ -262,8 +277,8 @@ namespace UtilityBelt.Lib.Expressions {
         /// <param name="context"></param>
         /// <returns></returns>
         public override object VisitRegexExp([NotNull] MetaExpressionsParser.RegexExpContext context) {
-            var inputstr = (string)Visit(context.expression(0));
-            var matchstr = (string)Visit(context.expression(1));
+            var inputstr = Visit(context.expression(0)).ToString();
+            var matchstr = Visit(context.expression(1)).ToString();
             var re = new Regex(matchstr);
             return re.IsMatch(inputstr);
         }
