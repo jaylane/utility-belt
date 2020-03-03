@@ -7,10 +7,10 @@ expression          : '(' expression ')'                                        
                     | expression MODULO expression                                                #moduloExp
                     | expression (PLUS|MINUS) expression                                          #addSubExp
                     | <assoc=right> expression POW expression                                     #powerExp
+					| expression REGEXOP expression				    					          #regexExp
 					| expression (GT | LT | GTEQTO | LTEQTO | EQTO | NEQTO) expression            #comparisonExp
 					| expression (AND | OR) expression                                            #booleanComparisonExp
-					| ID expressionList ']'                                                      #functionCall
-					| expression REGEXOP expression 									          #regexExp
+					| ID expressionList ']'                                                       #functionCall
 					| BOOL       								                                  #boolAtomExp
                     | NUMBER                                                                      #numericAtomExp
                     | STRING                                                                      #stringAtomExp
