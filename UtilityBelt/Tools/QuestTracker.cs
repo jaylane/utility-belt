@@ -18,6 +18,8 @@ namespace UtilityBelt.Tools {
     public class QuestTracker : ToolBase {
         DateTime lastHeartbeat = DateTime.MinValue;
 
+        public bool ShouldEat { get; private set; }
+
         HudTextBox UIQuestsListFilter;
         HudTabView UIQuestListNotebook;
         HudButton UIQuestListRefresh;
@@ -177,6 +179,7 @@ namespace UtilityBelt.Tools {
             questRedrawTimer.Interval = 1000;
 
             UB.Core.CommandLineText += Core_CommandLineText;
+            UB.Core.ChatBoxMessage += Current_ChatBoxMessage;
             if (AutoRequest) {
                 if (UB.Core.CharacterFilter.LoginStatus == 0)
                     UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
@@ -188,7 +191,7 @@ namespace UtilityBelt.Tools {
         private void Core_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
             try {
                 if (e.Text == "/myquests" || e.Text == "@myquests") {
-                    GetMyQuestsList(1, false);
+                    GetMyQuestsList(1, false, false);
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -204,7 +207,7 @@ namespace UtilityBelt.Tools {
         private bool GettingQuests = false;
         private bool GotFirstQuest = false;
         private sbyte GetQuestTries = 0;
-        private void GetMyQuestsList(sbyte tries = 1, bool doCommand=true) {
+        private void GetMyQuestsList(sbyte tries = 1, bool doCommand=true, bool shouldEat=true) {
             if (GettingQuests) {
                 if (doCommand) LogError("GetMyQuestsList called while it was already running");
                 return;
@@ -212,7 +215,7 @@ namespace UtilityBelt.Tools {
             GetQuestTries = tries;
             GettingQuests = true;
             GotFirstQuest = false;
-            UB.Core.ChatBoxMessage += Current_ChatBoxMessage;
+            ShouldEat = shouldEat;
             UB.Core.RenderFrame += Core_RenderFrame;
             lastHeartbeat = DateTime.UtcNow;
             UIQuestListRefresh.Text = "Refresh";
@@ -223,7 +226,6 @@ namespace UtilityBelt.Tools {
             if (GetQuestTries < 1) {
                 LogError("GetMyQuestList failed too many times, retiring");
                 GettingQuests = false;
-                UB.Core.ChatBoxMessage -= Current_ChatBoxMessage;
                 UB.Core.RenderFrame -= Core_RenderFrame;
                 UIQuestListRefresh.Visible = true;
                 return;
@@ -236,21 +238,16 @@ namespace UtilityBelt.Tools {
 
         public void Current_ChatBoxMessage(object sender, ChatTextInterceptEventArgs e) {
             try {
-                if (!GettingQuests) {
-                    UB.Core.ChatBoxMessage -= Current_ChatBoxMessage;
-                    LogError("Current_ChatBoxMessage called while not getting quests");
-                    return;
-                }
                 if (e.Text.Equals("Quest list is empty.\n") || e.Text.Equals("The command \"myquests\" is not currently enabled on this server.\n")) {
                     GettingQuests = false;
-                    UB.Core.ChatBoxMessage -= Current_ChatBoxMessage;
                     UB.Core.RenderFrame -= Core_RenderFrame;
                     UIQuestListRefresh.Visible = true;
                     return;
                 }
 
                 if (QuestFlag.MyQuestRegex.IsMatch(e.Text)) {
-                    e.Eat = GotFirstQuest = true;
+                    e.Eat = ShouldEat;
+                    GotFirstQuest = true;
                     var questFlag = QuestFlag.FromMyQuestsLine(e.Text);
 
                     if (questFlag != null) {
@@ -265,15 +262,15 @@ namespace UtilityBelt.Tools {
         private void Core_RenderFrame(object sender, EventArgs e) {
             if (!GettingQuests) {
                 UB.Core.RenderFrame -= Core_RenderFrame;
-                LogError("Core_RenderFrame called while not getting quests");
                 return;
             }
             if (GotFirstQuest) {
                 if (DateTime.UtcNow - lastHeartbeat > TimeSpan.FromSeconds(1)) {
                     GettingQuests = false;
-                    UB.Core.ChatBoxMessage -= Current_ChatBoxMessage;
                     UB.Core.RenderFrame -= Core_RenderFrame;
                     UIQuestListRefresh.Visible = true;
+
+                    UpdateQuestDB();
                 }
             } else {
                 if (DateTime.UtcNow - lastHeartbeat > TimeSpan.FromSeconds(15)) {
@@ -282,9 +279,34 @@ namespace UtilityBelt.Tools {
                     lastHeartbeat = DateTime.UtcNow;
                     RealGetMyQuestList();
                 }
+            }
+        }
 
+        private void UpdateQuestDB() {
+            var flags = new List<Lib.Models.QuestFlag>();
+            foreach (var kv in this.questFlags) {
+                var questFlag = kv.Value;
+                var qf = new Lib.Models.QuestFlag() {
+                    Key = questFlag.Key,
+                    MaxSolves = questFlag.MaxSolves,
+                    CompletedOn = questFlag.CompletedOn,
+                    Description = questFlag.Description,
+                    RepeatTime = (int)questFlag.RepeatTime.TotalSeconds,
+                    Solves = questFlag.Solves,
+                    Character = UB.Core.CharacterFilter.Name,
+                    Server = UB.Core.CharacterFilter.Server
+                };
+                flags.Add(qf);
             }
 
+            UB.Database.QuestFlags.Delete(
+                LiteDB.Query.And(
+                    LiteDB.Query.EQ("Character", UB.Core.CharacterFilter.Name),
+                    LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server)
+                )
+            );
+
+            UB.Database.QuestFlags.InsertBulk(flags);
         }
 
         private void QuestRedrawTimer_Tick(object sender, EventArgs e) {

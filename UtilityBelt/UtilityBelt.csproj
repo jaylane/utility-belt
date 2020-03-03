@@ -113,6 +113,7 @@
     <Compile Include="Lib\Models\Origin.cs" />
     <Compile Include="Lib\Models\PersistentVariable.cs" />
     <Compile Include="Lib\Models\Position.cs" />
+    <Compile Include="Lib\Models\QuestFlag.cs" />
     <Compile Include="Lib\Models\Weenie.cs" />
     <Compile Include="Lib\Models\WeenieAttribute.cs" />
     <Compile Include="Lib\Models\WeenieSpawn.cs" />
