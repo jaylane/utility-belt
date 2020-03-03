@@ -1221,7 +1221,7 @@ namespace UtilityBelt.Tools {
         [Summary("Checks if the first parameter is true, if so returns the second argument.  If the first parameter is false or not a number, returns the second argument")]
         [Example("iif[1,2,3]", "Returns 2 (second param) because 1 (first param) is true")]
         public object Iif(object value, object truevalue, object falsevalue) {
-            return (value.GetType() == typeof(double) && value.Equals(1)) ? truevalue : falsevalue;
+            return (value.GetType() == typeof(double) && value.Equals((double)1)) ? truevalue : falsevalue;
         }
         #endregion //iif[int value, any truevalue, any falsevalue]
         #region randint[int min, int max]
