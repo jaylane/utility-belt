@@ -13,7 +13,8 @@
 - Add settings for `AutoVendor.EnableBuying` and `AutoVendor.EnableSelling` to disable specific autovendor functionality
 - Fix AutoTinker now supports quest/pathwarden salvage
 - Fix AutoTinker now works with tailored items that no longer have a material
-- Fix AutoTinker now works with gold/linen/moonstone/pine/
+- Fix AutoTinker now works with gold/linen/moonstone/pine
+- Fix issue where quest flags were not being cleared from the tracker
 
 ## 0.1.2 (2020-01-02) [UtilityBeltInstaller-0.1.2.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/b1bcdf8401543ba32afd4cf480ff6408/UtilityBeltInstaller-0.1.2.exe)
 - "Fix" `/ub playeroption` on ACE, by sending the entire PlayerSystem packet

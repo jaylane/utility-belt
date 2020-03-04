@@ -212,6 +212,7 @@ namespace UtilityBelt.Tools {
                 if (doCommand) LogError("GetMyQuestsList called while it was already running");
                 return;
             }
+            questFlags.Clear();
             GetQuestTries = tries;
             GettingQuests = true;
             GotFirstQuest = false;
