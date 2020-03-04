@@ -184,22 +184,28 @@ namespace UtilityBelt.Lib.Expressions {
             object left = Visit(context.expression(0));
             object right = Visit(context.expression(1));
 
-            if (context.EQTO() != null)
-                return (bool)left.Equals(right);
-            if (context.NEQTO() != null)
-                return !(bool)left.Equals(right);
+            if (context.EQTO() != null) {
+                if (left.GetType() == typeof(string))
+                    return left.ToString().ToLower().Equals(right.ToString().ToLower());
+                return left.Equals(right);
+            }
+            if (context.NEQTO() != null) {
+                if (left.GetType() == typeof(string))
+                    return !left.ToString().ToLower().Equals(right.ToString().ToLower());
+                return !left.Equals(right);
+            }
 
             if (left.GetType() != typeof(double) || right.GetType() != typeof(double))
                 throw new Exception("Invalid comparison of non number types");
 
             if (context.LT() != null)
-                return (bool)((double)left < (double)right);
+                return (double)left < (double)right;
             if (context.GT() != null)
-                return (bool)((double)left > (double)right);
+                return (double)left > (double)right;
             if (context.LTEQTO() != null)
-                return (bool)((double)left <= (double)right);
+                return (double)left <= (double)right;
             if (context.GTEQTO() != null)
-                return (bool)((double)left >= (double)right);
+                return (double)left >= (double)right;
 
             return false;
         }
