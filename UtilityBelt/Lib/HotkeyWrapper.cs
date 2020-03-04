@@ -42,23 +42,25 @@ namespace UtilityBelt.Lib {
         static bool UsingVHS = false;
         static Dictionary<string, delHotkeyAction> NameHotkeyActions = new Dictionary<string, delHotkeyAction>();
         static Dictionary<object, delHotkeyAction> SenderHotkeyActions = new Dictionary<object, delHotkeyAction>();
-        static Dictionary<string, VirindiHotkeySystem.VHotkeyInfo> RegisteredVHSHotkeys = new Dictionary<string, VirindiHotkeySystem.VHotkeyInfo>();
         static List<string> RegisteredDecalHotkeys = new List<string>();
 
         #region Startup
 
         public static void Startup(string iPluginName) {
-            if (Started) return;
-            Started = true;
+            try {
+                if (Started) return;
+                Started = true;
 
-            PluginName = iPluginName;
-            UsingDHS = (Decal.Adapter.CoreManager.Current.HotkeySystem != null);
-            UsingVHS = VHS_Connector.IsVHSPresent();
-            NameHotkeyActions.Clear();
-            SenderHotkeyActions.Clear();
+                PluginName = iPluginName;
+                UsingDHS = (Decal.Adapter.CoreManager.Current.HotkeySystem != null);
+                UsingVHS = VHS_Connector.IsVHSPresent();
+                NameHotkeyActions.Clear();
+                SenderHotkeyActions.Clear();
 
-            if (UsingDHS) Startup_DHS();
-            if (UsingVHS) Startup_VHS();
+                if (UsingDHS) Startup_DHS();
+                if (UsingVHS) Startup_VHS();
+            }
+            catch { }
         }
 
         static void Startup_DHS() {
@@ -79,8 +81,6 @@ namespace UtilityBelt.Lib {
 
             if (UsingDHS) Shutdown_DHS();
             if (UsingVHS) Shutdown_VHS();
-
-            //RemoveAllHotkeys();
         }
 
         static void Shutdown_DHS() {
@@ -146,18 +146,8 @@ namespace UtilityBelt.Lib {
 
             VirindiHotkeySystem.VHotkeyInfo ii = new VirindiHotkeySystem.VHotkeyInfo(ptitle, pdescription, pvirtualKey, paltState, pcontrolState, pshiftState);
             VirindiHotkeySystem.VHotkeySystem.InstanceReal.AddHotkey(ii);
-            RegisteredVHSHotkeys.Add(ptitle, ii);
             ii.Fired2 += new EventHandler<VirindiHotkeySystem.VHotkeyInfo.cEatableFiredEventArgs>(ii_Fired2);
             SenderHotkeyActions[ii] = paction;
-        }
-
-        static void RemoveAllHotkeys() {
-            foreach (var kv in RegisteredVHSHotkeys) {
-                VirindiHotkeySystem.VHotkeySystem.InstanceReal.RemoveHotkey(kv.Value);
-            }
-            foreach (var ptitle in RegisteredDecalHotkeys) {
-                Decal.Adapter.CoreManager.Current.HotkeySystem.DeleteHotkey(PluginName, ptitle);
-            }
         }
     }
 }
