@@ -854,6 +854,16 @@ namespace UtilityBelt.Tools {
             return Util.GetObjectName(wo.Wo.Id);
         }
         #endregion //wobjectgetname[worldobject wo]
+        #region wobjectgetid[worldobject wo]
+        [ExpressionMethod("wobjectgetid")]
+        [ExpressionParameter(0, typeof(Wobject), "wo", "world object to get the id of")]
+        [ExpressionReturn(typeof(double), "Returns the id of the passed wobject")]
+        [Summary("Gets the id of a wobject")]
+        [Example("wobjectgetid[wobjectgetplayer[]]", "Returns the id of the current player")]
+        public object Wobjectgetid(Wobject wo) {
+            return (double)wo.Wo.Id;
+        }
+        #endregion //wobjectgetid[worldobject wo]
         #region wobjectgetobjectclass[worldobject wo]
         [ExpressionMethod("wobjectgetobjectclass")]
         [ExpressionParameter(0, typeof(Wobject), "wo", "world object to get the objectclass of")]
@@ -1044,6 +1054,34 @@ namespace UtilityBelt.Tools {
             return 0;
         }
         #endregion //wobjectfindnearestbynameandobjectclass[int objectclass, string namerx]
+        #region wobjectfindbyid[int id]
+        [ExpressionMethod("wobjectfindbyid")]
+        [ExpressionParameter(0, typeof(double), "id", "object id to find")]
+        [ExpressionReturn(typeof(Wobject), "Returns a worldobject")]
+        [Summary("Gets a worldobject representing the object with the passed id")]
+        [Example("wobjectfindbyid[123412]", "Returns a worldobject of the object with id 123412")]
+        public object Wobjectfindbyid(double id) {
+            var idInt = Convert.ToInt32(id);
+            if (UB.Core.Actions.IsValidObject(idInt)) {
+                var wo = UB.Core.WorldFilter[idInt];
+                if (wo != null)
+                    return new Wobject(wo.Id);
+            }
+
+            return 0;
+        }
+        #endregion //wobjectfindbyid[int id]
+        #region wobjectgetopencontainer[]
+        [ExpressionMethod("wobjectgetopencontainer")]
+        [ExpressionReturn(typeof(Wobject), "Returns a worldobject representing the currently opened container")]
+        [Summary("Gets a worldobject representing the currentlty opened container, or 0 if none")]
+        [Example("wobjectgetopencontainer[]", "Returns a worldobject representing the currently opened container")]
+        public object Wobjectgetopencontainer() {
+            if (UB.Core.Actions.OpenedContainer == 0)
+                return 0;
+            return new Wobject(UB.Core.Actions.OpenedContainer);
+        }
+        #endregion //wobjectgetopencontainer[]
         #endregion //WorldObjects
         #region Actions
         #region actiontryselect[wobject obj]
