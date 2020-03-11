@@ -184,6 +184,58 @@ namespace UtilityBelt.Tools {
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
+
+        #region /ub listvars
+        [Summary("Prints out all defined variables")]
+        [Usage("/ub listvars")]
+        [Example("/ub listvars", "Prints out all defined variables")]
+        [CommandPattern("listvars", @"^$")]
+        public void ListVars(string _, Match _1) {
+            var results = "Defined variables:\n";
+            foreach (var kv in ExpressionVariables) {
+                results += $"{kv.Key} ({GetFriendlyType(kv.Value)}) = {kv.Value}\n";
+            }
+
+            Util.WriteToChat(results);
+        }
+        #endregion
+        #region /ub listpvars
+        [Summary("Prints out all defined persistent variables for this character")]
+        [Usage("/ub listpvars")]
+        [Example("/ub listpvars", "Prints out all defined persistent variables for this character")]
+        [CommandPattern("listpvars", @"^$")]
+        public void ListPersistenVars(string _, Match _1) {
+            var pvars = UB.Database.PersistentVariables.Find(
+                LiteDB.Query.And(
+                    LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server),
+                    LiteDB.Query.EQ("Character", UB.Core.CharacterFilter.Name)
+                )
+            );
+            var results = "Defined persistent variables:\n";
+            foreach (var v in pvars) {
+                results += $"{v.Name} ({GetFriendlyType(v.Value)}) = {v.Value}\n";
+            }
+
+            Util.WriteToChat(results);
+        }
+        #endregion
+        #region /ub listgvars
+        [Summary("Prints out all defined global variables on this server")]
+        [Usage("/ub listgvars")]
+        [Example("/ub listgvars", "Prints out all defined global variables for this server")]
+        [CommandPattern("listgvars", @"^$")]
+        public void ListGlobalVars(string _, Match _1) {
+            var pvars = UB.Database.GlobalVariables.Find(
+                LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server)
+            );
+            var results = "Defined global variables:\n";
+            foreach (var v in pvars) {
+                results += $"{v.Name} ({GetFriendlyType(v.Value)}) = {v.Value}\n";
+            }
+
+            Util.WriteToChat(results);
+        }
+        #endregion
         #endregion
 
         #region Expressions
@@ -1446,6 +1498,21 @@ namespace UtilityBelt.Tools {
                 UB.Core.CharacterFilter.ChangePortalMode += CharacterFilter_ChangePortalMode;
                 isFixingPortalLoops = true;
             }
+        }
+
+        private string GetFriendlyType(object value) {
+            if (value.GetType() == typeof(string))
+                return "string";
+            if (value.GetType() == typeof(bool))
+                return "number";
+            if (value.GetType() == typeof(float))
+                return "number";
+            if (value.GetType() == typeof(int))
+                return "number";
+            if (value.GetType() == typeof(double))
+                return "number";
+
+            return value.GetType().ToString();
         }
 
         class ExpressionErrorListener : DefaultErrorStrategy {
