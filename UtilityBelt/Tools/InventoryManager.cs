@@ -234,7 +234,7 @@ Provides a command-line interface to inventory management.
                         }
                         else {
                             giveObjects.Add(item, 0);
-                            pendingGiveCount += stackCount;
+                            pendingGiveCount += stackCount == 0 ? 1 : 0;
                         }
                     }
                 }
