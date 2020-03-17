@@ -1436,6 +1436,26 @@ namespace UtilityBelt.Tools {
             return 1;
         }
         #endregion //vtsetmetastate[string state]
+        #region ord[string character]
+        [ExpressionMethod("ord")]
+        [ExpressionParameter(0, typeof(string), "character", "string to convert")]
+        [ExpressionReturn(typeof(double), "number representing unicode character")]
+        [Summary("returns an integer representing the Unicode character")]
+        [Example("ord[c]", "Converts 'c' to a number representing its unicode character (99)")]
+        public object Ord(string character) {
+            return (double)(character.First());
+        }
+        #endregion //ord[string character]
+        #region chr[number character]
+        [ExpressionMethod("chr")]
+        [ExpressionParameter(0, typeof(double), "character", "number to convert")]
+        [ExpressionReturn(typeof(string), "string representing unicode character")]
+        [Summary("returns a string representing a character whose Unicode code point is an integer.")]
+        [Example("chr[99]", "Converts `99` to a strin representing its unicode character 'c'")]
+        public object Chr(double character) {
+            return ((char)character).ToString();
+        }
+        #endregion //chr[string character]
         #endregion //Misc
         #region Stopwatch
         #region stopwatchcreate[]
