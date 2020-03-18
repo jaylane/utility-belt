@@ -358,6 +358,9 @@ Provides a command-line interface to inventory management.
         }
 
         private void TestIGItem(int item) {
+            if (!IGRunning)
+                return;
+
             bailTimer = DateTime.UtcNow;
             GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item);
             LootAction result = lootProfile.GetLootDecision(itemInfo);
@@ -717,17 +720,18 @@ Provides a command-line interface to inventory management.
             }
 
             Util.ThinkOrWrite($"ItemGiver finished: {utlProfile} to {targetPlayer}. took {Util.GetFriendlyTimeDifference(giveTimer.Elapsed)} to give {itemsGiven} item(s). {totalFailures - itemsGiven}", IGThink);
+            
+            UB.Core.RenderFrame -= Core_RenderFrame_ig;
             UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
             UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.ItemUse);
-            UB.Core.RenderFrame -= Core_RenderFrame_ig;
             itemsGiven = totalFailures = failedItems = pendingGiveCount = 0;
             IGRunning = isRegex = false;
             lootProfile = null;
             poorlyNamedKeepUptoDictionary.Clear();
             giveObjects.Clear();
             keptObjects.Clear();
+            assessor.Dispose();
             assessor = null;
-
             Finished?.Invoke(this, new EventArgs());
         }
 
