@@ -358,9 +358,6 @@ Provides a command-line interface to inventory management.
         }
 
         private void TestIGItem(int item) {
-            if (!IGRunning)
-                return;
-
             bailTimer = DateTime.UtcNow;
             GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(item);
             LootAction result = lootProfile.GetLootDecision(itemInfo);
@@ -730,7 +727,6 @@ Provides a command-line interface to inventory management.
             poorlyNamedKeepUptoDictionary.Clear();
             giveObjects.Clear();
             keptObjects.Clear();
-            assessor.Dispose();
             assessor = null;
             Finished?.Invoke(this, new EventArgs());
         }
