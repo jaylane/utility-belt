@@ -190,12 +190,12 @@ Provides a command-line interface to inventory management.
             LogDebug($"ItemGiver GIVE {(maxGive == int.MaxValue ? "∞" : maxGive.ToString())} {(givePartialItem ? "(partial)" : "")}{utlProfile} to {UB.Core.WorldFilter[destinationId].Name}");
             UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
             UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
+            IGRunning = true;
             GetGiveItems();
 
             lastIdCount = int.MaxValue;
             bailTimer = DateTime.UtcNow;
             giveTimer = Stopwatch.StartNew();
-            IGRunning = true;
             UB.Core.RenderFrame += Core_RenderFrame_ig;
 
             Started?.Invoke(this, new EventArgs());
