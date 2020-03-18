@@ -313,11 +313,11 @@ Provides a command-line interface to inventory management.
             UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
             UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
             lastIdCount = int.MaxValue;
+            IGRunning = true;
             GetIGItems();
 
             bailTimer = DateTime.UtcNow;
             giveTimer = Stopwatch.StartNew();
-            IGRunning = true;
             destinationId = destination.Id;
             InventoryManager.utlProfile = utlProfile;
             giveDelay = delay;
