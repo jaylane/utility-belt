@@ -886,13 +886,18 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         }
 
         private List<BuyItem> GetBuyItems() {
+            bool buyingContainers = false;
             if (!EnableBuying)
                 return new List<BuyItem>();
 
-            VendorInfo vendor = VendorCache.GetVendor(vendorId);
+            VendorInfo vendor = VendorCache.GetVendor(UBHelper.Vendor.Id);
             List<BuyItem> buyItems = new List<BuyItem>();
 
-            if (vendor == null) return buyItems;
+            if (vendor == null) {
+                Util.WriteToChat("Vendor is null");
+                return buyItems;
+            }
+
             foreach (VendorItem item in vendor.Items.Values) {
                 uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithVendorObjectTemplateID(item.Id);
                 if (itemInfo == null)
@@ -900,8 +905,15 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                 uTank2.LootPlugins.LootAction result = lootProfile.GetLootDecision(itemInfo);
                 if (!result.IsKeepUpTo)
                     continue;
-                if (result.Data1 > Util.GetItemCountInInventoryByName(item.Name))
-                    buyItems.Add(new BuyItem(item, result.Data1 - Util.GetItemCountInInventoryByName(item.Name)));
+                var countObjClass = Util.GetItemCountInInventoryByObjectClass(item.ObjectClass);
+                var countByName = Util.GetItemCountInInventoryByName(item.Name);
+                if (!buyingContainers && item.ObjectClass == ObjectClass.Container && result.Data1 > countObjClass) {
+                    buyingContainers = true;
+                    buyItems.Add(new BuyItem(item, result.Data1 - countObjClass));
+                }
+                else if (item.ObjectClass != ObjectClass.Container && result.Data1 > countByName) {
+                    buyItems.Add(new BuyItem(item, result.Data1 - countByName));
+                }
             }
 
             foreach (VendorItem item in vendor.Items.Values) {
