@@ -718,9 +718,9 @@ Provides a command-line interface to inventory management.
 
             Util.ThinkOrWrite($"ItemGiver finished: {utlProfile} to {targetPlayer}. took {Util.GetFriendlyTimeDifference(giveTimer.Elapsed)} to give {itemsGiven} item(s). {totalFailures - itemsGiven}", IGThink);
             
-            UB.Core.RenderFrame -= Core_RenderFrame_ig;
             UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
             UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.ItemUse);
+            UB.Core.RenderFrame -= Core_RenderFrame_ig;
             itemsGiven = totalFailures = failedItems = pendingGiveCount = 0;
             IGRunning = isRegex = false;
             lootProfile = null;
@@ -728,6 +728,7 @@ Provides a command-line interface to inventory management.
             giveObjects.Clear();
             keptObjects.Clear();
             assessor = null;
+
             Finished?.Invoke(this, new EventArgs());
         }
 

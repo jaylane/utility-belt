@@ -923,6 +923,19 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                 if (!result.IsKeep) continue;
                 buyItems.Add(new BuyItem(item, int.MaxValue));
             }
+
+            buyItems.Sort(delegate (BuyItem a, BuyItem b) {
+                // tradenotes last
+                if (a.Item.ObjectClass == ObjectClass.TradeNote && b.Item.ObjectClass != ObjectClass.TradeNote) return 1;
+                if (a.Item.ObjectClass != ObjectClass.TradeNote && b.Item.ObjectClass == ObjectClass.TradeNote) return -1;
+
+                // cheapest first
+                var buyPrice1 = GetVendorSellPrice(a.Item);
+                var buyPrice2 = GetVendorSellPrice(b.Item);
+
+                return buyPrice1.CompareTo(buyPrice2);
+            });
+
             return buyItems;
         }
 
