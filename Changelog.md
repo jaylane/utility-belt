@@ -1,7 +1,4 @@
-## 0.1.4 (TBD)
-- Insert changes here
-
-## 0.1.3 (2020-04-04) [UtilityBeltInstaller-0.1.3.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/79c1ed4bd9671f0aa964a881db7ac4da/UtilityBeltInstaller-0.1.3.exe)
+## 0.1.4 
 - Fix `/ub count profile <profile>` to actually output results to chat
 - Add `/ub date[utc] [format]` command to echo the current date, with optional format
 - Fix bug where long chat nav point texts would crash the client when visualnav is enabled
