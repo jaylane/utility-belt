@@ -383,6 +383,10 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
                     //Util.WriteToChat("Jewelry");
                     filteredSalvage = new string[] { "Gold", "Linen", "Moonstone", "Pine" };
                     break;
+                case ObjectClass.Clothing:
+                    //Util.WriteToChat("Clothing");
+                    filteredSalvage = new string[] { "Gold", "Linen", "Moonstone", "Pine" };
+                    break;
                 default:
                     Console.WriteLine("Select an item");
                     break;
