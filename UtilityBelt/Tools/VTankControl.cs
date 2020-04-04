@@ -1655,6 +1655,8 @@ namespace UtilityBelt.Tools {
         }
 
         private void DoPortalLoopFix() {
+            // TODO: fixy
+            return;
             Util.WriteToChat($"Nav: {UBHelper.vTank.Instance.NavCurrent}");
             Util.DispatchChatToBoxWithPluginIntercept($"/vt nav save {VTNavRoute.NoneNavName}");
             UBHelper.vTank.Instance.NavDeletePoint(0);

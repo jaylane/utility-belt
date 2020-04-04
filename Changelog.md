@@ -6,15 +6,16 @@
 - Add `/ub opt toggle <setting>` command to toggle boolean values
 - Add support for DHS/VHS hotkeys for common settings
 - Fix some memory leaks
-- Add `VTank.FixPortalLoops` setting that will attempt to detect and fix infinite portal loops while naving
 - Fix bug where item counts from `/ub count profile` were not properly resetting
 - Add ItemGiver UI
-- Optionally replace vtanks meta expression system with one from UB. Read more here: [TODO_LINK](http://utilitybelty.gitlab.io/)
+- Experimental: Optionally replace vtanks meta expression system with one from UB. Read more here: [Expression Docs](http://utilitybelty.gitlab.io/docs/expressions/)
 - Add settings for `AutoVendor.EnableBuying` and `AutoVendor.EnableSelling` to disable specific autovendor functionality
 - Fix AutoTinker now supports quest/pathwarden salvage
 - Fix AutoTinker now works with tailored items that no longer have a material
 - Fix AutoTinker now works with gold/linen/moonstone/pine
 - Fix issue where quest flags were not being cleared from the tracker
+- Fix issue where autovendor would bail early sometimes when buying trade notes
+- Fix issue where autovendor would not buy packs properly
 
 ## 0.1.2 (2020-01-02) [UtilityBeltInstaller-0.1.2.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/b1bcdf8401543ba32afd4cf480ff6408/UtilityBeltInstaller-0.1.2.exe)
 - "Fix" `/ub playeroption` on ACE, by sending the entire PlayerSystem packet
