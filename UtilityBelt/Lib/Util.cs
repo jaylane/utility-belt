@@ -262,6 +262,26 @@ namespace UtilityBelt
 
             return count;
         }
+
+        internal static int GetItemCountInInventoryByObjectClass(ObjectClass objectClass) {
+            int count = 0;
+
+            using (var inv = UB.Core.WorldFilter.GetInventory()) {
+                foreach (var wo in inv) {
+                    if (wo.ObjectClass == objectClass) {
+                        if (wo.Values(LongValueKey.StackCount, 0) > 0) {
+                            count += wo.Values(LongValueKey.StackCount);
+                        }
+                        else {
+                            ++count;
+                        }
+                    }
+                }
+            }
+
+            return count;
+        }
+
         internal static bool IsItemSafeToGetRidOf(int id) {
             return IsItemSafeToGetRidOf(UB.Core.WorldFilter[id]);
         }
