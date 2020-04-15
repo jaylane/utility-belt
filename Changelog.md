@@ -1,5 +1,7 @@
 ## 0.1.5 (TBD)
 - Fix AutoTinker now supports tinkering clothing with gold/linen/moonstone/pine
+- Fix blood shreth killtask, now shows up correctly under killtasks. (maybe fixes others too?)
+- Fix some quests that were showing up on the questtracker once tab that were actually solvable multiple times
 
 ## 0.1.4 (2020-04-04) [UtilityBeltInstaller-0.1.4.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/0e205b055afc488ef2a4e4194cb6b72f/UtilityBeltInstaller-0.1.4.exe)
 - Fix `/ub count profile <profile>` to actually output results to chat
