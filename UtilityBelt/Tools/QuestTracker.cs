@@ -229,6 +229,7 @@ namespace UtilityBelt.Tools {
                 GettingQuests = false;
                 UB.Core.RenderFrame -= Core_RenderFrame;
                 UIQuestListRefresh.Visible = true;
+                ShouldEat = false;
                 return;
             }
             try {
@@ -243,6 +244,7 @@ namespace UtilityBelt.Tools {
                     GettingQuests = false;
                     UB.Core.RenderFrame -= Core_RenderFrame;
                     UIQuestListRefresh.Visible = true;
+                    ShouldEat = false;
                     return;
                 }
 
@@ -270,6 +272,7 @@ namespace UtilityBelt.Tools {
                     GettingQuests = false;
                     UB.Core.RenderFrame -= Core_RenderFrame;
                     UIQuestListRefresh.Visible = true;
+                    ShouldEat = false;
 
                     UpdateQuestDB();
                 }
