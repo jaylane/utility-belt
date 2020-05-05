@@ -997,7 +997,7 @@ namespace UtilityBelt.Tools {
         public object Wobjectgetintprop(Wobject wobject, double property) {
             return wobject.Wo.Values((LongValueKey)Convert.ToInt32(property), 0);
         }
-        #endregion //wobjectgetintprop[int property]
+        #endregion //wobjectgetintprop[wobject obj, int property]
         #endregion //Expressions
 
         public Plugin(UtilityBeltPlugin ub, string name) : base(ub, name) {
@@ -1014,8 +1014,6 @@ namespace UtilityBelt.Tools {
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
-
-
 
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {

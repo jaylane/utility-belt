@@ -140,6 +140,7 @@ namespace UtilityBelt {
         public DungeonMaps DungeonMaps { get; private set; }
         public EquipmentManager EquipmentManager { get; private set; }
         public FellowshipManager FellowshipManager { get; private set; }
+        public HealthTracker HealthTracker { get; private set; }
         public InventoryManager InventoryManager { get; private set; }
         public Jumper Jumper { get; private set; }
         public LSD LSD { get; private set; }
