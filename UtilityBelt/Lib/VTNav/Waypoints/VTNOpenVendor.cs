@@ -57,7 +57,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
 
             var idLine = base.sr.ReadLine();
             if (!int.TryParse(idLine, out Id)) {
-                Util.WriteToChat("Could not parse VendorID");
+                Logger.Error("Could not parse VendorID");
                 return false;
             }
 

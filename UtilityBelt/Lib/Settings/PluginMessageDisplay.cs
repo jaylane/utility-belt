@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 
 namespace UtilityBelt.Lib.Settings {
-    public class ColorToggleOption : SectionBase {
+    public class PluginMessageDisplay : SectionBase {
         private bool enabled;
         [DefaultValue(true)]
         [Summary("Enabled / Disabled")]
@@ -18,11 +18,11 @@ namespace UtilityBelt.Lib.Settings {
                 OnPropertyChanged("Enabled");
             }
         }
-        
-        private int color;
-        [DefaultValue(-1)]
+
+        private short color;
+        [DefaultValue(5)]
         [Summary("Color")]
-        public int Color {
+        public short Color {
             get { return color; }
             set {
                 if (color == value) return;
@@ -31,20 +31,16 @@ namespace UtilityBelt.Lib.Settings {
             }
         }
 
-        [JsonIgnore]
-        public int DefaultColor { get; set; } = System.Drawing.Color.White.ToArgb();
-
-        public ColorToggleOption(SectionBase parent, bool show, int color) : base(parent) {
+        public PluginMessageDisplay(SectionBase parent, bool show, short color) : base(parent) {
             Enabled = show;
             Color = color;
-            DefaultColor = color;
         }
 
         new public string ToString() {
-            return $"Enabled:{Enabled} Color:{Color} DefaultColor:{Color}";
+            return $"Enabled:{Enabled} Color:{Color}";
         }
 
-        public bool Equals(ColorToggleOption obj) {
+        public bool Equals(PluginMessageDisplay obj) {
             return ToString() == obj.ToString();
         }
     }

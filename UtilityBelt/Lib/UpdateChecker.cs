@@ -20,7 +20,7 @@ namespace UtilityBelt.Lib {
 
     public static class UpdateChecker {
         public static void CheckForUpdate(bool loud=false) {
-            if (loud) Util.WriteToChat("Checking for update");
+            if (loud) Logger.WriteToChat("Checking for update");
 
             new Thread(() => {
                 Thread.CurrentThread.IsBackground = true;
@@ -82,7 +82,7 @@ namespace UtilityBelt.Lib {
                         }
 
                         if (!foundUpdate) {
-                            Util.WriteToChat("Plugin is up to date: " + Util.GetVersion(true));
+                            Logger.WriteToChat("Plugin is up to date: " + Util.GetVersion(true));
                         }
 
                         json = "";

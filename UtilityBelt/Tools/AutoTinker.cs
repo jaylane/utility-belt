@@ -123,7 +123,7 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
                         if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15)) {
                             lastIdSpam = DateTime.UtcNow;
                             var thisIdCount = UB.Assessor.GetNeededIdCount(itemsToId);
-                            Util.WriteToChat(string.Format("AutoImbue waiting to id {0} items, this will take approximately {0} seconds.", thisIdCount));
+                            Logger.WriteToChat(string.Format("AutoImbue waiting to id {0} items, this will take approximately {0} seconds.", thisIdCount));
                             if (lastIdCount != thisIdCount) {
                                 lastIdCount = thisIdCount;
                             }
@@ -133,7 +133,7 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
                     else {
                         waitingForIds = false;
                         endTime = DateTime.UtcNow;
-                        Util.WriteToChat("AutoTinker: took " + Util.GetFriendlyTimeDifference(endTime - startTime) + " to scan");
+                        Logger.WriteToChat("AutoTinker: took " + Util.GetFriendlyTimeDifference(endTime - startTime) + " to scan");
                         ClearAllTinks();
                         DoPopulateList();
                     }
@@ -194,7 +194,7 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
                     DoTinks();
                 }
                 else {
-                    Util.WriteToChat("There are " + AutoTinkerList.RowCount.ToString() + " in the list.");
+                    Logger.WriteToChat("There are " + AutoTinkerList.RowCount.ToString() + " in the list.");
                     AutoTinkItemNameLabel.Text = "[None]";
                     itemWO = null;
                 }
@@ -286,7 +286,7 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
                 }
             }
             if (AutoTinkerList.RowCount <= 0) {
-                Util.WriteToChat("No salvage matched the selected criteria.  Either lower the percentage or get more salvage.");
+                Logger.Error("No salvage matched the selected criteria.  Either lower the percentage or get more salvage.");
             }
         }
 
@@ -297,7 +297,7 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
                     DoPopulateList();
                 }
                 else {
-                    Util.WriteToChat("No item selected...");
+                    Logger.Error("No item selected...");
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -313,7 +313,7 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
                     FilterSalvage(itemWO);
                 }
                 else {
-                    Util.WriteToChat(Util.GetObjectName(itemWO.Id).ToString() + " cannot be tinkered. Please select another item.");
+                    Logger.WriteToChat(Util.GetObjectName(itemWO.Id).ToString() + " cannot be tinkered. Please select another item.");
                     AutoTinkItemNameLabel.Text = "[None]";
                     itemWO = null;
                 }
@@ -451,11 +451,11 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
                 HudStaticText itemID = (HudStaticText)tinkerListRow[5];
 
                 if (!int.TryParse(itemID.Text.ToString(), out int intItemId)) {
-                    Util.WriteToChat("AutoTinker: Something went wrong, unable to parse item to work with: " + itemID.Text);
+                    LogError("Something went wrong, unable to parse item to work with: " + itemID.Text);
                 }
 
                 if (!int.TryParse(salID.Text.ToString(), out int intSalvId)) {
-                    Util.WriteToChat("AutoTinker: Something went wrong, unable to parse salvage to work with: " + salID.Text);
+                    LogError("Something went wrong, unable to parse salvage to work with: " + salID.Text);
                 }
 
 
@@ -485,7 +485,7 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
                             tinking = true;
                         }
                         else if (targetItemUpdated && verifyPercent != successPstr) {
-                            Util.WriteToChat("Tinker % changed.  Please check your buffs/brill and refresh the list to continue." + " ------ planned: " + successPstr + " ----- actual: " + verifyPercent);
+                            Logger.Error("Tinker % changed.  Please check your buffs/brill and refresh the list to continue." + " ------ planned: " + successPstr + " ----- actual: " + verifyPercent);
                             ClearAllTinks();
                         }
                     }
@@ -509,7 +509,7 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
         private void UBHelper_ConfirmationRequest(object sender, UBHelper.ConfirmationRequest.ConfirmationRequestEventArgs e) {
             try {
                 if (e.Confirm == 5) {
-                    Util.WriteToChat($"AutoTinker: Clicking Yes on {e.Text}");
+                    Logger.Debug($"AutoTinker: Clicking Yes on {e.Text}");
                     e.ClickYes = true;
                     UBHelper.ConfirmationRequest.ConfirmationRequestEvent -= UBHelper_ConfirmationRequest;
                 }
@@ -580,10 +580,10 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
 
         public void DoThings(int targetSalvageID, WorldObject targetWO) {
             if (targetSalvageID == 0) {
-                Util.WriteToChat("targetSalvageID is null");
+                Logger.Error("targetSalvageID is null");
             }
             if (targetWO.Id == 0) {
-                Util.WriteToChat("targetSalvageID is null");
+                Logger.Error("targetSalvageID is null");
             }
 
             targetSalvage = CoreManager.Current.WorldFilter[targetSalvageID];

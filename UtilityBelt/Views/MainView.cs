@@ -87,7 +87,7 @@ namespace UtilityBelt.Views {
                             var prop = UB.Settings.GetOptionProperty(kv.Value);
                             prop.Property.SetValue(prop.Parent, !(bool)UB.Settings.Get(kv.Value), null);
                             if (!UB.Plugin.Debug) {
-                                Util.WriteToChat($"{kv.Value} = {UB.Settings.DisplayValue(kv.Value)}");
+                                Logger.WriteToChat($"{kv.Value} = {UB.Settings.DisplayValue(kv.Value)}");
                             }
                         }
                         catch (Exception ex) { Logger.LogException(ex); }

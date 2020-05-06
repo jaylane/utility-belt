@@ -415,16 +415,16 @@ Provides a command-line interface to inventory management.
         public void DoAutoStack(string _, Match _1) {
             if (UBHelper.InventoryManager.AutoStack()) {
                 UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_AutoStack;
-                Util.WriteToChat("AutoStack running");
+                Logger.WriteToChat("AutoStack running");
             }
             else {
-                Util.WriteToChat("AutoStack - nothing to do");
+                Logger.WriteToChat("AutoStack - nothing to do");
             }
         }
 
         private void ActionQueue_InventoryEvent_AutoStack(object sender, EventArgs e) {
             try {
-                Util.WriteToChat("AutoStack complete.");
+                Logger.WriteToChat("AutoStack complete.");
                 UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoStack;
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -437,16 +437,16 @@ Provides a command-line interface to inventory management.
         public void DoAutoCram(string _, Match _1) {
             if (UBHelper.InventoryManager.AutoCram()) {
                 UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_AutoCram;
-                Util.WriteToChat("AutoCram running");
+                Logger.WriteToChat("AutoCram running");
             }
             else {
-                Util.WriteToChat("AutoCram - nothing to do");
+                Logger.WriteToChat("AutoCram - nothing to do");
             }
         }
 
         private void ActionQueue_InventoryEvent_AutoCram(object sender, EventArgs e) {
             try {
-                Util.WriteToChat("AutoCram complete.");
+                Logger.WriteToChat("AutoCram complete.");
                 UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoCram;
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -712,7 +712,7 @@ Provides a command-line interface to inventory management.
 
         public void IGStop() {
             if (!IGRunning) {
-                Util.WriteToChat("ItemGiver is not running.");
+                Logger.Error("ItemGiver is not running.");
                 return;
             }
 

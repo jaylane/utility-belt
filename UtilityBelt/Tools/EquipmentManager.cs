@@ -117,9 +117,9 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
                     break;
 
                 case "list":
-                    Util.WriteToChat("Equip Profiles:");
+                    Logger.WriteToChat("Equip Profiles:");
                     foreach (var p in GetProfiles(profileName)) {
-                        Util.WriteToChat($" * {Path.GetFileName(p)} ({Path.GetDirectoryName(p)})");
+                        Logger.WriteToChat($" * {Path.GetFileName(p)} ({Path.GetDirectoryName(p)})");
                     }
                     break;
 
@@ -178,11 +178,11 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
 
             if (!silent) {
                 if (tinkersAvailable > 0 && !silent)
-                    Util.WriteToChat($"{tinkersAvailable} mahogany salvage adds {(tinkersAvailable * 0.04)} to DamageModifier");
-                
-                Util.WriteToChat($"Formula: (DamageBonus + ElementalBonus) * DamageModifier");
-                Util.WriteToChat($"Calculated Formula: ({maxDamage}(+{maxDamageSpellBonus} from cantrips) + {elementalBonus}) * {damageBonus - 1}(+{(tinkersAvailable * 0.04)} from {tinkersAvailable} tinkers)");
-                Util.WriteToChat($"Calculated (after tinks): {dmg}");
+                    Logger.WriteToChat($"{tinkersAvailable} mahogany salvage adds {(tinkersAvailable * 0.04)} to DamageModifier");
+
+                Logger.WriteToChat($"Formula: (DamageBonus + ElementalBonus) * DamageModifier");
+                Logger.WriteToChat($"Calculated Formula: ({maxDamage}(+{maxDamageSpellBonus} from cantrips) + {elementalBonus}) * {damageBonus - 1}(+{(tinkersAvailable * 0.04)} from {tinkersAvailable} tinkers)");
+                Logger.WriteToChat($"Calculated (after tinks): {dmg}");
             }
 
             return dmg;
@@ -272,7 +272,7 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
                 if (LongValueKeySpellEffects.ContainsKey(wo.Spell(i)) && LongValueKeySpellEffects[wo.Spell(i)].Key == key && LongValueKeySpellEffects[wo.Spell(i)].Bonus != 0) {
                     bonus += (int)LongValueKeySpellEffects[wo.Spell(i)].Bonus;
                     if (!silent)
-                        Util.WriteToChat($"Spell {spell.Name} buffs {key} by {(int)LongValueKeySpellEffects[wo.Spell(i)].Bonus}");
+                        Logger.WriteToChat($"Spell {spell.Name} buffs {key} by {(int)LongValueKeySpellEffects[wo.Spell(i)].Bonus}");
                 }
             }
 
@@ -288,7 +288,7 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
                     bonus += (int)DoubleValueKeySpellEffects[wo.Spell(i)].Bonus;
                     if (!silent) {
                         var mod = wo.ObjectClass == ObjectClass.MissileWeapon ? "DamageBonus" : key.ToString();
-                        Util.WriteToChat($"Spell {spell.Name} buffs {mod} by {(int)DoubleValueKeySpellEffects[wo.Spell(i)].Bonus}");
+                        Logger.WriteToChat($"Spell {spell.Name} buffs {mod} by {(int)DoubleValueKeySpellEffects[wo.Spell(i)].Bonus}");
                     }
                 }
             }
@@ -364,7 +364,7 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
                     writer.Flush();
                 }
 
-                Util.WriteToChat($"Profile created at {path}");
+                Logger.WriteToChat($"Profile created at {path}");
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -421,7 +421,7 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
                         catch (Exception ex) { Logger.LogException(ex); }
 
                         if (!hasLootCore) {
-                            Util.WriteToChat("Unable to load VTClassic, something went wrong.");
+                            LogError("Unable to load VTClassic, something went wrong.");
                             return;
                         }
                     }
@@ -533,10 +533,10 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
                 }
 
                 if (state == RunningState.Test) {
-                    Util.WriteToChat("Will attempt to equip the following items in order:");
+                    Logger.WriteToChat("Will attempt to equip the following items in order:");
                     while (itemList.Count > 0) {
                         var item = itemList.Dequeue();
-                        Util.WriteToChat($" * {Util.GetObjectName(item)} <{item}>");
+                        Logger.WriteToChat($" * {Util.GetObjectName(item)} <{item}>");
                     }
 
                     Stop();

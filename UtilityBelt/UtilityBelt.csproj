@@ -82,6 +82,10 @@
       <HintPath>C:\Games\VirindiPlugins\VirindiTank\utank2-i.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="VCS5">
+      <HintPath>C:\Games\VirindiPlugins\VirindiChatSystem5\VCS5.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="VirindiHotkeySystem">
       <HintPath>C:\Games\VirindiPlugins\VirindiHotkeySystem\VirindiHotkeySystem.dll</HintPath>
       <Private>False</Private>
@@ -118,12 +122,14 @@
     <Compile Include="Lib\Models\Weenie.cs" />
     <Compile Include="Lib\Models\WeenieAttribute.cs" />
     <Compile Include="Lib\Models\WeenieSpawn.cs" />
+    <Compile Include="Lib\Settings\PluginMessageDisplay.cs" />
     <Compile Include="Lib\Spells.cs" />
     <Compile Include="Lib\TextureCache.cs" />
     <Compile Include="Lib\Dungeon\TrackedObject.cs" />
     <Compile Include="Lib\Mp3Player.cs" />
     <Compile Include="Lib\ToolBase.cs" />
     <Compile Include="Lib\Database.cs" />
+    <Compile Include="Lib\VCS_Connector.cs" />
     <Compile Include="Lib\VHS_Connector.cs" />
     <Compile Include="Tools\DungeonMaps.cs" />
     <Compile Include="Tools\FellowshipManager.cs" />

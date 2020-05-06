@@ -21,7 +21,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             var pauseText = base.sr.ReadLine();
 
             if (!int.TryParse(pauseText, out Pause)) {
-                Util.WriteToChat("Could not parse pause: " + pauseText);
+                Logger.Error("Could not parse pause: " + pauseText);
                 return false;
             }
 

@@ -85,7 +85,7 @@ namespace UtilityBelt.Tools {
                             if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15)) {
                                 lastIdSpam = DateTime.UtcNow;
                                 var thisIdCount = UB.Assessor.GetNeededIdCount(itemsToId);
-                                Util.WriteToChat(string.Format("AutoImbue waiting to id {0} items, this will take approximately {0} seconds.", thisIdCount));
+                                Logger.WriteToChat(string.Format("AutoImbue waiting to id {0} items, this will take approximately {0} seconds.", thisIdCount));
                                 if (lastIdCount != thisIdCount) { // if count has changed, reset bail timer
                                     lastIdCount = thisIdCount;
                                     //bailTimer = DateTime.UtcNow;
@@ -96,7 +96,7 @@ namespace UtilityBelt.Tools {
                     else {
                         waitingForIds = false;
                         endTime = DateTime.UtcNow;
-                        Util.WriteToChat("AutoImbue: took " + Util.GetFriendlyTimeDifference(endTime - startTime) + " to scan");
+                        Logger.WriteToChat("AutoImbue: took " + Util.GetFriendlyTimeDifference(endTime - startTime) + " to scan");
                         ClearAllTinks();
                         GetPotentialItems();
                     }
@@ -114,7 +114,7 @@ namespace UtilityBelt.Tools {
                     DoTinks();
                 }
                 else {
-                    Util.WriteToChat("There are " + AutoImbueList.RowCount.ToString() + " in the list.");
+                    Logger.WriteToChat("There are " + AutoImbueList.RowCount.ToString() + " in the list.");
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -397,12 +397,12 @@ namespace UtilityBelt.Tools {
 
                 //Logger.Debug("AutoTinker: applying " + sal.Text.ToString() + ": " + salID.Text.ToString() + " to " + item.Text.ToString() + ": " + itemID.Text.ToString());
                 if (!int.TryParse(itemID.Text.ToString(), out int intItemId)) {
-                    Util.WriteToChat("AutoImbue: Something went wrong, unable to parse item to work with.");
+                    LogError("Something went wrong, unable to parse item to work with.");
                     return;
                 }
 
                 if (!int.TryParse(salID.Text.ToString(), out int intSalvId)) {
-                    Util.WriteToChat("AutoImbue: Something went wrong, unable to parse salvage to work with.");
+                    LogError("Something went wrong, unable to parse salvage to work with.");
                     return;
                 }
 
@@ -450,7 +450,7 @@ namespace UtilityBelt.Tools {
         private void UBHelper_ConfirmationRequest(object sender, UBHelper.ConfirmationRequest.ConfirmationRequestEventArgs e) {
             try {
                 if (e.Confirm == 5) {
-                    Util.WriteToChat($"AutoImbue: Clicking Yes on {e.Text}");
+                    Logger.WriteToChat($"AutoImbue: Clicking Yes on {e.Text}");
                     e.ClickYes = true;
                     UBHelper.ConfirmationRequest.ConfirmationRequestEvent -= UBHelper_ConfirmationRequest;
                 }

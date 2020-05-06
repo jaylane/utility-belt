@@ -13,6 +13,7 @@ using UtilityBelt.Lib;
 using UtilityBelt.Lib.Constants;
 using UtilityBelt.Lib.Dungeon;
 using UtilityBelt.Lib.Expressions;
+using UtilityBelt.Lib.Settings;
 using static UtilityBelt.Tools.VTankControl;
 
 namespace UtilityBelt.Tools {
@@ -122,7 +123,7 @@ namespace UtilityBelt.Tools {
                 UpdateSetting("PCap", value);
 
                 if (UBHelper.Core.version < 1911220544) {
-                    Util.WriteToChat($"Error UBHelper.dll is out of date!");
+                    Logger.Error($"Error UBHelper.dll is out of date!");
                     return;
                 }
 
@@ -146,6 +147,38 @@ namespace UtilityBelt.Tools {
                 if (PCap) UBHelper.PCap.Enable(value);
             }
         }
+
+        [Summary("Plugin generic messages")]
+        [DefaultEnabled(true)]
+        [DefaultChatColor(5)]
+        public PluginMessageDisplay GenericMessageDisplay {
+            get { return (PluginMessageDisplay)GetSetting("GenericMessageDisplay"); }
+            private set { UpdateSetting("GenericMessageDisplay", value); }
+        }
+
+        [Summary("Plugin debug messages")]
+        [DefaultEnabled(true)]
+        [DefaultChatColor(14)]
+        public PluginMessageDisplay DebugMessageDisplay {
+            get { return (PluginMessageDisplay)GetSetting("DebugMessageDisplay"); }
+            private set { UpdateSetting("DebugMessageDisplay", value); }
+        }
+
+        [Summary("Plugin expression messages")]
+        [DefaultEnabled(true)]
+        [DefaultChatColor(5)]
+        public PluginMessageDisplay ExpressionMessageDisplay {
+            get { return (PluginMessageDisplay)GetSetting("ExpressionMessageDisplay"); }
+            private set { UpdateSetting("ExpressionMessageDisplay", value); }
+        }
+
+        [Summary("Plugin error messages")]
+        [DefaultEnabled(true)]
+        [DefaultChatColor(15)]
+        public PluginMessageDisplay ErrorMessageDisplay {
+            get { return (PluginMessageDisplay)GetSetting("ErrorMessageDisplay"); }
+            private set { UpdateSetting("ErrorMessageDisplay", value); }
+        }
         #endregion
 
         #region Commands
@@ -155,7 +188,7 @@ namespace UtilityBelt.Tools {
         [Example("/ub", "Prints current build version to chat")]
         [CommandPattern("", @"^$")]
         public void ShowVersion(string _, Match _1) {
-            Util.WriteToChat("UtilityBelt Version v" + Util.GetVersion(true) + "\n Type `/ub help` or `/ub help <command>` for help.");
+            Logger.WriteToChat("UtilityBelt Version v" + Util.GetVersion(true) + "\n Type `/ub help` or `/ub help <command>` for help.");
         }
         #endregion
         #region /ub help
@@ -180,7 +213,7 @@ namespace UtilityBelt.Tools {
                 help += string.Join(", ", availableVerbs.ToArray());
                 help += "}\nFor help with a specific command, use `/ub help [command]`";
 
-                Util.WriteToChat(help);
+                Logger.WriteToChat(help);
             }
         }
 
@@ -201,7 +234,7 @@ namespace UtilityBelt.Tools {
         private void UB_opt(string args) {
             try {
                 if (args.ToLower().Trim() == "list") {
-                    Util.WriteToChat("All Settings:\n" + ListOptions(UB, ""));
+                    Logger.WriteToChat("All Settings:\n" + ListOptions(UB, ""));
                     return;
                 }
 
@@ -213,16 +246,16 @@ namespace UtilityBelt.Tools {
                 string newValue = match.Groups["value"].Value;
 
                 if (option == null || option.Object == null) {
-                    Util.WriteToChat("Invalid option: " + name);
+                    Logger.Error("Invalid option: " + name);
                     return;
                 }
 
                 if (args.ToLower().Trim().StartsWith("toggle ")) {
                     try {
                         option.Property.SetValue(option.Parent, Convert.ChangeType(!(bool)option.Property.GetValue(option.Parent, null), option.Property.PropertyType), null);
-                        if (!UB.Plugin.Debug) Util.WriteToChat(name + " = " + UB.Settings.DisplayValue(name));
+                        if (!UB.Plugin.Debug) Logger.WriteToChat(name + " = " + UB.Settings.DisplayValue(name));
                     }
-                    catch (Exception ex) { Util.WriteToChat($"Unable to toggle setting {name}: {ex.Message}"); }
+                    catch (Exception ex) { Logger.Error($"Unable to toggle setting {name}: {ex.Message}"); }
                     return;
                 }
 
@@ -252,7 +285,7 @@ namespace UtilityBelt.Tools {
                                 break;
 
                             default:
-                                Util.WriteToChat($"Unknown verb: {parts[1]}");
+                                Logger.Error($"Unknown verb: {parts[1]}");
                                 return;
                         }
                     }
@@ -266,15 +299,15 @@ namespace UtilityBelt.Tools {
                         b.Append(o);
                     }
                     b.Append(" ]");
-                    Util.WriteToChat(b.ToString());
+                    Logger.WriteToChat(b.ToString());
                 }
                 else if (string.IsNullOrEmpty(newValue)) {
-                    Util.WriteToChat(name + " = " + UB.Settings.DisplayValue(name));
+                    Logger.WriteToChat(name + " = " + UB.Settings.DisplayValue(name));
                 }
                 else {
                     try {
                         option.Property.SetValue(option.Parent, Convert.ChangeType(newValue, option.Property.PropertyType), null);
-                        if (!UB.Plugin.Debug) Util.WriteToChat(name + " = " + UB.Settings.DisplayValue(name));
+                        if (!UB.Plugin.Debug) Logger.WriteToChat(name + " = " + UB.Settings.DisplayValue(name));
                     }
                     catch (Exception ex) { Logger.LogException(ex); }
                 }
@@ -324,12 +357,12 @@ namespace UtilityBelt.Tools {
                 if (string.IsNullOrEmpty(format))
                     format = "dddd dd MMMM HH:mm:ss";
                 if (cmd.Contains("utc"))
-                    Util.WriteToChat("Current Date: " + DateTime.UtcNow.ToString(format));
-                else 
-                    Util.WriteToChat("Current Date: " + DateTime.Now.ToString(format));
+                    Logger.WriteToChat("Current Date: " + DateTime.UtcNow.ToString(format));
+                else
+                    Logger.WriteToChat("Current Date: " + DateTime.Now.ToString(format));
             }
             catch (Exception ex) {
-                Util.WriteToChat(ex.Message);
+                Logger.WriteToChat(ex.Message);
             }
         }
         #endregion
@@ -348,7 +381,7 @@ namespace UtilityBelt.Tools {
                 || !double.TryParse(rest[0], out double delay)
                 || delay <= 0
             ) {
-                Util.WriteToChat("Usage: /ub delay <milliseconds> <command>");
+                Logger.Error("Usage: /ub delay <milliseconds> <command>");
                 return;
             }
 
@@ -443,16 +476,6 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
         #endregion
-        #region /ub fixbusy
-        [Summary("Fixes busystate bugs on the client side.")]
-        [Usage("/ub fixbusy")]
-        [CommandPattern("fixbusy", @"^$")]
-        public void DoFixBusy(string _, Match _1) {
-            UBHelper.Core.ClearBusyCount();
-            UBHelper.Core.ClearBusyState();
-            Util.WriteToChat($"Busy State and Busy Count have been reset");
-        }
-        #endregion
         #region /ub follow [name]
         [Summary("Follow player commands")]
         [Usage("/ub follow[p] <name>")]
@@ -469,7 +492,7 @@ namespace UtilityBelt.Tools {
                 FollowChar(followChar.Id);
                 return;
             }
-            Util.WriteToChat($"Could not find {(characterName == null ? "closest player" : $"player {characterName}")}");
+            Logger.Error($"Could not find {(characterName == null ? "closest player" : $"player {characterName}")}");
         }
         private void FollowChar(int id) {
             if (UB.Core.WorldFilter[id] == null) {
@@ -481,10 +504,10 @@ namespace UtilityBelt.Tools {
                 UBHelper.vTank.Instance.NavSetFollowTarget(id, "");
                 if (!(bool)UBHelper.vTank.Instance.GetSetting("EnableNav"))
                     UBHelper.vTank.Instance.SetSetting("EnableNav", true);
-                Util.WriteToChat($"Following {UB.Core.WorldFilter[id].Name}[0x{id:X8}]");
+                Logger.WriteToChat($"Following {UB.Core.WorldFilter[id].Name}[0x{id:X8}]");
             }
             catch {
-                Util.WriteToChat($"Failed to follow {UB.Core.WorldFilter[id].Name}[0x{id:X8}] (is vTank loaded?)");
+                Logger.Error($"Failed to follow {UB.Core.WorldFilter[id].Name}[0x{id:X8}] (is vTank loaded?)");
             }
 
         }
@@ -518,7 +541,7 @@ namespace UtilityBelt.Tools {
                 var input = args.Groups["Expression"].Value;
                 var res = UB.VTank.EvaluateExpression(input);
                 watch.Stop();
-                Util.WriteToChat($"Result: [{res.GetType().ToString().Split('.').Last().ToLower()}] {res} ({Math.Round(watch.ElapsedTicks / 10000.0, 3)}ms)");
+                Logger.WriteToChat($"Result: [{res.GetType().ToString().Split('.').Last().ToLower()}] {res} ({Math.Round(watch.ElapsedTicks / 10000.0, 3)}ms)", Logger.LogMessageType.Expression);
             }
             catch (Exception ex) {
                 Logger.LogException(ex);
@@ -537,14 +560,14 @@ namespace UtilityBelt.Tools {
             var selected = UB.Core.Actions.CurrentSelection;
 
             if (selected == 0 || !UB.Core.Actions.IsValidObject(selected)) {
-                Util.WriteToChat("pos: No object selected");
+                Logger.Error("pos: No object selected");
                 return;
             }
 
             var wo = UB.Core.WorldFilter[selected];
 
             if (wo == null) {
-                Util.WriteToChat("pos: null object selected");
+                Logger.Error("pos: null object selected");
                 return;
             }
 
@@ -552,11 +575,11 @@ namespace UtilityBelt.Tools {
             var d = PhysicsObject.GetDistance(wo.Id);
             var lc = PhysicsObject.GetLandcell(wo.Id);
 
-            Util.WriteToChat($"Offset: {wo.Offset()}");
-            Util.WriteToChat($"Coords: {wo.Coordinates()}");
-            Util.WriteToChat($"RawCoords: {wo.RawCoordinates()}"); //same as offset?
-            Util.WriteToChat($"Phys lb: {lc.ToString("X8")}");
-            Util.WriteToChat($"Phys pos: x:{pos.X} y:{pos.Y} z:{pos.Z}");
+            Logger.WriteToChat($"Offset: {wo.Offset()}");
+            Logger.WriteToChat($"Coords: {wo.Coordinates()}");
+            Logger.WriteToChat($"RawCoords: {wo.RawCoordinates()}"); //same as offset?
+            Logger.WriteToChat($"Phys lb: {lc.ToString("X8")}");
+            Logger.WriteToChat($"Phys pos: x:{pos.X} y:{pos.Y} z:{pos.Z}");
         }
         #endregion
         #region /ub printcolors
@@ -566,7 +589,7 @@ namespace UtilityBelt.Tools {
         [CommandPattern("printcolors", @"^$")]
         public void PrintChatColors(string _, Match _1) {
             foreach (var type in Enum.GetValues(typeof(ChatMessageType)).Cast<ChatMessageType>()) {
-                WriteToChat($"{type} ({(int)type})", (int)type);
+                UB.Core.Actions.AddChatText($"[PrintColors]{type} ({(int)type})", (int)type);
             }
         }
         #endregion
@@ -581,55 +604,55 @@ namespace UtilityBelt.Tools {
             var selected = UB.Core.Actions.CurrentSelection;
 
             if (selected == 0 || !UB.Core.Actions.IsValidObject(selected)) {
-                Util.WriteToChat("propertydump: No object selected");
+                Logger.Error("propertydump: No object selected");
                 return;
             }
 
             var wo = UB.Core.WorldFilter[selected];
 
             if (wo == null) {
-                Util.WriteToChat("propertydump: null object selected");
+                Logger.Error("propertydump: null object selected");
                 return;
             }
 
-            Util.WriteToChat($"Property Dump for {wo.Name}");
+            Logger.WriteToChat($"Property Dump for {wo.Name}");
 
-            Util.WriteToChat($"Id = {wo.Id} (0x{wo.Id.ToString("X8")})");
-            Util.WriteToChat($"Name = {wo.Name}");
-            Util.WriteToChat($"ActiveSpellCount = {wo.ActiveSpellCount}");
-            Util.WriteToChat($"Category = {wo.Category}");
-            Util.WriteToChat($"Coordinates = {wo.Coordinates()}");
-            Util.WriteToChat($"GameDataFlags1 = {wo.GameDataFlags1}");
-            Util.WriteToChat($"HasIdData = {wo.HasIdData}");
-            Util.WriteToChat($"LastIdTime = {wo.LastIdTime}");
-            Util.WriteToChat($"ObjectClass = {wo.ObjectClass} ({(int)wo.ObjectClass})");
-            Util.WriteToChat($"Offset = {wo.Offset()}");
-            Util.WriteToChat($"Orientation = {wo.Orientation()}");
-            Util.WriteToChat($"RawCoordinates = {wo.RawCoordinates()}");
-            Util.WriteToChat($"SpellCount = {wo.SpellCount}");
+            Logger.WriteToChat($"Id = {wo.Id} (0x{wo.Id.ToString("X8")})");
+            Logger.WriteToChat($"Name = {wo.Name}");
+            Logger.WriteToChat($"ActiveSpellCount = {wo.ActiveSpellCount}");
+            Logger.WriteToChat($"Category = {wo.Category}");
+            Logger.WriteToChat($"Coordinates = {wo.Coordinates()}");
+            Logger.WriteToChat($"GameDataFlags1 = {wo.GameDataFlags1}");
+            Logger.WriteToChat($"HasIdData = {wo.HasIdData}");
+            Logger.WriteToChat($"LastIdTime = {wo.LastIdTime}");
+            Logger.WriteToChat($"ObjectClass = {wo.ObjectClass} ({(int)wo.ObjectClass})");
+            Logger.WriteToChat($"Offset = {wo.Offset()}");
+            Logger.WriteToChat($"Orientation = {wo.Orientation()}");
+            Logger.WriteToChat($"RawCoordinates = {wo.RawCoordinates()}");
+            Logger.WriteToChat($"SpellCount = {wo.SpellCount}");
 
-            Util.WriteToChat("String Values:");
+            Logger.WriteToChat("String Values:");
             foreach (var sk in wo.StringKeys) {
-                Util.WriteToChat($"  {(StringValueKey)sk}({sk}) = {wo.Values((StringValueKey)sk)}");
+                Logger.WriteToChat($"  {(StringValueKey)sk}({sk}) = {wo.Values((StringValueKey)sk)}");
             }
 
-            Util.WriteToChat("Long Values:");
+            Logger.WriteToChat("Long Values:");
             foreach (var sk in wo.LongKeys) {
                 switch ((LongValueKey)sk) {
                     case LongValueKey.Behavior:
-                        Util.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)}");
+                        Logger.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)}");
                         foreach (BehaviorFlag v in Enum.GetValues(typeof(BehaviorFlag))) {
                             if ((wo.Values(LongValueKey.DescriptionFormat) & (int)v) != 0) {
-                                Util.WriteToChat($"    Has Flag: {v.ToString()}");
+                                Logger.WriteToChat($"    Has Flag: {v.ToString()}");
                             }
                         }
                         break;
 
                     case LongValueKey.Unknown10:
-                        Util.WriteToChat($"  UseablityFlags({sk}) = {wo.Values((LongValueKey)sk)}");
+                        Logger.WriteToChat($"  UseablityFlags({sk}) = {wo.Values((LongValueKey)sk)}");
                         foreach (UseFlag v in Enum.GetValues(typeof(UseFlag))) {
                             if ((wo.Values(LongValueKey.Flags) & (int)v) != 0) {
-                                Util.WriteToChat($"    Has Flag: {v.ToString()}");
+                                Logger.WriteToChat($"    Has Flag: {v.ToString()}");
                             }
                         }
                         break;
@@ -637,40 +660,40 @@ namespace UtilityBelt.Tools {
                     case LongValueKey.PhysicsDataFlags:
                         foreach (PhysicsState v in Enum.GetValues(typeof(PhysicsState))) {
                             if ((wo.PhysicsDataFlags & (int)v) != 0) {
-                                Util.WriteToChat($"    Has Flag: {v.ToString()}");
+                                Logger.WriteToChat($"    Has Flag: {v.ToString()}");
                             }
                         }
                         break;
 
                     case LongValueKey.Landblock:
-                        Util.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)} ({wo.Values((LongValueKey)sk).ToString("X8")})");
+                        Logger.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)} ({wo.Values((LongValueKey)sk).ToString("X8")})");
                         break;
 
                     case LongValueKey.Icon:
-                        Util.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)} (0x{(0x06000000 + wo.Values((LongValueKey)sk)).ToString("X8")})");
+                        Logger.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)} (0x{(0x06000000 + wo.Values((LongValueKey)sk)).ToString("X8")})");
                         break;
 
                     default:
-                        Util.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)}");
+                        Logger.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)}");
                         break;
                 }
             }
 
-            Util.WriteToChat("Bool Values:");
+            Logger.WriteToChat("Bool Values:");
             foreach (var sk in wo.BoolKeys) {
-                Util.WriteToChat($"  {(BoolValueKey)sk}({sk}) = {wo.Values((BoolValueKey)sk)}");
+                Logger.WriteToChat($"  {(BoolValueKey)sk}({sk}) = {wo.Values((BoolValueKey)sk)}");
             }
 
-            Util.WriteToChat("Double Values:");
+            Logger.WriteToChat("Double Values:");
             foreach (var sk in wo.DoubleKeys) {
-                Util.WriteToChat($"  {(DoubleValueKey)sk}({sk}) = {wo.Values((DoubleValueKey)sk)}");
+                Logger.WriteToChat($"  {(DoubleValueKey)sk}({sk}) = {wo.Values((DoubleValueKey)sk)}");
             }
 
-            Util.WriteToChat("Spells:");
+            Logger.WriteToChat("Spells:");
             FileService service = UB.Core.Filter<FileService>();
             for (var i = 0; i < wo.SpellCount; i++) {
                 var spell = service.SpellTable.GetById(wo.Spell(i));
-                Util.WriteToChat($"  {spell.Name} ({wo.Spell(i)})");
+                Logger.WriteToChat($"  {spell.Name} ({wo.Spell(i)})");
             }
         }
         #endregion
@@ -685,7 +708,7 @@ namespace UtilityBelt.Tools {
         public void UB_playeroption(string parameters) {
             string[] p = parameters.Split(' ');
             if (p.Length != 2) {
-                Util.WriteToChat($"Usage: /ub playeroption <option> <on/true|off/false>");
+                Logger.Error($"Usage: /ub playeroption <option> <on/true|off/false>");
                 return;
             }
             int option;
@@ -693,7 +716,7 @@ namespace UtilityBelt.Tools {
                 option = (int)Enum.Parse(typeof(UBHelper.Player.PlayerOption), p[0], true);
             }
             catch {
-                Util.WriteToChat($"Invalid option. Valid values are: {string.Join(", ", Enum.GetNames(typeof(UBHelper.Player.PlayerOption)))}");
+                Logger.Error($"Invalid option. Valid values are: {string.Join(", ", Enum.GetNames(typeof(UBHelper.Player.PlayerOption)))}");
                 return;
             }
             bool value = false;
@@ -702,7 +725,7 @@ namespace UtilityBelt.Tools {
                 value = true;
 
             UBHelper.Player.SetOption((UBHelper.Player.PlayerOption)option, value);
-            Util.WriteToChat($"Setting {(((UBHelper.Player.PlayerOption)option).ToString())} = {value.ToString()}");
+            Logger.WriteToChat($"Setting {(((UBHelper.Player.PlayerOption)option).ToString())} = {value.ToString()}");
         }
         #endregion
         #region /ub playsound [volume] <filepath>
@@ -740,7 +763,7 @@ namespace UtilityBelt.Tools {
             }
 
             if (string.IsNullOrEmpty(absPath))
-                Util.WriteToChat($"Could not find file: <{path}>");
+                Logger.Error($"Could not find file: <{path}>");
             else {
                 mediaPlayer.PlaySound(absPath, volume);
             }
@@ -758,7 +781,7 @@ namespace UtilityBelt.Tools {
         }
         public void UB_pcap(string parameters) {
             if (UBHelper.Core.version < 1911220544) {
-                Util.WriteToChat($"Error UBHelper.dll is out of date!");
+                Logger.Error($"Error UBHelper.dll is out of date!");
                 return;
             }
             char[] stringSplit = { ' ' };
@@ -770,9 +793,9 @@ namespace UtilityBelt.Tools {
                     }
 
                     if (PCapBufferDepth > 65535)
-                        Util.WriteToChat($"WARNING: Large buffers can have negative performance impacts on the game. Buffer depths between 1000 and 20000 are recommended.");
-                    Util.WriteToChat($"Enabled rolling PCap logger with a bufferDepth of {PCapBufferDepth:n0}. This will consume {(PCapBufferDepth * 505):n0} bytes of memory.");
-                    Util.WriteToChat($"Issue the command [/ub pcap print] to write this out to a .pcap file for submission!");
+                        Logger.Error($"WARNING: Large buffers can have negative performance impacts on the game. Buffer depths between 1000 and 20000 are recommended.");
+                    Logger.WriteToChat($"Enabled rolling PCap logger with a bufferDepth of {PCapBufferDepth:n0}. This will consume {(PCapBufferDepth * 505):n0} bytes of memory.");
+                    Logger.WriteToChat($"Issue the command [/ub pcap print] to write this out to a .pcap file for submission!");
                     PCap = true;
                     break;
                 case "disable":
@@ -783,7 +806,7 @@ namespace UtilityBelt.Tools {
                     UBHelper.PCap.Print(filename);
                     break;
                 default:
-                    Util.WriteToChat("Usage: /ub pcap {enable,disable,print}");
+                    Logger.Error("Usage: /ub pcap {enable,disable,print}");
                     break;
             }
         }
@@ -875,7 +898,7 @@ namespace UtilityBelt.Tools {
         }
         public void UB_video(string parameters) {
             if (UBHelper.Core.version < 1911140303) {
-                Util.WriteToChat($"Error UBHelper.dll is out of date!");
+                Logger.Error($"Error UBHelper.dll is out of date!");
                 return;
             }
             char[] stringSplit = { ' ' };
@@ -893,7 +916,7 @@ namespace UtilityBelt.Tools {
                     VideoPatch = !VideoPatch;
                     break;
                 default:
-                    Util.WriteToChat("Usage: /ub videopatch {enable,disable,toggle}");
+                    Logger.Error("Usage: /ub videopatch {enable,disable,toggle}");
                     break;
             }
         }

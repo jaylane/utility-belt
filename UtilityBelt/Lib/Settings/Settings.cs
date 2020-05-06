@@ -213,7 +213,7 @@ namespace UtilityBelt.Lib.Settings {
                         return "[List]";
                     }
                 }
-                else if (prop.Property.Name.Contains("Color")) {
+                else if (prop.Property.PropertyType == typeof(int) && prop.Property.Name.Contains("Color")) {
                     return "0x" + ((int)value).ToString("X8");
                 }
                 else {

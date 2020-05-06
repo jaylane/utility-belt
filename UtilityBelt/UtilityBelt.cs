@@ -358,7 +358,7 @@ namespace UtilityBelt {
                         Logger.Error($"Command not found! Type \"ub help\" for a list of commands.");
 
                         if (partialMatches.Count > 0) {
-                            Util.WriteToChat($"Did you mean one of these? { string.Join(", ", partialMatches.ToArray())}");
+                            Logger.Error($"Did you mean one of these? { string.Join(", ", partialMatches.ToArray())}");
                         }
                     }
                 }
@@ -401,7 +401,7 @@ namespace UtilityBelt {
                 }
             }
 
-            Util.WriteToChat(help.ToString().Replace("\r", ""));
+            Logger.WriteToChat(help.ToString().Replace("\r", ""));
         }
         #endregion
 
@@ -440,7 +440,7 @@ namespace UtilityBelt {
                         }
                         catch (Exception ex) {
                             Logger.LogException(ex);
-                            Util.WriteToChat(ex.ToString());
+                            Logger.Error(ex.ToString());
                             Logger.Error($"Unable to register expression: {key} from {toolProp.PropertyType}");
                         }
                     }
@@ -495,7 +495,7 @@ namespace UtilityBelt {
                             delHotkeyAction del = () => {
                                 try {
                                     prop.SetValue(toolProp.GetValue(this, null), !(bool)prop.GetValue(toolProp.GetValue(this, null), null), null);
-                                    Util.WriteToChat($"Toggle Hotkey Pressed: {toolProp.Name}.{prop.Name} = {prop.GetValue(toolProp.GetValue(this, null), null)}");
+                                    Logger.WriteToChat($"Toggle Hotkey Pressed: {toolProp.Name}.{prop.Name} = {prop.GetValue(toolProp.GetValue(this, null), null)}");
                                 }
                                 catch (Exception ex) {
                                     Logger.LogException(ex);

@@ -196,7 +196,7 @@ namespace UtilityBelt.Tools {
                 results += $"{kv.Key} ({GetFriendlyType(kv.Value)}) = {kv.Value}\n";
             }
 
-            Util.WriteToChat(results);
+            Logger.WriteToChat(results);
         }
         #endregion
         #region /ub listpvars
@@ -216,7 +216,7 @@ namespace UtilityBelt.Tools {
                 results += $"{v.Name} ({GetFriendlyType(v.Value)}) = {v.Value}\n";
             }
 
-            Util.WriteToChat(results);
+            Logger.WriteToChat(results);
         }
         #endregion
         #region /ub listgvars
@@ -233,7 +233,7 @@ namespace UtilityBelt.Tools {
                 results += $"{v.Name} ({GetFriendlyType(v.Value)}) = {v.Value}\n";
             }
 
-            Util.WriteToChat(results);
+            Logger.WriteToChat(results);
         }
         #endregion
         #endregion
@@ -618,7 +618,7 @@ namespace UtilityBelt.Tools {
         [Summary("Echos chat to the chatbox with a color. Use `/ub printcolors` to view all colors")]
         [Example("echo[test,15]", "echos 'test' to the chatbox in red (Help)")]
         public object Echo(object text, double color) {
-            Util.WriteToChat(text.ToString(), Convert.ToInt32(color), false);
+            UB.Core.Actions.AddChatText(text.ToString(), Convert.ToInt32(color));
             return true;
         }
         #endregion //echo[string message, int color]
@@ -1545,7 +1545,7 @@ namespace UtilityBelt.Tools {
             try {
                 // we call AddChatText directly instead of Util.WriteToChat so it doesnt feed the message to vtank
                 if (!silent)
-                    UtilityBeltPlugin.Instance.Core.Actions.AddChatText($"[UB] Evaluating expression: \"{expression}\"", 5);
+                    Logger.WriteToChat($"Evaluating expression: \"{expression}\"", Logger.LogMessageType.Expression, true, false);
 
                 AntlrInputStream inputStream = new AntlrInputStream(expression);
                 MetaExpressionsLexer spreadsheetLexer = new MetaExpressionsLexer(inputStream);
@@ -1657,7 +1657,7 @@ namespace UtilityBelt.Tools {
         private void DoPortalLoopFix() {
             // TODO: fixy
             return;
-            Util.WriteToChat($"Nav: {UBHelper.vTank.Instance.NavCurrent}");
+            Logger.WriteToChat($"Nav: {UBHelper.vTank.Instance.NavCurrent}");
             Util.DispatchChatToBoxWithPluginIntercept($"/vt nav save {VTNavRoute.NoneNavName}");
             UBHelper.vTank.Instance.NavDeletePoint(0);
         }

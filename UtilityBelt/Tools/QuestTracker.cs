@@ -68,7 +68,7 @@ namespace UtilityBelt.Tools {
                                 foundExact = true;
 
                             if (thoughts >= 5) {
-                                Util.WriteToChat("Quests output has been truncated to the first 5 matching quest flags.");
+                                Logger.WriteToChat("Quests output has been truncated to the first 5 matching quest flags.");
                                 break;
                             }
                         }
@@ -87,10 +87,10 @@ namespace UtilityBelt.Tools {
                             UpdateQuestFlag(questFlag);
                         }
 
-                        Util.WriteToChat($"Quest {questFlag.Name} repeat:{questFlag.RepeatTime} available:{questFlag.NextAvailable()} solves:{questFlag.Solves}/{questFlag.MaxSolves}");
+                        Logger.WriteToChat($"Quest {questFlag.Name} repeat:{questFlag.RepeatTime} available:{questFlag.NextAvailable()} solves:{questFlag.Solves}/{questFlag.MaxSolves}");
                     }
                     else {
-                        Util.WriteToChat($"Could not parse MyQuestLine");
+                        LogError($"Could not parse MyQuestLine");
                     }
                     break;
             }
@@ -338,7 +338,7 @@ namespace UtilityBelt.Tools {
             try {
                 var key = ((HudStaticText)uiList[row][0]).Text;
 
-                Util.WriteToChat($"Quest Key: {key}");
+                Logger.WriteToChat($"Quest Key: {key}");
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

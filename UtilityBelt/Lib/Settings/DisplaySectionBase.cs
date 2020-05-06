@@ -12,6 +12,7 @@ namespace UtilityBelt.Lib.Settings {
     public abstract class DisplaySectionBase : SectionBase {
         private Dictionary<string, ColorToggleOption> colorToggleOptions = new Dictionary<string, ColorToggleOption>();
         private Dictionary<string, MarkerToggleOption> markerToggleOptions = new Dictionary<string, MarkerToggleOption>();
+        private Dictionary<string, PluginMessageDisplay> messageDisplayOptions = new Dictionary<string, PluginMessageDisplay>();
 
         public DisplaySectionBase(SectionBase parent) : base(parent) {
             InitProperties();
@@ -43,11 +44,46 @@ namespace UtilityBelt.Lib.Settings {
                 else if (prop.PropertyType == typeof(MarkerToggleOption)) {
                     return GetMarkerToggleOption(prop);
                 }
+                else if (prop.PropertyType == typeof(PluginMessageDisplay)) {
+                    return GetPluginMessageDisplayOption(prop);
+                }
                 else {
                     return base.GetSetting(propName);
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
+
+            return null;
+        }
+
+        private PluginMessageDisplay GetPluginMessageDisplayOption(PropertyInfo prop) {
+            if (prop == null) return null;
+
+            if (messageDisplayOptions.ContainsKey(prop.Name)) {
+                return messageDisplayOptions[prop.Name];
+            }
+
+            // no value has been set, so make a new ColorToggleOption instance
+            if (!messageDisplayOptions.ContainsKey(prop.Name)) {
+                var defaultEnabled = true;
+                short defaultColor = 5;
+
+                var defaultEnabledAttr = prop.GetCustomAttributes(typeof(DefaultEnabledAttribute), true);
+                if (defaultEnabledAttr.Length == 1) {
+                    defaultEnabled = ((DefaultEnabledAttribute)defaultEnabledAttr[0]).Enabled;
+                }
+
+                var defaultColorAttr = prop.GetCustomAttributes(typeof(DefaultChatColorAttribute), true);
+                if (defaultColorAttr.Length == 1) {
+                    defaultColor = ((DefaultChatColorAttribute)defaultColorAttr[0]).Color;
+                }
+
+                var messageOption = new PluginMessageDisplay(this, defaultEnabled, defaultColor);
+                messageOption.Name = prop.Name;
+                messageDisplayOptions.Add(prop.Name, messageOption);
+
+                return messageOption;
+            }
 
             return null;
         }

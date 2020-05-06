@@ -47,7 +47,7 @@ namespace UtilityBelt.Tools {
                 }
             }
             if (itemsNeedingData > 0) {
-                Util.WriteToChat($"Requesting id data for {itemsNeedingData} inventory items. This will take approximately {(itemsNeedingData * ((float)assessDelay / 1000f)):n3} seconds.");
+                Logger.WriteToChat($"Requesting id data for {itemsNeedingData} inventory items. This will take approximately {(itemsNeedingData * ((float)assessDelay / 1000f)):n3} seconds.");
             }
         }
 
@@ -96,20 +96,20 @@ namespace UtilityBelt.Tools {
         [Summary("Development Test.")]
         [CommandPattern("testassessor", @"^$")]
         public void DoTestAssessor(string _, Match _2) {
-            Util.WriteToChat("testassessor");
+            Logger.WriteToChat("testassessor");
             List<int> inv = new List<int>();
             UBHelper.InventoryManager.GetInventory(ref inv, UBHelper.InventoryManager.GetInventoryType.AllItems);
-            Util.WriteToChat($"Requesting {inv.Count} items");
+            Logger.WriteToChat($"Requesting {inv.Count} items");
             var foo = new Assessor.Job(UB.Assessor, ref inv, (id) => {
-                Util.WriteToChat($"    (Job#1) itemCallback received id for {id:X8}");
+                Logger.WriteToChat($"    (Job#1) itemCallback received id for {id:X8}");
             }, () => {
-                Util.WriteToChat($"******(Job#1) jobCallback triggered");
+                Logger.WriteToChat($"******(Job#1) jobCallback triggered");
             });
             inv.Clear();
             UBHelper.InventoryManager.GetInventory(ref inv, UBHelper.InventoryManager.GetInventoryType.MainPack);
-            Util.WriteToChat($"Requesting {inv.Count} items");
+            Logger.WriteToChat($"Requesting {inv.Count} items");
             var poo = new Assessor.Job(UB.Assessor, ref inv, null, () => {
-                Util.WriteToChat($"******(Job#2) jobCallback triggered");
+                Logger.WriteToChat($"******(Job#2) jobCallback triggered");
             });
         }
 
@@ -241,7 +241,7 @@ namespace UtilityBelt.Tools {
                     jobs.ForEach(j => {
                         if (j == null) Logger.LogException("j is null");
                         if (DateTime.UtcNow > j.nextSpam) {
-                            Util.WriteToChat($"Assessor waiting to ID {j.ids.Count} of {j.initialCount} items. This will take about {(j.ids.Count * ((float)assessDelay / 1000f)):n2} seconds.");
+                            Logger.WriteToChat($"Assessor waiting to ID {j.ids.Count} of {j.initialCount} items. This will take about {(j.ids.Count * ((float)assessDelay / 1000f)):n2} seconds.");
                             j.nextSpam = DateTime.UtcNow + TimeSpan.FromSeconds(10);
                         }
                     });
@@ -299,7 +299,7 @@ namespace UtilityBelt.Tools {
                 this.assessor = assessor;
                 heartBeat = DateTime.UtcNow + TimeSpan.FromSeconds(1);
                 nextSpam = DateTime.MinValue;
-                Util.WriteToChat($"new Assessor.Job initialized with {ids.Count} items...");
+                Logger.WriteToChat($"new Assessor.Job initialized with {ids.Count} items...");
                 assessor.Register(this);
                 CheckDone();
             }

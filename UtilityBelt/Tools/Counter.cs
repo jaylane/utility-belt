@@ -81,7 +81,7 @@ Counter is used to count items based on text or utl profiles as well as players 
             else if (args.Groups["Command"].Value.ToLower() == "profile") {
                 utlProfile = args.Groups["Name"].Value.Trim();
 
-                Util.WriteToChat(utlProfile);
+                Logger.WriteToChat(utlProfile);
 
                 var pluginPath = Path.Combine(Util.GetPluginDirectory(), @"itemgiver");
                 var profilePath = Path.Combine(pluginPath, utlProfile);
