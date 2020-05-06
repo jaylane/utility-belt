@@ -97,7 +97,7 @@ namespace UtilityBelt.Tools {
 
         private void Core_ChatBoxMessage(object sender, Decal.Adapter.ChatTextInterceptEventArgs e) {
             try {
-                Util.WriteToChat($"{e.Color} {e.Text}");
+                Logger.WriteToChat($"{e.Color} {e.Text}");
                 if (e.Color == 3 && e.Text.Contains("tells you, \"I'm afraid you're lacking in funds.\"")) {
                     DequeueNext();
                 }

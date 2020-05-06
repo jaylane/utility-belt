@@ -73,7 +73,7 @@ namespace UtilityBelt.Lib.Quests {
                     return questFlag;
                 }
                 else {
-                    Util.WriteToChat("Unable to parse myquests line: " + line);
+                    Logger.Error("Unable to parse myquests line: " + line);
                     return null;
                 }
             }

@@ -37,7 +37,7 @@ namespace UtilityBelt.Lib.Settings {
 
         internal void SetValue(string newValue) {
             try {
-                Util.WriteToChat("SetValue: " + newValue);
+                Logger.WriteToChat("SetValue: " + newValue);
                 if (Type == typeof(string)) {
                     Value = newValue;
                     Changed?.Invoke(this, null);
@@ -64,8 +64,12 @@ namespace UtilityBelt.Lib.Settings {
                     Value = parsedDouble;
                     Changed?.Invoke(this, null);
                 }
+                else if (Type == typeof(short) && short.TryParse(newValue, out short parsedShort)) {
+                    Value = parsedShort;
+                    Changed?.Invoke(this, null);
+                }
                 else {
-                    Util.WriteToChat($"Error, can't parse {Type}: {newValue}");
+                    Logger.Error($"Error, can't parse {Type}: {newValue}");
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -104,7 +108,7 @@ namespace UtilityBelt.Lib.Settings {
             else if (Type == typeof(int) && setting.Contains("Color")) {
                 return DrawColorSettingsForm(settingsForm, setting);
             }
-            else if (Type == typeof(int) || Type == typeof(float) || Type == typeof(double)) {
+            else if (Type == typeof(int) || Type == typeof(float) || Type == typeof(double) || Type == typeof(short)) {
                 return DrawNumberSettingsForm(settingsForm, setting);
             }
             else if (Type == typeof(string)) {
@@ -154,7 +158,7 @@ namespace UtilityBelt.Lib.Settings {
                 }
                 catch (Exception ex) {
                     Logger.LogException(ex);
-                    Util.WriteToChat($"Invalid option selected: {((HudStaticText)combo[combo.Current]).Text}");
+                    Logger.Error($"Invalid option selected: {((HudStaticText)combo[combo.Current]).Text}");
                 }
             };
 
@@ -174,7 +178,6 @@ namespace UtilityBelt.Lib.Settings {
             };
 
             Changed += (s, e) => {
-                Util.WriteToChat("Changed! " + (string)Value);
                 edit.Text = Value.ToString();
             };
 
@@ -203,7 +206,7 @@ namespace UtilityBelt.Lib.Settings {
                     Changed?.Invoke(this, null);
                 }
                 else {
-                    Util.WriteToChat($"Error, can't parse hex: {edit.Text}");
+                    Logger.Error($"Can't parse hex: {edit.Text}");
                 }
             };
 
@@ -282,8 +285,12 @@ namespace UtilityBelt.Lib.Settings {
                     Value = parsedDouble;
                     Changed?.Invoke(this, null);
                 }
+                else if (Type == typeof(short) && short.TryParse(edit.Text, out short parsedShort)) {
+                    Value = parsedShort;
+                    Changed?.Invoke(this, null);
+                }
                 else {
-                    Util.WriteToChat($"Error, can't parse {Type}: {edit.Text}");
+                    Logger.Error($"Error, can't parse {Type}: {edit.Text}");
                 }
             };
 

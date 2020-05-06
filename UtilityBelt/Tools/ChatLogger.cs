@@ -10,6 +10,7 @@ using System.Threading;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.ChatLog;
 using UtilityBelt.Lib.Constants;
+using UtilityBelt.Lib.Settings;
 using VirindiViewService.Controls;
 
 namespace UtilityBelt.Tools {
@@ -204,7 +205,7 @@ Chat logger supports the following message types:
                     Rules.RemoveAt(row);
                 }
                 else if (col == 1) {
-                    Util.WriteToChat("[" + string.Join(", ", Rules[row].Types.Select(t => t.ToString()).ToArray()) + "]");
+                    Logger.WriteToChat("[" + string.Join(", ", Rules[row].Types.Select(t => t.ToString()).ToArray()) + "]");
                 }
                 else if (col == 2) {
                     if (editingRow.HasValue)

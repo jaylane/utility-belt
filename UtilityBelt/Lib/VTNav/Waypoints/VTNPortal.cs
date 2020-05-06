@@ -66,7 +66,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             var objectClassLine = base.sr.ReadLine(); // 14 ObjectClass?
             var objectClassInt = 0;
             if (!int.TryParse(objectClassLine, out objectClassInt)) {
-                Util.WriteToChat("Could not parse ObjectClass");
+                Logger.Error("Could not parse ObjectClass");
                 return false;
             }
             ObjectClass = (ObjectClass)objectClassInt;
@@ -75,17 +75,17 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
 
             // these are portal exit coordinates
             if (!double.TryParse(sr.ReadLine(), out PortalNS)) {
-                Util.WriteToChat("Could not parse PortalNS");
+                Logger.Error("Could not parse PortalNS");
                 return false;
             }
 
             if (!double.TryParse(sr.ReadLine(), out PortalEW)) {
-                Util.WriteToChat("Could not parse PortalEW");
+                Logger.Error("Could not parse PortalEW");
                 return false;
             }
 
             if (!double.TryParse(sr.ReadLine(), out PortalZ)) {
-                Util.WriteToChat("Could not parse PortalZ");
+                Logger.Error("Could not parse PortalZ");
                 return false;
             }
 

@@ -66,7 +66,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             Name = base.sr.ReadLine();
             var objectClass = 0;
             if (!int.TryParse(sr.ReadLine(), out objectClass)) {
-                Util.WriteToChat($"Could not parse objectClass");
+                Logger.Error($"Could not parse objectClass");
                 return false;
             }
             ObjectClass = (ObjectClass)objectClass;
@@ -74,15 +74,15 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             base.sr.ReadLine(); // true?
 
             if (!double.TryParse(sr.ReadLine(), out NpcEW)) {
-                Util.WriteToChat($"Could not parse NpcEW");
+                Logger.Error($"Could not parse NpcEW");
                 return false;
             }
             if (!double.TryParse(sr.ReadLine(), out NpcNS)) {
-                Util.WriteToChat($"Could not parse NpcNS");
+                Logger.Error($"Could not parse NpcNS");
                 return false;
             }
             if (!double.TryParse(sr.ReadLine(), out NpcZ)) {
-                Util.WriteToChat($"Could not parse NpcZ");
+                Logger.Error($"Could not parse NpcZ");
                 return false;
             }
 

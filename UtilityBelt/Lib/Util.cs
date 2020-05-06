@@ -175,28 +175,6 @@ namespace UtilityBelt
             return (T)retval;
         }
 
-        public static void WriteToChat(string message, int color = 5, bool addUBTag = true, bool sendToVTank=true) {
-            try {
-                string msg = (addUBTag ? "[UB] " : "") + message;
-                UB?.Host?.Actions?.AddChatText(msg, color);
-                if (sendToVTank)
-                    UBHelper.vTank.Tell(msg, color, 0);
-                Util.WriteToDebugLog(message);
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        public static bool WriteToChat2(string message, int color = 5, bool addUBTag = true) {
-            try {
-                string msg = (addUBTag ? "[UB] " : "") + message;
-                UB?.Host?.Actions?.AddChatText(msg, color);
-                UBHelper.vTank.Tell(msg, color, 0);
-                Util.WriteToDebugLog(message);
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-            return false;
-        }
-
         public static int GetOverallSlot(WorldObject wo) { //Just for sorting for now. TODO: math real numbers, based on actual pack slots
             if (wo.Container == UB.Core.CharacterFilter.Id)
                 return wo.Values(LongValueKey.Slot, 0);
@@ -376,7 +354,7 @@ namespace UtilityBelt
                     DispatchChatToBoxWithPluginIntercept(string.Format("/tell {0}, {1}", UB.Core.CharacterFilter.Name, message));
                 }
                 else {
-                    Util.WriteToChat(string.Format("{0}", message));
+                    Logger.WriteToChat(string.Format("{0}", message));
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }

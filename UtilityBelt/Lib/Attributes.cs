@@ -167,4 +167,13 @@ namespace UtilityBelt.Lib {
             Description = description;
         }
     }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    public class DefaultChatColorAttribute : Attribute {
+        public short Color { get; }
+
+        public DefaultChatColorAttribute(short color) {
+            Color = color;
+        }
+    }
 }

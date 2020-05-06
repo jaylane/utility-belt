@@ -23,7 +23,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
 
             var facingLine = base.sr.ReadLine();
             if (!int.TryParse(facingLine, out Heading)) {
-                Util.WriteToChat("Could not parse Facing: " + facingLine);
+                Logger.Error("Could not parse Facing: " + facingLine);
                 return false;
             }
 
@@ -34,7 +34,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
 
             var millisecondsLine = base.sr.ReadLine();
             if (!double.TryParse(millisecondsLine, out Milliseconds)) {
-                Util.WriteToChat("Could not parse Milliseconds: " + millisecondsLine);
+                Logger.Error("Could not parse Milliseconds: " + millisecondsLine);
                 return false;
             }
 

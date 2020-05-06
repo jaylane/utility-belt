@@ -22,7 +22,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             var recallId = base.sr.ReadLine();
 
             if (!int.TryParse(recallId, out RecallSpellId)) {
-                Util.WriteToChat("Could not parse recall spell id: " + recallId);
+                Logger.Error("Could not parse recall spell id: " + recallId);
                 return false;
             }
 

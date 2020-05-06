@@ -201,7 +201,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             char[] stringSplit = { ' ' };
             string[] parameter = parameters.Split(stringSplit, 2);
             if (parameter.Length == 0) {
-                Util.WriteToChat("Usage: /ub vendor {open[p] [vendorname,vendorid,vendorhex],opencancel,buyall,sellall,clearbuy,clearsell}");
+                Logger.Error("Usage: /ub vendor {open[p] [vendorname,vendorid,vendorhex],opencancel,buyall,sellall,clearbuy,clearsell}");
                 return;
             }
 
@@ -463,7 +463,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     if (!showMerchantInfoCooldown && ShowMerchantInfo) {
                         showMerchantInfoCooldown = true;
                         UB.Core.RenderFrame += Core_RenderFrame_VendorSpam;
-                        Util.WriteToChat(vendorInfo);
+                        Logger.WriteToChat(vendorInfo);
                     }
                     else
                         LogDebug(vendorInfo);
@@ -894,7 +894,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             List<BuyItem> buyItems = new List<BuyItem>();
 
             if (vendor == null) {
-                Util.WriteToChat("Vendor is null");
+                Logger.Error("Vendor is null");
                 return buyItems;
             }
 
@@ -986,19 +986,19 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
 
         private void DoTestMode() {
             // TODO: string builder and write to chat once
-            Util.WriteToChat("Buy Items:");
+            Logger.WriteToChat("Buy Items:");
             foreach (BuyItem bi in GetBuyItems()) {
                 uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithVendorObjectTemplateID(bi.Item.Id);
                 if (itemInfo == null) continue;
                 uTank2.LootPlugins.LootAction result = lootProfile.GetLootDecision(itemInfo);
                 if (result.IsKeepUpTo || result.IsKeep) {
                     string mc = (ShopItemListTypes.ContainsKey(bi.Item.Category) ? ShopItemListTypes[bi.Item.Category] : $"Unknown Category 0x{bi.Item.Category:X8}");
-                    Util.WriteToChat($"  {mc} -> {bi.Item.Name} * {(bi.Amount == int.MaxValue ? "∞" : bi.Amount.ToString())} - {result.RuleName}");
+                    Logger.WriteToChat($"  {mc} -> {bi.Item.Name} * {(bi.Amount == int.MaxValue ? "∞" : bi.Amount.ToString())} - {result.RuleName}");
                 }
             }
             pendingBuy.Clear();
 
-            Util.WriteToChat("Sell Items:");
+            Logger.WriteToChat("Sell Items:");
             List<WorldObject> sellObjects = GetSellItems();
             sellObjects.Sort(delegate (WorldObject wo1, WorldObject wo2) { return Util.GetOverallSlot(wo1) - Util.GetOverallSlot(wo2); });
             foreach (WorldObject wo in sellObjects) {
@@ -1006,7 +1006,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                 if (itemInfo == null) continue;
                 uTank2.LootPlugins.LootAction result = lootProfile.GetLootDecision(itemInfo);
                 if (result.IsSell) {
-                    Util.WriteToChat($"  {Util.GetItemLocation(wo.Id)}: <Tell:IIDString:{Util.GetChatId()}:select|{wo.Id}>{Util.GetObjectName(wo.Id)}</Tell> - {result.RuleName}");
+                    Logger.WriteToChat($"  {Util.GetItemLocation(wo.Id)}: <Tell:IIDString:{Util.GetChatId()}:select|{wo.Id}>{Util.GetObjectName(wo.Id)}</Tell> - {result.RuleName}");
                 }
             }
             pendingSell.Clear();

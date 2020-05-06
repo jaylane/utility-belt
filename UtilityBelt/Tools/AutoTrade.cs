@@ -127,10 +127,10 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
             }
             else if (args.Groups["Verb"].Value == "list") {
                 var list = GetAutoAcceptChars();
-                Util.WriteToChat("Auto Accept List:");
+                Logger.WriteToChat("Auto Accept List:");
                 int i = 0;
                 foreach (var aac in list) {
-                    Util.WriteToChat($" [{++i}] {aac}");
+                    Logger.WriteToChat($" [{++i}] {aac}");
                 }
             }
             else if (!string.IsNullOrEmpty(args.Groups["Verb"].Value) &&
@@ -180,7 +180,7 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
                     Regex.Match("", charPattern);
                 }
                 catch {
-                    Util.WriteToChat("Error: Invalid regex", 15);
+                    Logger.Error("Error: Invalid regex");
                     return;
                 }
 

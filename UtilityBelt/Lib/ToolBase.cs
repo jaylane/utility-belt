@@ -31,8 +31,8 @@ namespace UtilityBelt.Lib {
             Util.Think(Name + ": " + message);
         }
 
-        protected void WriteToChat(string message, int color=5) {
-            Util.WriteToChat(Name + ": " + message, color);
+        protected void WriteToChat(string message, Logger.LogMessageType logMessageType=Logger.LogMessageType.Generic) {
+            Logger.WriteToChat(Name + ": " + message, logMessageType);
         }
 
         #region IDisposable Support

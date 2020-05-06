@@ -69,21 +69,21 @@ namespace UtilityBelt.Lib.VTNav {
                     var navTypeLine = sr.ReadLine();
                     int navType = 0;
                     if (!int.TryParse(navTypeLine, out navType)) {
-                        Util.WriteToChat("Could not parse navType from nav file: " + navTypeLine);
+                        Logger.Error("Could not parse navType from nav file: " + navTypeLine);
                         return false;
                     }
                     NavType = (eNavType)navType;
 
                     if (NavType == eNavType.Target) {
                         if (sr.EndOfStream) {
-                            Util.WriteToChat("Follow nav is empty");
+                            Logger.Error("Follow nav is empty");
                             return true;
                         }
 
                         TargetName = sr.ReadLine();
                         var targetId = sr.ReadLine();
                         if (!int.TryParse(targetId, out TargetId)) {
-                            Util.WriteToChat("Could not parse target id: " + targetId);
+                            Logger.Error("Could not parse target id: " + targetId);
                             return false;
                         }
 
@@ -95,7 +95,7 @@ namespace UtilityBelt.Lib.VTNav {
 
                     var recordCount = sr.ReadLine();
                     if (!int.TryParse(recordCount, out RecordCount)) {
-                        Util.WriteToChat("Could not read record count from nav file: " + recordCount);
+                        Logger.Error("Could not read record count from nav file: " + recordCount);
                         return false;
                     }
 
@@ -106,7 +106,7 @@ namespace UtilityBelt.Lib.VTNav {
                         var recordTypeLine = sr.ReadLine();
 
                         if (!int.TryParse(recordTypeLine, out recordType)) {
-                            Util.WriteToChat($"Unable to parse recordType: {recordTypeLine}");
+                            Logger.Error($"Unable to parse recordType: {recordTypeLine}");
                             return false;
                         }
 
