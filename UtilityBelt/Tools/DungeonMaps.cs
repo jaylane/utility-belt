@@ -85,7 +85,6 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
         private bool isRotating;
         private bool needsNewHud;
         private int landcell = 0;
-        public const int LABEL_HEIGHT = 10;
 
         #region Config
         public const int MIN_ZOOM = 0;
@@ -189,6 +188,13 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
         public int MapWindowHeight {
             get { return (int)GetSetting("MapWindowHeight"); }
             set { UpdateSetting("MapWindowHeight", value); }
+        }
+
+        [Summary("Label Font Size")]
+        [DefaultValue(10)]
+        public int LabelFontSize {
+            get { return (int)GetSetting("LabelFontSize"); }
+            set { UpdateSetting("LabelFontSize", value); }
         }
 
         [Summary("Map display options")]
@@ -1274,7 +1280,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                         continue;
                     Color color = Color.FromArgb(Display.Markers.GetMarkerColor(obj));
 
-                    TextureCache.GetText(obj.Name, LABEL_HEIGHT, color, fontFace, fontWeight);
+                    TextureCache.GetText(obj.Name, LabelFontSize, color, fontFace, fontWeight);
                 }
             }
         }
@@ -1292,7 +1298,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                         if (obj.IsLSD && obj.ObjectClass == ObjectClass.Monster) {
                                 continue;
                         }
-                        var textTexture = TextureCache.GetText(obj.Name, LABEL_HEIGHT, color, fontFace, fontWeight, 1, false);
+                        var textTexture = TextureCache.GetText(obj.Name, LabelFontSize, color, fontFace, fontWeight, 1, false);
 
                         if (textTexture == null) continue;
                         var tint = Color.FromArgb((int)((Opacity / 20f) * 255), 255, 255, 255).ToArgb();
