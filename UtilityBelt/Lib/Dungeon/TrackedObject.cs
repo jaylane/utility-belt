@@ -86,6 +86,10 @@ namespace UtilityBelt.Lib.Dungeon {
             if (!ByZLayer.ContainsKey(newZ)) ByZLayer.Add(newZ, new List<TrackedObject>());
             if (!ByZLayer[newZ].Contains(this)) ByZLayer[newZ].Add(this);
 
+            if (ObjectClass == ObjectClass.Portal || ObjectClass == ObjectClass.Npc) {
+                Name = Name.Replace("Portal to ", "").Replace(" Portal", "");
+            }
+
             if (ObjectClass == ObjectClass.Monster && !Legend.ContainsKey(Wcid)) {
                 Color color;
                 if (LegendIcons.Contains(Icon)) {
