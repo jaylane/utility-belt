@@ -11,6 +11,7 @@
 - Add `/ub tinkcalc` for best granite/iron combination
 - Add Setting `DungeonMaps.LabelFontSize`
 - Fix dungeonmap portal names from lsd data
+- Add support to expressions for floats without a preceding digit ie `.5`
 
 ## 0.1.4 (2020-04-04) [UtilityBeltInstaller-0.1.4.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/0e205b055afc488ef2a4e4194cb6b72f/UtilityBeltInstaller-0.1.4.exe)
 - Fix `/ub count profile <profile>` to actually output results to chat

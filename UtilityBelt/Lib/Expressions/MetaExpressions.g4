@@ -38,7 +38,7 @@ REGEXOP             : '#' ;
 
 ID                  : [a-zA-Z_] [a-zA-Z0-9_]+ '[' ;
 BOOL                : (T R U E | F A L S E) ;
-NUMBER              : DIGIT+ ('.' DIGIT+)? ;
+NUMBER              : (DIGIT* '.'? DIGIT+);
 STRING              : ( [`] ~[`]* [`] | ([a-zA-Z_'"] | BSLASH .) ([a-zA-Z_'" ] | BSLASH .)* ) ;
 WHITESPACE          : [ \t\r\n]+ -> skip;
 
