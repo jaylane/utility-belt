@@ -374,15 +374,15 @@ namespace UtilityBelt
 
                 // this accounts for gems, where the material is the same as the name.  That way we don't
                 // get names like Jet Jet or White Sapphire White Sapphire
-                if (material.Name == wo.Name) {
-                    return wo.Name;
+                if (material.Name == wo.Name || wo.Name.Contains(material.Name)) {
+                    return wo.Name.Trim();
                 }
                 else {
-                    return string.Format("{0} {1}", material.Name, wo.Name);
+                    return string.Format("{0} {1}", material.Name.Trim(), wo.Name.Replace("(100)","").Trim());
                 }
             }
             else {
-                return string.Format("{0}", wo.Name);
+                return string.Format("{0}", wo.Name.Trim());
             }
         }
 

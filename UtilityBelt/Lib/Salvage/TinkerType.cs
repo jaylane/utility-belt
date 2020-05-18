@@ -87,13 +87,14 @@ namespace UtilityBelt.Lib.Salvage {
 
         public void GetTinkSkills() {
             int jackofalltradesbonus = 0;
-            //if (CoreManager.Current.CharacterFilter.GetCharProperty(236) == 1) {
-            //    jackofalltradesbonus = 5;
-            //}
+            if (CoreManager.Current.CharacterFilter.GetCharProperty(326) == 1) {
+                jackofalltradesbonus = 5;
+            }
             weaponTinkeringSkill = CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.WeaponTinkering] + jackofalltradesbonus;
             magicItemTinkeringSkill = CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.MagicItemTinkering] + jackofalltradesbonus;
             armorTinkeringSkill = CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.ArmorTinkering] + jackofalltradesbonus;
             itemTinkeringSkill = CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.ItemTinkering] + jackofalltradesbonus;
+            //Logger.WriteToChat("armorTinkeringSkill: " + armorTinkeringSkill.ToString());
         }
 
         public static float GetMaterialMod(int material) {
@@ -162,23 +163,51 @@ namespace UtilityBelt.Lib.Salvage {
             }
         }
 
-            public int GetRequiredTinkSkill(int tinkerType) {
+        public static List<ObjectClass> IsImbuePossible(int material) {
+            List<ObjectClass> AllowedObjectClasses = new List<ObjectClass>();
+            
+            switch (material) {
+                case (int)Material.BLACK_OPAL:
+                case (int)Material.FIRE_OPAL:
+                //case (int)Material.SUNSTONE:
+                case (int)Material.AQUAMARINE:
+                case (int)Material.BLACK_GARNET:
+                case (int)Material.EMERALD:
+                case (int)Material.IMPERIAL_TOPAZ:
+                case (int)Material.JET:
+                case (int)Material.RED_GARNET:
+                case (int)Material.WHITE_SAPPHIRE:
+                    AllowedObjectClasses.Add(ObjectClass.WandStaffOrb);
+                    AllowedObjectClasses.Add(ObjectClass.MeleeWeapon);
+                    AllowedObjectClasses.Add(ObjectClass.MissileWeapon);
+                    break;
+                case (int)Material.SUNSTONE:
+                    AllowedObjectClasses.Add(ObjectClass.MeleeWeapon);
+                    AllowedObjectClasses.Add(ObjectClass.MissileWeapon);
+                    break;
+                default:
+                    break;
+            }
+            return AllowedObjectClasses;
+        }
+
+        public int GetRequiredTinkSkill(int tinkerType) {
             GetTinkSkills();
             switch (tinkerType) {
                 case 30:
-                    //Util.WriteToChat("magic item");
+                    //Logger.WriteToChat("magic item");
                     return magicItemTinkeringSkill;
                 case 29:
-                    //Util.WriteToChat("armor");
+                    //Logger.WriteToChat("armor");
                     return armorTinkeringSkill;
                 case 28:
-                    //Util.WriteToChat("weapon");
+                    //Logger.WriteToChat("weapon");
                     return weaponTinkeringSkill;
                 case 18:
-                    //Util.WriteToChat("item");
+                    //Logger.WriteToChat("item");
                     return itemTinkeringSkill;
                 default:
-                    //Util.WriteToChat("invalid salvage");
+                    //Logger.WriteToChat("invalid salvage");
                     return 0;
             }
         }

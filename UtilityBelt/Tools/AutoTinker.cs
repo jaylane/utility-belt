@@ -10,23 +10,59 @@ using System.Linq;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
+using UtilityBelt.Lib.Tinker;
 using System.ComponentModel;
+using UBHelper;
 
 namespace UtilityBelt.Tools {
     [Name("AutoTinker")]
     [Summary("Provides a UI for automatically applying salvage to weapons/armor.")]
     [FullDescription(@"
-This tool provides a UI for automatically applying salvage to weapons and armor. It will choose the best (lowest workmanship) salvage to apply for the given item, that still gives a percentage over [AutoTinker.MinPercent](/docs/tools/autotinker/#autotinker-minpercentage).
+This tool provides a UI for automatically applying tinkering salvage and imbue salvage to weapons and armor. It will choose the best (lowest workmanship) salvage and it to the target item, that still gives a percentage over [AutoTinker.MinPercent](/docs/tools/autotinker/#autotinker-minpercentage).
 
-### Usage
+### Tinker Tab
+
+This can apply specific salvage, or for melee weapons it can apply the best granite/iron option.  The math here follows endy's tinking calculator and selects highest max damage possible.
+
+![](/screenshots/AutoTinker/autotinker.png)
 
 1. Select an item in your inventory you want to tinker.
 2. Set [AutoTinker.MinPercent](/docs/tools/autotinker/#autotinker-minpercentage) 
 3. Choose a salvage type from the dropdown.
 4. Click the populate button.
-5. If it looks good, hit Go.
+5. If it looks good, hit Start.
+
+
+### Imbue Tab
+
+This is capable of bulk applying imbue salvage to items.
+
+![](/screenshots/AutoTinker/autoimbue.png)
+
+1. Select the appropriate damage and salvage combo
+2. Select refresh
+3. Hit Start
+OR 
+1. Hit the Rend All button
+2. Hit Start
+
+The Rend All button will automatically do the following:
+
+* Apply black opal to nether and normal wands (including no wield wands)
+* Apply imperial topaz to slash weapons and combo slash/pierce weapons
+* Apply black garnet to pierce weapons
+* Apply white sapphire to bludge weapons
+* Apply jet to electric weapons
+* Apply red garnet to fire weapons
+* Apply emerald to acid weapons
+* Apply aquamarine to cold weapons
+
+
+
     ")]
     public class AutoTinker : ToolBase {
+
+        //AutoTinker Buttons
         readonly HudButton AutoTinkAddSelectedButton;
         readonly HudList AutoTinkerList;
         readonly HudButton AutoTinkStartButton;
@@ -36,27 +72,45 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
         readonly HudCombo AutoTinkCombo;
         readonly HudTextBox AutoTinkMinPercentTextBox;
 
-        private readonly FakeItem fakeItem = new FakeItem();
+        //AutoImbue Stuff
+        readonly HudList AutoImbueList;
+        readonly HudButton AutoImbueStartButton;
+        readonly HudButton AutoImbueStopButton;
+        readonly HudCombo AutoImbueSalvageCombo;
+        readonly HudCombo AutoImbueDmgTypeCombo;
+        readonly HudButton AutoImbueRefreshListButton;
+        readonly HudButton AutoImbueAllButton;
+        readonly Dictionary<string, int> DefaultImbueList = new Dictionary<string, int>();
+
+        //private readonly TinkerJob tinkerJob = new TinkerJob();
         internal DataTable tinkerDT = new DataTable();
+        internal DataTable TinkerList = new DataTable();
 
         private bool waitingForIds = false;
-        private DateTime lastIdSpam = DateTime.MinValue;
-        private DateTime startTime = DateTime.MinValue;
-        private DateTime endTime = DateTime.MinValue;
-        private readonly List<int> itemsToId = new List<int>();
-        bool targetItemUpdated = false;
-        bool readyForNextTink = false;
-        private int lastIdCount;
-        double currentSalvageWK;
-        string currentSalvage;
-        string currentItemName;
-        private bool tinking = false;
-        WorldObject targetSalvage;
-        WorldObject itemWO;
+        private List<int> itemsToId = new List<int>();
+        private readonly List<int> salvageToBeApplied = new List<int>();
+        private readonly List<int> PossibleMaterialList = new List<int>();
+        private readonly List<int> SalvageUsedList = new List<int>();
+        private List<int> RescanList = new List<int>();
+        private readonly Dictionary<int, double> FullSalvageDict = new Dictionary<int, double>();
+        private readonly Dictionary<int, double> TinkerableItemDict = new Dictionary<int, double>();
+        readonly List<string> dmgList = new List<string>();
+        string runType;
+        private bool isSelecting = false;
+        private bool isRunning = false;
+        private bool isPopulating = false;
+        WorldObject storedTargetItem;
         readonly TinkerCalc tinkerCalc = new TinkerCalc();
-        readonly Dictionary<string, int> SalvageList = new Dictionary<string, int>();
+        private TinkerJobManager tinkerJobManager = new TinkerJobManager();
+        private  TinkerJob tinkerJob = new TinkerJob();
+        readonly Dictionary<string, int> AutoTinkerSalvageList = new Dictionary<string, int>();
+        readonly Dictionary<string, int> AutoImbueSalvageList = new Dictionary<string, int>();
         readonly Dictionary<int, double> PotentialSalvageList = new Dictionary<int, double>();
         readonly List<string> ComboBoxList = new List<string>();
+        int weaponTinkeringSkill;
+        int magicItemTinkeringSkill;
+        int armorTinkeringSkill;
+        int itemTinkeringSkill;
 
         #region Config
         [Summary("Minimum percentage required to perform tinker")]
@@ -68,11 +122,81 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
 
         #endregion
 
+        //        #region /ub autotinker
+        //        [Summary("starts autotinker")]
+        //        [Usage("/ub autotinker")]
+        //        //[Usage("/ub autotinker")]
+        //        [CommandPattern("autotinker", @"^$")]
+        //        public void StartAutoTink(string cmd, Match args) {
+        //            try {
+        //                ClearAllTinks();
+        //                //ScanInventory(); 
+        //                new Assessor.Job(UB.Assessor, ref itemsToId, (_) => { }, () => {
+        //                    runType = "multi";
+        //                    //Start(runType);
+        //                });
+        //            }
+        //            catch (Exception ex) {
+        //                Logger.WriteToChat(ex.Message);
+        //            }
+        //        }
+        //        #endregion
+
+        #region /ub getjob
+        [Summary("run this command to see tinker jobs currently in queue")]
+        [Usage("/ub getjob")]
+        [CommandPattern("getjob", @"^ *(?<nothing>.*)$")]
+        public void GetJob(string cmd, Match args) {
+            try {
+                tinkerJobManager.GetJobs();
+            }
+            catch (Exception ex) {
+                Logger.WriteToChat(ex.Message);
+            }
+        }
+        #endregion
+
+
+        #region /ub tinkcalc
+        [Summary("select an item and run this command to see best iron/granite combination")]
+        [Usage("/ub tinkcalc")]
+        [CommandPattern("tinkcalc", @"^ *(?<nothing>.*)$")]
+        public void GetDifficulty(string cmd, Match args) {
+            try {
+                    List<int> scanItem = new List<int>();
+                    storedTargetItem = CoreManager.Current.WorldFilter[CoreManager.Current.Actions.CurrentSelection];
+                    Logger.WriteToChat(storedTargetItem.Name);
+                    scanItem.Add(storedTargetItem.Id);
+
+                    new Assessor.Job(UB.Assessor, ref scanItem, (_) => { }, () => {
+                        isSelecting = false;
+                        storedTargetItem = CoreManager.Current.WorldFilter[CoreManager.Current.Actions.CurrentSelection];
+                        CalculateBestDamage(storedTargetItem);
+                    });
+
+                //TinkerJobManager.GetGraniteIron(double maxDamage, double variance) {
+
+
+                //tinkerJobManager.ScanInventory();
+
+
+                //int diff = tinkerCalc.GetDifficulty(.99, 67);
+                //int count = 0;
+                //
+                //foreach (int m in salvageToBeApplied) {
+                //    tinkCount++;
+                //    //Logger.WriteToChat("tink #: " + tinkCount);
+                //    tinkerCalc.GetRequiredSalvage(diff, m, storedTargetItem, tinkCount);
+                //}
+            }
+            catch (Exception ex) {
+                Logger.WriteToChat(ex.Message);
+            }
+        }
+        #endregion
+
         public AutoTinker(UtilityBeltPlugin ub, string name) : base(ub, name) {
             try {
-                CreateDataTable();
-                CoreManager.Current.ChatBoxMessage += Current_ChatBoxMessage;
-
                 AutoTinkerList = (HudList)UB.MainView.view["AutoTinkerList"];
                 AutoTinkerList.Click += AutoTinkerList_Click;
 
@@ -94,15 +218,256 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
 
                 AutoTinkMinPercentTextBox.Change += AutoTinkMinPercentTextBox_Changed;
                 AutoTinkMinPercentTextBox.Text = MinPercentage.ToString();
-                
+
                 AutoTinkItemNameLabel = (HudStaticText)UB.MainView.view["AutoTinkItemNameLabel"];
+
+
+                AutoImbueList = (HudList)UB.MainView.view["AutoImbueList"];
+                AutoImbueList.Click += AutoImbueList_Click;
+
+                AutoImbueSalvageCombo = (HudCombo)UB.MainView.view["AutoImbueSalvageCombo"];
+                AutoImbueSalvageCombo.Change += AutoImbueSalvageCombo_Change;
+
+                AutoImbueDmgTypeCombo = (HudCombo)UB.MainView.view["AutoImbueDmgTypeCombo"];
+                AutoImbueDmgTypeCombo.Change += AutoImbueDmgTypeCombo_Change;
+
+                AutoImbueStartButton = (HudButton)UB.MainView.view["AutoImbueStartButton"];
+                AutoImbueStartButton.Hit += AutoImbueStartButton_Hit;
+
+                AutoImbueStopButton = (HudButton)UB.MainView.view["AutoImbueStopButton"];
+                AutoImbueStopButton.Hit += AutoImbueStopButton_Hit;
+
+                AutoImbueRefreshListButton = (HudButton)UB.MainView.view["AutoImbueRefreshListButton"];
+                AutoImbueRefreshListButton.Hit += AutoImbueRefreshListButton_Hit;
+
+                AutoImbueAllButton = (HudButton)UB.MainView.view["AutoImbueAllButton"];
+                AutoImbueAllButton.Hit += AutoImbueAllButton_Hit;
 
                 PopulateAutoTinkCombo();
 
+                tinkerCalc.BuildDifficultyTable();
+
                 UB.Core.RenderFrame += Core_RenderFrame;
+
+                PopulateAutoImbueSalvageCombo();
+                PopulateAutoImbueDmgTypeCombo();
+                DefaultImbueList = tinkerJobManager.BuildDefaultImbueList();
+
+                HudStaticText c = (HudStaticText)(AutoImbueDmgTypeCombo[AutoImbueDmgTypeCombo.Current]);
+                SelectDefaultSalvage(c.Text.ToString());
+
 
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+        private void SelectDefaultSalvage(string dmgType) {
+            FileService service = CoreManager.Current.Filter<FileService>();
+
+            foreach (KeyValuePair<string, int> row in DefaultImbueList) {
+                if (dmgType == row.Key.ToString()) {
+                    var selectSalvage = service.MaterialTable[row.Value];
+                    for (int r = 0; r < AutoImbueSalvageCombo.Count; r++) {
+                        HudStaticText sal = (HudStaticText)(AutoImbueSalvageCombo[r]);
+                        if (sal.Text.ToString() == selectSalvage.ToString()) {
+                            AutoImbueSalvageCombo.Current = r;
+                        }
+                    }
+                }
+            }
+        }
+
+        public void CalculateBestDamage(WorldObject item) {
+            Logger.Debug("test");
+            double fakeMaxDamage = 0;
+            double fakeVariance = 0;
+            double finalMaxDamage = 0;
+            int granite = 0;
+            int iron = 0;
+            int tinkCount = item.Values(LongValueKey.NumberTimesTinkered);
+            if (item.ObjectClass == ObjectClass.MeleeWeapon) {
+                double maxDamage = tinkerJobManager.GetMaxDamage(item);
+                double variance = item.Values(DoubleValueKey.Variance);
+                for (int i = tinkCount + 1; i <= 10; i++) {
+                    if (fakeMaxDamage == 0) {
+                        fakeMaxDamage = maxDamage;
+                    }
+                    if (fakeVariance == 0) {
+                        fakeVariance = variance;
+                    }
+                    double ironDPS = GetDPS(fakeMaxDamage + 1, fakeVariance);
+                    double graniteDPS = GetDPS(fakeMaxDamage, fakeVariance * .8);
+                    LogDebug("Dmg with Iron: " + ironDPS.ToString());
+                    LogDebug("Dmg with Granite: " + graniteDPS.ToString());
+                    if (ironDPS >= graniteDPS) {
+                        finalMaxDamage = ironDPS;
+                        fakeMaxDamage = fakeMaxDamage + 1;
+                        iron++;
+                    }
+                    else if (graniteDPS > ironDPS) {
+                        finalMaxDamage = graniteDPS;
+                        fakeVariance = fakeVariance * .8;
+                        granite++;
+                    }
+                }
+                Logger.WriteToChat("final max damage: " + finalMaxDamage);
+                Logger.WriteToChat("granite: " + granite.ToString());
+                Logger.WriteToChat("iron: " + iron.ToString());
+            }
+        }
+
+        public void AutoImbueSalvageCombo_Change(object sender, EventArgs e) {
+            try {
+                PopulateAutoImbue();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+
+        public void AutoImbueDmgTypeCombo_Change(object sender, EventArgs e) {
+            try {
+                HudStaticText dmgType = (HudStaticText)(AutoImbueDmgTypeCombo[AutoImbueDmgTypeCombo.Current]);
+                SelectDefaultSalvage(dmgType.Text.ToString());
+                PopulateAutoImbue();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void PopulateAutoImbue() {
+            if (isPopulating) return;
+            isPopulating = true;
+            tinkerJobManager.ClearAll();
+            AutoImbueList.ClearRows();
+            List<string> salList = new List<string>();
+            HudStaticText dmgType = (HudStaticText)(AutoImbueDmgTypeCombo[AutoImbueDmgTypeCombo.Current]);
+            HudStaticText salType = (HudStaticText)(AutoImbueSalvageCombo[AutoImbueSalvageCombo.Current]);
+            salList.Add(salType.Text);
+
+            ClearAllTinks();
+            ScanInventory();
+            tinkerJobManager.ScanInventory();
+            new Assessor.Job(UB.Assessor, ref itemsToId, (_) => { }, () => {
+                tinkerJobManager.AutoImbueListFinished += AutoImbueList_Finished;
+                tinkerJobManager.AutoImbueListChanged += AutoImbueList_Changed;
+                Logger.WriteToChat("done scanning");
+                tinkerJobManager.CreatePossibleMaterialList(salList, false);
+                tinkerJobManager.CreateTinkerableItemsList(TinkerableItemDict, dmgType.Text, salType.Text);
+                itemsToId.Clear();
+                isPopulating = false;
+            });
+
+
+        }
+
+        private void AutoImbueRefreshListButton_Hit(object sender, EventArgs e) {
+            try {
+                Logger.Debug("AutoImbueRefreshListButton_Hit");
+                if (!isRunning) {
+                    Logger.WriteToChat("Be patient... Already made your life easy enough");
+                    SetTinkerSkills();
+                    PopulateAutoImbue();
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void AutoImbueList_Click(object sender, int row, int col) {
+            try {
+                HudList.HudListRowAccessor imbueListRow = AutoImbueList[row];
+                HudStaticText itemID = (HudStaticText)imbueListRow[5];
+                int.TryParse(itemID.Text.ToString(), out int item);
+                CoreManager.Current.Actions.SelectItem(item);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void AutoImbueStartButton_Hit(object sender, EventArgs e) {
+            try {
+                Logger.Debug("AutoImbueStartButton_Hit");
+                if (CheckTinkerSkillChange()) {
+                    Start();
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void AutoImbueAllButton_Hit(object sender, EventArgs e) {
+            Logger.Debug("AutoImbueAllButton_Hit");
+            SetTinkerSkills();
+            tinkerJobManager.ClearAll();
+            AutoImbueList.ClearRows();
+            ClearAllTinks();
+            ScanInventory();
+            tinkerJobManager.ScanInventory();
+            new Assessor.Job(UB.Assessor, ref itemsToId, (_) => { }, () => {
+                tinkerJobManager.AutoImbueListFinished += AutoImbueList_Finished;
+                tinkerJobManager.AutoImbueListChanged += AutoImbueList_Changed;
+                tinkerJobManager.CreatePossibleMaterialList(null, true);
+                Logger.WriteToChat("done scanning");
+                tinkerJobManager.CreateTinkerableItemsList(TinkerableItemDict, null, null, true);
+                itemsToId.Clear();
+            });
+        }
+
+        private void AutoImbueStopButton_Hit(object sender, EventArgs e) {
+            Logger.Debug("AutoImbueStopButton_Hit");
+            try {
+                Stop();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        public void ScanInventory() {
+            itemsToId.Clear();
+            FullSalvageDict.Clear();
+            TinkerableItemDict.Clear();
+            using (var inv = CoreManager.Current.WorldFilter.GetInventory()) {
+
+                foreach (WorldObject wo in inv) {
+                    if (!FullSalvageDict.ContainsKey(wo.Id) && wo.Values(LongValueKey.UsesRemaining) == 100 &&
+                        wo.ObjectClass == ObjectClass.Salvage) {
+                        FullSalvageDict.Add(wo.Id, wo.Values(DoubleValueKey.SalvageWorkmanship));
+                    }
+                    if (CanBeTinkered(wo) && !TinkerableItemDict.ContainsKey(wo.Id)) {
+                        TinkerableItemDict.Add(wo.Id, wo.Values(DoubleValueKey.SalvageWorkmanship));
+                        itemsToId.Add(wo.Id);
+                    }
+                }
+            }
+        }
+
+        private void PopulateAutoImbueDmgTypeCombo() {
+
+            var dmgTypes = Enum.GetValues(typeof(Lib.Constants.DamageTypes));
+            foreach (var dmg in dmgTypes) {
+                dmgList.Add(dmg.ToString());
+            }
+            var sortedDmgList = from element in dmgList
+                                orderby element
+                                select element;
+            foreach (var dmg in sortedDmgList) {
+                AutoImbueDmgTypeCombo.AddItem(dmg.ToString(), null);
+            }
+        }
+
+
+        private void PopulateAutoImbueSalvageCombo() {
+            AutoImbueSalvageList.Clear();
+            AutoImbueSalvageCombo.Clear();
+            FileService service = CoreManager.Current.Filter<FileService>();
+            for (int i = 0; i < service.MaterialTable.Length; i++) {
+                var material = service.MaterialTable[i];
+                if (TinkerType.SalvageType(i) == 2) {
+                    //Logger.WriteToChat(material.Name.ToString());
+                    if (!AutoImbueSalvageList.ContainsKey(material.Name)) {
+                        AutoImbueSalvageList.Add(material.Name, i);
+
+                    }
+                }
+            }
+            var SortedSalvageList = AutoImbueSalvageList.Keys.ToList();
+            foreach (var item in AutoImbueSalvageList.OrderBy(i => i.Key)) {
+                AutoImbueSalvageCombo.AddItem(item.Key.ToString(), null);
+            }
         }
 
         private void AutoTinkerList_Click(object sender, int row, int col) {
@@ -118,135 +483,50 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
 
         public void Core_RenderFrame(object sender, EventArgs e) {
             try {
-                if (waitingForIds) {
-                    if (UB.Assessor.NeedsInventoryData(itemsToId)) {
-                        if (DateTime.UtcNow - lastIdSpam > TimeSpan.FromSeconds(15)) {
-                            lastIdSpam = DateTime.UtcNow;
-                            var thisIdCount = UB.Assessor.GetNeededIdCount(itemsToId);
-                            Logger.WriteToChat(string.Format("AutoImbue waiting to id {0} items, this will take approximately {0} seconds.", thisIdCount));
-                            if (lastIdCount != thisIdCount) {
-                                lastIdCount = thisIdCount;
-                            }
-                        }
-                        return;
-                    }
-                    else {
-                        waitingForIds = false;
-                        endTime = DateTime.UtcNow;
-                        Logger.WriteToChat("AutoTinker: took " + Util.GetFriendlyTimeDifference(endTime - startTime) + " to scan");
-                        ClearAllTinks();
-                        DoPopulateList();
-                    }
+                if (!waitingForIds) {
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        public void Current_ChatBoxMessage(object sender, ChatTextInterceptEventArgs e) {
-            try {
-                if (tinking) {
-                    string characterName = CoreManager.Current.CharacterFilter.Name;
-
-                    Regex CraftSuccess = new Regex("^" + characterName + @" successfully applies the (?<salvage>[\w\s\-]+) Salvage(\s?\(100\))?\s\(workmanship (?<workmanship>\d+\.\d+)\) to the (?<item>[\w\s\-]+)\.$");
-                    Regex CraftFailure = new Regex("^" + characterName + @" fails to apply the (?<salvage>[\w\s\-]+) Salvage(\s?\(100\))?\s\(workmanship (?<workmanship>\d+\.\d+)\) to the (?<item>[\w\s\-]+).\s?The target is destroyed\.$");
-
-                    if (CraftSuccess.IsMatch(e.Text.Trim())) {
-                        var match = CraftSuccess.Match(e.Text.Trim());
-                        string result = "success";
-                        string chatcapSalvage = match.Groups["salvage"].Value;
-                        string chatcapWK = match.Groups["workmanship"].Value;
-                        string chatcapItem = match.Groups["item"].Value;
-                        if (currentItemName == chatcapItem && currentSalvageWK.ToString("0.00") == chatcapWK.ToString() && chatcapSalvage == currentSalvage) {
-                            Logger.Debug(result + ": " + chatcapSalvage + " " + chatcapWK + " on " + chatcapItem);
-                            readyForNextTink = true;
-                            CoreManager.Current.Actions.RequestId(fakeItem.id);
-                        }
-                        else {
-                            Logger.Debug("AutoTinker: did not match success" + "chat salvageWK: " + chatcapWK.ToString() + "real salvageWK: " + currentSalvageWK.ToString("0.00") + "chat item name: " + chatcapItem + "real item name: " + currentItemName + "chat salv name: " + chatcapSalvage + "real salv name: " + currentSalvage);
-                        }
-                    }
-
-
-                    if (CraftFailure.IsMatch(e.Text.Trim())) {
-                        var match = CraftFailure.Match(e.Text.Trim());
-                        string result = "failure";
-                        string chatcapSalvage = match.Groups["salvage"].Value.Replace(" Salvage", "");
-                        string chatcapWK = match.Groups["workmanship"].Value;
-                        string chatcapItem = match.Groups["item"].Value;
-                        if (currentItemName == chatcapItem && currentSalvageWK.ToString("0.00") == chatcapWK.ToString() && chatcapSalvage == currentSalvage) {
-                            Logger.Debug(result + ": " + chatcapSalvage + " " + chatcapWK + " on " + chatcapItem);
-                            ClearAllTinks();
-                        }
-                        else {
-                            Logger.Debug("AutoTinker: did not match failure" + "chat salvageWK: " + chatcapWK.ToString() + "real salvageWK: " + currentSalvageWK.ToString("0.00") + "chat item name: " + chatcapItem + "real item name: " + currentItemName + "chat salv name: " + chatcapSalvage + "real salv name: " + currentSalvage);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void NextTink() {
-            try {
-                AutoTinkerList.RemoveRow(0);
-                tinking = false;
-                if (AutoTinkerList.RowCount >= 1) {
-                    DoTinks();
-                }
-                else {
-                    Logger.WriteToChat("There are " + AutoTinkerList.RowCount.ToString() + " in the list.");
-                    AutoTinkItemNameLabel.Text = "[None]";
-                    itemWO = null;
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-
-        }
-
-        //public void AutoImbueSalvageCombo_Change(object sender, EventArgs e) {
-        //    ClearAllTinks();
-        //    DoPopulateList();
-        //}
-
-        public void GetPotentialSalvage() {
-            try {
-                HudStaticText c = (HudStaticText)(AutoTinkCombo[AutoTinkCombo.Current]);
-                var materialID = SalvageList[c.Text.ToString()];
-
-                using (var inv = CoreManager.Current.WorldFilter.GetInventory()) {
-                    inv.SetFilter(new ByObjectClassFilter(ObjectClass.Salvage));
-                    foreach (WorldObject wo in inv) {
-                        if (wo.Values(LongValueKey.Material) == materialID && wo.Values(LongValueKey.UsesRemaining) == 100) {
-                            if (!PotentialSalvageList.ContainsKey(wo.Id)) {
-                                PotentialSalvageList.Add(wo.Id, wo.Values(DoubleValueKey.SalvageWorkmanship));
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
 
         private void AutoTinkStopButton_Hit(object sender, EventArgs e) {
             try {
-                CoreManager.Current.Actions.RequestId(fakeItem.id);
-                ClearAllTinks();
+                Logger.Debug("AutoTinkStopButton_Hit");
+                Stop();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void Stop() {
+            try {
+                if (!isRunning && !isPopulating) {
+                    AutoTinkerList.ClearRows();
+                    AutoImbueList.ClearRows();
+                    storedTargetItem = null;
+                }
+                AutoTinkItemNameLabel.Text = "[None]";
+                tinkerJobManager.TinkerListChanged -= TinkerList_Changed;
+                tinkerJobManager.TinkerListFinished -= TinkerList_Finished;
+                tinkerJobManager.TinkerJobChanged -= TinkerJob_Changed;
+                tinkerJobManager.TinkerJobFinished -= TinkerJob_Finished;
+                tinkerJobManager.ClearAll();
+                tinkerJobManager.Stop();
+                isRunning = false;
+                isPopulating = false;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public void ClearAllTinks() {
-            CoreManager.Current.WorldFilter.ChangeObject -= WaitForItemUpdate;
-            UBHelper.ConfirmationRequest.ConfirmationRequestEvent -= UBHelper_ConfirmationRequest;
-            readyForNextTink = false;
-            tinking = false;
-            fakeItem.tinkeredCount = 0;
-            fakeItem.id = 0;
-            fakeItem.name = "";
-            fakeItem.successPercent = 0;
-            fakeItem.workmanship = 0;
             AutoTinkerList.ClearRows();
+            AutoImbueList.ClearRows();
+            TinkerList.Clear();
             PotentialSalvageList.Clear();
+            FullSalvageDict.Clear();
+            SalvageUsedList.Clear();
+            TinkerableItemDict.Clear();
+            salvageToBeApplied.Clear();
         }
 
         private void AutoTinkMinPercentTextBox_Changed(object sender, EventArgs e) {
@@ -264,62 +544,260 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void DoPopulateList() {
-            tinking = false;
-            if (itemWO != null) {
-                itemWO = CoreManager.Current.WorldFilter[itemWO.Id];
-            }
-            ClearAllTinks();
 
-            GetPotentialSalvage();
+        private void TinkerList_Changed(int itemID, int tinkeredCount, int salvageID, double successChance) {
+            //Logger.WriteToChat("I found the change UI event");
+            UpdateTinkList(tinkeredCount + 1, CoreManager.Current.WorldFilter[itemID], CoreManager.Current.WorldFilter[salvageID], tinkerCalc.DoCalc(salvageID, CoreManager.Current.WorldFilter[itemID], tinkeredCount));
+            
+            //tinkerJobManager.TinkerListChanged -= TinkerList_Changed;
+        }
 
-            foreach (var item in PotentialSalvageList.OrderBy(i => i.Value)) {
-                double.TryParse(AutoTinkMinPercentTextBox.Text, out double minPercent);
+        private void AutoImbueList_Changed(int itemID, int tinkeredCount, int salvageID, double successChance) {
+            //Logger.WriteToChat("I found the change UI event");
+            UpdateAutoImbueList(tinkeredCount + 1, CoreManager.Current.WorldFilter[itemID], CoreManager.Current.WorldFilter[salvageID], successChance);
 
-                if (fakeItem.tinkeredCount < 10) {
-                    DoThings(item.Key, itemWO);
-                    if (minPercent / 100 > fakeItem.successPercent) {
-                        continue;
-                    }
-                    fakeItem.tinkeredCount++;
-                    UpdateTinkList();
-                }
-            }
-            if (AutoTinkerList.RowCount <= 0) {
-                Logger.Error("No salvage matched the selected criteria.  Either lower the percentage or get more salvage.");
-            }
+            //tinkerJobManager.TinkerListChanged -= TinkerList_Changed;
+        }
+
+        private void TinkerList_Finished(object sender, EventArgs e) {
+            //UpdateTinkList(tinkeredCount, CoreManager.Current.WorldFilter[itemID], CoreManager.Current.WorldFilter[salvageID], tinkerCalc.DoCalc(salvageID, CoreManager.Current.WorldFilter[itemID], tinkeredCount));
+            isPopulating = false;
+            tinkerJobManager.TinkerListChanged -= TinkerList_Changed;
+            tinkerJobManager.TinkerListFinished -= TinkerList_Finished;
+        }
+
+        private void AutoImbueList_Finished(object sender, EventArgs e) {
+            //UpdateTinkList(tinkeredCount, CoreManager.Current.WorldFilter[itemID], CoreManager.Current.WorldFilter[salvageID], tinkerCalc.DoCalc(salvageID, CoreManager.Current.WorldFilter[itemID], tinkeredCount));
+            isPopulating = false;
+            tinkerJobManager.AutoImbueListChanged -= AutoImbueList_Changed;
+            tinkerJobManager.AutoImbueListFinished -= AutoImbueList_Finished;
+        }
+
+        private void TinkerJob_Finished(object sender, EventArgs e) {
+            //ClearAllTinks();
+            Stop();
+            tinkerJobManager.TinkerJobChanged -= TinkerJob_Changed;
+            tinkerJobManager.TinkerJobFinished -= TinkerJob_Finished;
+        }
+
+        private void TinkerJob_Changed(int salvageID, bool succeeded) {
+            //Logger.WriteToChat("I found the tinker job changed event ");// + salvageID.ToString() + " with a status of " + succeeded);
+            UpdateUI(salvageID, succeeded);
         }
 
         private void PopulateListButton_Hit(object sender, EventArgs e) {
             try {
-                ClearAllTinks();
-                if (AutoTinkItemNameLabel.Text.ToString() != "[None]" && itemWO != null) {
-                    DoPopulateList();
+                if (storedTargetItem == null) {
+                    Logger.WriteToChat("select an item first");
+                    return;
+                }
+                Logger.Debug("PopulateListButton_Hit");
+                runType = "single";
+                SetTinkerSkills();
+                if (isPopulating) {
+                    Logger.WriteToChat("is populating is running");
+                    return;
                 }
                 else {
-                    Logger.Error("No item selected...");
+                    tinkerJobManager.Stop();
+                    isPopulating = true;
+                    List<int> rescanItem = new List<int>();
+                    List<int> matchingMaterial = new List<int>();
+                    AutoTinkerList.ClearRows();
+                    tinkerJobManager.ScanInventory();
+
+                    string selectedItem = AutoTinkItemNameLabel.Text.ToString();
+
+
+                    List<string> usableSalvageOnItem = new List<string>();
+                    if (tinkerJobManager.CanBeTinkered(storedTargetItem)) {
+                        UpdateNameLabel(storedTargetItem.Id);
+                        usableSalvageOnItem = tinkerJobManager.GetUsableSalvage(storedTargetItem.Id);
+                        FilterSalvageCombo(usableSalvageOnItem);
+                        usableSalvageOnItem = usableSalvageOnItem.Distinct().ToList();
+
+                        tinkerJobManager.CreatePossibleMaterialList(usableSalvageOnItem, false);
+
+                        if (selectedItem == "[None]") {
+                            Logger.WriteToChat("Select an item first");
+                            return;
+                        }
+                    }
+
+
+                    float.TryParse(AutoTinkMinPercentTextBox.Text, out float minPercent);
+                    //Logger.WriteToChat(minPercent.ToString());
+
+                    rescanItem.Add(storedTargetItem.Id);
+
+
+                    HudStaticText c = (HudStaticText)(AutoTinkCombo[AutoTinkCombo.Current]);
+                    string currentSalvageChoice = c.Text.ToString();
+
+                    new Assessor.Job(UB.Assessor, ref rescanItem, (_) => { }, () => {
+                        tinkerJobManager.TinkerListFinished += TinkerList_Finished;
+                        tinkerJobManager.TinkerListChanged += TinkerList_Changed;
+                        //tinkerJobManager.PopulateTinkerList();
+                        tinkerJobManager.BuildSalvageToBeApplied(storedTargetItem, currentSalvageChoice, runType);
+                        //tinkerJobManager.WriteSalvageToBeApplied();
+                        tinkerJobManager.BuildTinkerList(storedTargetItem, minPercent);
+                        rescanItem.Clear();
+                    });
+                    tinkerJob.minPercent = minPercent;
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+
+        private void UpdateNameLabel(int targetItem) {
+            if (targetItem != 0) {
+                //Logger.WriteToChat("found the item");
+                AutoTinkItemNameLabel.Text = Util.GetObjectName(targetItem);
+            }
+            else {
+                Logger.WriteToChat(Util.GetObjectName(targetItem).ToString() + " cannot be tinkered. Please select another item.");
+                AutoTinkItemNameLabel.Text = "[None]";
+                storedTargetItem = null;
+            }
         }
 
         private void AutoTinkAddSelectedButton_Hit(object sender, EventArgs e) {
             try {
                 ClearAllTinks();
-                itemWO = CoreManager.Current.WorldFilter[CoreManager.Current.Actions.CurrentSelection];
-                targetItemUpdated = true;
-                if (itemWO.HasIdData && CanBeTinkered(itemWO)) {
-                    AutoTinkItemNameLabel.Text = Util.GetObjectName(itemWO.Id);
-                    FilterSalvage(itemWO);
+                Logger.Debug("AutoTinkAddSelectedButton_Hit");
+                runType = "single";
+                if (isSelecting) {
+                    Logger.WriteToChat("still selecting");
+                    return;
                 }
                 else {
-                    Logger.WriteToChat(Util.GetObjectName(itemWO.Id).ToString() + " cannot be tinkered. Please select another item.");
-                    AutoTinkItemNameLabel.Text = "[None]";
-                    itemWO = null;
+                    isSelecting = true;
+
+                    List<int> scanItem = new List<int>();
+
+                    List<string> usableSalvageOnItem = new List<string>();
+                    tinkerJobManager.ClearAll();
+                    AutoTinkerList.ClearRows();
+
+                    tinkerJobManager.ScanInventory();
+
+                    storedTargetItem = CoreManager.Current.WorldFilter[CoreManager.Current.Actions.CurrentSelection];
+                    scanItem.Add(storedTargetItem.Id);
+
+                    new Assessor.Job(UB.Assessor, ref scanItem, (_) => { }, () => {
+                        isSelecting = false;
+                        storedTargetItem = CoreManager.Current.WorldFilter[CoreManager.Current.Actions.CurrentSelection];
+                        if (tinkerJobManager.CanBeTinkered(storedTargetItem)) {
+                            UpdateNameLabel(storedTargetItem.Id);
+                            usableSalvageOnItem = tinkerJobManager.GetUsableSalvage(storedTargetItem.Id);
+                            FilterSalvageCombo(usableSalvageOnItem);
+                            usableSalvageOnItem = usableSalvageOnItem.Distinct().ToList();
+
+                            tinkerJobManager.CreatePossibleMaterialList(usableSalvageOnItem, false);
+                            //tinkerJobManager.WritePossibleMaterialList();
+                            scanItem.Clear();
+                        }
+                    });
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
+
+       // private void TinkerTime(WorldObject targetItem) {
+       //     PossibleMaterialList.Clear();
+       //     List<string> UsableSalvage = new List<string>();
+       //     //Logger.WriteToChat("before max damage ");
+       //     fakeItem.MaxDamage = GetMaxDamage(targetItem);
+       //     //Logger.WriteToChat("after max damage ");
+       //     fakeItem.variance = targetItem.Values(DoubleValueKey.Variance);
+       //     //Logger.WriteToChat(targetItem.Name);
+       //     //UsableSalvage = GetUsableSalvage(targetItem.Id);
+       //     //foreach (var sal in UsableSalvage) {
+       //     //    CreatePossibleMaterialList(sal);
+       //     //}
+       //     int tinksRemaining = 10 - targetItem.Values(LongValueKey.NumberTimesTinkered);
+       //     int tinkCount = targetItem.Values(LongValueKey.NumberTimesTinkered);
+       //     BuildSalvageToBeApplied(targetItem, tinksRemaining);
+       //     BuildTinkerList(targetItem, tinksRemaining, tinkCount);
+       // }
+
+        private int GetSpellID(WorldObject targetItem, int i) {
+            var spell = Util.FileService.SpellTable.GetById(targetItem.Spell(i));
+            return spell.Id;
+        }
+
+        private double GetMaxDamage(WorldObject targetItem) {
+            double maxDamage = targetItem.Values(LongValueKey.MaxDamage);
+            Logger.WriteToChat("max damage: " + maxDamage.ToString());
+            int spellCount = targetItem.SpellCount;
+            for (int s = 0; s <= spellCount - 1; s++) {
+                int spell = GetSpellID(targetItem, s);
+                if (spell == (int)2598) {
+                    Logger.WriteToChat("minor");
+                    maxDamage += 2; //minor blood thirst
+                }
+                if (spell == (int)2586) {
+                    Logger.WriteToChat("major");
+                    maxDamage += 4; //major blood thirst
+                }
+                if (spell == (int)4661) {
+                    Logger.WriteToChat("epic");
+                    maxDamage += 7; //epic blood thirst
+                }
+                if (spell == (int)6089) {
+                    Logger.WriteToChat("legendary");
+                    maxDamage += 10;  //legendary blood thirst
+                }
+            }
+            maxDamage += 24;
+            Logger.WriteToChat(maxDamage.ToString());
+            return maxDamage;
+        }
+
+        private void Start() {
+            try {
+                if (isRunning) {
+                    Logger.WriteToChat("already running");
+                    return;
+                }
+                tinkerJobManager.TinkerJobChanged += TinkerJob_Changed;
+                tinkerJobManager.TinkerJobFinished += TinkerJob_Finished;
+                tinkerJobManager.Start();
+                isRunning = true;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+            //tinkerJobManager.StartTinkerJobs();
+
+        }
+
+        private void WriteTinkerList() {
+            foreach (DataRow row in TinkerList.Rows) {
+                //Logger.WriteToChat(row["targetItemID"].ToString());
+                //Logger.WriteToChat(row["tinkeredCount"].ToString());
+                Logger.WriteToChat(row["tinkeredCount"].ToString() + ": Applying ws " + CoreManager.Current.WorldFilter[int.Parse(row["targetSalvageID"].ToString())].Values(DoubleValueKey.SalvageWorkmanship).ToString() + " " + row["targetSalvage"].ToString() + " " + row["targetSalvageID"].ToString() + " to " + row["targetItem"] + " " + row["targetItemID"].ToString() + " with a successChance of " + row["successChance"].ToString());
+               //Logger.WriteToChat(row["targetSalvageID"].ToString());
+               //Logger.WriteToChat(row["targetSalvage"].ToString());
+               //Logger.WriteToChat(row["successChance"].ToString());
+            }
+        }
+
+        
+
+        private int GetTargetItem() {
+            foreach (var tinkerableItemID in TinkerableItemDict.OrderBy(i => i.Value)) {
+                WorldObject tinkerableItem = CoreManager.Current.WorldFilter[tinkerableItemID.Key];
+                if (CanBeTinkered(tinkerableItem)) {
+                    Logger.WriteToChat(Util.GetObjectName(tinkerableItemID.Key).ToString());
+                    return tinkerableItemID.Key;
+                }
+                else {
+                    return 0;
+                }
+            }
+            return 0;
+        }
+
 
         private static List<ObjectClass> ValidTinkeringObjectClasses = new List<ObjectClass>() {
             ObjectClass.Armor,
@@ -343,264 +821,169 @@ This tool provides a UI for automatically applying salvage to weapons and armor.
             return true;
         }
 
-        private void FilterSalvageCombo(string[] salvageArray) {
-            for (int i = 0; i < AutoTinkCombo.Count; i++) {
-                HudStaticText c = (HudStaticText)(AutoTinkCombo[i]);
-                if (salvageArray.Contains(c.Text.ToString())) {
-                    ComboBoxList.Add(c.Text.ToString());
-                }
-            }
-        }
-
-        private void FilterSalvage(WorldObject itemWO) {
+        private void FilterSalvageCombo(List<string> salvageArray) {
 
             HudStaticText c = (HudStaticText)(AutoTinkCombo[AutoTinkCombo.Current]);
             string currentSalvageChoice = c.Text.ToString();
-
-            PopulateAutoTinkCombo();
-            ComboBoxList.Clear();
-            var category = itemWO.ObjectClass;
-            string[] filteredSalvage = new string[] { };
-
-            switch (category) {
-                case ObjectClass.MissileWeapon:
-                    //Util.WriteToChat("Missile");
-                    filteredSalvage = new string[] { "Mahogany", "Brass", "Gold", "Moonstone", "Linen", "Pine" };
-                    break;
-                case ObjectClass.MeleeWeapon:
-                    //Util.WriteToChat("Melee");
-                    filteredSalvage = new string[] { "Brass", "Granite", "Iron", "Gold", "Moonstone", "Linen", "Pine" };
-                    break;
-                case ObjectClass.WandStaffOrb:
-                    //Util.WriteToChat("Wand");
-                    filteredSalvage = new string[] { "Brass", "Green Garnet", "Gold", "Moonstone", "Linen", "Pine" };
-                    break;
-                case ObjectClass.Armor:
-                    //Util.WriteToChat("Armor");
-                    filteredSalvage = new string[] { "Steel", "Linen", "Moonstone", "Pine"  };
-                    break;
-                case ObjectClass.Jewelry:
-                    //Util.WriteToChat("Jewelry");
-                    filteredSalvage = new string[] { "Gold", "Linen", "Moonstone", "Pine" };
-                    break;
-                case ObjectClass.Clothing:
-                    //Util.WriteToChat("Clothing");
-                    filteredSalvage = new string[] { "Gold", "Linen", "Moonstone", "Pine" };
-                    break;
-                default:
-                    Console.WriteLine("Select an item");
-                    break;
-            }
-
-            FilterSalvageCombo(filteredSalvage);
-
             AutoTinkCombo.Clear();
-            foreach (string item in ComboBoxList) {
-                AutoTinkCombo.AddItem(item, null);
+
+            foreach (string s in salvageArray) {
+                AutoTinkCombo.AddItem(s, null);
             }
+
             for (int i = 0; i < AutoTinkCombo.Count; i++) {
                 HudStaticText s = (HudStaticText)(AutoTinkCombo[i]);
                 if (currentSalvageChoice == s.Text.ToString()) {
                     AutoTinkCombo.Current = i;
                 }
             }
-
-
-            if (category == ObjectClass.MissileWeapon) {
-                //Util.WriteToChat("setting default to mahog");
-                AutoTinkCombo.Current = 1;
-            }
-
         }
 
         private void AutoTinkStartButton_Hit(object sender, EventArgs e) {
-            try {
-                DoTinks();
+            Logger.Debug("AutoTinkStartButton_Hit");
+            if (CheckTinkerSkillChange() && storedTargetItem != null) {
+                Start();
             }
-            catch (Exception ex) { Logger.LogException(ex); }
+            else {
+                Logger.WriteToChat("select an item first");
+            }
         }
         
-        private void UpdateTinkList() {
+        private void UpdateTinkList(int tinkCount, WorldObject targetItem, WorldObject targetSalvage, double successChance) {
             HudList.HudListRowAccessor newTinkRow = AutoTinkerList.AddRow();
-            ((HudStaticText)newTinkRow[0]).Text = fakeItem.tinkeredCount.ToString();
-            ((HudStaticText)newTinkRow[1]).Text = fakeItem.name.ToString();
-            ((HudStaticText)newTinkRow[2]).Text = Util.GetObjectName(targetSalvage.Id) + " w" + Math.Round(targetSalvage.Values(DoubleValueKey.SalvageWorkmanship),2, MidpointRounding.AwayFromZero);
-            ((HudStaticText)newTinkRow[3]).Text = fakeItem.successPercent.ToString("P");
+            ((HudStaticText)newTinkRow[0]).Text = tinkCount.ToString();
+            ((HudStaticText)newTinkRow[1]).Text = Util.GetObjectName(targetItem.Id).ToString();
+            ((HudStaticText)newTinkRow[2]).Text = Util.GetObjectName(targetSalvage.Id).Replace(" Salvage","") + "(" + Math.Round(targetSalvage.Values(DoubleValueKey.SalvageWorkmanship),2, MidpointRounding.AwayFromZero) + ") " ;
+            ((HudStaticText)newTinkRow[3]).Text = successChance.ToString("P");
             ((HudStaticText)newTinkRow[4]).Text = targetSalvage.Id.ToString();
-            ((HudStaticText)newTinkRow[5]).Text = fakeItem.id.ToString();
+            ((HudStaticText)newTinkRow[5]).Text = targetItem.Id.ToString();
         }
 
-        public decimal TruncateDecimal(decimal value, int precision) {
-            decimal step = (decimal)Math.Pow(10, precision);
-            decimal tmp = Math.Truncate(step * value);
-            return tmp / step;
+        private void UpdateAutoImbueList(int tinkCount, WorldObject targetItem, WorldObject targetSalvage, double successChance) {
+            HudList.HudListRowAccessor newTinkRow = AutoImbueList.AddRow();
+            ((HudStaticText)newTinkRow[0]).Text = tinkCount.ToString();
+            ((HudStaticText)newTinkRow[1]).Text = Util.GetObjectName(targetItem.Id).ToString();
+            ((HudStaticText)newTinkRow[2]).Text = Util.GetObjectName(targetSalvage.Id).Replace(" Salvage", "") + "(" + Math.Round(targetSalvage.Values(DoubleValueKey.SalvageWorkmanship), 2, MidpointRounding.AwayFromZero) + ") ";
+            ((HudStaticText)newTinkRow[3]).Text = successChance.ToString("P");
+            ((HudStaticText)newTinkRow[4]).Text = targetSalvage.Id.ToString();
+            ((HudStaticText)newTinkRow[5]).Text = targetItem.Id.ToString();
         }
 
-        private void DoTinks() {
-            try {
-                if (AutoTinkerList.RowCount <= 0) {
-                    ClearAllTinks();
-                }
-
-                HudList.HudListRowAccessor tinkerListRow = AutoTinkerList[0];
-                HudStaticText item = (HudStaticText)tinkerListRow[1];
-                HudStaticText sal = (HudStaticText)tinkerListRow[2];
-                HudStaticText successP = (HudStaticText)tinkerListRow[3];
-                string successPstr = successP.Text.ToString();
-                HudStaticText salID = (HudStaticText)tinkerListRow[4];
-                HudStaticText itemID = (HudStaticText)tinkerListRow[5];
-
-                if (!int.TryParse(itemID.Text.ToString(), out int intItemId)) {
-                    LogError("Something went wrong, unable to parse item to work with: " + itemID.Text);
-                }
-
-                if (!int.TryParse(salID.Text.ToString(), out int intSalvId)) {
-                    LogError("Something went wrong, unable to parse salvage to work with: " + salID.Text);
-                }
 
 
-                if (intItemId != 0) {
-                    currentItemName = Util.GetObjectName(intItemId);
-                }
-
-                if (intSalvId != 0) {
-                    currentSalvageWK = Math.Round(CoreManager.Current.WorldFilter[intSalvId].Values(DoubleValueKey.SalvageWorkmanship), 2, MidpointRounding.AwayFromZero);
-                    currentSalvage = Util.FileService.MaterialTable.GetById(CoreManager.Current.WorldFilter[intSalvId].Values(LongValueKey.Material)).Name;
-                }
-
-                CoreManager.Current.Actions.SelectItem(intSalvId);
-
-
-                if (!tinking) {
-                    CoreManager.Current.Actions.SelectItem(intSalvId);
-                    if (CoreManager.Current.Actions.CurrentSelection == intSalvId) {
-                        UBHelper.ConfirmationRequest.ConfirmationRequestEvent += UBHelper_ConfirmationRequest;
-                        string verifyPercent = (tinkerCalc.DoCalc(intSalvId, CoreManager.Current.WorldFilter[intItemId], CoreManager.Current.WorldFilter[intItemId].Values(LongValueKey.NumberTimesTinkered)).ToString("P"));
-                        if (targetItemUpdated && verifyPercent == successPstr) {
-                            //Util.WriteToChat("matched success %... applying");
-                            CoreManager.Current.WorldFilter.ChangeObject += WaitForItemUpdate;
-                            readyForNextTink = false;
-                            CoreManager.Current.Actions.ApplyItem(intSalvId, intItemId);
-                            targetItemUpdated = false;
-                            tinking = true;
+        private void UpdateUI(int inputSalvageID, bool succeeded) {
+            //Logger.WriteToChat("updating UI");
+            if (AutoTinkerList.RowCount > 0) {
+                for (int i = 0; i <= AutoTinkerList.RowCount; i++) {
+                    HudList.HudListRowAccessor autoTinkerListRow = AutoTinkerList[i];
+                    HudStaticText salvageID = (HudStaticText)autoTinkerListRow[4];
+                    int.TryParse(salvageID.Text, out int salvageIdInt);
+                    if (salvageIdInt == inputSalvageID) {
+                        for (int c = 0; c <= AutoTinkerList.ColumnCount - 2; c++) {
+                            HudStaticText col = (HudStaticText)autoTinkerListRow[c];
+                            if (succeeded) {
+                                col.TextColor = System.Drawing.Color.Green;
+                            }
+                            else {
+                                col.TextColor = System.Drawing.Color.Red;
+                            }
                         }
-                        else if (targetItemUpdated && verifyPercent != successPstr) {
-                            Logger.Error("Tinker % changed.  Please check your buffs/brill and refresh the list to continue." + " ------ planned: " + successPstr + " ----- actual: " + verifyPercent);
-                            ClearAllTinks();
-                        }
+                        break;
                     }
                 }
             }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void WaitForItemUpdate(object sender, ChangeObjectEventArgs e) {
-            try {
-                if (e.Changed.Id == fakeItem.id && readyForNextTink) {
-                    //Util.WriteToChat("changed: " + e.Changed.Name);
-                    targetItemUpdated = true;
-                    CoreManager.Current.WorldFilter.ChangeObject -= WaitForItemUpdate;
-                    NextTink();
+            if (AutoImbueList.RowCount > 0) {
+                for (int i = 0; i <= AutoImbueList.RowCount; i++) {
+                    HudList.HudListRowAccessor autoImbueListRow = AutoImbueList[i];
+                    HudStaticText salvageID = (HudStaticText)autoImbueListRow[4];
+                    int.TryParse(salvageID.Text, out int salvageIdInt);
+                    if (salvageIdInt == inputSalvageID) {
+                        for (int c = 0; c <= AutoImbueList.ColumnCount - 2; c++) {
+                            HudStaticText col = (HudStaticText)autoImbueListRow[c];
+                            if (succeeded) {
+                                col.TextColor = System.Drawing.Color.Green;
+                            }
+                            else {
+                                col.TextColor = System.Drawing.Color.Red;
+                            }
+                        }
+                        break;
+                    }
                 }
             }
-            catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void UBHelper_ConfirmationRequest(object sender, UBHelper.ConfirmationRequest.ConfirmationRequestEventArgs e) {
-            try {
-                if (e.Confirm == 5) {
-                    Logger.Debug($"AutoTinker: Clicking Yes on {e.Text}");
-                    e.ClickYes = true;
-                    UBHelper.ConfirmationRequest.ConfirmationRequestEvent -= UBHelper_ConfirmationRequest;
-                }
+        private void SetTinkerSkills() {
+            int jackofalltradesbonus = 0;
+            if (CoreManager.Current.CharacterFilter.GetCharProperty(326) == 1) {
+                jackofalltradesbonus = 5;
             }
-            catch (Exception ex) { Logger.LogException(ex); }
+            weaponTinkeringSkill = CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.WeaponTinkering] + jackofalltradesbonus;
+            magicItemTinkeringSkill = CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.MagicItemTinkering] + jackofalltradesbonus;
+            armorTinkeringSkill = CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.ArmorTinkering] + jackofalltradesbonus;
+            itemTinkeringSkill = CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.ItemTinkering] + jackofalltradesbonus;
+            //Logger.WriteToChat("weaponTinkeringSkill: " + weaponTinkeringSkill.ToString());
+            //Logger.WriteToChat("magicItemTinkeringSkill: " + magicItemTinkeringSkill.ToString());
+            //Logger.WriteToChat("armorTinkeringSkill: " + armorTinkeringSkill.ToString());
+            //Logger.WriteToChat("itemTinkeringSkill: " + itemTinkeringSkill.ToString());
+        }
+
+        private bool CheckTinkerSkillChange() {
+            int jackofalltradesbonus = 0;
+            if (CoreManager.Current.CharacterFilter.GetCharProperty(326) == 1) {
+                jackofalltradesbonus = 5;
+            }
+            if ((CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.WeaponTinkering] + jackofalltradesbonus) < weaponTinkeringSkill) {
+                Logger.WriteToChat("weapon tinkering dropped... stopping tinkering");
+                return false;
+            }
+            if ((CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.MagicItemTinkering] + jackofalltradesbonus) < magicItemTinkeringSkill) {
+                Logger.WriteToChat("magic item tinkering dropped... stopping tinkering");
+                return false;
+            }
+            if ((CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.ArmorTinkering] + jackofalltradesbonus) < armorTinkeringSkill) {
+                Logger.WriteToChat("armor tinkering dropped... stopping tinkering");
+                return false;
+            }
+            if ((CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.ItemTinkering] + jackofalltradesbonus) < itemTinkeringSkill) {
+                Logger.WriteToChat("item tinkering dropped... stopping tinkering");
+                return false;
+            }
+            return true;
         }
 
         private void PopulateAutoTinkCombo() {
+            
             AutoTinkCombo.Clear();
             
             FileService service = CoreManager.Current.Filter<FileService>();
             for (int i = 0; i < service.MaterialTable.Length; i++) {
                 var material = service.MaterialTable[i];
-                if (!SalvageList.ContainsKey(material.Name)) {
-                    SalvageList.Add(material.Name, i);
+                if (!AutoTinkerSalvageList.ContainsKey(material.Name)) {
+                    AutoTinkerSalvageList.Add(material.Name, i);
                 }
                 
             }
-            var SortedSalvageList = SalvageList.Keys.ToList();
-            foreach (var item in SalvageList.OrderBy(i => i.Key)) {
+            var SortedSalvageList = AutoTinkerSalvageList.Keys.ToList();
+            foreach (var item in AutoTinkerSalvageList.OrderBy(i => i.Key)) {
                     AutoTinkCombo.AddItem(item.Key.ToString(), null);
+                //Logger.WriteToChat(item.Key.ToString());
             }
             AutoTinkCombo.AddItem("Granite/Iron", null);
-        }
+        } 
 
-        public void CreateDataTable() {
-            try {
-                tinkerDT.Columns.Add("tinkeredCount", typeof(int));
-                tinkerDT.Columns.Add("targetItem", typeof(string));
-                tinkerDT.Columns.Add("targetSalvage", typeof(string));
-                tinkerDT.Columns.Add("successChance", typeof(double));
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void Current_CommandLineText(object sender, ChatParserInterceptEventArgs e) { }
-        //    try {
-        //        if (e.Text.StartsWith("/ub autotinker target salvage")) {
-        //            string path = e.Text.Replace("/ub autotinker target salvage ", "").Trim();
-        //            e.Eat = true;
-        //
-        //            salvageWO = CoreManager.Current.WorldFilter[CoreManager.Current.Actions.CurrentSelection];
-        //            Util.WriteToChat("name: " + Util.GetObjectName(salvageWO.Id) + "---- Salvage Material: " + salvageWO.Values(LongValueKey.Material));
-        //            var salvageMod = TinkerType.GetMaterialMod(salvageWO.Values(LongValueKey.Material));
-        //
-        //            return;
-        //        }
-        //        if (e.Text.StartsWith("/ub autotinker target item")) {
-        //            string path = e.Text.Replace("/ub autotinker target salvage ", "").Trim();
-        //            e.Eat = true;
-        //
-        //            itemWO =  CoreManager.Current.WorldFilter[CoreManager.Current.Actions.CurrentSelection];
-        //            return;
-        //        }
-        //        if (e.Text.StartsWith("/ub autotinker dotinker")) {
-        //            string path = e.Text.Replace("/ub autotinker target salvage ", "").Trim();
-        //            e.Eat = true;
-        //            Util.WriteToChat("starting autotinker");
-        //            Util.WriteToChat("Applying " + Util.GetObjectName(salvageWO.Id) + " to " + itemWO.Name);
-        //            DoThings(salvageWO.Id,itemWO);
-        //            UpdateTinkList();
-        //
-        //            return;
-        //        }
-        //    }
-        //    catch (Exception ex) { Logger.LogException(ex); }
-        //}
-
-        public void DoThings(int targetSalvageID, WorldObject targetWO) {
-            if (targetSalvageID == 0) {
-                Logger.Error("targetSalvageID is null");
-            }
-            if (targetWO.Id == 0) {
-                Logger.Error("targetSalvageID is null");
-            }
-
-            targetSalvage = CoreManager.Current.WorldFilter[targetSalvageID];
-            fakeItem.name = itemWO.Name;
-            fakeItem.id = itemWO.Id;
-            if (fakeItem.tinkeredCount == 0) {
-                fakeItem.tinkeredCount = itemWO.Values(LongValueKey.NumberTimesTinkered);
-            }
-            fakeItem.successPercent = tinkerCalc.DoCalc(targetSalvage.Id, targetWO, fakeItem.tinkeredCount);
+        public double GetDPS(double maxDamage, double variance) {
+            double minDmg = maxDamage * (1 - variance);
+            double critDmg = maxDamage * 2;
+            double avgDmg = (maxDamage + minDmg) / 2;
+            double DPS = .9 * avgDmg + .1 * critDmg;
+            return DPS;
         }
 
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
                     UB.Core.RenderFrame -= Core_RenderFrame;
-                    UB.Core.ChatBoxMessage -= Current_ChatBoxMessage;
-
                     base.Dispose(disposing);
                 }
                 disposedValue = true;

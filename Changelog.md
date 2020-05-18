@@ -6,6 +6,9 @@
 - Add expression `wobjectgethealth[wobject]`, Returns the health percentage of a mob/player
 - Add Virindi Chat System support
 - Add settings to toggle/recolor ub chat categories: general, debug, errors, expressions
+- Add Rend All option to Autotinker
+- Add Granite/Iron calculator for melee weapons
+- Add `/ub tinkcalc` for best granite/iron combination
 - Add Setting `DungeonMaps.LabelFontSize`
 - Fix dungeonmap portal names from lsd data
 

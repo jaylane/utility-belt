@@ -129,7 +129,7 @@ namespace UtilityBelt {
         #region Tools
         public Plugin Plugin { get; private set; }
         public Assessor Assessor { get; private set; }
-        public AutoImbue AutoImbue { get; private set; }
+        //public AutoImbue AutoImbue { get; private set; }
         public AutoSalvage AutoSalvage { get; private set; }
         public AutoTinker AutoTinker { get; private set; }
         public AutoTrade AutoTrade { get; private set; }
