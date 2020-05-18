@@ -12,6 +12,7 @@ namespace UtilityBelt.Lib.Salvage {
         }
 
         double successChance;
+        Dictionary<double, int> DifficultyTable = new Dictionary<double, int>();
 
         public List<float> tinkDifficulty = new List<float>()
         {
@@ -34,6 +35,67 @@ namespace UtilityBelt.Lib.Salvage {
             return Math.Min(1.0, Math.Max(0.0, chance));
         }
 
+        public void BuildDifficultyTable() {
+
+            TinkerType tinkerType = new TinkerType();
+            int tinkerSkill = TinkerType.GetTinkerType(67);
+            int skill = tinkerType.GetRequiredTinkSkill(tinkerSkill);
+
+            for (int i = -500; i <= 500; i++) {
+                int delta = i;
+                double chance = 1 - (1 / (1 + Math.Exp(.03 * i)));
+                DifficultyTable.Add(chance, delta);
+            }
+        }
+
+        public int GetDifficulty(double chance, int material) {
+            TinkerType tinkerType = new TinkerType();
+            int tinkerSkill = TinkerType.GetTinkerType(material);
+            int skill = tinkerType.GetRequiredTinkSkill(tinkerSkill);
+            if (DifficultyTable.Count <= 0) {
+                BuildDifficultyTable();
+            }
+            int delta = 0;
+            int diff = 0;
+            for (int i = 0; i <= DifficultyTable.Count() - 1; i++) {
+                //Logger.WriteToChat(i.ToString());
+                double currentChance = DifficultyTable.Keys.ElementAt(i);
+                //Logger.WriteToChat(chance.ToString());
+                //Logger.WriteToChat(currentChance.ToString());
+                if (currentChance > chance) {
+                    delta = DifficultyTable.Values.ElementAt(i);
+                    diff = skill - delta;
+                    //Logger.WriteToChat("difficulty: " + diff.ToString());
+                    break;
+                }
+            }
+            return diff;
+        }
+
+        public void GetRequiredSalvage(double difficulty, int salvageMaterial, WorldObject item, float attemptMod) {
+            double itemWorkmanship = item.Values(DoubleValueKey.SalvageWorkmanship);
+            var salvageMod = TinkerType.GetMaterialMod(salvageMaterial);
+
+
+            // ((s * 5) + (w * s * 2) - (x * 1 * s / 5)) * a = d, solve for x
+            // x = -(5 d)/(a s) + 10 w + 25 and a s!=0
+            var toolWorkmanship_lower = 5.0f * (-difficulty / (attemptMod * salvageMod)) + 10.0f * itemWorkmanship + 25.0f;
+
+            // workmanshipMod == 2:
+
+            // ((s * 5) + (w * s * 2) - (x * 2 * s / 5)) * a = d, solve for x
+            // x = 5/2 (-d/(a s) + 2 w + 5) and a s!=0
+            var toolWorkmanship_higher = 2.5f * (-difficulty / (attemptMod * salvageMod) + 2.0f * itemWorkmanship + 5.0f);
+
+            if (toolWorkmanship_higher >= itemWorkmanship) {
+                Logger.WriteToChat(Util.FileService.MaterialTable.GetById(salvageMaterial).Name +  " requires wk: " + toolWorkmanship_higher);
+            }
+            else {
+                Logger.WriteToChat(Util.FileService.MaterialTable.GetById(salvageMaterial).Name + " requires wk: " + toolWorkmanship_lower);
+
+            }
+        }
+
         public double DoCalc(int salvageID, WorldObject targetItem, int tinkeredCount) {
             try {
                 var targetSalvage = CoreManager.Current.WorldFilter[salvageID];
@@ -50,8 +112,9 @@ namespace UtilityBelt.Lib.Salvage {
                     workmanshipMod = 2.0f;
                 }
                 var difficulty = (int)Math.Floor(((salvageMod * 5.0f) + (itemWorkmanship * salvageMod * 2.0f) - (salvageWorkmanship * workmanshipMod * salvageMod / 5.0f)) * attemptMod);
+                //Logger.WriteToChat("difficulty: " + difficulty.ToString());
                 successChance = GetSkillChance(skill, difficulty);
-
+                //Logger.WriteToChat("successChance: " + successChance);
                 if(TinkerType.SalvageType(targetSalvage.Values(LongValueKey.Material)) == 2){
                     successChance /= 3.0f;
                     if (CoreManager.Current.CharacterFilter.GetCharProperty((int)Augmentations.CharmedSmith) == 1) {
@@ -62,13 +125,6 @@ namespace UtilityBelt.Lib.Salvage {
             catch (Exception ex) { Logger.LogException(ex); }
             return successChance;
         }
-    }
-    class FakeItem {
-        public int tinkeredCount;
-        public int id;
-        public string name;
-        public double successPercent;
-        public double workmanship;
     }
 }
 
