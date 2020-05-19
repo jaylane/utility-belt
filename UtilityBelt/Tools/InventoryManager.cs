@@ -480,8 +480,9 @@ Provides a command-line interface to inventory management.
 
             foreach (var id in weenies) {
                 var weenie = new Weenie(id);
-                if (weenie.Name.ToLower().Equals(name.ToLower()))
-                    count += (weenie.StackCount >= 1) ? weenie.StackCount : 1;
+                if (Util.GetObjectName(weenie.Id).ToLower().Equals(name.ToLower())) {
+                    count += (weenie.StackMax > 1 && weenie.StackCount >= 1) ? weenie.StackCount : 1;
+                }
             }
 
             return count;
@@ -500,8 +501,8 @@ Provides a command-line interface to inventory management.
             UBHelper.InventoryManager.GetInventory(ref weenies, UBHelper.InventoryManager.GetInventoryType.AllItems);
             foreach (var id in weenies) {
                 var weenie = new Weenie(id);
-                if (re.IsMatch(weenie.Name)) {
-                    count += (weenie.StackCount >= 1) ? weenie.StackCount : 1;
+                if (re.IsMatch(Util.GetObjectName(weenie.Id))) {
+                    count += (weenie.StackMax > 1 && weenie.StackCount >= 1) ? weenie.StackCount : 1;
                 }
             }
 
