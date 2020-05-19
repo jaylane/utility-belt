@@ -1,3 +1,6 @@
+## 0.1.6 (TBD)
+- Changes go here
+
 ## 0.1.5 (2020-05-18) [UtilityBeltInstaller-0.1.5.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/f924bff1dc10218e007a73e8bf0d3f45/UtilityBeltInstaller-0.1.5.exe)
 - Fix AutoTinker now supports tinkering clothing with gold/linen/moonstone/pine
 - Fix blood shreth killtask, now shows up correctly under killtasks. (maybe fixes others too?)
