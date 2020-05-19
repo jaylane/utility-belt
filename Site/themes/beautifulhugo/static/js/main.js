@@ -6,6 +6,14 @@ var main = {
   numImgs : null,
 
   init : function() {
+    // beta site modifiers
+    if (location.hostname != "utilitybelt.gitlab.io") {
+      $(".navbar").css("background-color","red");
+      $(".avatar-img").attr("src", $(".avatar-img").attr("src").replace("avatar-icon.png", "avatar-icon-beta.png"));
+      $(".page-subheading").html($(".page-subheading").html() + "</br></br><a href='https://utilitybelt.gitlab.io/' style='color:red;font-weight:bold;'>Click here for the latest official release</a>");
+      $(".post-title").first().html($(".post-title").first().html() + " <span style='color:red;'>BETA</span>");
+    }
+
     // Shorten the navbar after scrolling a little bit down
     $(window).scroll(function() {
         if ($(".navbar").offset().top > 50) {
