@@ -378,7 +378,7 @@ namespace UtilityBelt
                     return wo.Name.Trim();
                 }
                 else {
-                    return string.Format("{0} {1}", material.Name.Trim(), wo.Name.Replace("(100)","").Trim());
+                    return string.Format("{0} {1}", material.Name.Trim(), wo.Name.Trim());
                 }
             }
             else {
