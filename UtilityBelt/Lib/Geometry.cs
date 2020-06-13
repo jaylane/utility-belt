@@ -10,12 +10,21 @@ namespace UtilityBelt.Lib {
         public static Quaternion HeadingToQuaternion(float angle) {
             return ToQuaternion((float)Math.PI * -angle / 180.0f, 0, 0);
         }
+
         public static Quaternion RadiansToQuaternion(float angle) {
             return ToQuaternion(angle, 0, 0);
         }
+
         public static unsafe double QuaternionToHeading(Quaternion q) {
-            // yaw (z-axis rotation)
-            return Math.Atan2(2 * (q.W * q.Z + q.X * q.Y), 1 - 2 * (q.Y * q.Y + q.Z * q.Z));
+            double sinr = 2 * (q.W * q.X + q.Y * q.Z);
+            double cosr = 1 - 2 * (q.X * q.X + q.Y * q.Y);
+            return Math.Atan2(sinr, cosr);
+        }
+
+        public static double CalculateHeading(Vector3 start, Vector3 target) {
+            var deltaY = target.Y - start.Y;
+            var deltaX = target.X - start.X;
+            return (360 - (Math.Atan2(deltaY, deltaX) * 180 / Math.PI) + 90) % 360;
         }
 
         // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
