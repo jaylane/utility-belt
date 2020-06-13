@@ -1,6 +1,8 @@
 ## 0.1.6 (TBD)
 - Fix getitemcountininventorybynamerx[] and getitemcountininventorybyname[] now properly search salvage names like `Silk Salvage (100)`
 - Fix coordinateparse[] inverting ordinal directions
+- Add expressions `getheadingto[wobject obj]` and `getheading[wobject obj]` to get the heading *to* or *of* and object
+- Add math expressions: `acos, asin, atan, atan2, cos, cosh, sin, sinh, sqrt, tan, tanh`
 
 ## 0.1.5 (2020-05-18) [UtilityBeltInstaller-0.1.5.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/f924bff1dc10218e007a73e8bf0d3f45/UtilityBeltInstaller-0.1.5.exe)
 - Fix AutoTinker now supports tinkering clothing with gold/linen/moonstone/pine

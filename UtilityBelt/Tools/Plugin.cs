@@ -1012,7 +1012,7 @@ namespace UtilityBelt.Tools {
         #endregion //wobjectfindnearestbytemplatetype[int templatetype]
         #region wobjectgetintprop[wobject obj, int property]
         [ExpressionMethod("wobjectgetintprop")]
-        [ExpressionParameter(0, typeof(double), "obj", "World object to get intproperty of")]
+        [ExpressionParameter(0, typeof(Wobject), "obj", "World object to get intproperty of")]
         [ExpressionParameter(1, typeof(double), "property", "IntProperty to return")]
         [ExpressionReturn(typeof(double), "Returns an int property value")]
         [Summary("Returns an int property from a specific world object, or 0 if it's undefined")]
@@ -1021,6 +1021,137 @@ namespace UtilityBelt.Tools {
             return wobject.Wo.Values((LongValueKey)Convert.ToInt32(property), 0);
         }
         #endregion //wobjectgetintprop[wobject obj, int property]
+        #region wobjectgetheadingto[wobject obj]
+        [ExpressionMethod("getheadingto")]
+        [ExpressionParameter(0, typeof(Wobject), "obj", "World object to calculate heading towards")]
+        [ExpressionReturn(typeof(double), "Returns the heading in degrees from your player to the target object")]
+        [Summary("Calculates the heading in degrees (0-360 clockwise, 0 is north) from your player to the target object")]
+        [Example("getheadingto[wobjectgetselection[]]", "Returns the heading in degrees from your player to the target object")]
+        public object Getheadingto(Wobject wobject) {
+            var me = PhysicsObject.GetPosition(UB.Core.CharacterFilter.Id);
+            var target = PhysicsObject.GetPosition(wobject.Wo.Id);
+
+            return Geometry.CalculateHeading(me, target);
+        }
+        #endregion //wobjectgetheadingto[wobject obj]
+        #region getheading[wobject obj]
+        [ExpressionMethod("getheading")]
+        [ExpressionParameter(0, typeof(Wobject), "obj", "World object to get the heading of")]
+        [ExpressionReturn(typeof(double), "Returns the heading in degrees that the target object is facing")]
+        [Summary("Returns the heading in degrees (0-360 clockwise, 0 is north) the target object is facing")]
+        [Example("getheading[wobjectgetselection[]]", "Returns the heading in degrees that your current selection is facing")]
+        public object Wobjectgetheadingto(Wobject wobject) {
+            var rot = PhysicsObject.GetRot(wobject.Wo.Id);
+            var heading = Geometry.QuaternionToHeading(rot);
+
+            Logger.WriteToChat(heading.ToString());
+            Logger.WriteToChat(rot.ToString());
+
+            return (heading * 180f / Math.PI) % 360 + 180;
+        }
+        #endregion //getheading[wobject obj]
+        #region Math Expressions
+        #region acos[number d]
+        [ExpressionMethod("acos")]
+        [ExpressionParameter(0, typeof(double), "d", "A number representing a cosine, where d must be greater than or equal to -1, but less than or equal to 1.")]
+        [ExpressionReturn(typeof(double), "Returns the angle whos cosine is the specified number")]
+        [Summary("Returns the angle whos cosine is the specified number")]
+        public object Acos(double d) {
+            return Math.Acos(d);
+        }
+        #endregion //acos[number d]
+        #region asin[number d]
+        [ExpressionMethod("asin")]
+        [ExpressionParameter(0, typeof(double), "d", "A number representing a sine, where d must be greater than or equal to -1, but less than or equal to 1.")]
+        [ExpressionReturn(typeof(double), "Returns the angle whose sine is the specified number")]
+        [Summary("Returns the angle whose sine is the specified number")]
+        public object Asin(double d) {
+            return Math.Asin(d);
+        }
+        #endregion //asin[number d]
+        #region atan[number d]
+        [ExpressionMethod("atan")]
+        [ExpressionParameter(0, typeof(double), "d", "A number representing a tangent.")]
+        [ExpressionReturn(typeof(double), "Returns the angle whose tangent is the specified number.")]
+        [Summary("Returns the angle whose tangent is the specified number.")]
+        public object Atan(double d) {
+            return Math.Atan(d);
+        }
+        #endregion //atan[number d]
+        #region atan2[number d]
+        [ExpressionMethod("atan2")]
+        [ExpressionParameter(0, typeof(double), "y", "The y coordinate of a point.")]
+        [ExpressionParameter(0, typeof(double), "x", "The x coordinate of a point.")]
+        [ExpressionReturn(typeof(double), "Returns the angle whose tangent is the quotient of two specified numbers.")]
+        [Summary("Returns the angle whose tangent is the quotient of two specified numbers.")]
+        public object Atan2(double y, double x) {
+            return Math.Atan2(y, x);
+        }
+        #endregion //atan2[number d]
+        #region cos[number d]
+        [ExpressionMethod("cos")]
+        [ExpressionParameter(0, typeof(double), "d", "An angle, measured in radians.")]
+        [ExpressionReturn(typeof(double), "Returns the cosine of the specified angle.")]
+        [Summary("Returns the cosine of the specified angle.")]
+        public object Cos(double d) {
+            return Math.Cos(d);
+        }
+        #endregion //cos[number d]
+        #region cosh[number d]
+        [ExpressionMethod("cosh")]
+        [ExpressionParameter(0, typeof(double), "d", "An angle, measured in radians.")]
+        [ExpressionReturn(typeof(double), "Returns the hyperbolic cosine of the specified angle.")]
+        [Summary("Returns the hyperbolic cosine of the specified angle.")]
+        public object Cosh(double d) {
+            return Math.Cosh(d);
+        }
+        #endregion //cosh[number d]
+        #region sin[number d]
+        [ExpressionMethod("sin")]
+        [ExpressionParameter(0, typeof(double), "d", "An angle, measured in radians.")]
+        [ExpressionReturn(typeof(double), "Returns the sine of the specified angle.")]
+        [Summary("Returns the sine of the specified angle.")]
+        public object Sin(double d) {
+            return Math.Sin(d);
+        }
+        #endregion //sin[number d]
+        #region sinh[number d]
+        [ExpressionMethod("sinh")]
+        [ExpressionParameter(0, typeof(double), "d", "An angle, measured in radians.")]
+        [ExpressionReturn(typeof(double), "Returns the hyperbolic sine of the specified angle.")]
+        [Summary("Returns the hyperbolic sine of the specified angle.")]
+        public object Sinh(double d) {
+            return Math.Sinh(d);
+        }
+        #endregion //sinh[number d]
+        #region sqrt[number d]
+        [ExpressionMethod("sqrt")]
+        [ExpressionParameter(0, typeof(double), "d", "The number whose square root is to be found")]
+        [ExpressionReturn(typeof(double), "Returns the square root of a specified number.")]
+        [Summary("Returns the square root of a specified number.")]
+        public object Sqrt(double d) {
+            return Math.Sqrt(d);
+        }
+        #endregion //sqrt[number d]
+        #region tan[number d]
+        [ExpressionMethod("tan")]
+        [ExpressionParameter(0, typeof(double), "d", "An angle, measured in radians.")]
+        [ExpressionReturn(typeof(double), "Returns the tangent of the specified angle.")]
+        [Summary("Returns the tangent of the specified angle.")]
+        public object Tan(double d) {
+            return Math.Tan(d);
+        }
+        #endregion //tan[number d]
+        #region tanh[number d]
+        [ExpressionMethod("tanh")]
+        [ExpressionParameter(0, typeof(double), "d", "An angle, measured in radians.")]
+        [ExpressionReturn(typeof(double), "Returns the hyperbolic tangent of the specified angle.")]
+        [Summary("Returns the hyperbolic tangent of the specified angle.")]
+        public object Tanh(double d) {
+            return Math.Tanh(d);
+        }
+        #endregion //tanh[number d]
+        #endregion Math
         #endregion //Expressions
 
         public Plugin(UtilityBeltPlugin ub, string name) : base(ub, name) {
