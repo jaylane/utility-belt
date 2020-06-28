@@ -539,6 +539,7 @@ namespace UtilityBelt.Tools {
             watch.Start();
             try {
                 var input = args.Groups["Expression"].Value;
+                Logger.WriteToChat($"Evaluating expression: \"{input}\"", Logger.LogMessageType.Expression, true, false);
                 var res = UB.VTank.EvaluateExpression(input);
                 watch.Stop();
                 Logger.WriteToChat($"Result: [{res.GetType().ToString().Split('.').Last().ToLower()}] {res} ({Math.Round(watch.ElapsedTicks / 10000.0, 3)}ms)", Logger.LogMessageType.Expression);

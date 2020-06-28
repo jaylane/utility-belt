@@ -1208,7 +1208,12 @@ namespace UtilityBelt.Tools {
             if (!TryEquipAnyWand())
                 return 0;
 
-            UtilityBeltPlugin.Instance.Core.Actions.CastSpell(id, 0);
+            // this uses vtanks spell casting system so that peace while idle registers the action properly
+            var spell = UBHelper.vTank.Instance.SpellSystem_GetSpellById(id);
+            if (spell == null)
+                return 2;
+
+            UBHelper.vTank.Instance.SpellSystem_CastNormalSpell(spell, 0);
 
             return 1;
         }
@@ -1227,7 +1232,12 @@ namespace UtilityBelt.Tools {
             if (!TryEquipAnyWand())
                 return 0;
 
-            UtilityBeltPlugin.Instance.Core.Actions.CastSpell(id, target.Wo.Id);
+            // this uses vtanks spell casting system so that peace while idle registers the action properly
+            var spell = UBHelper.vTank.Instance.SpellSystem_GetSpellById(id);
+            if (spell == null)
+                return 2;
+
+            UBHelper.vTank.Instance.SpellSystem_CastNormalSpell(spell, target.Wo.Id);
 
             return 1;
         }
@@ -1505,6 +1515,7 @@ namespace UtilityBelt.Tools {
         private bool isFixingPortalLoops = false;
         private int portalExitCount = 0;
         private int lastPortalExitLandcell = 0;
+        private List<string> expressionExceptions = new List<string>();
 
         public VTankControl(UtilityBeltPlugin ub, string name) : base(ub, name) {
             DoVTankPatches();
@@ -1541,12 +1552,8 @@ namespace UtilityBelt.Tools {
             }
         }
 
-        public object EvaluateExpression(string expression, bool silent=false) {
+        public object EvaluateExpression(string expression, bool silent=true) {
             try {
-                // we call AddChatText directly instead of Util.WriteToChat so it doesnt feed the message to vtank
-                if (!silent)
-                    Logger.WriteToChat($"Evaluating expression: \"{expression}\"", Logger.LogMessageType.Expression, true, false);
-
                 AntlrInputStream inputStream = new AntlrInputStream(expression);
                 MetaExpressionsLexer spreadsheetLexer = new MetaExpressionsLexer(inputStream);
                 CommonTokenStream commonTokenStream = new CommonTokenStream(spreadsheetLexer);
@@ -1558,14 +1565,13 @@ namespace UtilityBelt.Tools {
                 return visitor.Visit(parseContext);
             }
             catch (Exception ex) {
-                Logger.LogException(ex);
-                Logger.Error($"Error in expression: {expression}");
-                Logger.Error(ex.Message.ToString());
-                if (UB.Plugin.Debug)
-                    Logger.Error(ex.ToString());
-            }
+                if (!silent && expressionExceptions.Contains(ex.ToString()))
+                    return null;
+                expressionExceptions.Add(ex.ToString());
 
-            return 0;
+                Logger.Error($"Error in expression: {expression}\n{(UB.Plugin.Debug ? ex.ToString() : ex.Message)}");
+                throw ex;
+            }
         }
 
         #region VTank Patches

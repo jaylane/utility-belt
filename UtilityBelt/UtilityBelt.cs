@@ -456,23 +456,8 @@ namespace UtilityBelt {
         /// <param name="args">method arguments</param>
         /// <returns></returns>
         public object RunExpressionMethod(ExpressionMethod expressionMethod, object[] args) {
-            try {
-                var instance = expressionMethod.PropInfo.GetValue(this, null);
-                return expressionMethod.Method.Invoke(instance, args);
-            }
-            catch (NullReferenceException ex) {
-                return 0;
-            }
-            catch (Exception ex) {
-                if (expressionExceptions.Contains(ex.ToString()))
-                    return 0;
-                expressionExceptions.Add(ex.ToString());
-                Logger.LogException(ex);
-                Logger.Error($"Error running expression method: {expressionMethod.Name}");
-                Logger.Error(ex.Message.ToString());
-            }
-
-            return 0;
+            var instance = expressionMethod.PropInfo.GetValue(this, null);
+            return expressionMethod.Method.Invoke(instance, args);
         }
         #endregion
 
