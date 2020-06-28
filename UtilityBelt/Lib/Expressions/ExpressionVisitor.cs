@@ -285,7 +285,7 @@ namespace UtilityBelt.Lib.Expressions {
         public override object VisitRegexExp([NotNull] MetaExpressionsParser.RegexExpContext context) {
             var inputstr = Visit(context.expression(0)).ToString();
             var matchstr = Visit(context.expression(1)).ToString();
-            var re = new Regex(matchstr);
+            var re = new Regex(matchstr, RegexOptions.IgnoreCase);
             return re.IsMatch(inputstr);
         }
         #endregion
