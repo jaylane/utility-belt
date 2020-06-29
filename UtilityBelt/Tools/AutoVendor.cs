@@ -407,8 +407,8 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             }
         }
         private void CheckDone() {
-            //Util.WriteToChat($"CheckDone {((double)((DateTime.UtcNow.ToFileTimeUtc() - 116444736000000000) / 10) / 1000000):n6} expectedPyreals:{expectedPyreals} pendingSell({pendingSell.Count}):{string.Join(",",pendingSell.Select(x=>x.ToString("X8")).ToArray())} pendingBuy({pendingBuy.Count}):{string.Join(",", pendingBuy.Select(x=>x.Key.ToString("X8")+"*"+x.Value).ToArray())}");
-            if (Math.Abs(expectedPyreals) < 50 && pendingSell.Count() == 0 && pendingBuy.Count() == 0) {
+            //Logger.WriteToChat($"CheckDone {((double)((DateTime.UtcNow.ToFileTimeUtc() - 116444736000000000) / 10) / 1000000):n6} expectedPyreals:{expectedPyreals} pendingSell({pendingSell.Count}):{string.Join(",",pendingSell.Select(x=>x.ToString("X8")).ToArray())} pendingBuy({pendingBuy.Count}):{string.Join(",", pendingBuy.Select(x=>x.Key.ToString("X8")+"*"+x.Value).ToArray())}");
+            if (expectedPyreals < 50 && pendingSell.Count() == 0 && pendingBuy.Count() == 0) {
                 lastEvent = DateTime.MinValue;
                 shouldAutoStack = UB.InventoryManager.AutoStack;
                 shouldAutoCram = UB.InventoryManager.AutoCram;
@@ -439,7 +439,9 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                 if (e.Message.Type == 0xF7B0 && (int)e.Message["event"] == 0x0022 && (int)e.Message["container"] != UB.Core.CharacterFilter.Id) {  // ACE Item Remove Handling
                     if (myPyreals.ContainsKey((int)e.Message["item"])) {
                         if (Math.Abs(expectedPyreals) > 50) {
+                            //Logger.WriteToChat($"expectedPyreals 0x0022 += {myPyreals[(int)e.Message["item"]]}");
                             expectedPyreals += myPyreals[(int)e.Message["item"]];
+                            //Logger.WriteToChat($"expectedPyreals = {expectedPyreals}");
                             CheckDone();
                         }
                     } else if (pendingSell.Contains((int)e.Message["item"])) {
@@ -448,34 +450,38 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     }
                 }
                 if (e.Message.Type == 0x0024) { // GDLE Item Remove Handling
-                    if (myPyreals.ContainsKey((int)e.Message["object"])) {
-                        if (Math.Abs(expectedPyreals) > 50) { //fix for GDLE taking out too many pyreals (MR #517)
-                            expectedPyreals += myPyreals[(int)e.Message["object"]];
-                            CheckDone();
-                        }
-                    } else if (pendingSell.Contains((int)e.Message["object"])) {
+                    if (pendingSell.Contains((int)e.Message["object"])) {
                         pendingSell.Remove((int)e.Message["object"]);
                         CheckDone();
                     }
                 }
+
                 if (e.Message.Type == 0x0197 && UB.Core.WorldFilter[(int)e.Message["item"]] != null && UB.Core.WorldFilter[(int)e.Message["item"]].Type == 273) { // GDLE Stack Size Handling
                     var newStackSize = (int)e.Message["count"];
                     myPyreals.TryGetValue((int)e.Message["item"], out int oldStackSize);
                     var stackChange = newStackSize - oldStackSize;
                     if (Math.Abs(expectedPyreals) > 50) { //fix for GDLE taking out too many pyreals (MR #517)
+                        //Logger.WriteToChat($"expectedPyreals 0x0197 -= {stackChange}");
                         expectedPyreals -= stackChange;
+                        //Logger.WriteToChat($"expectedPyreals = {expectedPyreals}");
                         CheckDone();
                     }
                 }
+
                 if (e.Message.Type == 0x02DA && (int)e.Message["key"] == 2 && (int)e.Message["value"] == UB.Core.CharacterFilter.Id && UB.Core.WorldFilter[(int)e.Message["object"]] != null) { // GDLE Item Add Handling
                     var wo = UB.Core.WorldFilter[(int)e.Message["object"]];
+                    var stackCount = (new UBHelper.Weenie(wo.Id)).StackCount;
+                    if (stackCount == 0)
+                        stackCount = wo.Values(LongValueKey.StackCount, 1);
                     if (wo.Type == 273) { // Pyreal
                         if (Math.Abs(expectedPyreals) > 50) {
-                            expectedPyreals -= wo.Values(LongValueKey.StackCount, 1);
+                            //Logger.WriteToChat($"expectedPyreals 0x02DA -= {stackCount}");
+                            expectedPyreals -= stackCount;
+                            //Logger.WriteToChat($"expectedPyreals = {expectedPyreals}");
                             CheckDone();
                         }
                     } else if (pendingBuy.TryGetValue(wo.Type, out int pbq)) {
-                        pbq -= wo.Values(LongValueKey.StackCount, 1);
+                        pbq -= stackCount;
                         if (pbq <= 0) {
                             pendingBuy.Remove(wo.Type);
                             CheckDone();
@@ -484,15 +490,35 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                         }
                     }
                 }
+                if (e.Message.Type == 0xF745) {
+                    //Logger.WriteToChat($"0x745 exist {UB.Core.WorldFilter[(int)e.Message["object"]]} {UB.Core.WorldFilter[(int)e.Message["object"]].Container} {UB.Core.WorldFilter[(int)e.Message["object"]].Container == UB.Core.CharacterFilter.Id}");
+                    if (((int)e.Message.Struct("game")["flags1"] & 0x00004000) != 0) {
+                        var container = (int)e.Message.Struct("game")["container"];
+                        //Logger.WriteToChat($"Found container: {container}");
+                    }
+                }
                 if (e.Message.Type == 0xF745 && UB.Core.WorldFilter[(int)e.Message["object"]] != null && UB.Core.WorldFilter[(int)e.Message["object"]].Container == UB.Core.CharacterFilter.Id) { // ACE Item Add Handling
                     var wo = UB.Core.WorldFilter[(int)e.Message["object"]];
+                    var obj = e.Message.Struct("game");
+                    var stackCount = (new UBHelper.Weenie(wo.Id)).StackCount;
+                    if (stackCount == 0)
+                        stackCount = 1;
+                    // handle stacks larger than short.max
+                    if (((int)obj["flags1"] & 0x00001000) != 0) {
+                        stackCount = (short)obj["stack"];
+                        if (stackCount < 0)
+                            stackCount += 65536;
+                    }
                     if (wo.Type == 273) { // Pyreal
                         if (Math.Abs(expectedPyreals) > 50) {
-                            expectedPyreals -= wo.Values(LongValueKey.StackCount, 1);
+                            //Logger.WriteToChat($"expectedPyreals 0xF745 -= {stackCount}");
+                            expectedPyreals -= stackCount;
+                            //Logger.WriteToChat($"expectedPyreals = {expectedPyreals}");
                             CheckDone();
                         }
                     } else if (pendingBuy.TryGetValue(wo.Type, out int pbq)) {
-                        pbq -= wo.Values(LongValueKey.StackCount, 1);
+                        //Logger.WriteToChat($"pbq stackCount = {stackCount} ... pqb now is {pbq - stackCount}");
+                        pbq -= stackCount;
                         if (pbq <= 0) {
                             pendingBuy.Remove(wo.Type);
                             CheckDone();
@@ -503,7 +529,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                         waitingForSplit = false;
                     }
                 }
-            } catch { }
+            } catch (Exception ex) { Logger.Debug(ex.ToString()); }
         }
         private void WorldFilter_ApproachVendor(object sender, ApproachVendorEventArgs e) {
             try {
@@ -737,11 +763,13 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                         if (needsToBuy) {
                             needsToBuy = false;
                             UB.Core.Actions.VendorBuyAll();
+                            //Logger.Debug("VendorBuyAll");
                             CheckDone();
                         }
                         else if (needsToSell) {
                             needsToSell = false;
                             UB.Core.Actions.VendorSellAll();
+                            //Logger.Debug("VendorSellAll");
                             CheckDone();
                         }
                         else {
@@ -840,6 +868,12 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     var value = GetVendorBuyPrice(item);
                     var stackSize = item.Values(LongValueKey.StackCount, 1);
                     bool nestedBreak = false;
+
+                    if (stackSize < 0) {
+                        stackSize = (new UBHelper.Weenie(item.Id)).StackCount;
+                        if (stackSize == 0)
+                            stackSize = 1;
+                    }
 
                     // dont sell notes if we are trying to buy notes...
                     if (((nextBuyItem != null && nextBuyItem.ObjectClass == ObjectClass.TradeNote) || nextBuyItem == null) && item.ObjectClass == ObjectClass.TradeNote) {
@@ -962,7 +996,8 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             List<BuyItem> buyItems = new List<BuyItem>();
 
             if (vendor == null) {
-                Logger.Error("Vendor is null");
+                if (!TestMode)
+                    Logger.Error("Vendor is null");
                 return buyItems;
             }
 
@@ -1054,6 +1089,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
 
         private void DoTestMode() {
             // TODO: string builder and write to chat once
+            Logger.WriteToChat("AutoVendor TEST MODE");
             Logger.WriteToChat("Buy Items:");
             foreach (BuyItem bi in GetBuyItems()) {
                 uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithVendorObjectTemplateID(bi.Item.Id);
