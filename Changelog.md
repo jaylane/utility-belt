@@ -7,6 +7,7 @@
 - Fix expression strings to be more compatible with vtank
 - UB expressions are now compatible with IBControl and BuffCaster
 - Fix autovendor for servers with custom pyreal max stack size
+- Fix Wobjectfindnearestbynameandobjectclass[] is now returning *nearest* found wobject, instead of the first one it finds
 
 ## 0.1.5 (2020-05-18) [UtilityBeltInstaller-0.1.5.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/f924bff1dc10218e007a73e8bf0d3f45/UtilityBeltInstaller-0.1.5.exe)
 - Fix AutoTinker now supports tinkering clothing with gold/linen/moonstone/pine
