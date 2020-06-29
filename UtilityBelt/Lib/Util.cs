@@ -303,7 +303,8 @@ namespace UtilityBelt
             using (var inv = UB.Core.WorldFilter.GetInventory()) {
                 foreach (var wo in inv) {
                     if (wo.Values(LongValueKey.Type, 0) == 273/* pyreals */) {
-                        total += wo.Values(LongValueKey.StackCount, 1);
+                        var stackCount = (new UBHelper.Weenie(wo.Id)).StackMax;
+                        total += stackCount;
                     }
                 }
             }
