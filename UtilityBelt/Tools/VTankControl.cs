@@ -1000,7 +1000,7 @@ namespace UtilityBelt.Tools {
             return 0;
         }
         #endregion //wobjectfindnearestbyobjectclass[int objectclass]
-        #region wobjectfindnearestbyobjectclass[int objectclass]
+        #region wobjectfindininventorybytemplatetype[int objectclass]
         [ExpressionMethod("wobjectfindininventorybytemplatetype")]
         [ExpressionParameter(0, typeof(double), "templatetype", "templatetype to filter by")]
         [ExpressionReturn(typeof(Wobject), "Returns a worldobject")]
@@ -1092,16 +1092,21 @@ namespace UtilityBelt.Tools {
         public object Wobjectfindnearestbynameandobjectclass(double objectClass, string namerx) {
             var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetByObjectClass((ObjectClass)Convert.ToInt32(objectClass));
             var re = new Regex(namerx);
+            var closestDistance = float.MaxValue;
+            WorldObject closest = null;
             foreach (var wo in wos) {
                 if (wo.Id == UtilityBeltPlugin.Instance.Core.CharacterFilter.Id)
                     continue;
-                if (re.IsMatch(wo.Name)) {
-                    wos.Dispose();
-                    return new Wobject(wo.Id);
+                if (re.IsMatch(wo.Name) && PhysicsObject.GetDistance(wo.Id) < closestDistance) {
+                    closest = wo;
+                    closestDistance = PhysicsObject.GetDistance(wo.Id);
                 }
             }
 
             wos.Dispose();
+
+            if (closest != null)
+                return new Wobject(closest.Id);
 
             return 0;
         }
