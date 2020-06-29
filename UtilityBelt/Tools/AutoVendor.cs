@@ -66,7 +66,11 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
     ")]
     public class AutoVendor : ToolBase {
         private const int MAX_VENDOR_BUY_COUNT = 5000;
-        private const int PYREAL_STACK_SIZE = 25000;
+        // this defaults to 25000, but will be updated with the value read from pyreals.MaxStackSize as available
+        // to support custom content servers
+        private int PYREAL_STACK_SIZE = 25000;
+        private bool hasUpdatedPyrealStackSize = false;
+        private bool isWaitingForPyrealStackSize = false;
         private DateTime lastEvent = DateTime.MinValue;
         private DateTime vendorOpened = DateTime.MinValue;
         private DateTime bailTimer = DateTime.MinValue;
@@ -298,6 +302,70 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
 
                 UB.Core.WorldFilter.ApproachVendor += WorldFilter_ApproachVendor;
             } catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        public override void Init() {
+            base.Init();
+
+            if (UB.Core.CharacterFilter.LoginStatus != 3)
+                UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
+            else
+                CheckPyrealMaxStack();
+        }
+
+        private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
+            try {
+                CheckPyrealMaxStack();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void CheckPyrealMaxStack() {
+            if (hasUpdatedPyrealStackSize) {
+                isWaitingForPyrealStackSize = false;
+                UB.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                return;
+            }
+
+            var inv = new List<int>();
+            UBHelper.InventoryManager.GetInventory(ref inv, UBHelper.InventoryManager.GetInventoryType.AllItems);
+            foreach (var item in inv) {
+                var weenie = new UBHelper.Weenie(item);
+                if (weenie.WCID == 273) { // pyreals
+                    PYREAL_STACK_SIZE = weenie.StackMax;
+                    hasUpdatedPyrealStackSize = true;
+                    break;
+                }
+            }
+
+            if (!hasUpdatedPyrealStackSize && !isWaitingForPyrealStackSize) {
+                isWaitingForPyrealStackSize = true;
+                UB.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
+            }
+        }
+
+        private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
+            try {
+                if (e.New.Values(LongValueKey.Type, 0) == 273/* pyreals */) {
+                    CheckPyrealMaxStack();
+                    UB.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+
+                    if (!hasUpdatedPyrealStackSize) {
+                        UB.Core.RenderFrame += Core_RenderFramePyrealStackCheck;
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void Core_RenderFramePyrealStackCheck(object sender, EventArgs e) {
+            try {
+                CheckPyrealMaxStack();
+                if (hasUpdatedPyrealStackSize) {
+                    UB.Core.RenderFrame -= Core_RenderFramePyrealStackCheck;
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Reset_pendingBuy() {
@@ -1021,6 +1089,8 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             if (!disposed) {
                 if (disposing) {
                     UBHelper.Vendor.VendorClosed -= UBHelper_VendorClosed;
+                    UB.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
+                    UB.Core.RenderFrame -= Core_RenderFramePyrealStackCheck;
                     Decal.Adapter.CoreManager.Current.WorldFilter.ApproachVendor -= WorldFilter_ApproachVendor;
                     Decal.Adapter.CoreManager.Current.RenderFrame -= Core_RenderFrame;
                     Decal.Adapter.CoreManager.Current.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
