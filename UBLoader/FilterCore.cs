@@ -39,6 +39,7 @@ namespace UBLoader {
 
         public string PluginStorageDirectory { get; private set; }
         public string DatabaseFile { get; private set; }
+        public bool HotReload { get; private set; }
 
         public string AccountName;
         public string CharacterName;
@@ -78,6 +79,8 @@ namespace UBLoader {
                     PluginStorageDirectory = config.AppSettings.Settings["PluginDirectory"].Value;
                 if (keys.Contains("DatabaseFile"))
                     DatabaseFile = config.AppSettings.Settings["DatabaseFile"].Value;
+                if (keys.Contains("HotReload"))
+                    HotReload = config.AppSettings.Settings["HotReload"].Value == "true";
             }
             catch { }
             if (string.IsNullOrEmpty(PluginStorageDirectory)) {
@@ -203,6 +206,8 @@ namespace UBLoader {
 
         private void PluginWatcher_Changed(object sender, FileSystemEventArgs e) {
             try {
+                if (!HotReload)
+                    return;
                 if (needsReload == false) {
                     Core.RenderFrame += Core_RenderFrame;
                 }
