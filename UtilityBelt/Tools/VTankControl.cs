@@ -17,6 +17,7 @@ namespace UtilityBelt.Tools {
     [Name("VTank")]
     public class VTankControl : ToolBase {
         public Dictionary<string, object> ExpressionVariables = new Dictionary<string, object>();
+        public Dictionary<string, object> PersistentExpressionVariables = new Dictionary<string, object>();
         private Random rnd = new Random();
 
         public class Stopwatch {
@@ -327,6 +328,8 @@ namespace UtilityBelt.Tools {
         [Summary("Checks if a persistent variable is defined")]
         [Example("testpvar[myvar]", "Returns 1 if `myvar` persistent variable is defined")]
         public object Testpvar(string varname) {
+            if (PersistentExpressionVariables.ContainsKey(varname))
+                return PersistentExpressionVariables[varname] != null;
             var variable = UB.Database.PersistentVariables.FindOne(
                 LiteDB.Query.And(
                     LiteDB.Query.EQ("Name", varname),
@@ -347,6 +350,8 @@ namespace UtilityBelt.Tools {
         [Summary("Returns the value stored in a variable")]
         [Example("getpvar[myvar]", "Returns the value stored in `myvar` variable")]
         public object Getpvar(string varname) {
+            if (PersistentExpressionVariables.ContainsKey(varname))
+                return PersistentExpressionVariables[varname];
             var variable = UB.Database.PersistentVariables.FindOne(
                 LiteDB.Query.And(
                     LiteDB.Query.EQ("Name", varname),
@@ -404,6 +409,11 @@ namespace UtilityBelt.Tools {
                 UB.Database.PersistentVariables.Update(variable);
             }
 
+            if (!PersistentExpressionVariables.ContainsKey(varname))
+                PersistentExpressionVariables.Add(varname, value);
+            else
+                PersistentExpressionVariables[varname] = value;
+
             return EvaluateExpression(expressionValue);
         }
         #endregion //setpvar[string varname, object value]
@@ -429,6 +439,7 @@ namespace UtilityBelt.Tools {
         [ExpressionReturn(typeof(double), "Returns 1")]
         [Example("clearallpvars[]", "Unset all persistent variables")]
         public object Clearallpvars() {
+            PersistentExpressionVariables.Clear();
             UB.Database.PersistentVariables.Delete(
                 LiteDB.Query.And(
                     LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server),
@@ -446,6 +457,7 @@ namespace UtilityBelt.Tools {
         [Example("clearpvar[myvar]", "Clears the value stored in `myvar` persistent variable")]
         public object Clearpvar(string varname) {
             if ((bool)Testpvar(varname)) {
+                PersistentExpressionVariables.Remove(varname);
                 UB.Database.PersistentVariables.Delete(
                     LiteDB.Query.And(
                         LiteDB.Query.EQ("Name", varname),
