@@ -379,7 +379,7 @@ namespace UtilityBelt.Tools {
             if (type == typeof(Boolean))
                 expressionValue = ((Boolean)value) ? "1" : "0";
             else if (type == typeof(string))
-                expressionValue = (string)value;
+                expressionValue = "`" + (string)value + "`";
             else if (type == typeof(double))
                 expressionValue = ((double)value).ToString();
             else {
@@ -521,7 +521,7 @@ namespace UtilityBelt.Tools {
             if (type == typeof(Boolean))
                 expressionValue = ((Boolean)value) ? "1" : "0";
             else if (type == typeof(string))
-                expressionValue = (string)value;
+                expressionValue = "`" + (string)value + "`";
             else if (type == typeof(double))
                 expressionValue = ((double)value).ToString();
             else {
