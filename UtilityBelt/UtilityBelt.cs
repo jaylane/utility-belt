@@ -340,7 +340,7 @@ namespace UtilityBelt {
                     var verb = parts.Length > 1 ? parts[1] : "";
 
                     if (RegisteredCommands.ContainsKey(verb)) {
-                        RunCommand(RegisteredCommands[verb], verb, parts.Skip(1).ToArray());
+                        RunCommand(RegisteredCommands[verb], verb, parts.Skip(2).ToArray());
                     }
                     else {
                         // fall back to searching for command that *starts* with this verb
