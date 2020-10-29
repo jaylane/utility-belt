@@ -353,7 +353,6 @@ namespace UtilityBelt {
                             if (commandText.StartsWith(kp.Key)) {
                                 if (commandText == kp.Key) {
                                     verb = commandText;
-                                    parts = new string[0];
                                 }
                                 else {
                                     verb = commandText.Substring(0, commandText.Substring(kp.Key.Length).IndexOf(' ') + kp.Key.Length).ToString();
