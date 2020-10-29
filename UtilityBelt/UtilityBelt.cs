@@ -340,24 +340,13 @@ namespace UtilityBelt {
                     var verb = parts.Length > 1 ? parts[1] : "";
 
                     if (RegisteredCommands.ContainsKey(verb)) {
-                        RunCommand(RegisteredCommands[verb], verb, parts.Skip(1).ToArray());
+                        RunCommand(RegisteredCommands[verb], verb, parts);
                     }
                     else {
-                        // fall back to searching for command that *starts* with this verb
+                        // fall back to searching for command that *starts* with this verb (if available for this verb)
                         var partialMatches = new List<string>();
-                        var commandText = String.Join(" ", e.Text.Split(' ').Skip(1).ToArray());
                         foreach (var kp in RegisteredCommands) {
-                            if (string.IsNullOrEmpty(kp.Key))
-                                continue;
-
-                            if (commandText.StartsWith(kp.Key)) {
-                                if (commandText == kp.Key) {
-                                    verb = commandText;
-                                }
-                                else {
-                                    verb = commandText.Substring(0, commandText.Substring(kp.Key.Length).IndexOf(' ') + kp.Key.Length).ToString();
-                                    parts = commandText.Substring(verb.Length + 1).Split(' ');
-                                }
+                            if (kp.Value.AllowPartialVerbMatch && verb.StartsWith(kp.Key)) {
                                 RunCommand(kp.Value, verb, parts);
                                 return;
                             }
@@ -378,7 +367,7 @@ namespace UtilityBelt {
         }
 
         private void RunCommand(Command command, string verb, string[] parts) {
-            var args = string.Join(" ", parts.ToArray());
+            var args = parts.Length > 2 ? string.Join(" ", parts.Skip(2).ToArray()) : "";
             var argMatch = command.ArgumentRegex.Match(args);
 
             if (argMatch.Success) {
