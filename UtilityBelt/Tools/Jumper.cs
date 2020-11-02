@@ -97,7 +97,6 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                 LogError("You are already jumping. try again later.");
                 return;
             }
-            needToJump = true;
 
             //set jump duration in ms
             if (!string.IsNullOrEmpty(args.Groups["msToHoldDown"].Value)) {
