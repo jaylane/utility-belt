@@ -698,16 +698,20 @@ namespace UtilityBelt.Tools {
             }
         }
         #endregion
-        #region /ub playeroption <option> <on/true|off/false>
+        #region /ub playeroption (list|<option> {on | true | off | false})"
         [Summary("Turns on/off acclient player options.")]
-        [Usage("/ub playeroption <option> {on | true | off | false}")]
+        [Usage("/ub playeroption (list|<option> {on | true | off | false})")]
         [Example("/ub playeroption AutoRepeatAttack on", "Enables the AutoRepeatAttack player option.")]
-        [CommandPattern("playeroption", @"^ *(?<params>.+ (on|off|true|false)) *$")]
+        [CommandPattern("playeroption", @"^(?<params>.+( on| off| true| false)?)$")]
         public void DoPlayerOption(string _, Match args) {
             UB_playeroption(args.Groups["params"].Value);
         }
         public void UB_playeroption(string parameters) {
             string[] p = parameters.Split(' ');
+            if (parameters.Equals("list")) {
+                Logger.WriteToChat($"Valid values are: {string.Join(", ", Enum.GetNames(typeof(UBHelper.Player.PlayerOption)))}");
+                return;
+            }
             if (p.Length != 2) {
                 Logger.Error($"Usage: /ub playeroption <option> <on/true|off/false>");
                 return;
