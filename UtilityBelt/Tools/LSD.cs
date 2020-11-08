@@ -263,14 +263,11 @@ namespace UtilityBelt.Tools {
                 }
 
                 try {
-                    currentLandblock = UB.Database.Landblocks.FindById((int)lb);
-                    if (currentLandblock == null) {
-                        currentLandblock = new Landblock() {
-                            Id = (int)lb,
-                            CheckFailCount = 0,
-                            LastCheck = DateTime.UtcNow
-                        };
-                    }
+                    currentLandblock = new Landblock() {
+                        Id = (int)lb,
+                        CheckFailCount = 0,
+                        LastCheck = DateTime.UtcNow
+                    };
 
                     try {
                         var lbData = JObject.Parse(e.Result.ToString());
@@ -314,7 +311,8 @@ namespace UtilityBelt.Tools {
                         Logger.LogException(ex);
                         currentLandblock.CheckFailCount++;
                     }
-                    UB.Database.Landblocks.Upsert(currentLandblock);
+                    UB.Database.Landblocks.Delete(currentLandblock.Id);
+                    UB.Database.Landblocks.Insert(currentLandblock);
 
                     RequestWeenies(currentLandblock.Weenies.Select((weenie, index) => weenie.Wcid));
                 }
