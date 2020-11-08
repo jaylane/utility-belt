@@ -251,6 +251,10 @@ namespace UtilityBelt {
             if (Plugin.CheckForUpdates) {
                 UpdateChecker.CheckForUpdate();
             }
+            
+            if (UBHelper.Core.version < 2020103100) {
+                Logger.Error($"UBHelper.dll is out of date. 2020103100 Expected, received {UBHelper.Core.version}");
+            }
         }
 
         /// <summary>

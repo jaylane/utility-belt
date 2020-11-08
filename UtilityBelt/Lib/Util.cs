@@ -407,12 +407,12 @@ namespace UtilityBelt
             }
             catch { }
 
-            searchname = searchname.ToLower();
-
             //try "selected"
             if (searchname.Equals("selected") && UB.Core.Actions.CurrentSelection != 0 && UB.Core.WorldFilter[UB.Core.Actions.CurrentSelection] != null && CheckObjectClassArray(UB.Core.WorldFilter[UB.Core.Actions.CurrentSelection].ObjectClass, oc)) {
                 return UB.Core.WorldFilter[UB.Core.Actions.CurrentSelection];
             }
+
+            searchname = searchname.ToLower();
             //try slow search...
             WorldObject found = null;
 
@@ -421,14 +421,14 @@ namespace UtilityBelt
             using (var woc = CoreManager.Current.WorldFilter.GetLandscape()) {
                 foreach (WorldObject thisOne in woc) {
                     if (!CheckObjectClassArray(thisOne.ObjectClass, oc)) continue;
-                    thisDistance = UB.Core.WorldFilter.Distance(CoreManager.Current.CharacterFilter.Id, thisOne.Id);
+                    thisDistance = UBHelper.Core.DirtyDistance(thisOne.Id);
                     if (thisOne.Id != UB.Core.CharacterFilter.Id && (found == null || lastDistance > thisDistance)) {
                         string thisLowerName = thisOne.Name.ToLower();
-                        if (partial && thisLowerName.Contains(searchname) && CheckObjectClassArray(thisOne.ObjectClass, oc)) {
+                        if (partial && (searchname.Length == 0 || thisLowerName.Contains(searchname)) && CheckObjectClassArray(thisOne.ObjectClass, oc)) {
                             found = thisOne;
                             lastDistance = thisDistance;
                         }
-                        else if (thisLowerName.Equals(searchname) && CheckObjectClassArray(thisOne.ObjectClass, oc)) {
+                        else if ((searchname.Length == 0 || thisLowerName.Equals(searchname)) && CheckObjectClassArray(thisOne.ObjectClass, oc)) {
                             found = thisOne;
                             lastDistance = thisDistance;
                         }

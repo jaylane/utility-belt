@@ -35,6 +35,38 @@
             Raised when the jump has been completed, and you hit the ground.
             </summary>
         </member>
+        <member name="T:UBHelper.Allegiance">
+            <summary>
+            Allegiance Manager Backend
+            </summary>
+        </member>
+        <member name="P:UBHelper.Allegiance.MonarchPtr">
+            <summary>
+            Gets a pointer to the top AllegianceNode
+            </summary>
+        </member>
+        <member name="P:UBHelper.Allegiance.Name">
+            <summary>
+            Gets Allegiance Name
+            </summary>
+        </member>
+        <member name="P:UBHelper.Allegiance.Locked">
+            <summary>
+            Gets locked status of the Allegiance
+            </summary>
+        </member>
+        <member name="M:UBHelper.Allegiance.SwearAllegiance(System.Int32)">
+            <summary>
+            Swear Allegiance to a target
+            </summary>
+            <param name="i_target">character id swear to</param>
+        </member>
+        <member name="M:UBHelper.Allegiance.BreakAllegiance(System.Int32)">
+            <summary>
+            Break Allegiance from a target
+            </summary>
+            <param name="i_target">character id break from</param>
+        </member>
         <member name="T:UBHelper.vTank">
             <summary>
             Helper class for working with the VTank plugin
@@ -154,6 +186,59 @@
             Helper methods for managing a ac fellowship
             </summary>
         </member>
+        <member name="P:UBHelper.Fellow.InFellowship">
+            <summary>
+            Returns true if the the player is in a fellowship
+            </summary>
+        </member>
+        <member name="P:UBHelper.Fellow.Name">
+            <summary>
+            Returns the name of the current fellowship
+            </summary>
+        </member>
+        <member name="P:UBHelper.Fellow.Leader">
+            <summary>
+            get: Returns true if the current fellowship leader's character id
+            set: Give the leader position of the current fellowship to character_id. This only works if you are the fellowship leader.
+            </summary>
+            <param name="value">the id of the character to give the leadership position to</param>
+        </member>
+        <member name="P:UBHelper.Fellow.IsLeader">
+            <summary>
+            Returns true if the player is the leader of the current fellowship
+            </summary>
+        </member>
+        <member name="P:UBHelper.Fellow.MemberCount">
+            <summary>
+            Returns the number of players in the current fellowship (very cheap)
+            </summary>
+        </member>
+        <member name="P:UBHelper.Fellow.Members">
+            <summary>
+            Returns a list of players in the current fellowship (very expensive)
+            </summary>
+        </member>
+        <member name="P:UBHelper.Fellow.ShareXP">
+            <summary>
+            Returns true if the current fellowship is sharing xp
+            </summary>
+        </member>
+        <member name="P:UBHelper.Fellow.EvenXPSplit">
+            <summary>
+            Returns true if the current fellowship is evenly splitting xp
+            </summary>
+        </member>
+        <member name="P:UBHelper.Fellow.Open">
+            <summary>
+            Gets or Sets the current fellowship Openess. Set only works if you are the fellowship leader.
+            </summary>
+            <param name="value">true/false</param>
+        </member>
+        <member name="P:UBHelper.Fellow.Locked">
+            <summary>
+            Returns true if the current fellowship is Locked.
+            </summary>
+        </member>
         <member name="M:UBHelper.Fellow.Create(System.String)">
             <summary>
             Create an ac fellowship
@@ -165,28 +250,15 @@
             Quit the current ac fellowship
             </summary>
         </member>
+        <member name="M:UBHelper.Fellow.IsInFellowship(System.Int32)">
+            <summary>
+            Returns true if the character is in your fellowship
+            </summary>
+            <param name="character_id">character id to find</param>
+        </member>
         <member name="M:UBHelper.Fellow.Disband">
             <summary>
             Disband the current ac fellowship
-            </summary>
-        </member>
-        <member name="M:UBHelper.Fellow.GiveLeader(System.Int32)">
-            <summary>
-            Give the leader position of the current fellowship to character_id. This only works if you
-            are the fellowship leader.
-            </summary>
-            <param name="character_id">the id of the character to give the leadership position to</param>
-        </member>
-        <member name="M:UBHelper.Fellow.Open">
-            <summary>
-            Open the current ac fellowship so that anyone in the fellowship can invite new members. This
-            only works if you are the fellowship leader.
-            </summary>
-        </member>
-        <member name="M:UBHelper.Fellow.Close">
-            <summary>
-            Close the current ac fellowship so that only the leader can invite new members. This
-            only works if you are the fellowship leader.
             </summary>
         </member>
         <member name="M:UBHelper.Fellow.Dismiss(System.Int32)">
@@ -289,6 +361,11 @@
         <member name="F:UBHelper.Core.version">
             <summary>
             UBHelper api version
+            </summary>
+        </member>
+        <member name="F:UBHelper.Core.Debug">
+            <summary>
+            Enables some lingering Debug messages. (caution- do not use in production, it makes a mess out of log files)
             </summary>
         </member>
         <member name="M:UBHelper.Core.Startup(System.String,System.String,System.String)">
@@ -397,6 +474,27 @@
             <param name="environmentDetail"></param>
             <param name="sceneryDraw"></param>
             <param name="landscapeDraw"></param>
+        </member>
+        <member name="M:UBHelper.Core.DirtyDistance(System.Int32)">
+            <summary>
+            Get Distance to a player, from the onscreen physics (dirty)
+            </summary>
+            <param name="character_id">character id</param>
+        </member>
+        <member name="P:UBHelper.Core.UserName">
+            <summary>
+            Poll the player's username, useful for account-wide kinds of things.
+            </summary>
+        </member>
+        <member name="P:UBHelper.Core.WorldName">
+            <summary>
+            Poll the Server-reported WorldName
+            </summary>
+        </member>
+        <member name="P:UBHelper.Core.ServerAddress">
+            <summary>
+            Poll the Server Address, used to initally connect to the server
+            </summary>
         </member>
         <member name="T:UBHelper.VideoPatch">
             <summary>

@@ -56,7 +56,7 @@ namespace UtilityBelt.Tools {
         [Hotkey("Debug", "Toggle Debug logging")]
         public bool Debug {
             get { return (bool)GetSetting("Debug"); }
-            set { UpdateSetting("Debug", value); }
+            set { UpdateSetting("Debug", value); UBHelper.Core.Debug = value; }
         }
 
         [Summary("Main UB Window X position for this character (left is 0)")]
@@ -974,6 +974,55 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
         #endregion
+
+        /// <summary>
+        /// Temporary Home. TODO: Finish Allegiance.cs
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="args"></param>
+        #region /ub swearallegiance[p] <name|id|selected>
+        [Summary("Swear Allegiance")]
+        [Usage("/ub swearallegiance[p][ <name|id|selected>]")]
+        [Example("/ub swearallegiance Yonneh", "Swear Allegiance to `Yonneh`")]
+        [Example("/ub swearallegiancep Yo", "Swear Allegiance to a character with a name partially matching `Yo`.")]
+        [Example("/ub swearallegiance", "Swear Allegiance to the closest character")]
+        [Example("/ub swearallegiance selected", "Swear Allegiance to the selected character")]
+        [CommandPattern("swearallegiance", @"^(?<charName>.+)?$")]
+        public void DoSwearAllegiance(string command, Match args) {
+            string charName = args.Groups["charName"].Value;
+            if (charName.Length == 0) charName = null;
+            WorldObject fellowChar = Util.FindName(charName, command.Replace("swearallegiance", "").Equals("p"), new ObjectClass[] { ObjectClass.Player });
+            if (fellowChar != null) {
+                Logger.WriteToChat($"Swearing Allegiance to {fellowChar.Name}[0x{fellowChar.Id:X8}]");
+                UBHelper.Allegiance.SwearAllegiance(fellowChar.Id);
+                return;
+            }
+            Logger.Error($"Could not find {(charName == null ? "closest player" : $"player {charName}")} Command:{command}");
+        }
+        #endregion
+        #region /ub breakallegiance[p] <name|id|selected>
+        [Summary("Break Allegiance (TODO: scan Allegiance Heirarchy, instead of visible)")]
+        [Usage("/ub breakallegiance[p][ <name|id|selected>]")]
+        [Example("/ub breakallegiance Yonneh", "Break your Allegiance to `Yonneh` (noooooooooooo)")]
+        [Example("/ub breakallegiancep Yo", "Break Allegiance from a character with a name partially matching `Yo`.")]
+        [Example("/ub breakallegiance", "Break Allegiance from the closest character")]
+        [Example("/ub breakallegiance selected", "Break Allegiance from the selected character")]
+        [CommandPattern("breakallegiance", @"^(?<charName>.+)?$")]
+        public void DoBreakAllegiance(string command, Match args) {
+            string charName = args.Groups["charName"].Value;
+            if (charName.Length == 0) charName = null;
+            WorldObject fellowChar = Util.FindName(charName, command.Replace("breakallegiance", "").Equals("p"), new ObjectClass[] { ObjectClass.Player });
+            if (fellowChar != null) {
+                Logger.WriteToChat($"Breaking Allegiance from {fellowChar.Name}[0x{fellowChar.Id:X8}]");
+                UBHelper.Allegiance.BreakAllegiance(fellowChar.Id);
+                return;
+            }
+            Logger.Error($"Could not find {(charName == null ? "closest player" : $"player {charName}")} Command:{command}");
+        }
+        #endregion
+
+
+
         #endregion
 
         #region Expressions
