@@ -11,6 +11,12 @@
 - Add caching to Persistent Expression Variables for better performance
 - Disable plugin hot reloading for general users
 - Fix global/persistent string storage expressions with special characters
+- add `/ub fellow create <Name>|quit|disband|open|close|status|recruit[p][ Name]|dismiss[p][ Name]|leader[p][ Name]`
+- add `/ub swearallegiance[p][ <name|id|selected>]`
+- add `/ub breakallegiance[p][ <name|id|selected>]` (TODO: scan Allegiance Heirarchy, instead of visible)
+- replace expressions `getfellowshipstatus[]`, `getfellowshipname[]`, with DMA methods (performance)
+- add expressions `getfellowshipcount[]`, `getfellowshipleaderid[]`, `getfellowid[x]`, `getfellowname[x]`, `getfellowshiplocked[]`, `getfellowshipisleader[]`, `getfellowshipisopen[]`, `getfellowshipisfull[]`, `getfellowshipcanrecruit[]`
+- add error on init, if UBHelper is out of date
 
 ## 0.1.5 (2020-05-18) [UtilityBeltInstaller-0.1.5.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/f924bff1dc10218e007a73e8bf0d3f45/UtilityBeltInstaller-0.1.5.exe)
 - Fix AutoTinker now supports tinkering clothing with gold/linen/moonstone/pine
