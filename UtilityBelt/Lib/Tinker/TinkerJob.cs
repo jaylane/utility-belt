@@ -97,7 +97,7 @@ namespace UtilityBelt.Lib.Tinker {
                 //Logger.WriteToChat(nextSalvage.ToString());
                 tinkeringItemName = Util.GetObjectName(tinkeringItem.Id);
                 tinkeringSalvage = CoreManager.Current.WorldFilter[nextSalvage];
-                tinkeringSalvageName = Util.GetObjectName(tinkeringSalvage.Id).Replace("Salvage ", "").Replace("Salvage", "").Trim();
+                tinkeringSalvageName = Util.GetObjectName(tinkeringSalvage.Id).Replace("Salvage", "").Replace("(100)","").Trim();
                 tinkeringSalvageWorkmanship = tinkeringSalvage.Values(DoubleValueKey.SalvageWorkmanship);
                 CoreManager.Current.Actions.SelectItem(nextSalvage);
 
