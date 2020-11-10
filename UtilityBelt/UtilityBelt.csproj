@@ -5,7 +5,7 @@
   <PropertyGroup>
     <Major>0</Major>
     <Minor>1</Minor>
-    <Build>6</Build>
+    <Build>7</Build>
     <Revision>0</Revision>
     <Branch>master</Branch>
   </PropertyGroup>
