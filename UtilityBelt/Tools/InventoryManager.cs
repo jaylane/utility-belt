@@ -39,7 +39,7 @@ Provides a command-line interface to inventory management.
         private static readonly Dictionary<int, int> giveObjects = new Dictionary<int, int>();
         private List<int> idItems = new List<int>();
         private static DateTime lastIdSpam = DateTime.MinValue, bailTimer = DateTime.MinValue, reloadLootProfileTS = DateTime.MinValue, lastAction = DateTime.MinValue;
-        public bool IGRunning = false;
+        internal bool IGRunning = false;
         private static bool givePartialItem, isRegex = false;
         private static int currentItem, retryCount, destinationId, failedItems, totalFailures, maxGive, itemsGiven, lastIdCount, pendingGiveCount, giveDelay;
         private LootCore lootProfile = null;
@@ -545,6 +545,7 @@ Provides a command-line interface to inventory management.
 
         public override void Init() {
             base.Init();
+            IGRunning = false;
 
             if (UB.Core.CharacterFilter.LoginStatus != 0) {
                 WatchLootProfile_Changed(WatchLootProfile);
