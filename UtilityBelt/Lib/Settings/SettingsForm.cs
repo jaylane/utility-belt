@@ -76,18 +76,20 @@ namespace UtilityBelt.Lib.Settings {
         }
 
         public static ACImage GetColorIcon(int v) {
-            if (colorIcon != null)
-                return colorIcon;
-            using (var bmp = new Bitmap(32, 32)) {
-                using (Graphics gfx = Graphics.FromImage(bmp)) {
-                    using (SolidBrush brush = new SolidBrush(Color.FromArgb(v))) {
-                        gfx.FillRectangle(brush, 0, 0, 32, 32);
-                    }
-                }
+            if (colorPreviewBitmap != null)
+                colorPreviewBitmap.Dispose();
+            colorPreviewBitmap = new Bitmap(32, 32);
 
-                colorIcon = new ACImage(bmp);
-                return colorIcon;
+            using (Graphics gfx = Graphics.FromImage(colorPreviewBitmap)) {
+                using (SolidBrush brush = new SolidBrush(Color.FromArgb(v))) {
+                    gfx.FillRectangle(brush, 0, 0, 32, 32);
+                }
             }
+            if (colorIcon != null)
+                colorIcon.Dispose();
+            colorIcon = new ACImage(colorPreviewBitmap);
+
+            return colorIcon;
         }
 
         private List<HudControl> DrawSettingsForm(HudFixedLayout settingsForm, string setting) {
@@ -332,6 +334,7 @@ namespace UtilityBelt.Lib.Settings {
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
         private static ACImage colorIcon;
+        private static Bitmap colorPreviewBitmap;
 
         protected virtual void Dispose(bool disposing) {
             if (!disposedValue) {
