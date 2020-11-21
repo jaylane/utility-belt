@@ -41,6 +41,7 @@ namespace UtilityBelt.Views {
 
         public Color DefaultColor;
         bool disposed = false;
+        private Bitmap colorPreviewBitmap;
         private ACImage colorPreviewImage;
 
         public event EventHandler<ColorPickerSaveEventArgs> RaiseColorPickerSaveEvent;
@@ -64,7 +65,7 @@ namespace UtilityBelt.Views {
             view.Location = new System.Drawing.Point(x, y);
 
             view.ForcedZOrder = 9999;
-            view.Icon = GetIconImage();
+            view.ShowInBar = false;
             view.Visible = true;
 
             Cancel = (HudButton)view["Cancel"];
@@ -72,7 +73,6 @@ namespace UtilityBelt.Views {
 
             ColorPreviewLayout = (HudFixedLayout)view["ColorPreviewLayout"];
             ColorPreview = new HudPictureBox();
-            ColorPreview.Image = GetIconImage();
 
             ColorPreviewLayout.AddControl(ColorPreview, new Rectangle(0, 0, 100, 100));
 
@@ -93,42 +93,32 @@ namespace UtilityBelt.Views {
 
             Cancel.Hit += Cancel_Hit;
             Save.Hit += Save_Hit;
+
+            ColorPreview.Image = GetColorPreviewImage();
         }
 
         private ACImage GetColorPreviewImage() {
-            if (colorPreviewImage != null)
-                return colorPreviewImage;
-            using (var bmp = new Bitmap(ColorPreview.ClipRegion.Width, ColorPreview.ClipRegion.Height)) {
+            if (colorPreviewBitmap != null)
+                colorPreviewBitmap.Dispose();
+            colorPreviewBitmap = new Bitmap(ColorPreview.ClipRegion.Width, ColorPreview.ClipRegion.Height);
 
-                using (Graphics gfx = Graphics.FromImage(bmp)) {
-                    using (SolidBrush brush = new SolidBrush(Color)) {
-                        gfx.FillRectangle(brush, 0, 0, ColorPreview.ClipRegion.Width, ColorPreview.ClipRegion.Height);
-                    }
+            using (Graphics gfx = Graphics.FromImage(colorPreviewBitmap)) {
+                using (SolidBrush brush = new SolidBrush(Color)) {
+                    gfx.FillRectangle(brush, 0, 0, ColorPreview.ClipRegion.Width, ColorPreview.ClipRegion.Height);
                 }
-                colorPreviewImage = new ACImage(bmp);
             }
+            if (colorPreviewImage != null)
+                colorPreviewImage.Dispose();
+            colorPreviewImage = new ACImage(colorPreviewBitmap);
 
             return colorPreviewImage;
         }
 
-        private ACImage GetIconImage() {
-            var bmp = new Bitmap(32, 32);
-
-            using (Graphics gfx = Graphics.FromImage(bmp)) {
-                using (SolidBrush brush = new SolidBrush(Color)) {
-                    gfx.FillRectangle(brush, 0, 0, 32, 32);
-                }
-            }
-
-            return new ACImage(bmp);
-        }
-
         private void Sliders_Changed(int min, int max, int pos) {
             try {
-                Color = Color.FromArgb(Alpha.Position, Red.Position, Green.Position, Blue.Position);
-                ColorPreview.Image = GetColorPreviewImage();
-                view.Icon = GetIconImage();
-                RaiseColorPickerChangeEvent?.Invoke(null, new ColorPickerChangeEventArgs(Color));
+               Color = Color.FromArgb(Alpha.Position, Red.Position, Green.Position, Blue.Position);
+               ColorPreview.Image = GetColorPreviewImage();
+               RaiseColorPickerChangeEvent?.Invoke(null, new ColorPickerChangeEventArgs(Color));
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -156,6 +146,8 @@ namespace UtilityBelt.Views {
             if (!disposed) {
                 if (disposing) {
                     if (view != null) view.Dispose();
+                    if (colorPreviewBitmap != null) colorPreviewBitmap.Dispose();
+                    if (colorPreviewImage != null) colorPreviewImage.Dispose();
                 }
                 disposed = true;
             }
