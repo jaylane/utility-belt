@@ -384,7 +384,6 @@ namespace UBDocsGen {
                             JObject o2 = (JObject)JToken.ReadFrom(reader);
                             installerPath = RepoURL + o2["url"];
                         }
-
                         releaseDate = DateTime.Now.ToString("yyyy-MM-dd");
                     }
                     else {
@@ -497,8 +496,9 @@ All settings take immediate effect on the plugin, and will save to your [charact
                 stringWriter.WriteLine("> ");
 
                 foreach (var example in command.Examples) {
-                    stringWriter.WriteLine($"> * ```{example.Key}``` - {example.Value}");
+                    stringWriter.WriteLine($">* &nbsp;```{example.Key}``` - {example.Value}");
                 }
+                stringWriter.WriteLine("> ");
             }
 
             stringWriter.WriteLine("");
