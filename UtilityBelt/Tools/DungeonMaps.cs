@@ -535,13 +535,13 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
         public override void Init() {
             base.Init();
 
-            UIMapNotebook = (HudTabView)UB.MapView.view["MapNotebook"];
-            UISearch = (HudTextBox)UB.MapView.view["Search"];
-            UIDungeonList = (HudList)UB.MapView.view["DungeonList"];
-            UIFollowCharacter = (HudButton)UB.MapView.view["FollowCharacter"];
-            UIOpacitySlider = (HudHSlider)UB.MapView.view["OpacitySlider"];
-            UIZSlider = (HudHSlider)UB.MapView.view["ZSlider"];
-            UIShowAllLayers = (HudCheckBox)UB.MapView.view["ShowAllLayers"];
+            UIMapNotebook = (HudTabView)UB.DungeonMapView.view["MapNotebook"];
+            UISearch = (HudTextBox)UB.DungeonMapView.view["Search"];
+            UIDungeonList = (HudList)UB.DungeonMapView.view["DungeonList"];
+            UIFollowCharacter = (HudButton)UB.DungeonMapView.view["FollowCharacter"];
+            UIOpacitySlider = (HudHSlider)UB.DungeonMapView.view["OpacitySlider"];
+            UIZSlider = (HudHSlider)UB.DungeonMapView.view["ZSlider"];
+            UIShowAllLayers = (HudCheckBox)UB.DungeonMapView.view["ShowAllLayers"];
 
             UIOpacitySlider.Changed += UIOpacitySlider_Changed;
             UIOpacitySlider.Position = Opacity;
@@ -550,12 +550,12 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
             UISearch.Change += UISearch_Change;
             UIDungeonList.Click += UIDungeonList_Click;
 
-            UB.MapView.view["DungeonMapsRenderContainer"].MouseEvent += DungeonMaps_MouseEvent;
+            UB.DungeonMapView.view["DungeonMapsRenderContainer"].MouseEvent += DungeonMaps_MouseEvent;
             UIShowAllLayers.Change += UIShowAllLayers_Change;
 
             scale = (5f - MapZoom);
-            fontFace = (string)((HudControl)UB.MapView.view.MainControl).Theme.GetVal<string>("DefaultTextFontFace");
-            fontWeight = (int)((HudControl)UB.MapView.view.MainControl).Theme.GetVal<int>("ViewTextFontWeight");
+            fontFace = (string)((HudControl)UB.DungeonMapView.view.MainControl).Theme.GetVal<string>("DefaultTextFontFace");
+            fontWeight = (int)((HudControl)UB.DungeonMapView.view.MainControl).Theme.GetVal<int>("ViewTextFontWeight");
 
             CreateHud(MapWindowWidth, MapWindowHeight, MapWindowX, MapWindowY);
             
@@ -580,7 +580,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                     return;
                 case "DrawWhenClosed":
                 case "Enabled":
-                    UB.MapView.ResizeMapHud();
+                    UB.DungeonMapView.ResizeMapHud();
                     break;
             }
             if (Enabled)
@@ -1095,7 +1095,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                     hud.Dispose();
                 }
 
-                if (!Enabled || (!DrawWhenClosed && !UB.MapView.view.Visible)) {
+                if (!Enabled || (!DrawWhenClosed && !UB.DungeonMapView.view.Visible)) {
                     ClearCache();
                     return;
                 }
@@ -1137,7 +1137,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
         private void RenderHud() {
             if (hud == null || hud.Texture == null || hud.Texture.IsDisposed || mapTexture == null || mapTexture.IsDisposed) return;
 
-            if (UB.MapView.view.Visible && UIMapNotebook.CurrentTab != 0) {
+            if (UB.DungeonMapView.view.Visible && UIMapNotebook.CurrentTab != 0) {
                 hud.Enabled = false;
                 return;
             }

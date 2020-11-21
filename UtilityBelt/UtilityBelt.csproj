@@ -110,6 +110,11 @@
     <Compile Include="Lib\Expressions\ExpressionVisitor.cs" />
     <Compile Include="Lib\HotkeyWrapper.cs" />
     <Compile Include="Lib\Inventory.cs" />
+    <Compile Include="Lib\Maps\markers\BaseMarker.cs" />
+    <Compile Include="Lib\Maps\markers\IconMarker.cs" />
+    <Compile Include="Lib\Maps\LandscapeMarkers.cs" />
+    <Compile Include="Lib\Maps\markers\LabelMarker.cs" />
+    <Compile Include="Lib\Maps\markers\LineMarker.cs" />
     <Compile Include="Lib\Models\Angles.cs" />
     <Compile Include="Lib\Models\Frame.cs" />
     <Compile Include="Lib\Models\GlobalVariable.cs" />
@@ -135,6 +140,7 @@
     <Compile Include="Lib\VHS_Connector.cs" />
     <Compile Include="Tools\DungeonMaps.cs" />
     <Compile Include="Tools\FellowshipManager.cs" />
+    <Compile Include="Tools\LandscapeMaps.cs" />
     <Compile Include="Tools\LSD.cs" />
     <Compile Include="Tools\HealthTracker.cs" />
     <Compile Include="Tools\Nametags.cs" />
@@ -203,8 +209,9 @@
     <Compile Include="Views\ColorPicker.cs" />
     <Compile Include="Views\EnumFlagEditor.cs" />
     <Compile Include="Views\ItemGiver.cs" />
+    <Compile Include="Views\LandscapeMapsView.cs" />
     <Compile Include="Views\ListEditor.cs" />
-    <Compile Include="Views\MapView.cs" />
+    <Compile Include="Views\DungeonMapsView.cs" />
     <Compile Include="Views\MainView.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -222,6 +229,11 @@
     </Antlr4>
     <None Include="Installer\Install.nsi" />
     <None Include="packages.config" />
+    <EmbeddedResource Include="Resources\mapdata\npcs.csv" />
+    <EmbeddedResource Include="Resources\mapdata\portals.csv" />
+    <EmbeddedResource Include="Resources\mapdata\vendors.csv" />
+    <EmbeddedResource Include="Resources\mapdata\towns.csv" />
+    <EmbeddedResource Include="Resources\mapdata\lifestones.csv" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="D3DService">
@@ -288,7 +300,7 @@
     <EmbeddedResource Include="Resources\icons\dungeonmaps.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Views\MapView.xml" />
+    <EmbeddedResource Include="Views\DungeonMapsView.xml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\icons\compass.png" />
@@ -920,6 +932,15 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\ItemGiver.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\LandscapeMapsView.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\acmap.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\icons\arrow.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

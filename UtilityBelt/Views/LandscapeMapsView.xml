@@ -1,0 +1,15 @@
+﻿<?xml version="1.0"?>
+<view icon="13249" title="Utility Belt Landscape Maps" width="420" height="320">
+  <control progid="DecalControls.Notebook" name="MapNotebook">
+    <page label="Map">
+      <control progid="DecalControls.FixedLayout" clipped="" name="LandscapeMapsRenderContainer">
+        <control progid="DecalControls.PushButton" name="FollowCharacter" left="8" top="8" width="60" height="16" text="Follow"/>
+      </control>
+    </page>
+    <page label="About">
+      <control progid="DecalControls.FixedLayout" clipped="">
+        <control progid="DecalControls.StaticText" name="SearchLabel" left="4" top="4" width="9999" height="9999" justify="Left" text="Map Data: ACEmulator/ACE-World-16PY-Patches || Map Image: OptimShi/MapAC"/>
+      </control>
+    </page>
+  </control>
+</view>

@@ -7,6 +7,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using UtilityBelt.Lib.Maps.Markers;
 
 namespace UtilityBelt.Lib.VTNav.Waypoints {
     class VTNPortal : VTNPoint {
@@ -19,6 +20,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
         public double PortalZ = 0;
 
         internal double closestDistance = double.MaxValue;
+        private LineMarker lineMarker;
 
         public VTNPortal(StreamReader reader, VTNavRoute parentRoute, int index) : base(reader, parentRoute, index) {
             Type = eWaypointType.Portal;
@@ -133,6 +135,11 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             if (closestDistance < double.MaxValue) {
                 if (rp != null && UtilityBeltPlugin.Instance.VisualNav.Display.Lines.Enabled) {
                     DrawLineTo(rp, color);
+                    lineMarker = new LineMarker(EW, NS, rp.EW, rp.NS, color, 2) {
+                        MinZoomLevel = 0,
+                        MaxZoomLevel = 1
+                    };
+                    UtilityBeltPlugin.Instance.LandscapeMaps.AddMarker(lineMarker);
                 }
 
                 color = Color.FromArgb(UtilityBeltPlugin.Instance.VisualNav.Display.Portal.Color);

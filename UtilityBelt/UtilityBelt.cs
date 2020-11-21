@@ -120,7 +120,8 @@ namespace UtilityBelt {
         internal string CharacterName;
         internal MainView MainView;
         internal ItemGiverView ItemGiverView;
-        internal MapView MapView;
+        internal DungeonMapsView DungeonMapView;
+        internal LandscapeMapsView LandscapeMapView;
         internal Settings Settings;
         internal Database Database;
 
@@ -143,6 +144,7 @@ namespace UtilityBelt {
         public HealthTracker HealthTracker { get; private set; }
         public InventoryManager InventoryManager { get; private set; }
         public Jumper Jumper { get; private set; }
+        public LandscapeMaps LandscapeMaps { get; private set; }
         public LSD LSD { get; private set; }
         public Nametags Nametags { get; private set; }
         public Professors Professors { get; private set; }
@@ -231,7 +233,8 @@ namespace UtilityBelt {
 
             MainView = new MainView(this);
             ItemGiverView = new ItemGiverView(this);
-            MapView = new MapView(this);
+            DungeonMapView = new DungeonMapsView(this);
+            LandscapeMapView = new LandscapeMapsView(this);
 
             HotkeyWrapperManager.Startup("UB");
 
@@ -244,7 +247,8 @@ namespace UtilityBelt {
 
             MainView.Init();
             ItemGiverView.Init();
-            MapView.Init();
+            DungeonMapView.Init();
+            LandscapeMapView.Init();
 
             Logger.Debug($"UB Initialized {DateTime.UtcNow} v{Util.GetVersion(true)}.");
 
@@ -521,8 +525,10 @@ namespace UtilityBelt {
 
                 if (MainView != null)
                     MainView.Dispose();
-                if (MapView != null)
-                    MapView.Dispose();
+                if (DungeonMapView != null)
+                    DungeonMapView.Dispose();
+                if (LandscapeMapView != null)
+                    LandscapeMapView.Dispose();
                 if (ItemGiverView != null)
                     ItemGiverView.Dispose();
             }

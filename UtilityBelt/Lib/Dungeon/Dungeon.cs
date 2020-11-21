@@ -11,7 +11,7 @@ namespace UtilityBelt.Lib.Dungeon {
         public int Landcell;
 
         public int Landblock { get { return (int)(Landcell & 0xFFFF0000); } }
-        private static Dictionary<int, Dungeon> cache = new Dictionary<int, Dungeon>();
+        private static Dictionary<uint, Dungeon> cache = new Dictionary<uint, Dungeon>();
         public Dictionary<int, DungeonLayer> ZLayers = new Dictionary<int, DungeonLayer>();
         public string Name { get; private set; } = "Unknown Dungeon";
 
@@ -69,7 +69,7 @@ namespace UtilityBelt.Lib.Dungeon {
         }
 
         public static Dungeon GetCached(int landcell) {
-            int lb = landcell & 0xFFF0000;
+            uint lb = (uint)landcell & 0xFFFF0000;
             if (cache.ContainsKey(lb))
                 return cache[lb];
             cache.Add(lb, new Dungeon(landcell));

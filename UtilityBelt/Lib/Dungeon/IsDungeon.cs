@@ -41,6 +41,11 @@ namespace UtilityBelt.Lib.Dungeon {
                 return isDungeon;
             }
 
+            if (DungeonNames.ContainsKey(dungeonId)) {
+                mIsDungeonCache.Add(dungeonId, true);
+                return true;
+            }
+
             FileService service = CoreManager.Current.Filter<FileService>();
             byte[] dungeonBlock = service.GetCellFile((int)Landcell);
 
