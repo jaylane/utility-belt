@@ -14,7 +14,7 @@
             Helper class to assist with jumping
             </summary>
         </member>
-        <member name="M:UBHelper.Jumper.Jump(System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:UBHelper.Jumper.Jump(System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
             Tells your character to jump.
             </summary>
@@ -368,13 +368,18 @@
             Enables some lingering Debug messages. (caution- do not use in production, it makes a mess out of log files)
             </summary>
         </member>
-        <member name="M:UBHelper.Core.Startup(System.String,System.String,System.String)">
+        <member name="M:UBHelper.Core.Startup(System.String)">
             <summary>
             Plugins should call this once at startup to intialize UBHelper
             </summary>
+            <param name="characterName">name of the currently logged in character</param>
+        </member>
+        <member name="M:UBHelper.Core.FilterStartup(System.String,System.String)">
+            <summary>
+            
+            </summary>
             <param name="assemblyPath">absolute file path to the calling plugin assembly</param>
             <param name="storagePath">calling plugin file storage path</param>
-            <param name="characterName">name of the currently logged in character</param>
         </member>
         <member name="M:UBHelper.Core.Shutdown">
             <summary>
@@ -402,6 +407,18 @@
             RadarUpdate event handler delegate
             </summary>
             <param name="uptime">AC client uptime in seconds</param>
+        </member>
+        <member name="E:UBHelper.Core.GameStateChanged">
+            <summary>
+            Fired when UBHelper.Core.GameState changes.
+            </summary>
+        </member>
+        <member name="T:UBHelper.Core.Del_GameState">
+            <summary>
+            Gamestate event handler delegate
+            </summary>
+            <param name="previous">Previous UBHelper.GameState</param>
+            <param name="new_state">New UBHelper.GameState</param>
         </member>
         <member name="M:UBHelper.Core.ClearBusyCount">
             <summary>
@@ -481,6 +498,16 @@
             </summary>
             <param name="character_id">character id</param>
         </member>
+        <member name="P:UBHelper.Core.LoginCharacterID">
+            <summary>
+            Returns the ID of the Character Selected on the Character Select Screen, or the ID of a newly created character.
+            </summary>
+        </member>
+        <member name="P:UBHelper.Core.TeleportInProgress">
+            <summary>
+            Returns true if the player is currently in portal space
+            </summary>
+        </member>
         <member name="P:UBHelper.Core.UserName">
             <summary>
             Poll the player's username, useful for account-wide kinds of things.
@@ -494,6 +521,11 @@
         <member name="P:UBHelper.Core.ServerAddress">
             <summary>
             Poll the Server Address, used to initally connect to the server
+            </summary>
+        </member>
+        <member name="P:UBHelper.Core.CharacterSet">
+            <summary>
+            Return a Dictionary containing the most recent CharacterSet received from the server.
             </summary>
         </member>
         <member name="T:UBHelper.VideoPatch">

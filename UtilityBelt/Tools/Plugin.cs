@@ -122,11 +122,6 @@ namespace UtilityBelt.Tools {
             set {
                 UpdateSetting("PCap", value);
 
-                if (UBHelper.Core.version < 1911220544) {
-                    Logger.Error($"Error UBHelper.dll is out of date!");
-                    return;
-                }
-
                 if (value) {
                     UBHelper.PCap.Enable(PCapBufferDepth);
                 }
@@ -785,10 +780,6 @@ namespace UtilityBelt.Tools {
             UB_pcap(args.Groups["params"].Value);
         }
         public void UB_pcap(string parameters) {
-            if (UBHelper.Core.version < 1911220544) {
-                Logger.Error($"Error UBHelper.dll is out of date!");
-                return;
-            }
             char[] stringSplit = { ' ' };
             string[] parameter = parameters.Split(stringSplit, 2);
             switch (parameter[0]) {
@@ -902,10 +893,6 @@ namespace UtilityBelt.Tools {
             UB_video(args.Groups["params"].Value);
         }
         public void UB_video(string parameters) {
-            if (UBHelper.Core.version < 1911140303) {
-                Logger.Error($"Error UBHelper.dll is out of date!");
-                return;
-            }
             char[] stringSplit = { ' ' };
             string[] parameter = parameters.Split(stringSplit, 2);
             switch (parameter[0]) {

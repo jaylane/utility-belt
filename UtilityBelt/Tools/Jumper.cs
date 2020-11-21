@@ -115,7 +115,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                 needToTurn = true;
                 targetDirection = faceDirectionInt;
             }
-            else needToTurn = false;
+            else { needToTurn = false; targetDirection = (int)Math.Round(CoreManager.Current.Actions.Heading, 0); }
 
             //set jump direction
             if (command.Contains("w")) addW = true;
@@ -173,7 +173,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                     needToJump = false;
                     enableNavTimer = TimeSpan.FromMilliseconds(msToHoldDown + 15000);
                     UBHelper.Jumper.JumpComplete += Jumper_JumpComplete;
-                    UBHelper.Jumper.Jump(((float)msToHoldDown / 1000), addShift, addW, addX, addZ, addC);
+                    UBHelper.Jumper.Jump(targetDirection, ((float)msToHoldDown / 1000), addShift, addW, addX, addZ, addC);
                     waitingForJump = true;
 
                     navSettingTimer = DateTime.UtcNow;
@@ -187,7 +187,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                         Logger.Debug("Timeout waiting for jump, trying again...");
                         if (PauseNav)
                             UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(15000));
-                        UBHelper.Jumper.Jump(((float)msToHoldDown / 1000), addShift, addW, addX, addZ, addC);
+                        UBHelper.Jumper.Jump(targetDirection, ((float)msToHoldDown / 1000), addShift, addW, addX, addZ, addC);
                     }
                     else {
                         Util.ThinkOrWrite("You have failed to jump too many times.", ThinkFail);

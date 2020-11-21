@@ -182,7 +182,7 @@ namespace UtilityBelt {
 
                 Util.Init(this, assemblyLocation, storagePath); //static classes can not have constructors, but still need to init variables.
 
-                UBHelper.Core.Startup(assemblyLocation, storagePath, characterName);
+                UBHelper.Core.Startup(characterName);
 
                 Core.CommandLineText += Core_CommandLineText;
 
@@ -256,8 +256,8 @@ namespace UtilityBelt {
                 UpdateChecker.CheckForUpdate();
             }
             
-            if (UBHelper.Core.version < 2020103100) {
-                Logger.Error($"UBHelper.dll is out of date. 2020103100 Expected, received {UBHelper.Core.version}");
+            if (UBHelper.Core.version < 2020112000) {
+                Logger.Error($"UBHelper.dll is out of date. 2020112000 Expected, received {UBHelper.Core.version}");
             }
         }
 
