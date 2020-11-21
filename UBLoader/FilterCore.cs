@@ -44,7 +44,6 @@ namespace UBLoader {
         public string AccountName;
         public string CharacterName;
         public string ServerName;
-        public Dictionary<int, string> Characters = new Dictionary<int, string>();
         private bool hasLoaded = false;
         private bool needsLoginLoad = false;
 
@@ -62,10 +61,10 @@ namespace UBLoader {
 
                 LoadAssemblyConfig();
 
-                ServerDispatch += FilterCore_ServerDispatch;
-                ClientDispatch += FilterCore_ClientDispatch;
+                UBHelper.Core.GameStateChanged += Core_GameStateChanged;
                 Core.PluginInitComplete += Core_PluginInitComplete;
                 Core.PluginTermComplete += Core_PluginTermComplete;
+                UBHelper.Core.FilterStartup(PluginAssemblyPath, PluginStorageDirectory);
             }
             catch (Exception ex) { LogException(ex); }
         }
@@ -101,60 +100,30 @@ namespace UBLoader {
             }
         }
 
-        private void FilterCore_ClientDispatch(object sender, NetworkMessageEventArgs e) {
-            try {
-                if (e.Message.Type == 0xF657) { // SendEnterWorld C2S
-                    int loginId = Convert.ToInt32(e.Message["character"]);
-
-                    if (Characters.ContainsKey(loginId)) {
-                        CharacterName = Characters[loginId];
-                    }
-                    else {
+        private void Core_GameStateChanged(UBHelper.GameState previous, UBHelper.GameState new_state) {
+            switch (new_state) {
+                case UBHelper.GameState.Character_Select_Screen:
+                    AccountName = UBHelper.Core.UserName;
+                    ServerName = UBHelper.Core.WorldName;
+                    break;
+                case UBHelper.GameState.Entering_Game:
+                    try {
+                        CharacterName = UBHelper.Core.CharacterSet[UBHelper.Core.LoginCharacterID];
+                    } catch {
                         needsLoginLoad = true;
                     }
-                }
+                    break;
+                case UBHelper.GameState.In_Game:
+                    if (needsLoginLoad) {
+                        ServerName = Core.CharacterFilter.Server;
+                        CharacterName = Core.CharacterFilter.Name;
+                        LogError("Unable to poll character, activating failsafe...");
+                        lastFileChange = DateTime.UtcNow;
+                        needsReload = true;
+                        needsLoginLoad = false;
+                    }
+                    break;
             }
-            catch (Exception ex) { LogException(ex); }
-        }
-
-        private void FilterCore_ServerDispatch(object sender, NetworkMessageEventArgs e) {
-            try {
-                switch (e.Message.Type) {
-                    case 0xF658: // LoginCharacterSet S2C
-                        AccountName = e.Message.Value<string>("zonename");
-                        int characterCount = e.Message.Value<int>("characterCount");
-                        MessageStruct characters = e.Message.Struct("characters");
-
-                        Characters.Clear();
-
-                        for (int i = 0; i < characterCount; i++) {
-                            int id = characters.Struct(i).Value<int>("character");
-                            string name = characters.Struct(i).Value<string>("name");
-                            Characters.Add(id, name);
-                        }
-                        break;
-
-                    case 0xF7E1:
-                        ServerName = e.Message.Value<string>("server");
-                        break;
-
-                    case 0xF7B0:
-                        if (needsLoginLoad && e.Message.Value<int>("event") == 0x0013) {
-                            Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
-                        }
-                        break;
-                }
-            }
-            catch (Exception ex) { LogException(ex); }
-        }
-
-        private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
-            Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
-            ServerName = Core.CharacterFilter.Server;
-            CharacterName = Core.CharacterFilter.Name;
-            lastFileChange = DateTime.UtcNow;
-            needsReload = true;
-            needsLoginLoad = false;
         }
 
         private void Core_PluginInitComplete(object sender, EventArgs e) {
@@ -266,6 +235,7 @@ namespace UBLoader {
                 Core.PluginInitComplete -= Core_PluginInitComplete;
                 Core.PluginTermComplete -= Core_PluginTermComplete;
                 UnloadPluginAssembly();
+                UBHelper.Core.FilterShutdown();
             }
 			catch (Exception ex) { LogException(ex); }
         }

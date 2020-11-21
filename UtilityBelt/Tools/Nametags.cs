@@ -93,8 +93,7 @@ For portals, it will show the destination.
         }
         private void EnableReal() {
             if (Enabled && !enabled) {
-                if (UBHelper.Core.version >= 1912022230) UBHelper.VideoPatch.Changed += VideoPatch_Changed;
-                else LogError("UBHelper is out of date");
+                UBHelper.VideoPatch.Changed += VideoPatch_Changed;
                 EnableRealInternal();
             }
         }
