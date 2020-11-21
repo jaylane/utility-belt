@@ -784,6 +784,8 @@ namespace UtilityBelt.Tools {
                     UB.LandscapeMapView.view["LandscapeMapsRenderContainer"].MouseEvent -= LandscapeMaps_MouseEvent;
                     if (mapTexture != null) mapTexture.Dispose();
                     if (hud != null) hud.Dispose();
+                    if (horizontalBorderTexture != null) horizontalBorderTexture.Dispose();
+                    if (verticalBorderTexture != null) verticalBorderTexture.Dispose();
                     foreach (var kv in _CoordsfontCache) {
                         kv.Value.Dispose();
                     }
