@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using UtilityBelt.Lib.Maps.Markers;
 
 namespace UtilityBelt.Lib.VTNav.Waypoints {
     public class VTNPoint {
@@ -22,6 +23,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
         internal bool disposed = false;
 
         internal eWaypointType Type = eWaypointType.Point;
+        private LineMarker lineMarker;
 
         public VTNPoint(StreamReader reader, VTNavRoute parentRoute, int index) {
             sr = reader;
@@ -155,6 +157,11 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
 
             if (UtilityBeltPlugin.Instance.VisualNav.Display.Lines.Enabled) {
                 DrawLineTo(rp, color);
+                lineMarker = new LineMarker(EW, NS, rp.EW, rp.NS, color, 2) {
+                    MinZoomLevel = 0,
+                    MaxZoomLevel = 1
+                };
+                UtilityBeltPlugin.Instance.LandscapeMaps.AddMarker(lineMarker);
             }
         }
 
@@ -165,6 +172,9 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             }
 
             shapes.Clear();
+            if (lineMarker != null)
+                lineMarker.Dispose();
+            lineMarker = null;
         }
 
         public void Dispose() {

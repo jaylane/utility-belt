@@ -12,12 +12,12 @@ using VirindiViewService.Controls;
 using VirindiViewService.XMLParsers;
 
 namespace UtilityBelt.Views {
-    public class MapView : BaseView {
+    public class DungeonMapsView : BaseView {
         Timer timer;
         HudFixedLayout DungeonMapsRenderContainer;
 
-        public MapView(UtilityBeltPlugin ub) : base(ub) {
-            CreateFromXMLResource("UtilityBelt.Views.MapView.xml");
+        public DungeonMapsView(UtilityBeltPlugin ub) : base(ub) {
+            CreateFromXMLResource("UtilityBelt.Views.DungeonMapsView.xml");
         }
 
         public void Init() {
@@ -31,7 +31,6 @@ namespace UtilityBelt.Views {
                 );
                 view.Width = UB.DungeonMaps.MapWindowWidth;
                 view.Height = UB.DungeonMaps.MapWindowHeight;
-                view.ForcedZOrder = -1;
 
                 DungeonMapsRenderContainer = (HudFixedLayout)view["DungeonMapsRenderContainer"];
 
@@ -96,7 +95,7 @@ namespace UtilityBelt.Views {
         internal override ACImage GetIcon() {
             return GetIcon("UtilityBelt.Resources.icons.dungeonmaps.png");
         }
-        ~MapView() {
+        ~DungeonMapsView() {
             if (timer != null) timer.Dispose();
         }
     }
