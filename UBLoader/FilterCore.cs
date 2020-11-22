@@ -5,14 +5,19 @@ using System.Linq;
 using System.Reflection;
 using Decal.Adapter;
 using Decal.Adapter.Wrappers;
+using Decal.Interop.Core;
+using Decal.Interop.Render;
+using System.Drawing;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace UBLoader {
 
     //Attaches events from core
-	[WireUpBaseEvents]
-    
-	[FriendlyName("UtilityBelt")]
-	public class FilterCore : FilterBase {
+    [WireUpBaseEvents]
+
+    [FriendlyName("UtilityBelt")]
+    public class FilterCore : FilterBase {
         public object PluginInstance;
         public Assembly CurrentAssembly;
         public Type PluginType;
@@ -58,13 +63,26 @@ namespace UBLoader {
         /// </summary>
         protected override void Startup() {
             try {
+                UBHelper.Core.GameStateChanged += Core_GameStateChanged;
                 LoadAssemblyConfig();
-                
+
                 Core.PluginInitComplete += Core_PluginInitComplete;
                 Core.PluginTermComplete += Core_PluginTermComplete;
                 UBHelper.Core.FilterStartup(PluginAssemblyPath, PluginStorageDirectory);
             }
             catch (Exception ex) { LogException(ex); }
+        }
+
+        private void Core_GameStateChanged(UBHelper.GameState previous, UBHelper.GameState new_state) {
+            switch (new_state) {
+                case UBHelper.GameState.Character_Select_Screen:
+                    VersionWatermark.Display(Host, $"{PluginName} v{FileVersionInfo.GetVersionInfo(PluginAssemblyPath).ProductVersion}");
+                    break;
+                case UBHelper.GameState.Creating_Character:
+                case UBHelper.GameState.Entering_Game:
+                    VersionWatermark.Destroy();
+                    break;
+            }
         }
 
         private void LoadAssemblyConfig() {
@@ -195,13 +213,13 @@ namespace UBLoader {
         /// This is called when the plugin is shut down. This happens only once.
         /// </summary>
         protected override void Shutdown() {
-			try {
+            try {
                 Core.PluginInitComplete -= Core_PluginInitComplete;
                 Core.PluginTermComplete -= Core_PluginTermComplete;
                 UnloadPluginAssembly();
                 UBHelper.Core.FilterShutdown();
             }
-			catch (Exception ex) { LogException(ex); }
+            catch (Exception ex) { LogException(ex); }
         }
 
         public void LogException(Exception ex) {
