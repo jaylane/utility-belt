@@ -44,21 +44,22 @@ namespace UBLoader {
         private bool hasLoaded = false;
         private bool needsLoginLoad = false;
 
+        public FilterCore() {
+            System.Resources.ResourceManager rm = new System.Resources.ResourceManager(GetType().Namespace + ".Properties.Resources", System.Reflection.Assembly.GetExecutingAssembly());
+            System.Reflection.Assembly.Load((byte[])rm.GetObject("LiteDB"));
+            System.Reflection.Assembly.Load((byte[])rm.GetObject("Newtonsoft_Json"));
+            System.Reflection.Assembly.Load((byte[])rm.GetObject("SharedMemory"));
+            System.Reflection.Assembly.Load((byte[])rm.GetObject("Antlr4_Runtime"));
+            System.Reflection.Assembly.Load((byte[])rm.GetObject("UBHelper"));
+        }
+
         /// <summary>
         /// This is called when the plugin is started up. This happens only once.
         /// </summary>
         protected override void Startup() {
             try {
-                System.Resources.ResourceManager rm = new System.Resources.ResourceManager(GetType().Namespace + ".Properties.Resources", System.Reflection.Assembly.GetExecutingAssembly());
-                System.Reflection.Assembly.Load((byte[])rm.GetObject("LiteDB"));
-                System.Reflection.Assembly.Load((byte[])rm.GetObject("Newtonsoft_Json"));
-                System.Reflection.Assembly.Load((byte[])rm.GetObject("SharedMemory"));
-                System.Reflection.Assembly.Load((byte[])rm.GetObject("Antlr4_Runtime"));
-                System.Reflection.Assembly.Load((byte[])rm.GetObject("UBHelper"));
-
                 LoadAssemblyConfig();
-
-                UBHelper.Core.GameStateChanged += Core_GameStateChanged;
+                
                 Core.PluginInitComplete += Core_PluginInitComplete;
                 Core.PluginTermComplete += Core_PluginTermComplete;
                 UBHelper.Core.FilterStartup(PluginAssemblyPath, PluginStorageDirectory);
@@ -97,36 +98,18 @@ namespace UBLoader {
             }
         }
 
-        private void Core_GameStateChanged(UBHelper.GameState previous, UBHelper.GameState new_state) {
-            switch (new_state) {
-                case UBHelper.GameState.In_Game:
-                    if (needsLoginLoad) {
-                        LogError("Unable to poll character, activating failsafe...");
-                        lastFileChange = DateTime.UtcNow;
-                        needsReload = true;
-                        needsLoginLoad = false;
-                    }
-                    break;
-            }
-        }
-
         private void Core_PluginInitComplete(object sender, EventArgs e) {
             try {
                 pluginsReady = true;
-
-                if (needsReload == false) {
-                    Core.RenderFrame += Core_RenderFrame;
-                }
-
-                needsReload = true;
                 lastFileChange = DateTime.UtcNow;
+                LoadPluginAssembly();
 
                 if (PluginWatcher == null) {
                     PluginWatcher = new FileSystemWatcher();
                     PluginWatcher.Path = PluginAssemblyDirectory;
                     PluginWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
                     PluginWatcher.Filter = PluginAssemblyName;
-                    PluginWatcher.Changed += PluginWatcher_Changed; ;
+                    PluginWatcher.Changed += PluginWatcher_Changed;
                     PluginWatcher.EnableRaisingEvents = true;
                 }
             }

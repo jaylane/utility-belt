@@ -77,9 +77,9 @@ namespace UtilityBelt.Tools {
                 if (CoordSearchRegex.IsMatch(coordsToParse)) {
                     var m = CoordSearchRegex.Match(coordsToParse);
                     coords.NS = double.Parse(m.Groups["NSval"].Value, (IFormatProvider)CultureInfo.InvariantCulture.NumberFormat);
-                    coords.NS *= m.Groups["NSChar"].Value.ToLower().Equals("n") ? -1 : 1;
+                    coords.NS *= m.Groups["NSchr"].Value.ToLower().Equals("n") ? 1 : -1;
                     coords.EW = double.Parse(m.Groups["EWval"].Value, (IFormatProvider)CultureInfo.InvariantCulture.NumberFormat);
-                    coords.EW *= m.Groups["EWChar"].Value.ToLower().Equals("e") ? -1 : 1;
+                    coords.EW *= m.Groups["EWchr"].Value.ToLower().Equals("e") ? 1 : -1;
                 }
 
                 return coords;
