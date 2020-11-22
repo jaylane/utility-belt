@@ -101,7 +101,7 @@ namespace UtilityBelt.Tools {
         [Summary("Points the arrow towards the specified coordinates")]
         [Usage("/ub arrow point <coordinates>")]
         [Example("/ub arrow point 32.7N, 45.5E", "Points the arrow towards 32.7N, 45.5E")]
-        [CommandPattern("arrow", @"^point \d+.?\d*[nNsS],\w+\d+.?\d*[eEwW]$")]
+        [CommandPattern("arrow", @"^point \d+.?\d*[nNsS],?\s*\d+.?\d*[eEwW]$")]
         public void DoArrow(string command, Match args) {
             var coords = Coordinates.FromString(args.Value.ToLower().Replace("point ", ""));
             PointTo(coords.EW, coords.NS);
