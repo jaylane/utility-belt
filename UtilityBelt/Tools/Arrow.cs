@@ -99,14 +99,25 @@ namespace UtilityBelt.Tools {
 
         #region /ub arrow
         [Summary("Points the arrow towards the specified coordinates")]
-        [Usage("/ub arrow point <coordinates>")]
+        [Usage("/ub arrow [point <coordinates>|face]")]
         [Example("/ub arrow point 32.7N, 45.5E", "Points the arrow towards 32.7N, 45.5E")]
-        [CommandPattern("arrow", @"^point \d+.?\d*[nNsS],?\s*\d+.?\d*[eEwW]$")]
+        [Example("/ub arrow face", "Faces your character in the same direction the arrow is currently pointing")]
+        [CommandPattern("arrow", @"^(point \d+.?\d*[nNsS],?\s*\d+.?\d*[eEwW]|face)$")]
         public void DoArrow(string command, Match args) {
-            var coords = Coordinates.FromString(args.Value.ToLower().Replace("point ", ""));
-            PointTo(coords.EW, coords.NS);
-        }
+            if (args.Value.ToLower() == "face") {
+                var me = UB.Core.CharacterFilter.Id;
+                var ew = Geometry.LandblockToEW((uint)PhysicsObject.GetLandcell(me), PhysicsObject.GetPosition(me).X);
+                var ns = Geometry.LandblockToNS((uint)PhysicsObject.GetLandcell(me), PhysicsObject.GetPosition(me).Y);
 
+                var heading  = (270 + 180 -(Math.Atan2(TargetNS - ns, TargetEW - ew) * 180 / Math.PI)) % 360;
+                UBHelper.Core.TurnToHeading((float)heading);
+                Logger.WriteToChat($"Turning to face towards {heading:N2} degrees");
+            }
+            else {
+                var coords = Coordinates.FromString(args.Value.ToLower().Replace("point ", ""));
+                PointTo(coords.EW, coords.NS);
+            }
+        }
         #endregion
         #endregion
 

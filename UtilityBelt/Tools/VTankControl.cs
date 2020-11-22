@@ -60,7 +60,7 @@ namespace UtilityBelt.Tools {
             public double NS { get; set; } = 0;
             public double EW { get; set; } = 0;
             public double Z { get; set; } = 0;
-            private static Regex CoordSearchRegex = new Regex("(?<NSval>(\\d{1,3}(\\.\\d{1,4})?)|(\\.\\d{1,4}))\\s*(?<NSchr>[ns])[;/,\\s]{0,4}\\s*(?<EWval>(\\d{1,3}(\\.\\d{1,4})?)|(\\.\\d{1,4}))\\s*(?<EWchr>[ew])", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            private static Regex CoordSearchRegex = new Regex(@"(?<NSval>\d+.?\d*)\s*(?<NSchr>[ns]),?\s*(?<EWval>\d+.?\d*)(?<EWchr>[ew])", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
             public Coordinates() {
 

@@ -1,10 +1,11 @@
 ## 0.1.7 (TBD)
 - Fix salvage name check in autotinker
 - Add basic landscape maps (visualnav capable)
-- Fixed ColorPicker view in settings
-- Fixed issue where ItemGiver could get in a bugged state and prevent usage between relogs
-- Added pointable arrow. By default it will look for coordinates in the chatbox and make them clickable.
-- Added command `/ub arrow <coordinates>` for pointing the arrow
+- Fix ColorPicker view in settings
+- Fix issue where ItemGiver could get in a bugged state and prevent usage between relogs
+- Add pointable arrow. By default it will look for coordinates in the chatbox and make them clickable.
+- Add command `/ub arrow point <coordinates>` for pointing the arrow
+- Add command `/ub arrow face` to face your character in the same direction as the arrow
 
 ## 0.1.6 (2020-11-08) [UtilityBeltInstaller-0.1.6.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/718dcc4607d717c7db6772edd033fcf3/UtilityBeltInstaller-0.1.6.exe)
 - Fix getitemcountininventorybynamerx[] and getitemcountininventorybyname[] now properly search salvage names like `Silk Salvage (100)`
