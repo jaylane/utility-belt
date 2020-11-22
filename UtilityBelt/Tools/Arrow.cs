@@ -347,7 +347,7 @@ namespace UtilityBelt.Tools {
 
                 var leftOffset = (int)(offset * 2) + (int)(arrowTexture.Width * scale);
                 hud.Texture.BeginText(fontFace, LabelFontSize, 200, false);
-                var coordsText = $"{Math.Abs(TargetNS).ToString("F2")}{(TargetNS > 0 ? "N" : "S")}, {Math.Abs(TargetEW).ToString("F2")}{(TargetEW > 0 ? "E" : "W")}";
+                var coordsText = $"{Math.Abs(TargetNS).ToString("F2")}{(TargetNS >= 0 ? "N" : "S")}, {Math.Abs(TargetEW).ToString("F2")}{(TargetEW >= 0 ? "E" : "W")}";
                 hud.Texture.WriteText(coordsText, Color.White, VirindiViewService.WriteTextFormats.None, new Rectangle(leftOffset, 0, hud.Texture.Width - leftOffset, LabelFontSize));
                 var distanceText = $"{(Coordinates.FromString(coordsText).DistanceTo(new Coordinates(ew, ns))):N2}m";
                 hud.Texture.WriteText(distanceText, Color.White, VirindiViewService.WriteTextFormats.None, new Rectangle(leftOffset, LabelFontSize + 2, hud.Texture.Width - leftOffset, LabelFontSize));

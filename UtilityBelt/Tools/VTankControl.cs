@@ -98,7 +98,7 @@ namespace UtilityBelt.Tools {
             }
 
             public override string ToString() {
-                return $"{Math.Abs(NS).ToString("F1")}{(NS>0?"N":"S")}, {Math.Abs(EW).ToString("F1")}{(EW>0?"E":"W")} (Z {Z.ToString("F2")})";
+                return $"{Math.Abs(NS).ToString("F1")}{(NS>=0?"N":"S")}, {Math.Abs(EW).ToString("F1")}{(EW>=0?"E":"W")} (Z {Z.ToString("F2")})";
             }
         }
 
