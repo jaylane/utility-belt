@@ -109,6 +109,30 @@ namespace UtilityBelt.Lib.Dungeon {
             return null;
         }
 
+        public static DxTexture TextureFromBitmapResource(string resourcePath) {
+            DxTexture texture = null;
+            try {
+                using (Stream manifestResourceStream = typeof(TextureCache).Assembly.GetManifestResourceStream(resourcePath)) {
+                    if (manifestResourceStream != null) {
+                        using (Bitmap bitmap = new Bitmap(manifestResourceStream)) {
+                            texture = new DxTexture(new Size(bitmap.Width, bitmap.Height));
+                            try {
+                                texture.BeginRender();
+                                texture.Fill(new Rectangle(0, 0, texture.Width, texture.Height), Color.Transparent);
+                                texture.DrawImage(bitmap, new Rectangle(0, 0, texture.Width, texture.Height), Color.Magenta);
+                            }
+                            catch (Exception ex) { Logger.LogException(ex); }
+                            finally {
+                                texture.EndRender();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+            return texture;
+        }
+
         public static DxTexture GetText(string text, int height, Color color, string fontFace, int fontWeight, int shadowSize=1, bool allowRender=true) {
             if (textCache.ContainsKey(text)) return textCache[text];
 

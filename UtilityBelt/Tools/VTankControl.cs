@@ -62,15 +62,24 @@ namespace UtilityBelt.Tools {
             public double Z { get; set; } = 0;
             private static Regex CoordSearchRegex = new Regex("(?<NSval>(\\d{1,3}(\\.\\d{1,4})?)|(\\.\\d{1,4}))\\s*(?<NSchr>[ns])[;/,\\s]{0,4}\\s*(?<EWval>(\\d{1,3}(\\.\\d{1,4})?)|(\\.\\d{1,4}))\\s*(?<EWchr>[ew])", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+            public Coordinates() {
+
+            }
+
+            public Coordinates(double ew, double ns) {
+                EW = ew;
+                NS = ns;
+            }
+
             public static Coordinates FromString(string coordsToParse) {
                 var coords = new Coordinates();
 
                 if (CoordSearchRegex.IsMatch(coordsToParse)) {
                     var m = CoordSearchRegex.Match(coordsToParse);
                     coords.NS = double.Parse(m.Groups["NSval"].Value, (IFormatProvider)CultureInfo.InvariantCulture.NumberFormat);
-                    coords.NS *= m.Groups["NSChar"].Value.ToLower().Equals("n") ? 1 : -1;
+                    coords.NS *= m.Groups["NSChar"].Value.ToLower().Equals("n") ? -1 : 1;
                     coords.EW = double.Parse(m.Groups["EWval"].Value, (IFormatProvider)CultureInfo.InvariantCulture.NumberFormat);
-                    coords.EW *= m.Groups["EWChar"].Value.ToLower().Equals("e") ? 1 : -1;
+                    coords.EW *= m.Groups["EWChar"].Value.ToLower().Equals("e") ? -1 : 1;
                 }
 
                 return coords;

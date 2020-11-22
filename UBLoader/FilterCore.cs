@@ -41,9 +41,6 @@ namespace UBLoader {
         public string DatabaseFile { get; private set; }
         public bool HotReload { get; private set; }
 
-        public string AccountName;
-        public string CharacterName;
-        public string ServerName;
         private bool hasLoaded = false;
         private bool needsLoginLoad = false;
 
@@ -102,21 +99,8 @@ namespace UBLoader {
 
         private void Core_GameStateChanged(UBHelper.GameState previous, UBHelper.GameState new_state) {
             switch (new_state) {
-                case UBHelper.GameState.Character_Select_Screen:
-                    AccountName = UBHelper.Core.UserName;
-                    ServerName = UBHelper.Core.WorldName;
-                    break;
-                case UBHelper.GameState.Entering_Game:
-                    try {
-                        CharacterName = UBHelper.Core.CharacterSet[UBHelper.Core.LoginCharacterID];
-                    } catch {
-                        needsLoginLoad = true;
-                    }
-                    break;
                 case UBHelper.GameState.In_Game:
                     if (needsLoginLoad) {
-                        ServerName = Core.CharacterFilter.Server;
-                        CharacterName = Core.CharacterFilter.Name;
                         LogError("Unable to poll character, activating failsafe...");
                         lastFileChange = DateTime.UtcNow;
                         needsReload = true;
@@ -203,10 +187,7 @@ namespace UBLoader {
                     PluginStorageDirectory,
                     DatabaseFile,
                     Host,
-                    Core,
-                    AccountName,
-                    CharacterName,
-                    ServerName
+                    Core
                 });
 
                 hasLoaded = true;

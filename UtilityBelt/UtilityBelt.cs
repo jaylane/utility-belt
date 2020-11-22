@@ -129,6 +129,7 @@ namespace UtilityBelt {
 
         #region Tools
         public Plugin Plugin { get; private set; }
+        public Arrow Arrow { get; private set; }
         public Assessor Assessor { get; private set; }
         //public AutoImbue AutoImbue { get; private set; }
         public AutoSalvage AutoSalvage { get; private set; }
@@ -171,18 +172,16 @@ namespace UtilityBelt {
         /// <param name="accountName">Account name for the current session</param>
         /// <param name="characterName">Name of the logged in character</param>
         /// <param name="serverName">Name of the server currently logged in to</param>
-        public void Startup(string assemblyLocation, string storagePath, string databaseFile, NetServiceHost host, CoreManager core, string accountName, string characterName, string serverName) {
+        public void Startup(string assemblyLocation, string storagePath, string databaseFile, NetServiceHost host, CoreManager core) {
 			try {
                 Core = core;
                 Host = host;
                 DatabaseFile = databaseFile;
-                AccountName = accountName;
-                ServerName = serverName;
-                CharacterName = characterName;
+                ServerName = UBHelper.Core.WorldName;
+                CharacterName = UBHelper.Core.CharacterSet[UBHelper.Core.LoginCharacterID];
 
                 Util.Init(this, assemblyLocation, storagePath); //static classes can not have constructors, but still need to init variables.
-
-                UBHelper.Core.Startup(characterName);
+                UBHelper.Core.Startup(CharacterName);
 
                 Core.CommandLineText += Core_CommandLineText;
 

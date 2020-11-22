@@ -39,6 +39,7 @@ namespace UtilityBelt.Views {
                     { "VideoPatchFocusEnabled", "Plugin.VideoPatchFocus" },
                     { "VisualNavEnabled", "VisualNav.Enabled" },
                     { "VitalSharingEnabled", "VTank.VitalSharing" },
+                    { "ArrowEnabled", "Arrow.Enabled" },
                     { "Debug", "Plugin.Debug" }
                 };
 
