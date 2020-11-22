@@ -138,6 +138,7 @@
     <Compile Include="Lib\Database.cs" />
     <Compile Include="Lib\VCS_Connector.cs" />
     <Compile Include="Lib\VHS_Connector.cs" />
+    <Compile Include="Tools\Arrow.cs" />
     <Compile Include="Tools\DungeonMaps.cs" />
     <Compile Include="Tools\FellowshipManager.cs" />
     <Compile Include="Tools\LandscapeMaps.cs" />

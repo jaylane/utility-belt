@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using UtilityBelt.Lib;
+using UtilityBelt.Lib.Dungeon;
 using UtilityBelt.Lib.Maps;
 using UtilityBelt.Lib.Maps.Markers;
 using VirindiViewService;
@@ -336,7 +337,7 @@ namespace UtilityBelt.Tools {
         #region util
         private void LoadResources() {
             if (mapTexture == null) {
-                mapTexture = TextureFromBitmapResource("UtilityBelt.Resources.acmap.png");
+                mapTexture = TextureCache.TextureFromBitmapResource("UtilityBelt.Resources.acmap.png");
 
                 // center map on first load
                 mapTextureOffsetX = mapTexture.Width / 2;
@@ -344,7 +345,7 @@ namespace UtilityBelt.Tools {
             }
 
             if (playerArrowTexture == null)
-                playerArrowTexture = TextureFromBitmapResource("UtilityBelt.Resources.icons.arrow.png");
+                playerArrowTexture = TextureCache.TextureFromBitmapResource("UtilityBelt.Resources.icons.arrow.png");
 
             if (markerData == null) {
                 markerData = new LandscapeMarkers();
@@ -376,30 +377,6 @@ namespace UtilityBelt.Tools {
                 AddMarker(icon);
             }
             addedMarkerIcons = true;
-        }
-
-        private DxTexture TextureFromBitmapResource(string resourcePath) {
-            DxTexture texture = null;
-            try {
-                using (Stream manifestResourceStream = typeof(LandscapeMaps).Assembly.GetManifestResourceStream(resourcePath)) {
-                    if (manifestResourceStream != null) {
-                        using (Bitmap bitmap = new Bitmap(manifestResourceStream)) {
-                            texture = new DxTexture(new Size(bitmap.Width, bitmap.Height));
-                            try {
-                                texture.BeginRender();
-                                texture.Fill(new Rectangle(0, 0, texture.Width, texture.Height), Color.Transparent);
-                                texture.DrawImage(bitmap, new Rectangle(0, 0, texture.Width, texture.Height), Color.Magenta);
-                            }
-                            catch (Exception ex) { Logger.LogException(ex); }
-                            finally {
-                                texture.EndRender();
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-            return texture;
         }
         #endregion
 
