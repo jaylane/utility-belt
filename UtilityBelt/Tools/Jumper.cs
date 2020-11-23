@@ -1,4 +1,4 @@
-using Decal.Adapter;
+﻿using Decal.Adapter;
 using System;
 using Decal.Adapter.Wrappers;
 using Decal.Filters;
@@ -86,7 +86,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
         #endregion
 
         #region /ub jump
-        [Summary("Jump commands with built in VTank pausing and retries. Uses keyboard traditional direction keys wzxc for directional jumps and s for shift. Works with custom key binds as well.  s = Shift  w = Forward  z = Left Strafe  x = Backwards  c = Right Strafe")]
+        [Summary("Jump commands with built in VTank pausing and retries")]
         [Usage("/ub jump[swzxc] [heading] [holdtime]")]
         [Example("/ub jumpsw 180 500", "Face 180 degrees (south) and jump forward with 500/1000 power.")]
         [Example("/ub jumpsx 300", "Jump backward with 300/1000 power.")]
