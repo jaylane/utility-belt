@@ -433,6 +433,17 @@ namespace UtilityBelt.Tools {
             portalTimestamp = DateTime.UtcNow - TimeSpan.FromMilliseconds(PortalTimeout - 250); // fudge timestamp so next think hits in 500ms
             UB.Core.Actions.SetAutorun(false);
             LogDebug("Attempting to use portal " + portal.Name);
+            UB.Core.RenderFrame += Core_RenderFrame_PortalOpen;
+            UB.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch_PortalOpen;
+
+        }
+        private void FinishPortal(bool success) {
+            Util.ThinkOrWrite((success? "portal used successfully" : "failed to use portal"), PortalThink);
+            portal = null;
+            portalAttempts = 0;
+            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+            UB.Core.RenderFrame -= Core_RenderFrame_PortalOpen;
+            UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch_PortalOpen;
         }
         public void Core_RenderFrame_PortalOpen(object sender, EventArgs e) {
             try {
@@ -450,10 +461,7 @@ namespace UtilityBelt.Tools {
                     else {
                         WriteToChat("Unable to use portal " + portal.Name);
                         UB.Core.Actions.FaceHeading(UB.Core.Actions.Heading - 1, true); // Cancel the previous useitem call (don't ask)
-                        Util.ThinkOrWrite("failed to use portal", PortalThink);
-                        portal = null;
-                        portalAttempts = 0;
-                        UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+                        FinishPortal(false);
                     }
                 }
             }
@@ -462,10 +470,7 @@ namespace UtilityBelt.Tools {
         private void EchoFilter_ServerDispatch_PortalOpen(object sender, NetworkMessageEventArgs e) {
             try {
                 if (portalAttempts > 0 && e.Message.Type == 0xF74B && (int)e.Message["object"] == CoreManager.Current.CharacterFilter.Id && (short)e.Message["portalType"] == 17424) { //17424 is the magic sauce for entering a portal. 1032 is the magic sauce for exiting a portal.
-                    LogDebug("portal used successfully");
-                    portal = null;
-                    portalAttempts = 0;
-                    UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+                    FinishPortal(true);
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -1198,9 +1203,7 @@ namespace UtilityBelt.Tools {
         public Plugin(UtilityBeltPlugin ub, string name) : base(ub, name) {
             try {
                 // TODO: do we need to always be listening for these?
-                UB.Core.RenderFrame += Core_RenderFrame_PortalOpen;
                 UB.Core.RenderFrame += Core_RenderFrame_Delay;
-                UB.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch_PortalOpen;
                 UB.Core.CharacterFilter.Logoff += CharacterFilter_Logoff_Follow;
                 if (UB.Core.CharacterFilter.LoginStatus != 0) UB_Follow_Clear();
                 else UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete_Follow;

@@ -1088,21 +1088,24 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         }
 
         private void DoTestMode() {
-            // TODO: string builder and write to chat once
+            StringBuilder test_mode = new StringBuilder();
             Logger.WriteToChat("AutoVendor TEST MODE");
-            Logger.WriteToChat("Buy Items:");
+            test_mode.Append("Buy Items:\n");
             foreach (BuyItem bi in GetBuyItems()) {
                 uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithVendorObjectTemplateID(bi.Item.Id);
                 if (itemInfo == null) continue;
                 uTank2.LootPlugins.LootAction result = lootProfile.GetLootDecision(itemInfo);
                 if (result.IsKeepUpTo || result.IsKeep) {
                     string mc = (ShopItemListTypes.ContainsKey(bi.Item.Category) ? ShopItemListTypes[bi.Item.Category] : $"Unknown Category 0x{bi.Item.Category:X8}");
-                    Logger.WriteToChat($"  {mc} -> {bi.Item.Name} * {(bi.Amount == int.MaxValue ? "∞" : bi.Amount.ToString())} - {result.RuleName}");
+                    test_mode.Append($"  {mc} -> {bi.Item.Name} * {(bi.Amount == int.MaxValue ? "∞" : bi.Amount.ToString())} - {result.RuleName}\n");
                 }
             }
+            if (test_mode.Length == 11) test_mode.Append("  (Nothing)");
+            Logger.WriteToChat(test_mode.ToString());
+            test_mode = new StringBuilder();
             pendingBuy.Clear();
 
-            Logger.WriteToChat("Sell Items:");
+            test_mode.Append("Sell Items:\n");
             List<WorldObject> sellObjects = GetSellItems();
             sellObjects.Sort(delegate (WorldObject wo1, WorldObject wo2) { return Util.GetOverallSlot(wo1) - Util.GetOverallSlot(wo2); });
             foreach (WorldObject wo in sellObjects) {
@@ -1110,9 +1113,11 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                 if (itemInfo == null) continue;
                 uTank2.LootPlugins.LootAction result = lootProfile.GetLootDecision(itemInfo);
                 if (result.IsSell) {
-                    Logger.WriteToChat($"  {Util.GetItemLocation(wo.Id)}: <Tell:IIDString:{Util.GetChatId()}:select|{wo.Id}>{Util.GetObjectName(wo.Id)}</Tell> - {result.RuleName}");
+                    test_mode.Append($"  {Util.GetItemLocation(wo.Id)}: <Tell:IIDString:{Util.GetChatId()}:select|{wo.Id}>{Util.GetObjectName(wo.Id)}</Tell> - {result.RuleName}\n");
                 }
             }
+            if (test_mode.Length == 12) test_mode.Append("  (Nothing)");
+            Logger.WriteToChat(test_mode.ToString());
             pendingSell.Clear();
             expectedPyreals = 0;
             lastEvent = DateTime.MinValue;
