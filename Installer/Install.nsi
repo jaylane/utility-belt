@@ -98,6 +98,7 @@ Section -FinishSection
 	RMDir "$INSTDIR\Resources\tiles\"
 	Delete "$INSTDIR\Resources\quests.xml"
 	RMDir "$INSTDIR\Resources\"
+	Delete "$INSTDIR\UBHelper.dll"
 
 SectionEnd
 
