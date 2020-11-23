@@ -1,5 +1,6 @@
 ﻿using Decal.Adapter;
 using Decal.Adapter.Wrappers;
+using Decal.Interop.Input;
 using Microsoft.DirectX;
 using System;
 using System.Collections.Generic;
@@ -25,10 +26,9 @@ namespace UtilityBelt.Tools {
         private DxHud hud = null;
         private string fontFace;
         private int fontWeight;
-        private DateTime lastDraw;
-        private TimeSpan drawUpdateInterval = TimeSpan.FromMilliseconds(1000 / 20);
         private bool needsRedraw;
         private double lastHeading;
+        private double lastDistance;
         private bool isDragging;
         private Point dragOffset;
         private Point lastMousePos;
@@ -42,6 +42,10 @@ namespace UtilityBelt.Tools {
         const short WM_LBUTTONDOWN = 0x0201;
         const short WM_LBUTTONUP = 0x0202;
 
+        private TimerClass drawTimer;
+
+        Regex ChatCoordinatesRe = new Regex(@"[^>](?<NS>\d+\.?\d*)(?<NSChar>[ns]),?\s*(?<EW>\d+\.?\d*)(?<EWChar>[ew])", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         #region Config
         [Summary("Enabled")]
         [DefaultValue(true)]
@@ -49,6 +53,15 @@ namespace UtilityBelt.Tools {
             get { return (bool)GetSetting("Enabled"); }
             set {
                 UpdateSetting("Enabled", value);
+            }
+        }
+
+        [Summary("Visible")]
+        [DefaultValue(true)]
+        public bool Visible {
+            get { return (bool)GetSetting("Visible"); }
+            set {
+                UpdateSetting("Visible", value);
             }
         }
 
@@ -137,14 +150,17 @@ namespace UtilityBelt.Tools {
                 if (arrowTexture == null)
                     arrowTexture = TextureCache.TextureFromBitmapResource("UtilityBelt.Resources.icons.arrow.png");
                 CreateHud();
-                UB.Core.RenderFrame += Core_RenderFrame;
+                drawTimer = new TimerClass();
+                drawTimer.Timeout += DrawTimer_Timeout;
+                drawTimer.Start(1000 / 15); // 15 fps max
                 UB.Core.WindowMessage += Core_WindowMessage;
                 UB.Core.ChatBoxMessage += Core_ChatBoxMessage;
                 UB.Core.ChatNameClicked += Core_ChatNameClicked;
             }
             else {
                 ClearHud();
-                UB.Core.RenderFrame -= Core_RenderFrame;
+                drawTimer.Stop();
+                drawTimer = null;
                 UB.Core.WindowMessage -= Core_WindowMessage;
                 UB.Core.ChatBoxMessage -= Core_ChatBoxMessage;
                 UB.Core.ChatNameClicked -= Core_ChatNameClicked;
@@ -152,7 +168,7 @@ namespace UtilityBelt.Tools {
         }
 
         #region event handlers
-        Regex ChatCoordinatesRe = new Regex(@"[^>](?<NS>\d+\.?\d*)(?<NSChar>[ns]),?\s*(?<EW>\d+\.?\d*)(?<EWChar>[ew])", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         private void Core_ChatBoxMessage(object sender, ChatTextInterceptEventArgs e) {
             try {
                 if (e.Eat != true && ChatCoordinatesRe.IsMatch(e.Text)) {
@@ -183,11 +199,9 @@ namespace UtilityBelt.Tools {
                 case "Enabled":
                     TryEnable();
                     break;
+                case "Visible":
                 case "HudSize":
-                case "HudX":
-                case "HudY":
                 case "LabelFontSize":
-                    needsNewHud = true;
                     needsRedraw = true;
                     break;
             }
@@ -211,6 +225,11 @@ namespace UtilityBelt.Tools {
             switch (e.Msg) {
                 case WM_LBUTTONDOWN:
                     var newMousePos = new Point(e.LParam);
+                    // check for clicking close button
+                    if (newMousePos.X > HudX + hud.Texture.Width - 16 && newMousePos.X < HudX + hud.Texture.Width && newMousePos.Y > HudY && newMousePos.Y < HudY + 16) {
+                        Visible = false;
+                        return;
+                    }
                     hud.ZPriority = 1;
                     isDragging = true;
                     dragStartPos = newMousePos;
@@ -231,6 +250,7 @@ namespace UtilityBelt.Tools {
                     if (isDragging) {
                         dragOffset.X = lastMousePos.X - dragStartPos.X;
                         dragOffset.Y = lastMousePos.Y - dragStartPos.Y;
+                        hud.Location = new Point(HudX + dragOffset.X, HudY + dragOffset.Y);
                     }
                     break;
             }
@@ -241,14 +261,11 @@ namespace UtilityBelt.Tools {
                 needsNewHud = true;
         }
 
-        private void Core_RenderFrame(object sender, EventArgs e) {
-            if (DateTime.UtcNow - lastDraw < drawUpdateInterval)
-                return;
-            lastDraw = DateTime.UtcNow;
-
+        private void DrawTimer_Timeout(Decal.Interop.Input.Timer Source) {
             if (needsNewHud) {
                 CreateHud();
                 needsNewHud = false;
+                needsRedraw = true;
             }
 
             if (lastHeading != UB.Core.Actions.Heading) {
@@ -256,9 +273,13 @@ namespace UtilityBelt.Tools {
                 needsRedraw = true;
             }
 
-            hud.Location = new Point(HudX + dragOffset.X, HudY + dragOffset.Y);
+            if (lastDistance != DistanceToTarget) {
+                lastDistance = DistanceToTarget;
+                needsRedraw = true;
+            }
 
-            RenderHud();
+            if (needsRedraw)
+                RenderHud();
         }
         #endregion
 
@@ -281,7 +302,18 @@ namespace UtilityBelt.Tools {
             TargetEW = ew;
             TargetNS = ns;
             TargetText = text;
+            Visible = true;
             needsRedraw = true;
+        }
+
+        public double DistanceToTarget {
+            get {
+                var me = UB.Core.CharacterFilter.Id;
+                var ew = Geometry.LandblockToEW((uint)PhysicsObject.GetLandcell(me), PhysicsObject.GetPosition(me).X);
+                var ns = Geometry.LandblockToNS((uint)PhysicsObject.GetLandcell(me), PhysicsObject.GetPosition(me).Y);
+
+                return (new Coordinates(ew, ns)).DistanceTo(new Coordinates(TargetEW, TargetNS));
+            }
         }
         #endregion //public interface
 
@@ -323,6 +355,11 @@ namespace UtilityBelt.Tools {
                 hud.Texture.Clear();
                 hud.Texture.Fill(new Rectangle(0, 0, hud.Texture.Width, hud.Texture.Height), Color.FromArgb(0, 0, 0, 0));
 
+                if (!Visible)
+                    return;
+
+                hud.Location = new Point(HudX + dragOffset.X, HudY + dragOffset.Y);
+
                 var me = UB.Core.CharacterFilter.Id;
                 var ew = Geometry.LandblockToEW((uint)PhysicsObject.GetLandcell(me), PhysicsObject.GetPosition(me).X);
                 var ns = Geometry.LandblockToNS((uint)PhysicsObject.GetLandcell(me), PhysicsObject.GetPosition(me).Y);
@@ -338,20 +375,22 @@ namespace UtilityBelt.Tools {
                 transform.AffineTransformation(scale, rotationCenter, rotQuat, new Vector3(offset, offset, 0));
                 hud.Texture.DrawTextureWithTransform(arrowTexture, transform, tint);
 
+                var leftOffset = (int)(offset * 2) + (int)(arrowTexture.Width * scale);
+                hud.Texture.BeginText(fontFace, LabelFontSize, 200, false);
+                var coordsText = $"{Math.Abs(TargetNS).ToString("F2")}{(TargetNS >= 0 ? "N" : "S")}, {Math.Abs(TargetEW).ToString("F2")}{(TargetEW >= 0 ? "E" : "W")}";
+                hud.Texture.WriteText(coordsText, Color.White, VirindiViewService.WriteTextFormats.None, new Rectangle(leftOffset, 0, hud.Texture.Width - leftOffset, LabelFontSize));
+                var distanceText = $"{DistanceToTarget:N2}m";
+                hud.Texture.WriteText(distanceText, Color.White, VirindiViewService.WriteTextFormats.None, new Rectangle(leftOffset, LabelFontSize + 2, hud.Texture.Width - leftOffset, LabelFontSize));
+                hud.Texture.EndText();
+
                 if (isHoldingControl) {
                     hud.Texture.DrawLine(new PointF(0, 0), new PointF(hud.Texture.Width - 1, 0), Color.Yellow, 1);
                     hud.Texture.DrawLine(new PointF(hud.Texture.Width - 1, 0), new PointF(hud.Texture.Width - 1, hud.Texture.Height - 1), Color.Yellow, 1);
                     hud.Texture.DrawLine(new PointF(hud.Texture.Width -1, hud.Texture.Height - 1), new PointF(0, hud.Texture.Height - 1), Color.Yellow, 1);
                     hud.Texture.DrawLine(new PointF(0, hud.Texture.Height - 1), new PointF(0, 0), Color.Yellow, 1);
-                }
 
-                var leftOffset = (int)(offset * 2) + (int)(arrowTexture.Width * scale);
-                hud.Texture.BeginText(fontFace, LabelFontSize, 200, false);
-                var coordsText = $"{Math.Abs(TargetNS).ToString("F2")}{(TargetNS >= 0 ? "N" : "S")}, {Math.Abs(TargetEW).ToString("F2")}{(TargetEW >= 0 ? "E" : "W")}";
-                hud.Texture.WriteText(coordsText, Color.White, VirindiViewService.WriteTextFormats.None, new Rectangle(leftOffset, 0, hud.Texture.Width - leftOffset, LabelFontSize));
-                var distanceText = $"{(Coordinates.FromString(coordsText).DistanceTo(new Coordinates(ew, ns))):N2}m";
-                hud.Texture.WriteText(distanceText, Color.White, VirindiViewService.WriteTextFormats.None, new Rectangle(leftOffset, LabelFontSize + 2, hud.Texture.Width - leftOffset, LabelFontSize));
-                hud.Texture.EndText();
+                    hud.Texture.DrawPortalImage(0x060011F8, new Rectangle(hud.Texture.Width - 16, 0, 16, 16));
+                }
             }
             catch (Exception ex) { Logger.LogException(ex); }
             finally {
@@ -363,8 +402,10 @@ namespace UtilityBelt.Tools {
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
-                    UB.Core.WindowMessage -= Core_WindowMessage;
-                    UB.Core.RenderFrame -= Core_RenderFrame;
+                    if (drawTimer != null) {
+                        drawTimer.Stop();
+                        drawTimer = null;
+                    }
                     UB.Core.ChatBoxMessage -= Core_ChatBoxMessage;
                     UB.Core.ChatNameClicked -= Core_ChatNameClicked;
                     PropertyChanged -= Arrow_PropertyChanged;
