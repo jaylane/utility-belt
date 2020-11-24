@@ -140,9 +140,18 @@ namespace UtilityBelt.Tools {
                 fontWeight = UB.LandscapeMapView.view.MainControl.Theme.GetVal<int>("ViewTextFontWeight");
 
                 PropertyChanged += Arrow_PropertyChanged;
-                TryEnable();
+
+                if (UB.Core.CharacterFilter.LoginStatus != 3)
+                    UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
+                else
+                    TryEnable();
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
+            UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
+            TryEnable();
         }
 
         private void TryEnable() {
@@ -195,6 +204,9 @@ namespace UtilityBelt.Tools {
         }
 
         private void Arrow_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+            if (UB.Core.CharacterFilter.LoginStatus != 3)
+                return;
+
             switch (e.PropertyName) {
                 case "Enabled":
                     TryEnable();
