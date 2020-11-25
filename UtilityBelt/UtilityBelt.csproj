@@ -147,6 +147,7 @@
     <Compile Include="Lib\VCS_Connector.cs" />
     <Compile Include="Lib\VHS_Connector.cs" />
     <Compile Include="Tools\Arrow.cs" />
+    <Compile Include="Tools\DerethTime.cs" />
     <Compile Include="Tools\DungeonMaps.cs" />
     <Compile Include="Tools\FellowshipManager.cs" />
     <Compile Include="Tools\LandscapeMaps.cs" />
@@ -950,6 +951,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\icons\arrow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\icons\daynight.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
