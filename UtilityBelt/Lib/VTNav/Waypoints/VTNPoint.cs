@@ -151,8 +151,6 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
                 return;
             }
 
-            rp = GetPreviousPoint();
-
             var color = Color.FromArgb(UtilityBeltPlugin.Instance.VisualNav.Display.Lines.Color);
 
             if (UtilityBeltPlugin.Instance.VisualNav.Display.Lines.Enabled) {
