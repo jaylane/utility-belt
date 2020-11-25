@@ -16,8 +16,9 @@ using UtilityBelt.Lib.VTNav;
 namespace UtilityBelt.Tools {
     [Name("VTank")]
     public class VTankControl : ToolBase {
-        public Dictionary<string, object> ExpressionVariables = new Dictionary<string, object>();
-        public Dictionary<string, object> PersistentExpressionVariables = new Dictionary<string, object>();
+        internal Dictionary<string, object> ExpressionVariables = new Dictionary<string, object>();
+        internal Dictionary<string, object> PersistentExpressionVariableCache = new Dictionary<string, object>();
+        internal Dictionary<string, object> GlobalExpressionVariablesCache = new Dictionary<string, object>();
         private Random rnd = new Random();
 
         public class Stopwatch {
@@ -337,8 +338,8 @@ namespace UtilityBelt.Tools {
         [Summary("Checks if a persistent variable is defined")]
         [Example("testpvar[myvar]", "Returns 1 if `myvar` persistent variable is defined")]
         public object Testpvar(string varname) {
-            if (PersistentExpressionVariables.ContainsKey(varname))
-                return PersistentExpressionVariables[varname] != null;
+            if (PersistentExpressionVariableCache.ContainsKey(varname))
+                return PersistentExpressionVariableCache[varname] != null;
             var variable = UB.Database.PersistentVariables.FindOne(
                 LiteDB.Query.And(
                     LiteDB.Query.EQ("Name", varname),
@@ -359,8 +360,9 @@ namespace UtilityBelt.Tools {
         [Summary("Returns the value stored in a variable")]
         [Example("getpvar[myvar]", "Returns the value stored in `myvar` variable")]
         public object Getpvar(string varname) {
-            if (PersistentExpressionVariables.ContainsKey(varname))
-                return PersistentExpressionVariables[varname];
+            if (PersistentExpressionVariableCache.ContainsKey(varname)) {
+                return PersistentExpressionVariableCache[varname];
+            }
             var variable = UB.Database.PersistentVariables.FindOne(
                 LiteDB.Query.And(
                     LiteDB.Query.EQ("Name", varname),
@@ -371,7 +373,10 @@ namespace UtilityBelt.Tools {
                 )
             );
 
-            return EvaluateExpression(variable == null ? "0" : variable.Value);
+            var val = variable == null ? "0" : EvaluateExpression(variable.Value);
+            PersistentExpressionVariableCache.Add(varname, val);
+
+            return val;
         }
         #endregion //getpvar[string varname]
         #region setpvar[string varname, object value]
@@ -383,18 +388,9 @@ namespace UtilityBelt.Tools {
         [Example("setpvar[myvar,1]", "Stores the number value `1` inside of `myvar` variable")]
         public object Setpvar(string varname, object value) {
             string expressionValue = "";
-            var type = value.GetType();
-
-            if (type == typeof(Boolean))
-                expressionValue = ((Boolean)value) ? "1" : "0";
-            else if (type == typeof(string))
-                expressionValue = "`" + (string)value + "`";
-            else if (type == typeof(double))
-                expressionValue = ((double)value).ToString();
-            else {
-                Logger.Error("Persistent variables can currently only store strings/numbers");
+            if (!SerializeExpressionValue(value, ref expressionValue))
                 return 0;
-            }
+
             var variable = UB.Database.PersistentVariables.FindOne(
                 LiteDB.Query.And(
                     LiteDB.Query.EQ("Name", varname),
@@ -418,12 +414,29 @@ namespace UtilityBelt.Tools {
                 UB.Database.PersistentVariables.Update(variable);
             }
 
-            if (!PersistentExpressionVariables.ContainsKey(varname))
-                PersistentExpressionVariables.Add(varname, value);
+            if (!PersistentExpressionVariableCache.ContainsKey(varname))
+                PersistentExpressionVariableCache.Add(varname, value);
             else
-                PersistentExpressionVariables[varname] = value;
+                PersistentExpressionVariableCache[varname] = value;
 
             return EvaluateExpression(expressionValue);
+        }
+
+        private bool SerializeExpressionValue(object value, ref string expressionValue) {
+            var type = value.GetType();
+
+            if (type == typeof(Boolean))
+                expressionValue = ((Boolean)value) ? "1" : "0";
+            else if (type == typeof(string))
+                expressionValue = "`" + (string)value + "`";
+            else if (type == typeof(double))
+                expressionValue = ((double)value).ToString();
+            else {
+                Logger.Error("Global/Persistent variables can currently only store strings/numbers");
+                return false;
+            }
+
+            return true;
         }
         #endregion //setpvar[string varname, object value]
         #region touchpvar[string varname]
@@ -448,7 +461,7 @@ namespace UtilityBelt.Tools {
         [ExpressionReturn(typeof(double), "Returns 1")]
         [Example("clearallpvars[]", "Unset all persistent variables")]
         public object Clearallpvars() {
-            PersistentExpressionVariables.Clear();
+            PersistentExpressionVariableCache.Clear();
             UB.Database.PersistentVariables.Delete(
                 LiteDB.Query.And(
                     LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server),
@@ -466,7 +479,7 @@ namespace UtilityBelt.Tools {
         [Example("clearpvar[myvar]", "Clears the value stored in `myvar` persistent variable")]
         public object Clearpvar(string varname) {
             if ((bool)Testpvar(varname)) {
-                PersistentExpressionVariables.Remove(varname);
+                PersistentExpressionVariableCache.Remove(varname);
                 UB.Database.PersistentVariables.Delete(
                     LiteDB.Query.And(
                         LiteDB.Query.EQ("Name", varname),
@@ -506,6 +519,9 @@ namespace UtilityBelt.Tools {
         [Summary("Returns the value stored in a variable")]
         [Example("getgvar[myvar]", "Returns the value stored in `myvar` global variable")]
         public object Getgvar(string varname) {
+            if (GlobalExpressionVariablesCache.ContainsKey(varname)) {
+                return GlobalExpressionVariablesCache[varname];
+            }
             var variable = UB.Database.GlobalVariables.FindOne(
                 LiteDB.Query.And(
                     LiteDB.Query.EQ("Name", varname),
@@ -513,7 +529,10 @@ namespace UtilityBelt.Tools {
                 )
             );
 
-            return EvaluateExpression(variable == null ? "0" : variable.Value);
+            var val = variable == null ? "0" : EvaluateExpression(variable.Value);
+            GlobalExpressionVariablesCache.Add(varname, val);
+
+            return val;
         }
         #endregion //getgvar[string varname]
         #region setgvar[string varname, object value]
@@ -525,18 +544,9 @@ namespace UtilityBelt.Tools {
         [Example("setgvar[myvar,1]", "Stores the number value `1` inside of `myvar` variable")]
         public object Setgvar(string varname, object value) {
             string expressionValue = "";
-            var type = value.GetType();
-
-            if (type == typeof(Boolean))
-                expressionValue = ((Boolean)value) ? "1" : "0";
-            else if (type == typeof(string))
-                expressionValue = "`" + (string)value + "`";
-            else if (type == typeof(double))
-                expressionValue = ((double)value).ToString();
-            else {
-                Logger.Error("Global variables can currently only store strings/numbers");
+            if (!SerializeExpressionValue(value, ref expressionValue))
                 return 0;
-            }
+
             var variable = UB.Database.GlobalVariables.FindOne(
                 LiteDB.Query.And(
                     LiteDB.Query.EQ("Name", varname),
@@ -555,6 +565,11 @@ namespace UtilityBelt.Tools {
                 variable.Value = expressionValue;
                 UB.Database.GlobalVariables.Update(variable);
             }
+
+            if (!GlobalExpressionVariablesCache.ContainsKey(varname))
+                GlobalExpressionVariablesCache.Add(varname, value);
+            else
+                GlobalExpressionVariablesCache[varname] = value;
 
             return EvaluateExpression(expressionValue);
         }
@@ -581,6 +596,7 @@ namespace UtilityBelt.Tools {
         [ExpressionReturn(typeof(double), "Returns 1")]
         [Example("clearallgvars[]", "Unset all global variables")]
         public object Clearallgvars() {
+            GlobalExpressionVariablesCache.Clear();
             UB.Database.GlobalVariables.Delete(
                 LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server)
             );
@@ -594,6 +610,9 @@ namespace UtilityBelt.Tools {
         [ExpressionReturn(typeof(double), "Returns 1 if the variable was defined, 0 otherwise")]
         [Example("cleargvar[myvar]", "Clears the value stored in `myvar` global variable")]
         public object Cleargvar(string varname) {
+            if (GlobalExpressionVariablesCache.ContainsKey(varname))
+                GlobalExpressionVariablesCache.Remove(varname);
+
             if ((bool)Testpvar(varname)) {
                 UB.Database.GlobalVariables.Delete(
                     LiteDB.Query.And(
