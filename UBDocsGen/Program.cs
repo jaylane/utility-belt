@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -113,23 +114,64 @@ namespace UBDocsGen {
         static Dictionary<string, ToolInfo> AvailableTools = new Dictionary<string, ToolInfo>();
         static string RepoURL = "https://gitlab.com/utilitybelt/utilitybelt.gitlab.io";
 
+        public static string AssemblyPath { get; private set; }
+        public static string ProjectRoot { get; private set; }
+
         static void Main(string[] args) {
             try {
-                var UB = new UtilityBelt.UtilityBeltPlugin();
-                InitToolInfo(UB);
-
-                // TODO: fix these paths to be absolute
-                GenerateToolSummaries("./Site/layouts/partials/tool-summaries.html");
-                GenerateReleases("./Site/content/releases/", "./Site/layouts/partials/");
-                GenerateToolPages("./Site/content/docs/tools/");
-                GenerateSettingsPage("./Site/content/docs/plugin-settings.md");
-                GenerateCommandLinePage("./Site/content/docs/command-line.md");
-                GenerateExpressionsPage("./Site/content/docs/expressions.md");
+                AssemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                ProjectRoot = Path.GetFullPath(Path.Combine(AssemblyPath, Path.Combine("..", "..")));
+                Console.WriteLine($"Project Root: {ProjectRoot}");
+                Init();
             }
             catch (Exception ex) {
                 LogException(ex);
                 Environment.Exit(1);
             }
+        }
+
+        private static void Init() {
+            var UB = new UtilityBelt.UtilityBeltPlugin();
+            InitToolInfo(UB);
+
+            GenerateToolSummaries(Path.Combine(ProjectRoot, "Site/layouts/partials/tool-summaries.html"));
+            GenerateReleases(Path.Combine(ProjectRoot, "Site/content/releases/"), Path.Combine(ProjectRoot, "Site/layouts/partials/"));
+            GenerateToolPages(Path.Combine(ProjectRoot, "Site/content/docs/tools/"));
+            GenerateSettingsPage(Path.Combine(ProjectRoot, "Site/content/docs/plugin-settings.md"));
+            GenerateCommandLinePage(Path.Combine(ProjectRoot, "Site/content/docs/command-line.md"));
+            GenerateExpressionsPage(Path.Combine(ProjectRoot, "Site/content/docs/expressions.md"));
+
+            MakeFooter();
+        }
+
+        private static void MakeFooter() {
+            var productVersion = FileVersionInfo.GetVersionInfo(Path.Combine(AssemblyPath, "UtilityBelt.dll")).ProductVersion;
+            //0.1.7.bin-cleanup.3bcea54 (2020-11-25 00:13:21)
+            var versionRe = new Regex(@"(?<version>\d+\.\d+\.\d+)\.(?<branch>[^\.]+)\.(?<commit>\S+) (?<releaseDate>.*)");
+            var matches = versionRe.Match(productVersion);
+
+            StringWriter stringWriter = new StringWriter();
+            using (HtmlTextWriter writer = new HtmlTextWriter(stringWriter)) {
+                writer.Write(matches.Groups["version"].Value);
+
+                writer.Write(".");
+
+                writer.AddAttribute(HtmlTextWriterAttribute.Href, $"{RepoURL}/-/tree/{matches.Groups["branch"].Value}");
+                writer.RenderBeginTag(HtmlTextWriterTag.A); // Begin a
+                writer.Write(matches.Groups["branch"].Value);
+                writer.RenderEndTag(); // End a
+
+                writer.Write(".");
+
+                writer.AddAttribute(HtmlTextWriterAttribute.Href, $"{RepoURL}/-/commit/{matches.Groups["commit"].Value}");
+                writer.RenderBeginTag(HtmlTextWriterTag.A); // Begin a
+                writer.Write(matches.Groups["commit"].Value);
+                writer.RenderEndTag(); // End a
+
+                writer.Write($" {matches.Groups["releaseDate"].Value}");
+            }
+
+            File.WriteAllText(Path.Combine(ProjectRoot, "Site/layouts/partials/footer_custom.html"), stringWriter.ToString());
         }
 
         private static void InitToolInfo(UtilityBelt.UtilityBeltPlugin UB) {
@@ -336,8 +378,9 @@ namespace UBDocsGen {
         }
 
         private static Regex changelogTitleRe = new Regex(@"^## (?<version>\d+\.\d+\.\d+) ?\(?(?<releaseDate>[^)]+)\)? ?(?<downloadMarkdown>\[(?<downloadText>[^]]+)\])?(\((?<downloadLink>[^\)]+)\))?");
+
         private static void GenerateReleases(string releasePagesPath, string partialsPath) {
-            var changelog = File.ReadAllLines("./Changelog.md");
+            var changelog = File.ReadAllLines(Path.Combine(ProjectRoot, "./Changelog.md"));
 
             var stringWriter = new StringWriter();
             var title = "";
@@ -379,11 +422,13 @@ namespace UBDocsGen {
 
                     if (releaseDate == "TBD") {
                         // we want this to throw an exception if it fails, so the build will fail
-                        using (StreamReader file = File.OpenText(@"./bin/installer.json"))
+                        //*
+                        using (StreamReader file = File.OpenText(Path.Combine(ProjectRoot, @"bin/installer.json")))
                         using (JsonTextReader reader = new JsonTextReader(file)) {
                             JObject o2 = (JObject)JToken.ReadFrom(reader);
                             installerPath = RepoURL + o2["url"];
                         }
+                        //*/
                         releaseDate = DateTime.Now.ToString("yyyy-MM-dd");
                     }
                     else {
@@ -461,7 +506,7 @@ All settings take immediate effect on the plugin, and will save to your [charact
 
             WritePageHeader(stringWriter, "Expressions", "", "");
 
-            stringWriter.WriteLine(File.ReadAllText(@"./Site/content/docs/_expressions_summary.md"));
+            stringWriter.WriteLine(File.ReadAllText(Path.Combine(ProjectRoot, @"Site/content/docs/_expressions_summary.md")));
 
             foreach (var tool in AvailableTools) {
                 foreach (var method in tool.Value.ExpressionMethods) {

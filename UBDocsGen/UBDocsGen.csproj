@@ -28,7 +28,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>..\bin\</OutputPath>
+    <OutputPath>..\bin\ubdocsgen\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -68,7 +68,7 @@
     <ProjectReference Include="..\UtilityBelt\UtilityBelt.csproj">
       <Project>{c2880823-67e7-4b3d-a481-9adc9847c39c}</Project>
       <Name>UtilityBelt</Name>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

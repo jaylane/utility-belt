@@ -31,6 +31,10 @@
           {{ i18n "poweredBy" . | safeHTML }}
           {{ with .Site.Params.commit }}&nbsp;&bull;&nbsp;[<a href="{{.}}{{ getenv "GIT_COMMIT_SHA" }}">{{ getenv "GIT_COMMIT_SHA_SHORT" }}</a>]{{ end }}
         </p>
+        <br />
+        <div style="text-align:center;font-size: 12px;">
+          {{- partial "footer_custom.html" . }}
+        </div>
       </div>
     </div>
   </div>
@@ -64,5 +68,3 @@
   })();
 </script>
 {{ end }}
-
-{{- partial "footer_custom.html" . }}
