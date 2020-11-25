@@ -40,6 +40,7 @@ namespace UtilityBelt.Views {
                     { "VisualNavEnabled", "VisualNav.Enabled" },
                     { "VitalSharingEnabled", "VTank.VitalSharing" },
                     { "ArrowEnabled", "Arrow.Enabled" },
+                    { "DerethTimeEnabled", "DerethTime.Enabled" },
                     { "Debug", "Plugin.Debug" }
                 };
 

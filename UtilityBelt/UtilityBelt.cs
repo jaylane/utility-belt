@@ -139,6 +139,7 @@ namespace UtilityBelt {
         public ChatLogger ChatLogger { get; private set; }
         public ChatNameClickHandler ChatNameClickHandler { get; private set; }
         public Counter Counter { get; private set; }
+        public DerethTime DerethTime { get; private set; }
         public DungeonMaps DungeonMaps { get; private set; }
         public EquipmentManager EquipmentManager { get; private set; }
         public FellowshipManager FellowshipManager { get; private set; }
