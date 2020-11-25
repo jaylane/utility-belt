@@ -21,6 +21,10 @@ using static UtilityBelt.Tools.VTankControl;
 
 namespace UtilityBelt.Tools {
     [Name("Arrow")]
+    [Summary("Provides an arrow overlay that can be pointed to different coordinates by clicking them in chat or issuing a command")]
+    [FullDescription(@"This tool provides an arrow overlay that can point to target coordinates. By default it makes coordinates in chat clickable.
+
+Hold ctrl and drag to move the overlay position.  You can click the exit icon while holding ctrl to dismiss the overlay. ")]
     public class Arrow : ToolBase {
         private DxTexture arrowTexture = null;
         private DxHud hud = null;
@@ -56,7 +60,7 @@ namespace UtilityBelt.Tools {
             }
         }
 
-        [Summary("Visible")]
+        [Summary("Wether the hud is visible or not.")]
         [DefaultValue(true)]
         public bool Visible {
             get { return (bool)GetSetting("Visible"); }
@@ -86,21 +90,21 @@ namespace UtilityBelt.Tools {
             set { UpdateSetting("HudY", value); }
         }
 
-        [Summary("TargetEW")]
+        [Summary("Target EW coordinate")]
         [DefaultValue(0.00)]
         public double TargetEW {
             get { return (double)GetSetting("TargetEW"); }
             set { UpdateSetting("TargetEW", value); }
         }
 
-        [Summary("TargetNS")]
+        [Summary("Target NS coordinate")]
         [DefaultValue(0.00)]
         public double TargetNS {
             get { return (double)GetSetting("TargetNS"); }
             set { UpdateSetting("TargetNS", value); }
         }
 
-        [Summary("TargetText")]
+        [Summary("Summary text for the target coordinates, currently unused")]
         [DefaultValue("")]
         public string TargetText {
             get { return (string)GetSetting("TargetText"); }
