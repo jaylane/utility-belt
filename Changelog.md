@@ -7,6 +7,7 @@
 - Add command `/ub arrow point <coordinates>` for pointing the arrow
 - Add command `/ub arrow face` to face your character in the same direction as the arrow
 - Add UtilityBelt version watermark to character selection screen
+- Fix bug in persistent expression variables where they could be serialized to settings
 
 ## 0.1.6 (2020-11-08) [UtilityBeltInstaller-0.1.6.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/718dcc4607d717c7db6772edd033fcf3/UtilityBeltInstaller-0.1.6.exe)
 - Fix getitemcountininventorybynamerx[] and getitemcountininventorybyname[] now properly search salvage names like `Silk Salvage (100)`
