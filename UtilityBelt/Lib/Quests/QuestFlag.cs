@@ -112,7 +112,7 @@ namespace UtilityBelt.Lib.Quests {
         }
 
         public int CompareTo(object obj) {
-            if (obj == null) return -1;
+            if (obj == null) return (obj as QuestFlag) == null ? 0 : -1;
 
             QuestFlag otherQuestFlag = obj as QuestFlag;
 

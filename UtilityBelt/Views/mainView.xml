@@ -11,8 +11,9 @@
         <control progid="DecalControls.PushButton" name="ExportPCap" left="8" top="184" width="110" height="24" text="Export PCAP"/>
         
         <control progid="DecalControls.PushButton" name="DungeonMapsEnabled" left="144" top="8" width="110" height="24" text=" Dungeon Maps"/>
-        <control progid="DecalControls.PushButton" name="NameTagsEnabled" left="144" top="40" width="110" height="24" text="Name Tags  "/>
+        <control progid="DecalControls.PushButton" name="LandscapeMapsEnabled" left="144" top="40" width="110" height="24" text="   Landscape Maps"/>
         <control progid="DecalControls.PushButton" name="VisualNavEnabled" left="144" top="72" width="110" height="24" text="   Visual Nav Lines"/>
+        <control progid="DecalControls.PushButton" name="NameTagsEnabled" left="144" top="104" width="110" height="24" text="Name Tags  "/>
         <control progid="DecalControls.PushButton" name="CheckForUpdate" left="144" top="184" width="110" height="24" text="Check For Update"/>
 
         <control progid="DecalControls.PushButton" name="VideoPatchEnabled" left="280" top="8" width="88" height="24" text="  Video Patch"/>

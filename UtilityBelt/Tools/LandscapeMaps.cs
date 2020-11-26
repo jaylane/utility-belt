@@ -27,14 +27,11 @@ namespace UtilityBelt.Tools {
         private bool needsRedraw = true;
         
         private bool isFollowingCharacter = false;
-        private double rotationStart;
         private double mapTextureStartOffsetX;
         private double mapTextureStartOffsetY;
         private int dragStartX;
         private int dragStartY;
-        private double mapRotation;
         private bool isPanning = false;
-        private bool isRotating = false;
         private string fontFace;
         private int fontWeight;
 
@@ -119,6 +116,15 @@ namespace UtilityBelt.Tools {
         private PointF maxVisibleCoords { get { return HudToCoordinates(hud.Texture.Width, hud.Texture.Height); } }
 
         #region Config
+        [Summary("Enabled")]
+        [DefaultValue(true)]
+        public bool Enabled {
+            get { return (bool)GetSetting("Enabled"); }
+            set {
+                UpdateSetting("Enabled", value);
+            }
+        }
+
         [Summary("Map opacity")]
         [DefaultValue(16)]
         public int Opacity {
@@ -168,15 +174,24 @@ namespace UtilityBelt.Tools {
                 fontWeight = UB.LandscapeMapView.view.MainControl.Theme.GetVal<int>("ViewTextFontWeight");
 
                 UB.LandscapeMapView.view.VisibleChanged += View_VisibleChanged;
+                PropertyChanged += LandscapeMaps_PropertyChanged;
             }
             catch (Exception ex) { Logger.LogException(ex);  }
         }
 
         #region event handlers
+        private void LandscapeMaps_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+            if (e.PropertyName == "Enabled") {
+                if (!Enabled)
+                    UB.LandscapeMapView.view.Visible = false;
+                UB.LandscapeMapView.view.ShowInBar = Enabled;
+            }
+        }
+
         private void View_VisibleChanged(object sender, EventArgs e) {
             try {
                 var renderContainer = UB.LandscapeMapView.view["LandscapeMapsRenderContainer"];
-                if (UB.LandscapeMapView.view.Visible) {
+                if (Enabled && UB.LandscapeMapView.view.Visible) {
                     LoadResources();
 
                     UB.LandscapeMaps.CreateHud();
@@ -308,7 +323,6 @@ namespace UtilityBelt.Tools {
 
                     case ControlMouseEventArgs.MouseEventType.MouseUp:
                         isPanning = false;
-                        isRotating = false;
                         needsRedraw = true;
                         break;
 
@@ -316,17 +330,12 @@ namespace UtilityBelt.Tools {
                         lastMouseX = e.X;
                         lastMouseY = e.Y - 29 /* hud vertical offset from container */;
                         if (isPanning) {
-                            var angle = mapRotation - (Math.Atan2(e.Y - dragStartY, dragStartX - e.X) * 180.0 / Math.PI);
+                            var angle = -(Math.Atan2(e.Y - dragStartY, dragStartX - e.X) * 180.0 / Math.PI);
                             var distance = Math.Sqrt(Math.Pow(dragStartX - e.X, 2) + Math.Pow(dragStartY - e.Y, 2));
                             var np = Util.MovePoint(new PointF((float)mapTextureStartOffsetX, (float)mapTextureStartOffsetY), angle, distance / scale);
 
                             mapTextureOffsetX = np.X;
                             mapTextureOffsetY = np.Y;
-                        }
-                        else if (isRotating) {
-                            var distance = dragStartX - e.X + dragStartY - e.Y;
-                            mapRotation = rotationStart + distance;
-                            needsRedraw = true;
                         }
                         needsRedraw = true;
                         break;
@@ -501,22 +510,24 @@ namespace UtilityBelt.Tools {
             try {
                 hud.Texture.BeginRender();
                 hud.Texture.Fill(new Rectangle(0, 0, hud.Texture.Width, hud.Texture.Height), Color.Transparent);
-                if (horizontalBorderTexture != null) {
-                    horizontalBorderTexture.Dispose();
-                    horizontalBorderTexture = null;
-                }
             }
             catch (Exception ex) { Logger.LogException(ex); }
             finally { hud.Texture.EndRender(); }
+
+            if (!Enabled) {
+                hud.Dispose();
+                hud = null;
+            }
+
         }
-        
+
         internal void CreateHud() {
             try {
                 if (hud != null) {
                     ClearHud();
                     hud.Dispose();
                 }
-                if (!UB.LandscapeMapView.view.Visible)
+                if (!Enabled || !UB.LandscapeMapView.view.Visible)
                     return;
 
                 var renderContainer = UB.LandscapeMapView.view["LandscapeMapsRenderContainer"];
@@ -545,7 +556,7 @@ namespace UtilityBelt.Tools {
                 Quaternion rotQuat = Geometry.HeadingToQuaternion(0f);
                 Matrix transform = new Matrix();
                 var tint = Color.White.ToArgb();
-                rotQuat = Geometry.HeadingToQuaternion((float)mapRotation);
+                rotQuat = Geometry.HeadingToQuaternion(0);
                 sx = -(centerX - (hud.Texture.Width / 2));
                 sy = -(centerY - (hud.Texture.Height / 2));
 
@@ -756,6 +767,7 @@ namespace UtilityBelt.Tools {
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
+                    PropertyChanged -= LandscapeMaps_PropertyChanged;
                     UB.LandscapeMapView.view.VisibleChanged -= View_VisibleChanged;
                     UB.Core.RegionChange3D -= Core_RegionChange3D;
                     UB.Core.RenderFrame -= Core_RenderFrame;

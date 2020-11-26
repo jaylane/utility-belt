@@ -41,6 +41,7 @@ namespace UtilityBelt.Views {
                     { "VitalSharingEnabled", "VTank.VitalSharing" },
                     { "ArrowEnabled", "Arrow.Enabled" },
                     { "DerethTimeEnabled", "DerethTime.Enabled" },
+                    { "LandscapeMapsEnabled", "LandscapeMaps.Enabled" },
                     { "Debug", "Plugin.Debug" }
                 };
 
