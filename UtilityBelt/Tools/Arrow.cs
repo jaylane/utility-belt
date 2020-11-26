@@ -3,20 +3,12 @@ using Decal.Adapter.Wrappers;
 using Decal.Interop.Input;
 using Microsoft.DirectX;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Dungeon;
-using UtilityBelt.Lib.Maps;
-using UtilityBelt.Lib.Maps.Markers;
-using UtilityBelt.Lib.Settings;
 using VirindiViewService;
-using VirindiViewService.Controls;
 using static UtilityBelt.Tools.VTankControl;
 
 namespace UtilityBelt.Tools {
@@ -27,24 +19,13 @@ namespace UtilityBelt.Tools {
 Hold ctrl and drag to move the overlay position.  You can click the exit icon while holding ctrl to dismiss the overlay. ")]
     public class Arrow : ToolBase {
         private DxTexture arrowTexture = null;
-        private DxHud hud = null;
+        private UBHud hud = null;
         private string fontFace;
         private int fontWeight;
-        private bool needsRedraw;
         private double lastHeading;
         private double lastDistance;
-        private bool isDragging;
-        private Point dragOffset;
-        private Point lastMousePos;
-        private bool needsNewHud;
-        private Point dragStartPos;
-        private bool isHoldingControl;
 
         private int LabelFontSize = 10;
-
-        const short WM_MOUSEMOVE = 0x0200;
-        const short WM_LBUTTONDOWN = 0x0201;
-        const short WM_LBUTTONUP = 0x0202;
 
         private TimerClass drawTimer;
 
@@ -139,6 +120,10 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
         #endregion
 
         public Arrow(UtilityBeltPlugin ub, string name) : base(ub, name) {
+        }
+
+        public override void Init() {
+            base.Init();
             try {
                 fontFace = UB.LandscapeMapView.view.MainControl.Theme.GetVal<string>("DefaultTextFontFace");
                 fontWeight = UB.LandscapeMapView.view.MainControl.Theme.GetVal<int>("ViewTextFontWeight");
@@ -163,31 +148,32 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
                 if (arrowTexture == null)
                     arrowTexture = TextureCache.TextureFromBitmapResource("UtilityBelt.Resources.icons.arrow.png");
                 CreateHud();
-                drawTimer = new TimerClass();
-                drawTimer.Timeout += DrawTimer_Timeout;
-                drawTimer.Start(1000 / 15); // 15 fps max
-                UB.Core.WindowMessage += Core_WindowMessage;
+                if (drawTimer == null) {
+                    drawTimer = new TimerClass();
+                    drawTimer.Timeout += DrawTimer_Timeout;
+                    drawTimer.Start(1000 / 15); // 15 fps max
+                }
                 UB.Core.ChatBoxMessage += Core_ChatBoxMessage;
                 UB.Core.ChatNameClicked += Core_ChatNameClicked;
             }
             else {
-                ClearHud();
-                drawTimer.Stop();
+                if (drawTimer != null)
+                    drawTimer.Stop();
                 drawTimer = null;
-                UB.Core.WindowMessage -= Core_WindowMessage;
                 UB.Core.ChatBoxMessage -= Core_ChatBoxMessage;
                 UB.Core.ChatNameClicked -= Core_ChatNameClicked;
+                ClearHud();
             }
         }
 
         #region event handlers
-
         private void Core_ChatBoxMessage(object sender, ChatTextInterceptEventArgs e) {
             try {
                 if (e.Eat != true && ChatCoordinatesRe.IsMatch(e.Text)) {
                     var text = e.Text;
                     var matches = ChatCoordinatesRe.Matches(e.Text);
                     foreach (Match match in matches) {
+                        // this uses the same IIDString as goarrow for compatibility
                         text = text.Replace(match.Value, $"<Tell:IIDString:110011:{match.Value}>{match.Value}</Tell>");
                     }
                     e.Eat = true;
@@ -218,72 +204,17 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
                 case "Visible":
                 case "HudSize":
                 case "LabelFontSize":
-                    needsRedraw = true;
-                    break;
-            }
-        }
-
-        private void Core_WindowMessage(object sender, WindowMessageEventArgs e) {
-            var ctrl = (Control.ModifierKeys & Keys.Control) == Keys.Control;
-            if (ctrl != isHoldingControl) {
-                isHoldingControl = ctrl;
-                needsRedraw = true;
-            }
-            if (!isHoldingControl)
-                return;
-
-            if (e.Msg == WM_MOUSEMOVE || e.Msg == WM_LBUTTONDOWN) {
-                var mousePos = new Point(e.LParam);
-                if (!isDragging && (mousePos.X < HudX || mousePos.X > HudX + hud.Texture.Width || mousePos.Y < HudY || mousePos.Y > HudY + hud.Texture.Height))
-                    return;
-            }
-
-            switch (e.Msg) {
-                case WM_LBUTTONDOWN:
-                    var newMousePos = new Point(e.LParam);
-                    // check for clicking close button
-                    if (newMousePos.X > HudX + hud.Texture.Width - 16 && newMousePos.X < HudX + hud.Texture.Width && newMousePos.Y > HudY && newMousePos.Y < HudY + 16) {
-                        Visible = false;
-                        return;
-                    }
-                    hud.ZPriority = 1;
-                    isDragging = true;
-                    dragStartPos = newMousePos;
-                    dragOffset = new Point(0,0);
-                    break;
-
-                case WM_LBUTTONUP:
-                    if (isDragging) {
-                        isDragging = false;
-                        HudX += dragOffset.X;
-                        HudY += dragOffset.Y;
-                        dragOffset = new Point(0,0);
-                    }
-                    break;
-
-                case WM_MOUSEMOVE:
-                    lastMousePos = new Point(e.LParam);
-                    if (isDragging) {
-                        dragOffset.X = lastMousePos.X - dragStartPos.X;
-                        dragOffset.Y = lastMousePos.Y - dragStartPos.Y;
-                        hud.Location = new Point(HudX + dragOffset.X, HudY + dragOffset.Y);
+                    if (hud != null) {
+                        hud.Enabled = Visible;
+                        if (Visible)
+                            hud.Render();
                     }
                     break;
             }
-        }
-
-        private void Core_RegionChange3D(object sender, RegionChange3DEventArgs e) {
-            if (Enabled)
-                needsNewHud = true;
         }
 
         private void DrawTimer_Timeout(Decal.Interop.Input.Timer Source) {
-            if (needsNewHud) {
-                CreateHud();
-                needsNewHud = false;
-                needsRedraw = true;
-            }
-
+            bool needsRedraw = false;
             if (lastHeading != UB.Core.Actions.Heading) {
                 lastHeading = UB.Core.Actions.Heading;
                 needsRedraw = true;
@@ -295,7 +226,16 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
             }
 
             if (needsRedraw)
-                RenderHud();
+                hud.Render();
+        }
+
+        private void Hud_OnClose(object sender, EventArgs e) {
+            Visible = false;
+        }
+
+        private void Hud_OnMove(object sender, EventArgs e) {
+            HudX = hud.X;
+            HudY = hud.Y;
         }
         #endregion
 
@@ -304,7 +244,7 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
         /// Force the map to redraw
         /// </summary>
         public void Redraw() {
-            needsRedraw = true;
+            hud?.Render();
         }
 
         /// <summary>
@@ -315,11 +255,14 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
         /// <param name="text"></param>
         /// <returns></returns>
         public void PointTo(double ew, double ns, string text="") {
+            if (!Enabled)
+                return;
+
             TargetEW = ew;
             TargetNS = ns;
             TargetText = text;
             Visible = true;
-            needsRedraw = true;
+            hud?.Render();
         }
 
         public double DistanceToTarget {
@@ -341,28 +284,26 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
                 }
                 if (!Enabled)
                     return;
-
-                hud = new DxHud(new Point(HudX, HudY), new Size(150, HudSize), 0);
-                hud.Enabled = true;
-                needsRedraw = true;
+                hud = new UBHud(HudX, HudY, 150, HudSize);
+                hud.OnMove += Hud_OnMove;
+                hud.OnClose += Hud_OnClose;
+                hud.OnRender += Hud_OnRender;
+                hud.Render();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public void ClearHud() {
-            if (hud == null || hud.Texture == null || hud.Texture.IsDisposed)
+            if (hud == null)
                 return;
-            try {
-                hud.Texture.BeginRender();
-                hud.Texture.Fill(new Rectangle(0, 0, hud.Texture.Width, hud.Texture.Height), Color.Transparent);
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-            finally { hud.Texture.EndRender(); }
+            hud.OnMove -= Hud_OnMove;
+            hud.OnClose -= Hud_OnClose;
+            hud.OnRender -= Hud_OnRender;
             hud.Dispose();
             hud = null;
         }
 
-        internal void RenderHud() {
+        private void Hud_OnRender(object sender, EventArgs e) {
             if (hud == null || hud.Texture == null)
                 return;
 
@@ -373,8 +314,6 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
 
                 if (!Visible)
                     return;
-
-                hud.Location = new Point(HudX + dragOffset.X, HudY + dragOffset.Y);
 
                 var me = UB.Core.CharacterFilter.Id;
                 var ew = Geometry.LandblockToEW((uint)PhysicsObject.GetLandcell(me), PhysicsObject.GetPosition(me).X);
@@ -394,19 +333,11 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
                 var leftOffset = (int)(offset * 2) + (int)(arrowTexture.Width * scale);
                 hud.Texture.BeginText(fontFace, LabelFontSize, 200, false);
                 var coordsText = $"{Math.Abs(TargetNS).ToString("F2")}{(TargetNS >= 0 ? "N" : "S")}, {Math.Abs(TargetEW).ToString("F2")}{(TargetEW >= 0 ? "E" : "W")}";
-                hud.Texture.WriteText(coordsText, Color.White, VirindiViewService.WriteTextFormats.None, new Rectangle(leftOffset, 0, hud.Texture.Width - leftOffset, LabelFontSize));
                 var distanceText = $"{DistanceToTarget:N2}m";
-                hud.Texture.WriteText(distanceText, Color.White, VirindiViewService.WriteTextFormats.None, new Rectangle(leftOffset, LabelFontSize + 2, hud.Texture.Width - leftOffset, LabelFontSize));
+
+                hud.DrawShadowText(coordsText, leftOffset, 1, hud.Width - leftOffset, LabelFontSize, Color.White, Color.Black);
+                hud.DrawShadowText(distanceText, leftOffset, LabelFontSize + 4, hud.Width - leftOffset, LabelFontSize, Color.White, Color.Black);
                 hud.Texture.EndText();
-
-                if (isHoldingControl) {
-                    hud.Texture.DrawLine(new PointF(0, 0), new PointF(hud.Texture.Width - 1, 0), Color.Yellow, 1);
-                    hud.Texture.DrawLine(new PointF(hud.Texture.Width - 1, 0), new PointF(hud.Texture.Width - 1, hud.Texture.Height - 1), Color.Yellow, 1);
-                    hud.Texture.DrawLine(new PointF(hud.Texture.Width -1, hud.Texture.Height - 1), new PointF(0, hud.Texture.Height - 1), Color.Yellow, 1);
-                    hud.Texture.DrawLine(new PointF(0, hud.Texture.Height - 1), new PointF(0, 0), Color.Yellow, 1);
-
-                    hud.Texture.DrawPortalImage(0x060011F8, new Rectangle(hud.Texture.Width - 16, 0, 16, 16));
-                }
             }
             catch (Exception ex) { Logger.LogException(ex); }
             finally {
