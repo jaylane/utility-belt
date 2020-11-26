@@ -127,14 +127,21 @@ namespace UtilityBelt.Views {
         }
 
         private void UpdateButton(KeyValuePair<string, string> kv) {
-            var hudButton = (HudButton)view[kv.Key];
+            try {
+                var hudButton = (HudButton)view[kv.Key];
+                if (hudButton == null)
+                    return;
 
-            hudButton.OverlayImageRectangle = new Rectangle(3, 4, 16, 16);
-            if ((bool)UB.Settings.Get(kv.Value)) {
-                hudButton.OverlayImage = 0x060069A1;
+                hudButton.OverlayImageRectangle = new Rectangle(3, 4, 16, 16);
+                if ((bool)UB.Settings.Get(kv.Value)) {
+                    hudButton.OverlayImage = 0x060069A1;
+                }
+                else {
+                    hudButton.OverlayImage = 0x060069FA;
+                }
             }
-            else {
-                hudButton.OverlayImage = 0x060069FA;
+            catch (Exception ex) {
+                Logger.WriteToChat(ex.ToString());
             }
         }
 
@@ -252,6 +259,7 @@ namespace UtilityBelt.Views {
             return icon;
         }
         ~MainView() {
+            UB.Settings.Changed -= Settings_Changed;
             if (timer != null) timer.Dispose();
             if (icon != null) icon.Dispose();
         }

@@ -248,23 +248,12 @@ namespace UtilityBelt.Tools {
         #endregion //isnight[]
         #endregion //Expressions
 
-        private DxHud hud = null;
         private DxTexture daynightIcon = null;
         private DxTexture pointerIcon;
         private string fontFace;
         private int fontWeight;
-        private bool isDragging;
-        private Point lastMousePos;
-        private bool needsNewHud;
-        private Point dragStartPos;
-        private Point dragOffset;
-        private bool isHoldingControl;
-
+        private UBHud hud;
         private int LabelFontSize = 10;
-
-        const short WM_MOUSEMOVE = 0x0200;
-        const short WM_LBUTTONDOWN = 0x0201;
-        const short WM_LBUTTONUP = 0x0202;
 
         private TimerClass drawTimer;
 
@@ -277,7 +266,7 @@ namespace UtilityBelt.Tools {
                 fontFace = UB.LandscapeMapView.view.MainControl.Theme.GetVal<string>("DefaultTextFontFace");
                 fontWeight = UB.LandscapeMapView.view.MainControl.Theme.GetVal<int>("ViewTextFontWeight");
 
-                PropertyChanged += DerethTime_PropertyChanged; ;
+                PropertyChanged += DerethTime_PropertyChanged;
 
                 if (UB.Core.CharacterFilter.LoginStatus != 3)
                     UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
@@ -290,17 +279,18 @@ namespace UtilityBelt.Tools {
         private void TryEnable() {
             if (Enabled) {
                 CreateHud();
-                drawTimer = new TimerClass();
-                drawTimer.Timeout += DrawTimer_Timeout;
-                drawTimer.Start(1000 * 5); // 0.2 fps max
-                UB.Core.WindowMessage += Core_WindowMessage;
-                RenderHud();
+                if (drawTimer == null) {
+                    drawTimer = new TimerClass();
+                    drawTimer.Timeout += DrawTimer_Timeout;
+                    drawTimer.Start(1000 * 5); // 0.2 fps max
+                }
+                hud.Render();
             }
             else {
+                if (drawTimer != null)
+                    drawTimer.Stop();
                 ClearHud();
-                drawTimer.Stop();
                 drawTimer = null;
-                UB.Core.WindowMessage -= Core_WindowMessage;
             }
         }
 
@@ -319,115 +309,64 @@ namespace UtilityBelt.Tools {
                     TryEnable();
                     break;
                 case "ShowLabel":
-                    CreateHud();
-                    RenderHud();
+                    hud?.Resize(ShowLabel ? 150 : 32, 32);
+                    hud?.Render();
                     break;
             }
         }
 
         private void DrawTimer_Timeout(Decal.Interop.Input.Timer Source) {
-            if (needsNewHud) {
-                CreateHud();
-                needsNewHud = false;
-            }
-
-            RenderHud();
+            hud.Render();
         }
 
-        private void Core_WindowMessage(object sender, WindowMessageEventArgs e) {
-            var ctrl = (Control.ModifierKeys & Keys.Control) == Keys.Control;
-            if (ctrl != isHoldingControl) {
-                isHoldingControl = ctrl;
-                RenderHud();
-            }
-            if (!isHoldingControl)
-                return;
+        private void Hud_OnMove(object sender, EventArgs e) {
+            HudX = hud.X;
+            HudY = hud.Y;
+        }
 
-            if (e.Msg == WM_MOUSEMOVE || e.Msg == WM_LBUTTONDOWN) {
-                var mousePos = new Point(e.LParam);
-                if (!isDragging && (mousePos.X < HudX || mousePos.X > HudX + hud.Texture.Width || mousePos.Y < HudY || mousePos.Y > HudY + hud.Texture.Height))
-                    return;
-            }
-
-            switch (e.Msg) {
-                case WM_LBUTTONDOWN:
-                    var newMousePos = new Point(e.LParam);
-                    // check for clicking close button
-                    if (newMousePos.X > HudX + hud.Texture.Width - 16 && newMousePos.X < HudX + hud.Texture.Width && newMousePos.Y > HudY && newMousePos.Y < HudY + 16) {
-                        Enabled = false;
-                        return;
-                    }
-                    hud.ZPriority = 1;
-                    isDragging = true;
-                    dragStartPos = newMousePos;
-                    dragOffset = new Point(0, 0);
-                    break;
-
-                case WM_LBUTTONUP:
-                    if (isDragging) {
-                        isDragging = false;
-                        HudX += dragOffset.X;
-                        HudY += dragOffset.Y;
-                        dragOffset = new Point(0, 0);
-                    }
-                    break;
-
-                case WM_MOUSEMOVE:
-                    lastMousePos = new Point(e.LParam);
-                    if (isDragging) {
-                        dragOffset.X = lastMousePos.X - dragStartPos.X;
-                        dragOffset.Y = lastMousePos.Y - dragStartPos.Y;
-                        hud.Location = new Point(HudX + dragOffset.X, HudY + dragOffset.Y);
-                    }
-                    break;
-            }
+        private void Hud_OnClose(object sender, EventArgs e) {
+            Enabled = false;
         }
         #endregion // Event Handlers
 
         #region Hud Rendering
         internal void CreateHud() {
             try {
-                if (hud != null) {
-                    ClearHud();
-                }
-                if (!Enabled)
-                    return;
-
                 if (daynightIcon == null)
                     daynightIcon = TextureCache.TextureFromBitmapResource("UtilityBelt.Resources.icons.daynight.png");
 
                 if (pointerIcon == null)
                     pointerIcon = TextureCache.TextureFromBitmapResource("UtilityBelt.Resources.icons.arrow.png");
 
-                hud = new DxHud(new Point(HudX, HudY), new Size(ShowLabel ? 150 : 32, 32), 0);
-                hud.Enabled = true;
+                if (hud == null) {
+                    hud = new UBHud(HudX, HudY, ShowLabel ? 150 : 32, 32);
+                    hud.OnRender += Hud_OnRender;
+                    hud.OnMove += Hud_OnMove;
+                    hud.OnClose += Hud_OnClose;
+                }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public void ClearHud() {
-            if (hud == null || hud.Texture == null || hud.Texture.IsDisposed)
+            if (hud == null)
                 return;
-            try {
-                hud.Texture.BeginRender();
-                hud.Texture.Fill(new Rectangle(0, 0, hud.Texture.Width, hud.Texture.Height), Color.Transparent);
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-            finally { hud.Texture.EndRender(); }
+            hud.OnRender -= Hud_OnRender;
+            hud.OnMove -= Hud_OnMove;
+            hud.OnClose -= Hud_OnClose;
             hud.Dispose();
             hud = null;
         }
 
-        internal void RenderHud() {
-            if (!Enabled || hud == null || hud.Texture == null)
+
+        private void Hud_OnRender(object sender, EventArgs e) {
+            if (!Enabled || hud == null || hud.Texture == null || hud.Texture.IsDisposed)
                 return;
 
             try {
                 hud.Texture.BeginRender();
                 hud.Texture.Clear();
                 hud.Texture.Fill(new Rectangle(0, 0, hud.Texture.Width, hud.Texture.Height), Color.FromArgb(0, 0, 0, 0));
-
-                hud.Location = new Point(HudX + dragOffset.X, HudY + dragOffset.Y);
 
                 var rot = ((((GameHour + 4) * HourLength) % (HourLength * 16)) + (GameMinute * MinuteLength)) / (HourLength * 16) * 360f;
 
@@ -436,18 +375,18 @@ namespace UtilityBelt.Tools {
                 var arrowSize = 8;
                 hud.Texture.DrawTextureRotated(pointerIcon, new Rectangle(0, 0, 32, arrowSize), new Point(16, arrowSize / 2), Color.White.ToArgb(), (float)(180 * Math.PI / 180));
 
-                string text = "";
-                int minutesLeft = 0;
-                if (IsDay) {
-                    minutesLeft = TicksUntilNight / 60;
-                    text = $"{minutesLeft:N0}m until night";
-                }
-                else {
-                    minutesLeft = TicksUntilDay / 60;
-                    text = $"{minutesLeft:N0}m until day";
-                }
-
                 if (ShowLabel) {
+                    string text = "";
+                    int minutesLeft = 0;
+                    if (IsDay) {
+                        minutesLeft = TicksUntilNight / 60;
+                        text = $"{minutesLeft:N0}m until night";
+                    }
+                    else {
+                        minutesLeft = TicksUntilDay / 60;
+                        text = $"{minutesLeft:N0}m until day";
+                    }
+
                     Color labelColor = Color.White;
                     if (minutesLeft <= 1)
                         labelColor = Color.Red;
@@ -457,29 +396,8 @@ namespace UtilityBelt.Tools {
                         labelColor = Color.Orange;
 
                     hud.Texture.BeginText(fontFace, LabelFontSize, 200, false);
-                    var x = 34;
-                    var y = 8;
-
-                    // WriteText with shadow doesn't seem to work... so...
-                    hud.Texture.WriteText(text, Color.Black, WriteTextFormats.None, new Rectangle(x - 1, y - 1, hud.Texture.Width - 32, LabelFontSize));
-                    hud.Texture.WriteText(text, Color.Black, WriteTextFormats.None, new Rectangle(x + 1, y - 1, hud.Texture.Width - 32, LabelFontSize));
-                    hud.Texture.WriteText(text, Color.Black, WriteTextFormats.None, new Rectangle(x - 1, y + 1, hud.Texture.Width - 32, LabelFontSize));
-                    hud.Texture.WriteText(text, Color.Black, WriteTextFormats.None, new Rectangle(x + 1, y + 1, hud.Texture.Width - 32, LabelFontSize));
-                    hud.Texture.WriteText(text, Color.Black, WriteTextFormats.None, new Rectangle(x - 1, y, hud.Texture.Width - 32, LabelFontSize));
-                    hud.Texture.WriteText(text, Color.Black, WriteTextFormats.None, new Rectangle(x + 1, y, hud.Texture.Width - 32, LabelFontSize));
-                    hud.Texture.WriteText(text, Color.Black, WriteTextFormats.None, new Rectangle(x, y + 1, hud.Texture.Width - 32, LabelFontSize));
-                    hud.Texture.WriteText(text, Color.Black, WriteTextFormats.None, new Rectangle(x, y - 1, hud.Texture.Width - 32, LabelFontSize));
-                    hud.Texture.WriteText(text, labelColor, WriteTextFormats.None, new Rectangle(x, y, hud.Texture.Width - 32, LabelFontSize));
+                    hud.DrawShadowText(text, 34, 8, hud.Width - 32, hud.Height - 32, labelColor, Color.Black);
                     hud.Texture.EndText();
-                }
-
-                if (isHoldingControl) {
-                    hud.Texture.DrawLine(new PointF(0, 0), new PointF(hud.Texture.Width - 1, 0), Color.Yellow, 1);
-                    hud.Texture.DrawLine(new PointF(hud.Texture.Width - 1, 0), new PointF(hud.Texture.Width - 1, hud.Texture.Height - 1), Color.Yellow, 1);
-                    hud.Texture.DrawLine(new PointF(hud.Texture.Width - 1, hud.Texture.Height - 1), new PointF(0, hud.Texture.Height - 1), Color.Yellow, 1);
-                    hud.Texture.DrawLine(new PointF(0, hud.Texture.Height - 1), new PointF(0, 0), Color.Yellow, 1);
-
-                    hud.Texture.DrawPortalImage(0x060011F8, new Rectangle(hud.Texture.Width - 16, 0, 16, 16));
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -492,8 +410,12 @@ namespace UtilityBelt.Tools {
         protected override void Dispose(bool disposing) {
             base.Dispose(disposing);
             if (drawTimer != null) drawTimer.Stop();
-            UB.Core.WindowMessage -= Core_WindowMessage;
-            if (hud != null) hud.Dispose();
+            if (hud != null) {
+                hud.OnRender -= Hud_OnRender;
+                hud.OnMove -= Hud_OnMove;
+                hud.OnClose -= Hud_OnClose;
+                hud.Dispose();
+            }
             if (daynightIcon != null) daynightIcon.Dispose();
             if (pointerIcon != null) pointerIcon.Dispose();
         }
