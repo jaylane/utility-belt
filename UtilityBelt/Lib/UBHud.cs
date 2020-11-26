@@ -120,8 +120,14 @@ namespace UtilityBelt.Lib {
                 Render();
             }
 
-            if (!isHoldingControl)
+            if (!isHoldingControl) {
+                if (isDragging) {
+                    isDragging = false;
+                    Move(X + dragOffset.X, Y + dragOffset.Y);
+                    dragOffset = new Point(0, 0);
+                }
                 return;
+            }
 
             if (e.Msg == WM_MOUSEMOVE || e.Msg == WM_LBUTTONDOWN) {
                 var mousePos = new Point(e.LParam);
@@ -165,7 +171,7 @@ namespace UtilityBelt.Lib {
         }
 
         public void Dispose() {
-            CoreManager.Current.WindowMessage += Core_WindowMessage;
+            CoreManager.Current.WindowMessage -= Core_WindowMessage;
             if (Hud != null)
                 Hud.Dispose();
         }
