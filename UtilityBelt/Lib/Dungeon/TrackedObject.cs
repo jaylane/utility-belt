@@ -152,7 +152,7 @@ namespace UtilityBelt.Lib.Dungeon {
                 var oldZ = (int)(Math.Floor((Position.Z + 3) / 6) * 6);
                 var newZ = (int)(Math.Floor((newPosition.Z + 3) / 6) * 6);
 
-                if (oldZ != newZ) {
+                if (oldZ != newZ && ByZLayer != null) {
                     if (ByZLayer.ContainsKey(oldZ) && ByZLayer[oldZ].Contains(this)) ByZLayer[oldZ].Remove(this);
                     if (!ByZLayer.ContainsKey(newZ)) ByZLayer.Add(newZ, new List<TrackedObject>());
                     if (!ByZLayer[newZ].Contains(this)) ByZLayer[newZ].Add(this);

@@ -351,19 +351,18 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     UB.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
 
                     if (!hasUpdatedPyrealStackSize) {
-                        UB.Core.RenderFrame += Core_RenderFramePyrealStackCheck;
+                        UBHelper.Core.RadarUpdate += Core_RadarUpdatePyrealStackCheck;
                     }
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void Core_RenderFramePyrealStackCheck(object sender, EventArgs e) {
+        private void Core_RadarUpdatePyrealStackCheck(double uptime) {
             try {
                 CheckPyrealMaxStack();
-                if (hasUpdatedPyrealStackSize) {
-                    UB.Core.RenderFrame -= Core_RenderFramePyrealStackCheck;
-                }
+                if (hasUpdatedPyrealStackSize)
+                    UBHelper.Core.RadarUpdate -= Core_RadarUpdatePyrealStackCheck;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -1131,12 +1130,15 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                 if (disposing) {
                     UBHelper.Vendor.VendorClosed -= UBHelper_VendorClosed;
                     UB.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
-                    UB.Core.RenderFrame -= Core_RenderFramePyrealStackCheck;
+                    UBHelper.Core.RadarUpdate -= Core_RadarUpdatePyrealStackCheck;
                     Decal.Adapter.CoreManager.Current.WorldFilter.ApproachVendor -= WorldFilter_ApproachVendor;
                     Decal.Adapter.CoreManager.Current.RenderFrame -= Core_RenderFrame;
                     Decal.Adapter.CoreManager.Current.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
                     Decal.Adapter.CoreManager.Current.EchoFilter.ClientDispatch -= EchoFilter_ClientDispatch;
-                    if (lootProfile != null) lootProfile.UnloadProfile();
+                    try {
+                        if (lootProfile != null) lootProfile.UnloadProfile();
+                    }
+                    catch { }
                     base.Dispose(disposing);
                 }
                 disposed = true;
