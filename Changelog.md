@@ -1,4 +1,4 @@
-## 0.1.7 (TBD)
+## 0.1.7 (2020-11-27) [UtilityBeltInstaller-0.1.7.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/03886a9b9c41e8b05703da8ba237dae1/UtilityBeltInstaller-0.1.7.exe)
 - Fix salvage name check in autotinker
 - Add basic landscape maps (visualnav capable)
 - Fix ColorPicker view in settings
