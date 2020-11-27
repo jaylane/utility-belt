@@ -114,6 +114,15 @@ namespace UtilityBelt.Tools {
                 VideoPatchFocusToggle(value);
             }
         }
+        [Summary("Limits frame while the client does not have focus")]
+        [DefaultValue(0)]
+        public int BackgroundFrameLimit {
+            get => (int)GetSetting("BackgroundFrameLimit");
+            set {
+                UpdateSetting("BackgroundFrameLimit", value);
+                UBHelper.SimpleFrameLimiter.bgMax = value;
+            }
+        }
 
         [Summary("Enables a rolling PCAP buffer, to export recent packets")]
         [DefaultValue(false)]
@@ -969,13 +978,51 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
         #endregion
+        #region /ub globalframelimit <frameRate>
+        [Summary("Globally limits frames")]
+        [Usage("/ub globalframelimit <frameRate>")]
+        [Example("/ub globalframelimit 0", "Disables the frame limiter")]
+        [Example("/ub globalframelimit 10", "Sets frame limit to 10fps")]
+        [CommandPattern("globalframelimit", @"^(?<frameRate>\d+)$")]
+        public void DoGlobalFrameLimit(string _, Match args) {
+            int.TryParse(args.Groups["frameRate"].Value, out int frameRate);
+            if (frameRate < 0 || frameRate > 500) {
+                LogError($"Requested frameRate was not valid ({frameRate})");
+                return;
+            }
+            System.Configuration.Configuration AssemblyConfig = System.Configuration.ConfigurationManager.OpenExeConfiguration(Util.AssemblyLocation);
+            System.Configuration.KeyValueConfigurationCollection AssemblySettings = AssemblyConfig.AppSettings.Settings;
 
+            if (AssemblySettings.AllKeys.Contains("FrameRate")) AssemblySettings["FrameRate"].Value = $"{frameRate}";
+            else AssemblySettings.Add("FrameRate", $"{frameRate}");
+            AssemblyConfig.Save();
+            UBHelper.SimpleFrameLimiter.globalMax = frameRate;
+            WriteToChat($"FrameRate Limited to {frameRate} fps, and saved to UtilityBelt.dll.config");
+        }
+        #endregion
+        #region /ub bgframelimit <frameRate>
+        [Summary("limits frames while client is not activated")]
+        [Usage("/ub bgframelimit <frameRate>")]
+        [Example("/ub bgframelimit 0", "Disables the frame limiter")]
+        [Example("/ub bgframelimit 10", "Sets frame limit to 10fps")]
+        [CommandPattern("bgframelimit", @"^(?<frameRate>\d+)$")]
+        public void DoBGFrameLimit(string _, Match args) {
+            int.TryParse(args.Groups["frameRate"].Value, out int frameRate);
+            if (frameRate < 0 || frameRate > 500) {
+                LogError($"Requested frameRate was not valid ({frameRate})");
+                return;
+            }
+            BackgroundFrameLimit = frameRate;
+            WriteToChat($"Background FrameRate Limited to {frameRate} fps, and saved to Plugin.BackgroundFrameLimit");
+        }
+        #endregion
+
+        #region /ub swearallegiance[p] <name|id|selected>
         /// <summary>
         /// Temporary Home. TODO: Finish Allegiance.cs
         /// </summary>
         /// <param name="command"></param>
         /// <param name="args"></param>
-        #region /ub swearallegiance[p] <name|id|selected>
         [Summary("Swear Allegiance")]
         [Usage("/ub swearallegiance[p][ <name|id|selected>]")]
         [Example("/ub swearallegiance Yonneh", "Swear Allegiance to `Yonneh`")]

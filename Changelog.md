@@ -11,6 +11,9 @@
 - Add DerethTime hud that shows day/night cycles
 - Add DerethTime expressions: `getgameyear[]`, `getgamemonth[]`, `getgamemonthname[i]`, `getgameday[]`, `getgamehour[]`, `getgamehourname[i]`, `getminutesuntilday[]`, `getminutesuntilnight[]`, `getgameticks[]`, `getisday[]`, `getisnight[]`
 - Fix bug where multiple instances of the plugin could be loaded on ACE servers
+- add a very rudimentary frame rate limiter UBHelper.SimpleFrameLimiter
+- add `/ub globalframerate <frameRate>` and `FrameRate` in utilitybelt.dll.config, to globally limit frame rate (including login screen)
+- add `/ub bgframerate <frameRate>` and setting `Plugin.BackgroundFrameRate`, to limit frame rate while the client does not have focus
 
 ## 0.1.6 (2020-11-08) [UtilityBeltInstaller-0.1.6.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/718dcc4607d717c7db6772edd033fcf3/UtilityBeltInstaller-0.1.6.exe)
 - Fix getitemcountininventorybynamerx[] and getitemcountininventorybyname[] now properly search salvage names like `Silk Salvage (100)`
