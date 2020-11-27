@@ -10,6 +10,7 @@
 - Fix bug in persistent expression variables where they could be serialized to settings
 - Add DerethTime hud that shows day/night cycles
 - Add DerethTime expressions: `getgameyear[]`, `getgamemonth[]`, `getgamemonthname[i]`, `getgameday[]`, `getgamehour[]`, `getgamehourname[i]`, `getminutesuntilday[]`, `getminutesuntilnight[]`, `getgameticks[]`, `getisday[]`, `getisnight[]`
+- Fix bug where multiple instances of the plugin could be loaded on ACE servers
 
 ## 0.1.6 (2020-11-08) [UtilityBeltInstaller-0.1.6.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/718dcc4607d717c7db6772edd033fcf3/UtilityBeltInstaller-0.1.6.exe)
 - Fix getitemcountininventorybynamerx[] and getitemcountininventorybyname[] now properly search salvage names like `Silk Salvage (100)`

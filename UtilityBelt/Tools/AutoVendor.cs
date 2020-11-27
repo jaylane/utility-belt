@@ -200,6 +200,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         private DateTime vendorTimestamp = DateTime.MinValue;
         private int vendorOpening = 0;
         private static WorldObject vendor = null;
+        private bool hasLootCore;
 
         public void UB_vendor(string parameters) {
             char[] stringSplit = { ' ' };
@@ -600,7 +601,6 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         }
 
         public void Start(int merchantId = 0, string useProfilePath = "") {
-            var hasLootCore = false;
             if (lootProfile == null) {
                 try {
                     lootProfile = new VTClassic.LootCore();
@@ -1136,7 +1136,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     Decal.Adapter.CoreManager.Current.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
                     Decal.Adapter.CoreManager.Current.EchoFilter.ClientDispatch -= EchoFilter_ClientDispatch;
                     try {
-                        if (lootProfile != null) lootProfile.UnloadProfile();
+                        if (hasLootCore && lootProfile != null) lootProfile.UnloadProfile();
                     }
                     catch { }
                     base.Dispose(disposing);
