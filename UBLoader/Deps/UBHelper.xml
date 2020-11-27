@@ -492,11 +492,38 @@
             <param name="sceneryDraw"></param>
             <param name="landscapeDraw"></param>
         </member>
+        <member name="M:UBHelper.Core.GetHeight(System.Int32)">
+            <summary>
+            returns the physics height of the object_id
+            </summary>
+            <param name="object_id"></param>
+            <returns></returns>
+        </member>
         <member name="M:UBHelper.Core.DirtyDistance(System.Int32)">
             <summary>
             Get Distance to a player, from the onscreen physics (dirty)
             </summary>
             <param name="character_id">character id</param>
+        </member>
+        <member name="P:UBHelper.Core.gmExternalContainerUI_id">
+            <summary>
+            Returns the Item ID of the currently open ground container (or 0)
+            </summary>
+        </member>
+        <member name="P:UBHelper.Core.gmExternalContainerUI_itemList_Position">
+            <summary>
+            Returns the scroll position of the External Container UI
+            </summary>
+        </member>
+        <member name="P:UBHelper.Core.gmExternalContainerUI_itemList_Size">
+            <summary>
+            Returns the virtual size of the External Container UI (each item is 32x32 pixels)
+            </summary>
+        </member>
+        <member name="P:UBHelper.Core.gmExternalContainerUI_position">
+            <summary>
+            Returns the on-screen position of the External Container UI
+            </summary>
         </member>
         <member name="P:UBHelper.Core.LoginCharacterID">
             <summary>

@@ -99,6 +99,10 @@ namespace UBLoader {
                     DatabaseFile = config.AppSettings.Settings["DatabaseFile"].Value;
                 if (keys.Contains("HotReload"))
                     HotReload = config.AppSettings.Settings["HotReload"].Value == "true";
+                if (keys.Contains("FrameRate")) {
+                    int.TryParse(config.AppSettings.Settings["FrameRate"].Value, out int frameRate);
+                    UBHelper.SimpleFrameLimiter.globalMax = frameRate;
+                }
             }
             catch { }
             if (string.IsNullOrEmpty(PluginStorageDirectory)) {
