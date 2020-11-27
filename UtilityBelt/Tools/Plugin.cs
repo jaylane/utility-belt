@@ -524,8 +524,11 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
         private void UB_Follow_Clear() {
-            if (UBHelper.vTank.Instance != null && UBHelper.vTank.Instance.GetNavProfile().Equals("UBFollow"))
-                Util.Decal_DispatchOnChatCommand("/vt nav load ");
+            try {
+                if (UBHelper.vTank.Instance != null && UBHelper.vTank.Instance.GetNavProfile().Equals("UBFollow"))
+                    Util.Decal_DispatchOnChatCommand("/vt nav load ");
+            }
+            catch { }
         }
 
         #endregion

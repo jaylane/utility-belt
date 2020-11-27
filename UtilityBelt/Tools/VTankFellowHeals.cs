@@ -55,8 +55,13 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
 
         public void UpdateMySharedVitals() {
             if (UBHelper.vTank.Instance == null || !UB.VTank.VitalSharing) return;
-
-            UBPlayerUpdate playerUpdate = GetMyPlayerUpdate();
+            UBPlayerUpdate playerUpdate;
+            try {
+                playerUpdate = GetMyPlayerUpdate();
+            }
+            catch {
+                return;
+            }
 
             try {
                 int recordCount = 0;

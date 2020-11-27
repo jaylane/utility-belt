@@ -47,7 +47,6 @@ namespace UBLoader {
         public bool HotReload { get; private set; }
 
         private bool hasLoaded = false;
-        private bool needsLoginLoad = false;
 
         public FilterCore() {
             System.Resources.ResourceManager rm = new System.Resources.ResourceManager(GetType().Namespace + ".Properties.Resources", System.Reflection.Assembly.GetExecutingAssembly());
@@ -63,11 +62,9 @@ namespace UBLoader {
         /// </summary>
         protected override void Startup() {
             try {
-                UBHelper.Core.GameStateChanged += Core_GameStateChanged;
                 LoadAssemblyConfig();
+                UBHelper.Core.GameStateChanged += Core_GameStateChanged;
 
-                Core.PluginInitComplete += Core_PluginInitComplete;
-                Core.PluginTermComplete += Core_PluginTermComplete;
                 UBHelper.Core.FilterStartup(PluginAssemblyPath, PluginStorageDirectory);
             }
             catch (Exception ex) { LogException(ex); }
@@ -81,6 +78,12 @@ namespace UBLoader {
                 case UBHelper.GameState.Creating_Character:
                 case UBHelper.GameState.Entering_Game:
                     VersionWatermark.Destroy();
+                    pluginsReady = true;
+                    LoadPluginAssembly();
+                    break;
+                case UBHelper.GameState.Logging_Out:
+                    pluginsReady = false;
+                    UnloadPluginAssembly();
                     break;
             }
         }
@@ -116,35 +119,9 @@ namespace UBLoader {
             }
         }
 
-        private void Core_PluginInitComplete(object sender, EventArgs e) {
-            try {
-                pluginsReady = true;
-                lastFileChange = DateTime.UtcNow;
-                LoadPluginAssembly();
-
-                if (PluginWatcher == null) {
-                    PluginWatcher = new FileSystemWatcher();
-                    PluginWatcher.Path = PluginAssemblyDirectory;
-                    PluginWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
-                    PluginWatcher.Filter = PluginAssemblyName;
-                    PluginWatcher.Changed += PluginWatcher_Changed;
-                    PluginWatcher.EnableRaisingEvents = true;
-                }
-            }
-            catch (Exception ex) { LogException(ex); }
-        }
-
-        private void Core_PluginTermComplete(object sender, EventArgs e) {
-            try {
-                pluginsReady = false;
-                UnloadPluginAssembly();
-            }
-            catch (Exception ex) { LogException(ex); }
-        }
-
         private void Core_RenderFrame(object sender, EventArgs e) {
             try {
-                if (!needsLoginLoad && needsReload && pluginsReady && DateTime.UtcNow - lastFileChange > TimeSpan.FromSeconds(1)) {
+                if (needsReload && pluginsReady && DateTime.UtcNow - lastFileChange > TimeSpan.FromSeconds(1)) {
                     needsReload = false;
                     Core.RenderFrame -= Core_RenderFrame;
                     try {
@@ -173,10 +150,13 @@ namespace UBLoader {
 
         internal void LoadPluginAssembly() {
             try {
-                if (!pluginsReady) {
-                    needsReload = true;
-                    Core.RenderFrame += Core_RenderFrame;
-                    return;
+                if (HotReload && PluginWatcher == null) {
+                    PluginWatcher = new FileSystemWatcher();
+                    PluginWatcher.Path = PluginAssemblyDirectory;
+                    PluginWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
+                    PluginWatcher.Filter = PluginAssemblyName;
+                    PluginWatcher.Changed += PluginWatcher_Changed;
+                    PluginWatcher.EnableRaisingEvents = true;
                 }
 
                 CurrentAssembly = Assembly.Load(File.ReadAllBytes(PluginAssemblyPath));
@@ -214,8 +194,7 @@ namespace UBLoader {
         /// </summary>
         protected override void Shutdown() {
             try {
-                Core.PluginInitComplete -= Core_PluginInitComplete;
-                Core.PluginTermComplete -= Core_PluginTermComplete;
+                UBHelper.Core.GameStateChanged -= Core_GameStateChanged;
                 UnloadPluginAssembly();
                 UBHelper.Core.FilterShutdown();
             }
@@ -246,7 +225,7 @@ namespace UBLoader {
         public void LogError(string message) {
             try {
                 using (StreamWriter writer = new StreamWriter(System.IO.Path.Combine(PluginStorageDirectory, "exceptions.txt"), true)) {
-                    writer.WriteLine(message);
+                    writer.WriteLine($"{DateTime.Now} {message}");
                     writer.Close();
                 }
             }
