@@ -339,7 +339,7 @@ namespace UtilityBelt.Tools {
                     pointerIcon = TextureCache.TextureFromBitmapResource("UtilityBelt.Resources.icons.arrow.png");
 
                 if (hud == null) {
-                    hud = new UBHud(HudX, HudY, ShowLabel ? 150 : 32, 32);
+                    hud = UB.Huds.CreateHud(HudX, HudY, ShowLabel ? 150 : 32, 32);
                     hud.OnRender += Hud_OnRender;
                     hud.OnMove += Hud_OnMove;
                     hud.OnClose += Hud_OnClose;

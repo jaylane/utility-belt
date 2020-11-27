@@ -151,6 +151,7 @@
     <Compile Include="Lib\ToolBase.cs" />
     <Compile Include="Lib\Database.cs" />
     <Compile Include="Lib\UBHud.cs" />
+    <Compile Include="Lib\UBHudManager.cs" />
     <Compile Include="Lib\VCS_Connector.cs" />
     <Compile Include="Lib\VHS_Connector.cs" />
     <Compile Include="Tools\Arrow.cs" />

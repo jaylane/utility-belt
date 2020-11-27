@@ -284,7 +284,7 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
                 }
                 if (!Enabled)
                     return;
-                hud = new UBHud(HudX, HudY, 150, HudSize);
+                hud = UB.Huds.CreateHud(HudX, HudY, 150, HudSize);
                 hud.OnMove += Hud_OnMove;
                 hud.OnClose += Hud_OnClose;
                 hud.OnRender += Hud_OnRender;
