@@ -124,6 +124,7 @@ namespace UtilityBelt {
         internal LandscapeMapsView LandscapeMapView;
         internal Settings Settings;
         internal Database Database;
+        internal UBHudManager Huds;
 
         internal List<ToolBase> LoadedTools = new List<ToolBase>();
 
@@ -228,6 +229,7 @@ namespace UtilityBelt {
             didInit = true;
 
             Logger.Init();
+            Huds = new UBHudManager();
             Settings = new Settings();
             Database = new Database(DatabaseFile);
 
