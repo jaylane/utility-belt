@@ -96,6 +96,16 @@ namespace UtilityBelt.Tools {
             }
         }
         #endregion
+        #region /ub quests
+        [Summary("Refreshes your quest flags with /myquests, and hides the output.")]
+        [Usage("/ub myquests")]
+        [Example("/ub myquests", "Refreshes your quest flags with /myquests, and hides the output")]
+        [CommandPattern("myquests", @"")]
+        public void DoMyQuests(string command, Match args) {
+            WriteToChat($"Refreshing quests");
+            GetMyQuestsList(1, true, true);
+        }
+        #endregion
         //regaliamaskuber - 1 solves (1522807913)"Player has collected the mask from a Virinidi Profatrix." -1 72000
         #endregion
 
@@ -153,6 +163,15 @@ namespace UtilityBelt.Tools {
             return 0;
         }
         #endregion //getquestktrequired[string questflag]
+        #region isrefreshingquests[]
+        [ExpressionMethod("isrefreshingquests")]
+        [ExpressionReturn(typeof(double), "Returns 1 if quests are currently being fetched and processed, 0 otherwise")]
+        [Summary("Checks if quests are currently being fetched or processed")]
+        [Example("isrefreshingquests[]", "Returns 1 if quests are currently being fetched and processed")]
+        public object Isrefreshingquests() {
+            return GettingQuests;
+        }
+        #endregion //isrefreshingquests[]
         #endregion
 
         public QuestTracker(UtilityBeltPlugin ub, string name) : base(ub, name) {
