@@ -408,6 +408,11 @@
             </summary>
             <param name="uptime">AC client uptime in seconds</param>
         </member>
+        <member name="P:UBHelper.Core.isFocused">
+            <summary>
+            Returns true if the client currently has focus.
+            </summary>
+        </member>
         <member name="E:UBHelper.Core.GameStateChanged">
             <summary>
             Fired when UBHelper.Core.GameState changes.
@@ -561,26 +566,15 @@
             Useful for lowering cpu consumption.
             </summary>
         </member>
-        <member name="M:UBHelper.VideoPatch.Enable">
+        <member name="P:UBHelper.VideoPatch.Enabled">
             <summary>
-            Enables VideoPatch by disabling the 3d rendering window of the game client.
+            Disables rendering the 3d portion of the game client.
             </summary>
         </member>
-        <member name="M:UBHelper.VideoPatch.Disable">
+        <member name="F:UBHelper.VideoPatch.bgOnly">
             <summary>
-            Disables VideoPatch
+            Enables rendering the 3d portion of the game client while the client has focus. (requires UBHelper.VideoPatch.Enabled == true)
             </summary>
-        </member>
-        <member name="M:UBHelper.VideoPatch.Toggle">
-            <summary>
-            Toggles VideoPatch
-            </summary>
-        </member>
-        <member name="M:UBHelper.VideoPatch.IsEnabled">
-            <summary>
-            Checks if VideoPatch is enabled
-            </summary>
-            <returns>true if VideoPatch is enabled</returns>
         </member>
         <member name="E:UBHelper.VideoPatch.Changed">
             <summary>

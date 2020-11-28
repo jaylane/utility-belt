@@ -127,7 +127,7 @@ For portals, it will show the destination.
 
         public void Disable() {
             if (enabled) {
-                if (UBHelper.Core.version >= 1912022230) UBHelper.VideoPatch.Changed -= VideoPatch_Changed;
+                UBHelper.VideoPatch.Changed -= VideoPatch_Changed;
                 DisableInternal();
             }
         }
@@ -175,8 +175,8 @@ For portals, it will show the destination.
             }
             evaluate_tags_time = DateTime.UtcNow + TimeSpan.FromMilliseconds(250);
         }
-        private void VideoPatch_Changed(object sender, EventArgs e) {
-            if (UBHelper.VideoPatch.IsEnabled()) DisableInternal();
+        private void VideoPatch_Changed() {
+            if (UBHelper.VideoPatch.Enabled) DisableInternal();
             else EnableRealInternal();
         }
         private static void AddTag(WorldObject wo) {

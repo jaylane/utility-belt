@@ -101,7 +101,7 @@ namespace UtilityBelt.Tools {
             get { return (bool)GetSetting("VideoPatch"); }
             set {
                 UpdateSetting("VideoPatch", value);
-                VideoPatchToggle(value);
+                UBHelper.VideoPatch.Enabled = value;
             }
         }
 
@@ -111,7 +111,7 @@ namespace UtilityBelt.Tools {
             get { return (bool)GetSetting("VideoPatchFocus"); }
             set {
                 UpdateSetting("VideoPatchFocus", value);
-                VideoPatchFocusToggle(value);
+                UBHelper.VideoPatch.bgOnly = value;
             }
         }
         [Summary("Limits frame while the client does not have focus")]
@@ -907,20 +907,15 @@ namespace UtilityBelt.Tools {
         [Example("/ub videopatch toggle", "Toggles the video patch")]
         [CommandPattern("videopatch", @"^ *(?<params>(enable|disable|toggle)) *$")]
         public void DoVideoPatch(string _, Match args) {
-            UB_video(args.Groups["params"].Value);
-        }
-        public void UB_video(string parameters) {
             char[] stringSplit = { ' ' };
-            string[] parameter = parameters.Split(stringSplit, 2);
+            string[] parameter = args.Groups["params"].Value.Split(stringSplit, 2);
             switch (parameter[0]) {
                 case "enable":
                     VideoPatch = true;
                     break;
-
                 case "disable":
                     VideoPatch = false;
                     break;
-
                 case "toggle":
                     VideoPatch = !VideoPatch;
                     break;
@@ -928,54 +923,6 @@ namespace UtilityBelt.Tools {
                     Logger.Error("Usage: /ub videopatch {enable,disable,toggle}");
                     break;
             }
-        }
-        public void VideoPatchToggle(bool enabled) {
-            if (enabled) {
-                if (VideoPatchFocus) VideoPatchFocusToggle(true);
-                else UBHelper.VideoPatch.Enable();
-            }
-            else {
-                if (VideoPatchFocus) VideoPatchFocusToggle(false);
-                else UBHelper.VideoPatch.Disable();
-            }
-        }
-
-        private bool VideoPatchFocusEventRegistered = false;
-        public void VideoPatchFocusToggle(bool enabled) {
-            if (enabled) {
-                if (!VideoPatchFocusEventRegistered) {
-                    if (VideoPatch) {
-                        VideoPatchFocusEventRegistered = true;
-                        UB.Core.WindowMessage += Core_WindowMessage_VideoPatchFocusToggle;
-                        if (Util.IsClientActive()) UBHelper.VideoPatch.Disable();
-                        else UBHelper.VideoPatch.Enable();
-                    }
-                }
-            }
-            else {
-                if (VideoPatchFocusEventRegistered) {
-                    VideoPatchFocusEventRegistered = false;
-                    UB.Core.WindowMessage -= Core_WindowMessage_VideoPatchFocusToggle;
-                    if (VideoPatch) UBHelper.VideoPatch.Enable();
-                }
-            }
-        }
-        private void Core_WindowMessage_VideoPatchFocusToggle(object sender, WindowMessageEventArgs e) {
-            try {
-                switch (e.Msg) {
-                    case 0x0007: // WM_SETFOCUS
-                    case 0x0021: // WM_MOUSEACTIVATE
-                    case 0x0086: // WM_NCACTIVATE
-                        UBHelper.VideoPatch.Disable();
-                        break;
-                    case 0x0008: // WM_KILLFOCUS
-                        UBHelper.VideoPatch.Enable();
-                        break;
-                    default:
-                        break;
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
         }
         #endregion
         #region /ub globalframelimit <frameRate>
@@ -1271,7 +1218,6 @@ namespace UtilityBelt.Tools {
                     UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch_PortalOpen;
                     UB.Core.CharacterFilter.Logoff -= CharacterFilter_Logoff_Follow;
                     UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete_Follow;
-                    UB.Core.WindowMessage -= Core_WindowMessage_VideoPatchFocusToggle;
                 }
                 disposedValue = true;
             }
