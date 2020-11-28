@@ -229,7 +229,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
 
             uTank2.PluginCore.PC.NavRouteChanged += PC_NavRouteChanged;
             uTank2.PluginCore.PC.NavWaypointChanged += PC_NavWaypointChanged;
-            if (UBHelper.Core.version >= 1912022230) UBHelper.VideoPatch.Changed += VideoPatch_Changed;
+            UBHelper.VideoPatch.Changed += VideoPatch_Changed;
 
             PropertyChanged += (s, e) => {
                 if (e.PropertyName == "Enabled") {
@@ -246,7 +246,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void VideoPatch_Changed(object sender, EventArgs e) {
+        private void VideoPatch_Changed() {
             needsDraw = true;
         }
 
@@ -331,7 +331,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
             currentRoute = new VTNavRoute(routePath, UB);
             currentRoute.Parse();
 
-            if (!UBHelper.VideoPatch.IsEnabled()) {
+            if (!UBHelper.VideoPatch.Enabled) {
                 currentRoute.Draw();
             }
 
@@ -397,7 +397,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
                         UB.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
                         uTank2.PluginCore.PC.NavRouteChanged -= PC_NavRouteChanged;
                         uTank2.PluginCore.PC.NavWaypointChanged -= PC_NavWaypointChanged;
-                        if (UBHelper.Core.version >= 1912022230) UBHelper.VideoPatch.Changed -= VideoPatch_Changed;
+                        UBHelper.VideoPatch.Changed -= VideoPatch_Changed;
                     }
                     catch { }
 
