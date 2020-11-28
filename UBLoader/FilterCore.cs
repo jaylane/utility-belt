@@ -74,8 +74,11 @@ namespace UBLoader {
             switch (new_state) {
                 case UBHelper.GameState.Character_Select_Screen:
                     VersionWatermark.Display(Host, $"{PluginName} v{FileVersionInfo.GetVersionInfo(PluginAssemblyPath).ProductVersion}");
+                    UnloadPluginAssembly();
                     break;
                 case UBHelper.GameState.Creating_Character:
+                    VersionWatermark.Destroy();
+                    break;
                 case UBHelper.GameState.Entering_Game:
                     VersionWatermark.Destroy();
                     pluginsReady = true;
@@ -161,6 +164,10 @@ namespace UBLoader {
                     PluginWatcher.Filter = PluginAssemblyName;
                     PluginWatcher.Changed += PluginWatcher_Changed;
                     PluginWatcher.EnableRaisingEvents = true;
+                }
+                if (PluginInstance != null) {
+                    LogError("************* Attempt to LoadPluginAssembly() when PluginInstance != null! ***************");
+                    UnloadPluginAssembly();
                 }
 
                 CurrentAssembly = Assembly.Load(File.ReadAllBytes(PluginAssemblyPath));
