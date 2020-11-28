@@ -331,7 +331,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
             currentRoute = new VTNavRoute(routePath, UB);
             currentRoute.Parse();
 
-            if (!UBHelper.VideoPatch.Enabled) {
+            if (!(UBHelper.VideoPatch.Enabled && !(UBHelper.VideoPatch.bgOnly && UBHelper.Core.isFocused))) {
                 currentRoute.Draw();
             }
 

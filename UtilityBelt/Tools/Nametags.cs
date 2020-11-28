@@ -176,7 +176,7 @@ For portals, it will show the destination.
             evaluate_tags_time = DateTime.UtcNow + TimeSpan.FromMilliseconds(250);
         }
         private void VideoPatch_Changed() {
-            if (UBHelper.VideoPatch.Enabled) DisableInternal();
+            if (UBHelper.VideoPatch.Enabled && !(UBHelper.VideoPatch.bgOnly && UBHelper.Core.isFocused)) DisableInternal();
             else EnableRealInternal();
         }
         private static void AddTag(WorldObject wo) {

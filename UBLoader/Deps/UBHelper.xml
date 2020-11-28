@@ -571,7 +571,7 @@
             Disables rendering the 3d portion of the game client.
             </summary>
         </member>
-        <member name="F:UBHelper.VideoPatch.bgOnly">
+        <member name="P:UBHelper.VideoPatch.bgOnly">
             <summary>
             Enables rendering the 3d portion of the game client while the client has focus. (requires UBHelper.VideoPatch.Enabled == true)
             </summary>
