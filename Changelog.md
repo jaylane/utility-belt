@@ -1,6 +1,8 @@
 ## 0.1.8 (TBD)
 - Add expression `isrefreshingquests[]`
 - Add command `/ub myquests` - runs /myquests command and hides chat output
+- Fix issue where plugin could load multiple instances of itself
+- Fix issue where Plugin.VideoPatch could break physics
 
 ## 0.1.7 (2020-11-27) [UtilityBeltInstaller-0.1.7.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/03886a9b9c41e8b05703da8ba237dae1/UtilityBeltInstaller-0.1.7.exe)
 - Fix salvage name check in autotinker
