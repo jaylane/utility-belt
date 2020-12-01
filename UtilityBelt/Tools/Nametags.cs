@@ -84,21 +84,41 @@ For portals, it will show the destination.
             if (Enabled) Enable();
         }
 
+        /// <summary>
+        /// Overall Enable function- based purely on user preference
+        /// </summary>
         private void Enable() {
-            //copy pasta
-            if (UB.Core.CharacterFilter.LoginStatus != 0)
-                EnableReal();
+            if (UB.Core.CharacterFilter.LoginStatus != 0) {
+                UBHelper.VideoPatch.Changed += VideoPatch_Changed;
+                VideoPatch_Changed();
+            }
             else
                 UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
         }
-        private void EnableReal() {
-            if (Enabled && !enabled) {
-                UBHelper.VideoPatch.Changed += VideoPatch_Changed;
-                EnableRealInternal();
-            }
+        private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
+            UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
+            UBHelper.VideoPatch.Changed += VideoPatch_Changed;
+            VideoPatch_Changed();
         }
-        private void EnableRealInternal() {
-            if (Enabled && !enabled) {
+
+        /// <summary>
+        /// Overall Disable function- based purely on user preference
+        /// </summary>
+        public void Disable() {
+            UBHelper.VideoPatch.Changed -= VideoPatch_Changed;
+            DisableInternal();
+        }
+
+        private void VideoPatch_Changed() {
+            if (UBHelper.VideoPatch.Enabled && !(UBHelper.VideoPatch.bgOnly && UBHelper.Core.isFocused)) DisableInternal();
+            else EnableInternal();
+        }
+
+        /// <summary>
+        /// Internal Enable function- for enabling internally, without affecting user preference
+        /// </summary>
+        private void EnableInternal() {
+            if (!enabled) {
                 enabled = true;
                 UB.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
                 UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
@@ -106,31 +126,10 @@ For portals, it will show the destination.
                 evaluate_tags_time = DateTime.MinValue;
             }
         }
-        private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
-            try {
-                UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
-                EnableReal();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
 
-        protected override void Dispose(bool disposing) {
-            if (!disposedValue) {
-                if (disposing) {
-                    PropertyChanged -= Nametags_PropertyChanged;
-                    if (enabled) Disable();
-                    base.Dispose(disposing);
-                }
-                disposedValue = true;
-            }
-        }
-
-        public void Disable() {
-            if (enabled) {
-                UBHelper.VideoPatch.Changed -= VideoPatch_Changed;
-                DisableInternal();
-            }
-        }
+        /// <summary>
+        /// Internal Disable function- for disabling internally, without affecting user preference
+        /// </summary>
         public void DisableInternal() {
             if (enabled) {
                 enabled = false;
@@ -143,11 +142,22 @@ For portals, it will show the destination.
                 destructionQueue.Clear();
             }
         }
+
+        protected override void Dispose(bool disposing) {
+            if (!disposedValue) {
+                if (disposing) {
+                    PropertyChanged -= Nametags_PropertyChanged;
+                    Disable();
+                    base.Dispose(disposing);
+                }
+                disposedValue = true;
+            }
+        }
         private void Nametags_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
             switch (e.PropertyName) {
                 case "Enabled":
-                    if (Enabled && !enabled) Enable();
-                    else if (!Enabled && enabled) Disable();
+                    if (Enabled) Enable();
+                    else Disable();
                     return;
                 case "MaxRange":
                     maxRange = MaxRange;
@@ -174,10 +184,6 @@ For portals, it will show the destination.
                     break;
             }
             evaluate_tags_time = DateTime.UtcNow + TimeSpan.FromMilliseconds(250);
-        }
-        private void VideoPatch_Changed() {
-            if (UBHelper.VideoPatch.Enabled && !(UBHelper.VideoPatch.bgOnly && UBHelper.Core.isFocused)) DisableInternal();
-            else EnableRealInternal();
         }
         private static void AddTag(WorldObject wo) {
             if (wo.Id == CoreManager.Current.CharacterFilter.Id) return;
