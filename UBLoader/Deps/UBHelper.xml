@@ -72,7 +72,7 @@
             Helper class for working with the VTank plugin
             </summary>
         </member>
-        <member name="P:UBHelper.vTank.Instance">
+        <member name="F:UBHelper.vTank.Instance">
             <summary>
             The TrustedRelay interface for VTank control
             </summary>
@@ -98,14 +98,14 @@
             </summary>
             <param name="expressionString">Expression string to evaluate</param>
         </member>
-        <member name="M:UBHelper.vTank.Decision_Lock(uTank2.ActionLockType,System.TimeSpan)">
+        <member name="M:UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType,System.TimeSpan)">
             <summary>
             Lock VTank from performing actions. Use Decision_UnLock to cancel.
             </summary>
             <param name="actionLockType">the type of action to put a lock on</param>
             <param name="timeSpan">time to lock vtank for</param>
         </member>
-        <member name="M:UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType)">
+        <member name="M:UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType)">
             <summary>
             Cancel a VTank lock
             </summary>
@@ -373,6 +373,11 @@
             Plugins should call this once at startup to intialize UBHelper
             </summary>
             <param name="characterName">name of the currently logged in character</param>
+        </member>
+        <member name="F:UBHelper.Core.hasVtank">
+            <summary>
+            Check this before touching vTank things! (call UBHelper.Core.RefreshHasVtank() to update)
+            </summary>
         </member>
         <member name="M:UBHelper.Core.FilterStartup(System.String,System.String)">
             <summary>

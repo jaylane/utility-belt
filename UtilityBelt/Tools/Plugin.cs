@@ -436,7 +436,7 @@ namespace UtilityBelt.Tools {
             Util.ThinkOrWrite("Could not find a portal", PortalThink);
         }
         private void UsePortal() {
-            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(500 + PortalTimeout));
+            UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.Navigation, TimeSpan.FromMilliseconds(500 + PortalTimeout));
             portalAttempts = 1;
 
             portalTimestamp = DateTime.UtcNow - TimeSpan.FromMilliseconds(PortalTimeout - 250); // fudge timestamp so next think hits in 500ms
@@ -450,7 +450,7 @@ namespace UtilityBelt.Tools {
             Util.ThinkOrWrite((success? "portal used successfully" : "failed to use portal"), PortalThink);
             portal = null;
             portalAttempts = 0;
-            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+            UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType.Navigation);
             UB.Core.RenderFrame -= Core_RenderFrame_PortalOpen;
             UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch_PortalOpen;
         }
@@ -462,7 +462,7 @@ namespace UtilityBelt.Tools {
                         if (portalAttempts > 1)
                             LogDebug("Use Portal Timed out, trying again");
 
-                        UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(500 + PortalTimeout));
+                        UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.Navigation, TimeSpan.FromMilliseconds(500 + PortalTimeout));
                         portalAttempts++;
                         portalTimestamp = DateTime.UtcNow;
                         CoreManager.Current.Actions.UseItem(portal.Id, 0);
@@ -509,10 +509,10 @@ namespace UtilityBelt.Tools {
                 return;
             }
             try { // intentionally setup to throw early.
-                UBHelper.vTank.Instance.LoadNavProfile("UBFollow");
-                UBHelper.vTank.Instance.NavSetFollowTarget(id, "");
-                if (!(bool)UBHelper.vTank.Instance.GetSetting("EnableNav"))
-                    UBHelper.vTank.Instance.SetSetting("EnableNav", true);
+                ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.LoadNavProfile("UBFollow");
+                ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.NavSetFollowTarget(id, "");
+                if (!(bool)((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.GetSetting("EnableNav"))
+                    ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.SetSetting("EnableNav", true);
                 Logger.WriteToChat($"Following {UB.Core.WorldFilter[id].Name}[0x{id:X8}]");
             }
             catch {
@@ -521,24 +521,19 @@ namespace UtilityBelt.Tools {
 
         }
         private void CharacterFilter_Logoff_Follow(object sender, LogoffEventArgs e) {
-            try {
-                if (e.Type == LogoffEventType.Requested) UB_Follow_Clear();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+            if (e.Type == LogoffEventType.Requested) UB_Follow_Clear();
         }
         private void CharacterFilter_LoginComplete_Follow(object sender, EventArgs e) {
-            try {
-                UB_Follow_Clear();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+            UB_Follow_Clear();
         }
         private void UB_Follow_Clear() {
-            try {
-                if (UBHelper.vTank.Instance != null && UBHelper.vTank.Instance.GetNavProfile().Equals("UBFollow"))
-                    Util.Decal_DispatchOnChatCommand("/vt nav load ");
-            }
-            catch { }
+            if (UBHelper.Core.hasVtank) UB_Follow_Clear_Internal();
         }
+        private void UB_Follow_Clear_Internal() {
+                if (((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance).GetNavProfile().Equals("UBFollow"))
+                    Util.Decal_DispatchOnChatCommand("/vt nav load ");
+        }
+
 
         #endregion
         #region /ub mexec

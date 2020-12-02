@@ -235,8 +235,8 @@ namespace UtilityBelt.Lib.VTNav {
 
         private void PC_NavWaypointChanged() {
             try {
-                if (NavType == eNavType.Once && points.Count > UBHelper.vTank.Instance.NavNumPoints) {
-                    var offset = points.Count - UBHelper.vTank.Instance.NavNumPoints;
+                if (NavType == eNavType.Once && points.Count > ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance).NavNumPoints) {
+                    var offset = points.Count - ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance).NavNumPoints;
                     if (offset != NavOffset) {
                         NavOffset = offset;
                         for (var i = 0; i < NavOffset; i++) {
@@ -252,14 +252,14 @@ namespace UtilityBelt.Lib.VTNav {
 
         private void UpdateCurrentWaypoint() {
             try {
-                var routeFinished = UBHelper.vTank.Instance?.NavCurrent > UBHelper.vTank.Instance?.NavNumPoints - 1;
+                var routeFinished = ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.NavCurrent > ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.NavNumPoints - 1;
                 var isWaypointRoute = NavType != eNavType.Target;
                 var isEnabled = UB.VisualNav.Display.CurrentWaypoint.Enabled;
-                var isValidPointOffset = NavOffset + UBHelper.vTank.Instance?.NavCurrent < points.Count;
+                var isValidPointOffset = NavOffset + ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.NavCurrent < points.Count;
 
                 if (isEnabled && isWaypointRoute && !routeFinished && isValidPointOffset) {
 
-                    var current = points[NavOffset + UBHelper.vTank.Instance.NavCurrent];
+                    var current = points[NavOffset + ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance).NavCurrent];
 
                     if (currentNavShape == null) {
                         currentNavShape = CoreManager.Current.D3DService.MarkCoordsWithShape(0f, 0f, 0f, D3DShape.Ring, Color.Red.ToArgb());
@@ -273,7 +273,7 @@ namespace UtilityBelt.Lib.VTNav {
                     }
 
                     // this is dumb, i cant get it to convert straight to a float
-                    var navCloseStopRangeStr = UBHelper.vTank.Instance?.GetSetting("NavCloseStopRange").ToString();
+                    var navCloseStopRangeStr = ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.GetSetting("NavCloseStopRange").ToString();
 
                     if (float.TryParse(navCloseStopRangeStr, out float navCloseStopRange)) {
                         currentNavShape.Visible = true;

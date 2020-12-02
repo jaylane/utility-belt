@@ -196,8 +196,10 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
         public VisualNav(UtilityBeltPlugin ub, string name) : base(ub, name) {
             Display = new VisualNavDisplayOptions(this);
         }
-
         public override void Init() {
+            if (UBHelper.Core.hasVtank) Init_Internal();
+        }
+        private void Init_Internal() {
             base.Init();
             UB.Core.CharacterFilter.ChangePortalMode += CharacterFilter_ChangePortalMode;
             UB.Core.RenderFrame += Core_RenderFrame;
@@ -267,17 +269,17 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
 
                 var routePath = VTNavRoute.GetLoadedNavigationProfile();
 
-                if (UBHelper.vTank.Instance == null || UBHelper.vTank.Instance.NavNumPoints <= 0) return;
+                if (UBHelper.vTank.Instance == null || ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.NavNumPoints <= 0) return;
 
                 // the route has changed, but we are currently in a [None] route, so we will save it
                 // to a new route called " [None].nav" so we can parse and draw it.
-                if (string.IsNullOrEmpty(UBHelper.vTank.Instance?.GetNavProfile())) {
+                if (string.IsNullOrEmpty(((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.GetNavProfile())) {
                     Util.DispatchChatToBoxWithPluginIntercept($"/vt nav save {VTNavRoute.NoneNavName}");
                     needsDraw = true;
                 }
 
                 // the route has changed, and we are on our custon [None].nav, so we force a redraw
-                if (UBHelper.vTank.Instance.GetNavProfile().StartsWith(VTNavRoute.NoneNavName)) {
+                if (((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance).GetNavProfile().StartsWith(VTNavRoute.NoneNavName)) {
                     needsDraw = true;
                 }
             }
@@ -313,13 +315,13 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
 
         private void DrawCurrentRoute() {
 
-            if (!Enabled || string.IsNullOrEmpty(UBHelper.vTank.Instance?.GetNavProfile())) {
+            if (!Enabled || string.IsNullOrEmpty(((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.GetNavProfile())) {
                 ClearCurrentRoute();
                 NavChanged?.Invoke(this, new EventArgs());
                 return;
             }
 
-            var routePath = Path.Combine(Util.GetVTankProfilesDirectory(), UBHelper.vTank.Instance.GetNavProfile());
+            var routePath = Path.Combine(Util.GetVTankProfilesDirectory(), ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance).GetNavProfile());
             if (routePath == currentRoutePath && !forceUpdate) return;
 
             forceUpdate = false;
@@ -340,7 +342,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
                 navFileWatcher.Dispose();
             }
 
-            if (!UBHelper.vTank.Instance.GetNavProfile().StartsWith(VTNavRoute.NoneNavName)) {
+            if (!((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance).GetNavProfile().StartsWith(VTNavRoute.NoneNavName)) {
                 WatchRouteFiles();
             }
 
@@ -395,9 +397,8 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
                     try {
                         UB.Core.RenderFrame -= Core_RenderFrame;
                         UB.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
-                        uTank2.PluginCore.PC.NavRouteChanged -= PC_NavRouteChanged;
-                        uTank2.PluginCore.PC.NavWaypointChanged -= PC_NavWaypointChanged;
                         UBHelper.VideoPatch.Changed -= VideoPatch_Changed;
+                        if (UBHelper.Core.hasVtank) Dispose_vTank();
                     }
                     catch { }
 
@@ -409,6 +410,10 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
                 }
                 disposedValue = true;
             }
+        }
+        private void Dispose_vTank() {
+            uTank2.PluginCore.PC.NavRouteChanged -= PC_NavRouteChanged;
+            uTank2.PluginCore.PC.NavWaypointChanged -= PC_NavWaypointChanged;
         }
     }
 }
