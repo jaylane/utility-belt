@@ -77,7 +77,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
             isTurning = true;
             turningSeconds = DateTime.UtcNow;
             if (PauseNav)
-                UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.Navigation, TimeSpan.FromMilliseconds(15000));
+                UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(15000));
 
             needToTurn = false;
             UBHelper.Core.TurnToHeading(targetDirection);
@@ -125,8 +125,8 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
             if (command.Contains("s")) addShift = true;
 
             if (PauseNav) {
-                UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.Navigation, TimeSpan.FromMilliseconds(20000));
-                UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.CorpseOpenAttempt, TimeSpan.FromMilliseconds(20000));
+                UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(20000));
+                UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.CorpseOpenAttempt, TimeSpan.FromMilliseconds(20000));
             }
             needToJump = true;
             //start turning
@@ -154,8 +154,8 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                             Util.Think("Turning Success");
                         isTurning = false;
                         if (!needToJump) {
-                            UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType.Navigation);
-                            UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType.CorpseOpenAttempt);
+                            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+                            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.CorpseOpenAttempt);
                         }
                     }
                     else UBHelper.Core.TurnToHeading(targetDirection); // giv'er!
@@ -165,8 +165,8 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                 if (isTurning && DateTime.UtcNow - turningSeconds >= TimeSpan.FromSeconds(15)) {
                     isTurning = needToJump = false;
                     Util.ThinkOrWrite("Turning failed", ThinkFail);
-                    UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType.Navigation);
-                    UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType.CorpseOpenAttempt);
+                    UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+                    UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.CorpseOpenAttempt);
                 }
                 //Do the jump thing
                 if (needToJump && !isTurning) {
@@ -186,14 +186,14 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                         //I don't know if this can even still fail.....
                         Logger.Debug("Timeout waiting for jump, trying again...");
                         if (PauseNav)
-                            UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.Navigation, TimeSpan.FromMilliseconds(15000));
+                            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(15000));
                         UBHelper.Jumper.Jump(targetDirection, ((float)msToHoldDown / 1000), addShift, addW, addX, addZ, addC);
                     }
                     else {
                         Util.ThinkOrWrite("You have failed to jump too many times.", ThinkFail);
 
-                        UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType.Navigation);
-                        UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType.CorpseOpenAttempt);
+                        UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+                        UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.CorpseOpenAttempt);
                         waitingForJump = false;
                         UB.Core.RenderFrame -= Core_RenderFrame;
                         //clear settings
@@ -212,8 +212,8 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                 UB.Core.RenderFrame -= Core_RenderFrame;
                 if (ThinkComplete)
                     Util.Think("Jumper Success");
-                UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType.Navigation);
-                UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType.CorpseOpenAttempt);
+                UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+                UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.CorpseOpenAttempt);
                 waitingForJump = false;
                 //clear settings
                 addShift = addW = addZ = addX = addC = false;

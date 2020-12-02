@@ -77,7 +77,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
 
         private bool disposed;
         private bool isRunning = false;
-        private object lootProfile;
+        private VTClassic.LootCore lootProfile;
         private bool needsToBuy = false;
         private bool needsToSell = false;
         private int vendorId = 0;
@@ -246,7 +246,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     UB.Core.Actions.FaceHeading(UB.Core.Actions.Heading - 1, true);
                     vendor = null;
                     vendorOpening = 0;
-                    UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType.Navigation);
+                    UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
                     break;
             }
         }
@@ -259,7 +259,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             Util.ThinkOrWrite("AutoVendor failed to open vendor", UB.AutoVendor.Think);
         }
         private void OpenVendor() {
-            UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.Navigation, TimeSpan.FromMilliseconds(500 + UB.AutoVendor.TriesTime));
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(500 + UB.AutoVendor.TriesTime));
             vendorOpening = 1;
             UB.Core.RenderFrame += Core_RenderFrame_OpenVendor;
             vendorTimestamp = DateTime.UtcNow - TimeSpan.FromMilliseconds(UB.AutoVendor.TriesTime - 250); // fudge timestamp so next think hits in 500ms
@@ -275,7 +275,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                         if (vendorOpening > 1)
                             Logger.Debug("Vendor Open Timed out, trying again");
 
-                        UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.Navigation, TimeSpan.FromMilliseconds(500 + UB.AutoVendor.TriesTime));
+                        UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(500 + UB.AutoVendor.TriesTime));
                         vendorOpening++;
                         vendorTimestamp = DateTime.UtcNow;
                         CoreManager.Current.Actions.UseItem(vendor.Id, 0);
@@ -286,7 +286,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                         vendor = null;
                         vendorOpening = 0;
                         UB.Core.RenderFrame -= Core_RenderFrame_OpenVendor;
-                        UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType.Navigation);
+                        UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
                     }
                 }
             }
@@ -639,10 +639,10 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                 return;
             }
 
-            UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.Navigation, TimeSpan.FromMilliseconds(1000));
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(1000));
 
             // Load our loot profile
-            ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
+            lootProfile.LoadProfile(profilePath, false);
 
             itemsToId.Clear();
             List<int> inventory = new List<int>();
@@ -663,8 +663,8 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                 itemsToId.Add(item);
             }
             bailTimer = DateTime.UtcNow;
-            UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
-            UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
             UBHelper.Vendor.VendorClosed += UBHelper_VendorClosed;
             waitingForAutoStackCram = false;
             needsToBuy = needsToSell = false;
@@ -691,9 +691,9 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             UBHelper.Vendor.VendorClosed -= UBHelper_VendorClosed;
             UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
             UB.Core.EchoFilter.ClientDispatch -= EchoFilter_ClientDispatch;
-            if (lootProfile != null) ((VTClassic.LootCore)lootProfile).UnloadProfile();
-            UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType.Navigation);
-            UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType.ItemUse);
+            if (lootProfile != null) (lootProfile).UnloadProfile();
+            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.ItemUse);
         }
 
         public void Core_RenderFrame_VendorSpam(object sender, EventArgs e) {
@@ -724,9 +724,9 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     return;
 
                 //if autovendor is running, and nav block has less than a second plus thinkInterval remaining, refresh it
-                if (UBHelper.vTank.locks[UBHelper.vTank.ActionLockType.Navigation] < DateTime.UtcNow + TimeSpan.FromMilliseconds(1250)) {
-                    UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
-                    UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
+                if (UBHelper.vTank.locks[uTank2.ActionLockType.Navigation] < DateTime.UtcNow + TimeSpan.FromMilliseconds(1250)) {
+                    UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
+                    UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
                 }
 
                 if (TestMode) {
@@ -1004,7 +1004,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                 uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithVendorObjectTemplateID(item.Id);
                 if (itemInfo == null)
                     continue;
-                uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
+                uTank2.LootPlugins.LootAction result = lootProfile.GetLootDecision(itemInfo);
                 if (!result.IsKeepUpTo)
                     continue;
                 var countObjClass = Util.GetItemCountInInventoryByObjectClass(item.ObjectClass);
@@ -1021,7 +1021,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             foreach (VendorItem item in vendor.Items.Values) {
                 uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithVendorObjectTemplateID(item.Id);
                 if (itemInfo == null) continue;
-                uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
+                uTank2.LootPlugins.LootAction result = lootProfile.GetLootDecision(itemInfo);
                 if (!result.IsKeep) continue;
                 buyItems.Add(new BuyItem(item, int.MaxValue));
             }
@@ -1055,7 +1055,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     if (!ItemIsSafeToGetRidOf(wo)) continue;
                     uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(wo.Id);
                     if (itemInfo == null) continue;
-                    uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
+                    uTank2.LootPlugins.LootAction result = lootProfile.GetLootDecision(itemInfo);
                     if (!result.IsSell || !vendor.WillBuyItem(wo))
                         continue;
                     sellObjects.Add(wo);
@@ -1093,7 +1093,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             foreach (BuyItem bi in GetBuyItems()) {
                 uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithVendorObjectTemplateID(bi.Item.Id);
                 if (itemInfo == null) continue;
-                uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
+                uTank2.LootPlugins.LootAction result = lootProfile.GetLootDecision(itemInfo);
                 if (result.IsKeepUpTo || result.IsKeep) {
                     string mc = (ShopItemListTypes.ContainsKey(bi.Item.Category) ? ShopItemListTypes[bi.Item.Category] : $"Unknown Category 0x{bi.Item.Category:X8}");
                     test_mode.Append($"  {mc} -> {bi.Item.Name} * {(bi.Amount == int.MaxValue ? "∞" : bi.Amount.ToString())} - {result.RuleName}\n");
@@ -1110,7 +1110,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             foreach (WorldObject wo in sellObjects) {
                 uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(wo.Id);
                 if (itemInfo == null) continue;
-                uTank2.LootPlugins.LootAction result = ((VTClassic.LootCore)lootProfile).GetLootDecision(itemInfo);
+                uTank2.LootPlugins.LootAction result = lootProfile.GetLootDecision(itemInfo);
                 if (result.IsSell) {
                     test_mode.Append($"  {Util.GetItemLocation(wo.Id)}: <Tell:IIDString:{Util.GetChatId()}:select|{wo.Id}>{Util.GetObjectName(wo.Id)}</Tell> - {result.RuleName}\n");
                 }
@@ -1135,14 +1135,14 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     Decal.Adapter.CoreManager.Current.RenderFrame -= Core_RenderFrame;
                     Decal.Adapter.CoreManager.Current.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
                     Decal.Adapter.CoreManager.Current.EchoFilter.ClientDispatch -= EchoFilter_ClientDispatch;
-                    if (UBHelper.Core.hasVtank) Dispose_vTank();
+                    try {
+                        if (hasLootCore && lootProfile != null) lootProfile.UnloadProfile();
+                    }
+                    catch { }
                     base.Dispose(disposing);
                 }
                 disposed = true;
             }
-        }
-        private void Dispose_vTank() {
-            if (hasLootCore && lootProfile != null) ((VTClassic.LootCore)lootProfile).UnloadProfile();
         }
     }
 }
