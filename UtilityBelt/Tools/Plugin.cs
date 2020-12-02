@@ -888,6 +888,42 @@ namespace UtilityBelt.Tools {
             UBHelper.Core.SetTextures(landscape, landscapeDetail, environment, environmentDetail, sceneryDraw, landscapeDraw);
         }
         #endregion
+        #region /ub element[q][ <element>[ x y width height]]
+        [Summary("Moves AC UI Elements")]
+        [Usage("/ub element[q][ <element>[ x y width height]]")]
+        [Example("/ub element", "Lists available elements")]
+        [Example("/ub element sbox", "Shows the current position and size of the SBOX element")]
+        [Example("/ub element sbox 0 0 800 600", "Moves the SBOX element to 0,0, and resizes it to 800x600")]
+        [Example("/ub elementq sbox 0 0 800 600", "Moves the SBOX element to 0,0, and resizes it to 800x600, without spamming chat about it")]
+        [CommandPattern("element", @"^(?<element>SBOX|CHAT|FCH1|FCH2|FCH3|FCH4|EXAM|VITS|SVIT|ENVP|PANS|TBAR|INDI|PBAR|COMB|RADA)?( (?<x>\d+) (?<y>\d+) (?<w>\d+) (?<h>\d+))?$", true)]
+        public void DoElement(string a, Match args) {
+            if (args.Groups["element"].Length == 0) {
+                Logger.WriteToChat($"Available Elements: {string.Join(", ", Enum.GetNames(typeof(UBHelper.UIElement)))}");
+                return;
+            }
+            string optname = args.Groups["element"].Value.ToUpper();
+            int opt;
+            try {
+                opt = (int)Enum.Parse(typeof(UBHelper.UIElement), optname);
+            } catch {
+                Logger.Error($"{optname} is not a valid element.");
+                return;
+            }
+            bool quiet = a.Equals("elementq");
+            if (args.Groups["x"].Length == 0) {
+                System.Drawing.Rectangle current = UBHelper.Core.GetElementPosition((UBHelper.UIElement)opt);
+                Logger.WriteToChat($"Element {optname}: X:{current.X}, Y:{current.Y}, Width:{current.Width}, Height:{current.Height}");
+                return;
+            }
+            int.TryParse(args.Groups["x"].Value, out int x);
+            int.TryParse(args.Groups["y"].Value, out int y);
+            int.TryParse(args.Groups["w"].Value, out int w);
+            int.TryParse(args.Groups["h"].Value, out int h);
+            UBHelper.Core.MoveElement((UBHelper.UIElement)opt, new System.Drawing.Rectangle(x, y, w, h));
+            if (!quiet) Logger.WriteToChat($"Moved {optname} to: X:{x}, Y:{y}, Width:{w}, Height:{h}");
+            return;
+        }
+        #endregion
         #region /ub vitae
         [Summary("Thinks to yourself with your current vitae percentage")]
         [Usage("/ub vitae")]
