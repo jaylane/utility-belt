@@ -188,8 +188,8 @@ Provides a command-line interface to inventory management.
 
 
             LogDebug($"ItemGiver GIVE {(maxGive == int.MaxValue ? "∞" : maxGive.ToString())} {(givePartialItem ? "(partial)" : "")}{utlProfile} to {UB.Core.WorldFilter[destinationId].Name}");
-            UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
-            UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
             IGRunning = true;
             GetGiveItems();
 
@@ -310,8 +310,8 @@ Provides a command-line interface to inventory management.
 
             lootProfile.LoadProfile(Path.Combine(profilePath, utlProfile), false);
 
-            UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
-            UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
             lastIdCount = int.MaxValue;
             IGRunning = true;
             GetIGItems();
@@ -566,12 +566,7 @@ Provides a command-line interface to inventory management.
         #region Loot Profile Watcher
         private bool PC_LootProfileChanged_Registered = false;
         // Handle settings changes while running
-
-
         public void WatchLootProfile_Changed(bool enabled) {
-            if (UBHelper.Core.hasVtank) WatchLootProfile_Changed_Internal(enabled);
-        }
-        private void WatchLootProfile_Changed_Internal(bool enabled) {
             if (UB.Core.CharacterFilter.LoginStatus == 0)
                 return;
 
@@ -588,7 +583,7 @@ Provides a command-line interface to inventory management.
                     WatchLootProfile = false;
                     return;
                 }
-                string loadedProfile = ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.GetLootProfile();
+                string loadedProfile = UBHelper.vTank.Instance?.GetLootProfile();
                 if (string.IsNullOrEmpty(loadedProfile)) return;
 
                 profilesWatcher = new FileSystemWatcher {
@@ -608,7 +603,7 @@ Provides a command-line interface to inventory management.
 
         private void PC_LootProfileChanged() {
             try {
-                string loadedProfile = ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.GetLootProfile();
+                string loadedProfile = UBHelper.vTank.Instance?.GetLootProfile();
                 if (!string.IsNullOrEmpty(loadedProfile))
                     WatchLootProfile_Changed(WatchLootProfile);
             }
@@ -655,9 +650,9 @@ Provides a command-line interface to inventory management.
                     return;
                 }
 
-                if (UBHelper.vTank.locks[UBHelper.vTank.ActionLockType.Navigation] < DateTime.UtcNow + TimeSpan.FromSeconds(1)) { //if itemgiver is running, and nav block has less than a second remaining, refresh it
-                    UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
-                    UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
+                if (UBHelper.vTank.locks[uTank2.ActionLockType.Navigation] < DateTime.UtcNow + TimeSpan.FromSeconds(1)) { //if itemgiver is running, and nav block has less than a second remaining, refresh it
+                    UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
+                    UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
                 }
 
                 if (DateTime.UtcNow - lastAction < TimeSpan.FromMilliseconds(giveDelay))
@@ -725,8 +720,8 @@ Provides a command-line interface to inventory management.
 
             Util.ThinkOrWrite($"ItemGiver finished: {utlProfile} to {targetPlayer}. took {Util.GetFriendlyTimeDifference(giveTimer.Elapsed)} to give {itemsGiven} item(s). {totalFailures - itemsGiven}", IGThink);
             
-            UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType.Navigation);
-            UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType.ItemUse);
+            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.ItemUse);
             UB.Core.RenderFrame -= Core_RenderFrame_ig;
             itemsGiven = totalFailures = failedItems = pendingGiveCount = 0;
             IGRunning = isRegex = false;
@@ -747,8 +742,12 @@ Provides a command-line interface to inventory management.
                             UB.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
                         }
                     }
-                    if (profilesWatcher != null) profilesWatcher.Dispose();
-                    if (UBHelper.Core.hasVtank) Dispose_vTank();
+                    if (profilesWatcher != null) {
+                        profilesWatcher.Dispose();
+                        if (uTank2.PluginCore.PC != null) {
+                            uTank2.PluginCore.PC.LootProfileChanged -= PC_LootProfileChanged;
+                        }
+                    }
 
                     UB.Core.RenderFrame -= Core_RenderFrame_ReloadProfile;
                     UB.Core.RenderFrame -= Core_RenderFrame_ig;
@@ -756,9 +755,6 @@ Provides a command-line interface to inventory management.
                 }
                 disposed = true;
             }
-        }
-        private void Dispose_vTank() {
-            uTank2.PluginCore.PC.LootProfileChanged -= PC_LootProfileChanged;
         }
     }
 }

@@ -305,7 +305,7 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
                 return;
 
             }
-            UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.Navigation, TimeSpan.FromMilliseconds(1000));
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(1000));
 
             // Load our loot profile
             LogDebug($"Loading loot profile at {profilePath}");
@@ -326,8 +326,8 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
                 waitingForIds = true;
                 lastIdSpam = DateTime.UtcNow;
             }
-            UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
-            UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
+            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
         }
 
         private IEnumerable<string> GetAutoAcceptChars() {
@@ -372,9 +372,9 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
                     Stop();
                 }
 
-                if (Enabled && UBHelper.vTank.locks[UBHelper.vTank.ActionLockType.Navigation] < DateTime.UtcNow + TimeSpan.FromSeconds(1)) {
-                    UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
-                    UBHelper.vTank.Decision_Lock(UBHelper.vTank.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
+                if (Enabled && UBHelper.vTank.locks[uTank2.ActionLockType.Navigation] < DateTime.UtcNow + TimeSpan.FromSeconds(1)) {
+                    UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
+                    UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
                 }
 
                 if (waitingForIds)
@@ -456,8 +456,8 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
 
                 if (lootProfile != null) ((VTClassic.LootCore)lootProfile).UnloadProfile();
 
-                UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType.Navigation);
-                UBHelper.vTank.Decision_UnLock(UBHelper.vTank.ActionLockType.ItemUse);
+                UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+                UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.ItemUse);
             }
             catch (Exception ex) { Logger.LogException(ex); }
             finally {
