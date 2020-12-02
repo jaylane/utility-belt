@@ -91,7 +91,7 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
                             }
                             else if (update.PlayerID != UB.Core.CharacterFilter.Id) {
                                 //Util.WriteToChat("Marking player as invalid: " + update.PlayerID.ToString() + " on server " + update.Server);
-                                UBHelper.vTank.Instance?.HelperPlayerSetInvalid(update.PlayerID);
+                                ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.HelperPlayerSetInvalid(update.PlayerID);
                             }
 
                             i++;
@@ -151,7 +151,7 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
                 };
 
                 if (helperUpdate != null) {
-                    UBHelper.vTank.Instance.HelperPlayerUpdate(helperUpdate);
+                    ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance).HelperPlayerUpdate(helperUpdate);
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }

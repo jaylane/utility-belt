@@ -1254,11 +1254,11 @@ namespace UtilityBelt.Tools {
                 return 0;
 
             // this uses vtanks spell casting system so that peace while idle registers the action properly
-            var spell = UBHelper.vTank.Instance.SpellSystem_GetSpellById(id);
+            var spell = ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance).SpellSystem_GetSpellById(id);
             if (spell == null)
                 return 2;
 
-            UBHelper.vTank.Instance.SpellSystem_CastNormalSpell(spell, 0);
+            ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance).SpellSystem_CastNormalSpell(spell, 0);
 
             return 1;
         }
@@ -1278,11 +1278,11 @@ namespace UtilityBelt.Tools {
                 return 0;
 
             // this uses vtanks spell casting system so that peace while idle registers the action properly
-            var spell = UBHelper.vTank.Instance.SpellSystem_GetSpellById(id);
+            var spell = ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance).SpellSystem_GetSpellById(id);
             if (spell == null)
                 return 2;
 
-            UBHelper.vTank.Instance.SpellSystem_CastNormalSpell(spell, target.Wo.Id);
+            ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance).SpellSystem_CastNormalSpell(spell, target.Wo.Id);
 
             return 1;
         }
@@ -1708,9 +1708,9 @@ namespace UtilityBelt.Tools {
         private void DoPortalLoopFix() {
             // TODO: fixy
             return;
-            Logger.WriteToChat($"Nav: {UBHelper.vTank.Instance.NavCurrent}");
+            Logger.WriteToChat($"Nav: {((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.NavCurrent}");
             Util.DispatchChatToBoxWithPluginIntercept($"/vt nav save {VTNavRoute.NoneNavName}");
-            UBHelper.vTank.Instance.NavDeletePoint(0);
+            ((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.NavDeletePoint(0);
         }
 
         protected override void Dispose(bool disposing) {

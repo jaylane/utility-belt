@@ -34,7 +34,7 @@ namespace UtilityBelt.Lib {
         /// <returns></returns>
         public static bool HasSkillHunt(int spellId) {
             var spell = SpellTable.GetById(spellId);
-            var minSkillRequired = spell.Difficulty + (int)UBHelper.vTank.Instance.GetSetting("SpellDiffExcessThreshold-Hunt");
+            var minSkillRequired = spell.Difficulty + (int)((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.GetSetting("SpellDiffExcessThreshold-Hunt");
             var effectiveSkill = GetEffectiveSkillForSpell(spell);
 
             //Util.WriteToChat($"School: {spell.School} Buffed: {effectiveSkill} minSkillRequired: {minSkillRequired}");
@@ -50,7 +50,7 @@ namespace UtilityBelt.Lib {
         /// <returns></returns>
         public static bool HasSkillBuff(int spellId) {
             var spell = SpellTable.GetById(spellId);
-            var minSkillRequired = spell.Difficulty + (int)UBHelper.vTank.Instance.GetSetting("SpellDiffExcessThreshold-Buff");
+            var minSkillRequired = spell.Difficulty + (int)((uTank2.PluginCore.cExternalInterfaceTrustedRelay)UBHelper.vTank.Instance)?.GetSetting("SpellDiffExcessThreshold-Buff");
             var effectiveSkill = GetEffectiveSkillForSpell(spell);
 
             //Util.WriteToChat($"School: {spell.School} Buffed: {effectiveSkill} minSkillRequired: {minSkillRequired}");
