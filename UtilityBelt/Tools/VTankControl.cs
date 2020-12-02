@@ -374,7 +374,7 @@ namespace UtilityBelt.Tools {
             );
 
             var val = variable == null ? "0" : EvaluateExpression(variable.Value);
-            PersistentExpressionVariableCache.Add(varname, val);
+            PersistentExpressionVariableCache.Add(varname, variable == null ? null : val);
 
             return val;
         }
@@ -530,7 +530,7 @@ namespace UtilityBelt.Tools {
             );
 
             var val = variable == null ? "0" : EvaluateExpression(variable.Value);
-            GlobalExpressionVariablesCache.Add(varname, val);
+            GlobalExpressionVariablesCache.Add(varname, variable == null ? null : val);
 
             return val;
         }
