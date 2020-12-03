@@ -247,8 +247,6 @@ The Rend All button will automatically do the following:
 
                 tinkerCalc.BuildDifficultyTable();
 
-                UB.Core.RenderFrame += Core_RenderFrame;
-
                 PopulateAutoImbueSalvageCombo();
                 PopulateAutoImbueDmgTypeCombo();
                 DefaultImbueList = tinkerJobManager.BuildDefaultImbueList();
@@ -480,15 +478,6 @@ The Rend All button will automatically do the following:
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
-
-        public void Core_RenderFrame(object sender, EventArgs e) {
-            try {
-                if (!waitingForIds) {
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
 
         private void AutoTinkStopButton_Hit(object sender, EventArgs e) {
             try {
@@ -983,7 +972,6 @@ The Rend All button will automatically do the following:
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
-                    UB.Core.RenderFrame -= Core_RenderFrame;
                     base.Dispose(disposing);
                 }
                 disposedValue = true;
