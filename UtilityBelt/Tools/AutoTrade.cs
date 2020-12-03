@@ -152,7 +152,6 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
                 UB.Core.WorldFilter.AddTradeItem += WorldFilter_AddTradeItem;
                 UB.Core.WorldFilter.FailToAddTradeItem += WorldFilter_FailToAddTradeItem;
                 UB.Core.WorldFilter.AcceptTrade += WorldFilter_AcceptTrade;
-                UB.Core.RenderFrame += Core_RenderFrame;
 
                 AutoAcceptChars.CollectionChanged += AutoAcceptChars_CollectionChanged;
             }
@@ -268,7 +267,11 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
         }
 
         public void Start(int traderId, string useProfilePath = "") {
-            running = true;
+            if (running) {
+                LogError("Already running.");
+                return;
+            }
+
             doAccept = false;
             pendingAddItems.Clear();
             keepUpToCounts.Clear();
@@ -311,6 +314,9 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
             LogDebug($"Loading loot profile at {profilePath}");
             ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
 
+            running = true;
+            UB.Core.RenderFrame += Core_RenderFrame;
+
             itemsToId.Clear();
             using (var inventory = UB.Core.WorldFilter.GetInventory()) {
                 // filter inventory beforehand if we are only trading from the main pack
@@ -349,8 +355,10 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
 
         //FIXME - unregister when not in use
         public void Core_RenderFrame(object sender, EventArgs e) {
-            if (!running)
+            if (!running) {
+                UB.Core.RenderFrame -= Core_RenderFrame;
                 return;
+            }
 
             try {
                 if (doAccept) {
@@ -466,6 +474,7 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
                 keepUpToCounts.Clear();
                 pendingAddItems.Clear();
                 addedItems.Clear();
+                UB.Core.RenderFrame -= Core_RenderFrame;
             }
         }
 

@@ -40,7 +40,7 @@ namespace UtilityBelt.Tools {
         private DateTime portalTimestamp = DateTime.MinValue;
         private int portalAttempts = 0;
         private static WorldObject portal = null;
-
+        private bool isDelayListening;
         readonly private List<DelayedCommand> delayedCommands = new List<DelayedCommand>();
 
         #region Config
@@ -397,6 +397,11 @@ namespace UtilityBelt.Tools {
 
             delayedCommands.Add(delayed);
             delayedCommands.Sort((x, y) => x.RunAt.CompareTo(y.RunAt));
+
+            if (!isDelayListening) {
+                isDelayListening = true;
+                UB.Core.RenderFrame += Core_RenderFrame_Delay;
+            }
         }
         public void Core_RenderFrame_Delay(object sender, EventArgs e) {
             try {
@@ -405,6 +410,12 @@ namespace UtilityBelt.Tools {
                     Util.DispatchChatToBoxWithPluginIntercept(delayedCommands[0].Command);
                     delayedCommands.RemoveAt(0);
                 }
+
+                if (delayedCommands.Count == 0) {
+                    UB.Core.RenderFrame -= Core_RenderFrame_Delay;
+                    isDelayListening = false;
+                }
+
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -1235,8 +1246,6 @@ namespace UtilityBelt.Tools {
 
         public Plugin(UtilityBeltPlugin ub, string name) : base(ub, name) {
             try {
-                // TODO: do we need to always be listening for these?
-                UB.Core.RenderFrame += Core_RenderFrame_Delay;
                 UB.Core.CharacterFilter.Logoff += CharacterFilter_Logoff_Follow;
                 if (UB.Core.CharacterFilter.LoginStatus != 0) UB_Follow_Clear();
                 else UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete_Follow;

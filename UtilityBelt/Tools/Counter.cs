@@ -32,6 +32,11 @@ Counter is used to count items based on text or utl profiles as well as players 
         [Example("/ub count recomp.utl", "Counts the number of items matching recomp.utl in your inventory, thinking to yourself when finished")]
         [CommandPattern("count", @"^ *(?<Command>(item|profile|player)) (?<Name>.*?) ?(?<Options>(debug|think|\s)*)$")]
         public void DoCount(string command, Match args) {
+            if (isRunning) {
+                LogError("Counter already running.");
+                return;
+            }
+
             itemList.Clear();
 
             if (args.Groups["Command"].Value.ToLower() == "item") {
@@ -107,6 +112,7 @@ Counter is used to count items based on text or utl profiles as well as players 
                 }
                 ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
                 isRunning = true;
+                UB.Core.RenderFrame += Core_RenderFrame;
                 lastScanUpdate = DateTime.UtcNow;
                 matchedWOList = CountItems();
             }
@@ -135,13 +141,15 @@ Counter is used to count items based on text or utl profiles as well as players 
         #endregion
 
         public Counter(UtilityBeltPlugin ub, string name) : base(ub, name) {
-            UB.Core.RenderFrame += Core_RenderFrame;
+
         }
 
         public void Core_RenderFrame(object sender, EventArgs e) {
             try {
-                if (!isRunning)
+                if (!isRunning) {
+                    UB.Core.RenderFrame -= Core_RenderFrame;
                     return;
+                }
 
                 if (DateTime.UtcNow - lastScanUpdate > TimeSpan.FromSeconds(10)) {
                     lastScanUpdate = DateTime.UtcNow;
@@ -183,6 +191,7 @@ Counter is used to count items based on text or utl profiles as well as players 
                     matchedWOList.Clear();
                     matchedRule.Clear();
                     isRunning = false;
+                    UB.Core.RenderFrame -= Core_RenderFrame;
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
