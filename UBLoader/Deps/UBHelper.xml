@@ -413,6 +413,11 @@
             Returns true if the client currently has focus.
             </summary>
         </member>
+        <member name="P:UBHelper.Core.isTracked">
+            <summary>
+            Returns true if the mouse is currently over the client (regardless of focus)
+            </summary>
+        </member>
         <member name="E:UBHelper.Core.GameStateChanged">
             <summary>
             Fired when UBHelper.Core.GameState changes.
