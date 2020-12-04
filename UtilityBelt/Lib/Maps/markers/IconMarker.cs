@@ -9,6 +9,11 @@ namespace UtilityBelt.Lib.Maps.Markers {
     public class IconMarker : BaseMarker {
         public DxTexture Texture { get; private set; }
 
+        /// <summary>
+        /// Set this to false to handle disposing of the texture yourself
+        /// </summary>
+        public bool ManageDxTexture { get; set; } = true;
+
         public static int IconSize = 16;
         internal static int iconDrawCount = 0;
 
@@ -47,7 +52,7 @@ namespace UtilityBelt.Lib.Maps.Markers {
         }
 
         public override void Dispose() {
-            if (Texture != null && !Texture.IsDisposed)
+            if (ManageDxTexture && Texture != null && !Texture.IsDisposed)
                 Texture.Dispose();
             base.Dispose();
         }
