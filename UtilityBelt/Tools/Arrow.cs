@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Dungeon;
+using UtilityBelt.Lib.Maps.Markers;
 using VirindiViewService;
 using static UtilityBelt.Tools.VTankControl;
 
@@ -19,6 +20,7 @@ namespace UtilityBelt.Tools {
 Hold ctrl and drag to move the overlay position.  You can click the exit icon while holding ctrl to dismiss the overlay. ")]
     public class Arrow : ToolBase {
         private DxTexture arrowTexture = null;
+        private DxTexture arrowMapTexture = null;
         private UBHud hud = null;
         private string fontFace;
         private int fontWeight;
@@ -30,6 +32,8 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
         private TimerClass drawTimer;
 
         Regex ChatCoordinatesRe = new Regex(@"[^>](?<NS>\d+\.?\d*)(?<NSChar>[ns]),?\s*(?<EW>\d+\.?\d*)(?<EWChar>[ew])", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private IconMarker mapMarker;
+        private LabelMarker mapLabel;
 
         #region Config
         [Summary("Enabled")]
@@ -147,6 +151,13 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
             if (Enabled) {
                 if (arrowTexture == null)
                     arrowTexture = TextureCache.TextureFromBitmapResource("UtilityBelt.Resources.icons.arrow.png");
+                if (arrowMapTexture == null) {
+                    arrowMapTexture = new DxTexture(new Size(arrowTexture.Width, arrowTexture.Height));
+                    arrowMapTexture.BeginRender();
+                    arrowMapTexture.Fill(new Rectangle(0, 0, arrowMapTexture.Width, arrowMapTexture.Height), Color.Transparent);
+                    arrowMapTexture.DrawTextureRotated(arrowTexture, new Rectangle(0, 0, arrowTexture.Width, arrowTexture.Height), new Point(arrowMapTexture.Width/2, arrowMapTexture.Height/2), Color.White.ToArgb(), (float)Math.PI);
+                    arrowMapTexture.EndRender();
+                }
                 CreateHud();
                 if (drawTimer == null) {
                     drawTimer = new TimerClass();
@@ -155,6 +166,7 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
                 }
                 UB.Core.ChatBoxMessage += Core_ChatBoxMessage;
                 UB.Core.ChatNameClicked += Core_ChatNameClicked;
+                UpdateMapMarker();
             }
             else {
                 if (drawTimer != null)
@@ -162,6 +174,7 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
                 drawTimer = null;
                 UB.Core.ChatBoxMessage -= Core_ChatBoxMessage;
                 UB.Core.ChatNameClicked -= Core_ChatNameClicked;
+                RemoveMapMarker();
                 ClearHud();
             }
         }
@@ -186,6 +199,7 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
         private void Core_ChatNameClicked(object sender, ChatClickInterceptEventArgs e) {
             try {
                 if (e.Id == 110011) {
+                    e.Eat = true;
                     var coordinates = Coordinates.FromString(e.Text);
                     PointTo(coordinates.EW, coordinates.NS);
                 }
@@ -263,6 +277,8 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
             TargetText = text;
             Visible = true;
             hud?.Render();
+
+            UpdateMapMarker();
         }
 
         public double DistanceToTarget {
@@ -275,6 +291,42 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
             }
         }
         #endregion //public interface
+
+        #region landscape map marker
+        private void RemoveMapMarker() {
+            if (mapMarker != null) {
+                mapMarker.Dispose();
+                mapMarker = null;
+            }
+            if (mapLabel != null) {
+                mapLabel.Dispose();
+                mapLabel = null;
+            }
+        }
+
+        private void UpdateMapMarker() {
+            if (mapMarker == null) {
+                mapMarker = new IconMarker(TargetEW, TargetNS, arrowMapTexture) {
+                    MinZoomLevel = 0,
+                    MaxZoomLevel = 1,
+                    ManageDxTexture = false
+                };
+                mapLabel = new LabelMarker("Arrow Target", TargetEW, TargetNS) {
+                    MinZoomLevel = 0,
+                    MaxZoomLevel = 1
+                };
+                mapMarker.AttachLabel(mapLabel);
+                UB.LandscapeMaps.AddMarker(mapMarker);
+            }
+            else {
+                mapMarker.NS = TargetNS;
+                mapMarker.EW = TargetEW;
+                mapLabel.NS = TargetNS;
+                mapLabel.EW = TargetEW;
+                UB.LandscapeMaps.Redraw();
+            }
+        }
+        #endregion // landscape map marker
 
         #region Hud Rendering
         internal void CreateHud() {
@@ -356,7 +408,10 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
                     UB.Core.ChatBoxMessage -= Core_ChatBoxMessage;
                     UB.Core.ChatNameClicked -= Core_ChatNameClicked;
                     PropertyChanged -= Arrow_PropertyChanged;
+                    RemoveMapMarker();
                     ClearHud();
+                    if (arrowTexture != null) arrowTexture.Dispose();
+                    if (arrowMapTexture != null) arrowMapTexture.Dispose();
                     base.Dispose(disposing);
                 }
                 disposedValue = true;

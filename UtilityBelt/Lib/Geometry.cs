@@ -48,6 +48,10 @@ namespace UtilityBelt.Lib {
         }
 
         public static uint GetLandblockFromCoordinates(float EW, float NS) {
+            return GetLandblockFromCoordinates((double)EW, (double)NS);
+        }
+
+        public static uint GetLandblockFromCoordinates(double EW, double NS) {
             NS -= 0.5f;
             EW -= 0.5f;
             NS *= 10.0f;

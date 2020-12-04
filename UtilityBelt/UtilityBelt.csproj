@@ -117,6 +117,7 @@
   <ItemGroup>
     <Compile Include="Lib\Attributes.cs" />
     <Compile Include="Lib\Constants\WeenieType.cs" />
+    <Compile Include="Lib\Coordinate.cs" />
     <Compile Include="Lib\Dungeon\Dungeon.cs" />
     <Compile Include="Lib\Dungeon\DungeonCell.cs" />
     <Compile Include="Lib\Dungeon\DungeonLayer.cs" />

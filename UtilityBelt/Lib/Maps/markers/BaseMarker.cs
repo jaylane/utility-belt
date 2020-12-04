@@ -31,6 +31,11 @@ namespace UtilityBelt.Lib.Maps.Markers {
         }
 
         public virtual bool Draw(DxTexture texture, int x, int y, double zoom, bool highlight) {
+            if (texture == null || texture.IsDisposed) {
+                Dispose();
+                return false;
+            }
+
             var coordsVisible = UtilityBeltPlugin.Instance.LandscapeMaps.CoordinatesVisible(EW, NS);
             var correctZoomLevel = zoom >= MinZoomLevel && zoom <= MaxZoomLevel;
             return highlight || (coordsVisible && correctZoomLevel);

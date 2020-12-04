@@ -57,52 +57,6 @@ namespace UtilityBelt.Tools {
             }
         }
 
-        public class Coordinates {
-            public double NS { get; set; } = 0;
-            public double EW { get; set; } = 0;
-            public double Z { get; set; } = 0;
-            private static Regex CoordSearchRegex = new Regex(@"(?<NSval>\d+.?\d*)\s*(?<NSchr>[ns]),?\s*(?<EWval>\d+.?\d*)(?<EWchr>[ew])", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-            public Coordinates() {
-
-            }
-
-            public Coordinates(double ew, double ns) {
-                EW = ew;
-                NS = ns;
-            }
-
-            public static Coordinates FromString(string coordsToParse) {
-                var coords = new Coordinates();
-
-                if (CoordSearchRegex.IsMatch(coordsToParse)) {
-                    var m = CoordSearchRegex.Match(coordsToParse);
-                    coords.NS = double.Parse(m.Groups["NSval"].Value, (IFormatProvider)CultureInfo.InvariantCulture.NumberFormat);
-                    coords.NS *= m.Groups["NSchr"].Value.ToLower().Equals("n") ? 1 : -1;
-                    coords.EW = double.Parse(m.Groups["EWval"].Value, (IFormatProvider)CultureInfo.InvariantCulture.NumberFormat);
-                    coords.EW *= m.Groups["EWchr"].Value.ToLower().Equals("e") ? 1 : -1;
-                }
-
-                return coords;
-            }
-
-            public double DistanceTo(Coordinates other) {
-                var nsdiff = (((NS * 10) + 1019.5) * 24) - (((other.NS * 10) + 1019.5) * 24);
-                var ewdiff = (((EW * 10) + 1019.5) * 24) - (((other.EW * 10) + 1019.5) * 24);
-                return Math.Abs(Math.Sqrt(Math.Pow(Math.Abs(nsdiff), 2) + Math.Pow(Math.Abs(ewdiff), 2) + Math.Pow(Math.Abs(Z - other.Z), 2)));
-            }
-
-            public double DistanceToFlat(Coordinates other) {
-                var nsdiff = (((NS * 10) + 1019.5) * 24) - (((other.NS * 10) + 1019.5) * 24);
-                var ewdiff = (((EW * 10) + 1019.5) * 24) - (((other.EW * 10) + 1019.5) * 24);
-                return Math.Abs(Math.Sqrt(Math.Pow(Math.Abs(nsdiff), 2) + Math.Pow(Math.Abs(ewdiff), 2)));
-            }
-
-            public override string ToString() {
-                return $"{Math.Abs(NS).ToString("F1")}{(NS>=0?"N":"S")}, {Math.Abs(EW).ToString("F1")}{(EW>=0?"E":"W")} (Z {Z.ToString("F2")})";
-            }
-        }
-
         #region Config
         [Summary("VitalSharing")]
         [DefaultValue(true)]
