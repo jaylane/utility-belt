@@ -476,7 +476,7 @@ Provides a command-line interface to inventory management.
         public object Getitemcountininventorybyname(string name) {
             double count = 0;
             List<int> weenies = new List<int>();
-            UBHelper.InventoryManager.GetInventory(ref weenies, UBHelper.InventoryManager.GetInventoryType.AllItems);
+            UBHelper.InventoryManager.GetInventory(ref weenies, UBHelper.InventoryManager.GetInventoryType.Everything, Weenie.INVENTORY_LOC.ALL_LOC);
 
             foreach (var id in weenies) {
                 var weenie = new Weenie(id);
@@ -498,7 +498,7 @@ Provides a command-line interface to inventory management.
             Regex re = new Regex(namerx, RegexOptions.Compiled | RegexOptions.IgnoreCase);
             double count = 0;
             List<int> weenies = new List<int>();
-            UBHelper.InventoryManager.GetInventory(ref weenies, UBHelper.InventoryManager.GetInventoryType.AllItems);
+            UBHelper.InventoryManager.GetInventory(ref weenies, UBHelper.InventoryManager.GetInventoryType.Everything, Weenie.INVENTORY_LOC.ALL_LOC);
             foreach (var id in weenies) {
                 var weenie = new Weenie(id);
                 if (re.IsMatch(Util.GetObjectName(weenie.Id))) {
