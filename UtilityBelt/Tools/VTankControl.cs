@@ -18,7 +18,6 @@ namespace UtilityBelt.Tools {
     public class VTankControl : ToolBase {
         internal Dictionary<string, object> ExpressionVariables = new Dictionary<string, object>();
         internal Dictionary<string, object> PersistentExpressionVariableCache = new Dictionary<string, object>();
-        internal Dictionary<string, object> GlobalExpressionVariablesCache = new Dictionary<string, object>();
         private Random rnd = new Random();
 
         public class Stopwatch {
@@ -473,9 +472,6 @@ namespace UtilityBelt.Tools {
         [Summary("Returns the value stored in a variable")]
         [Example("getgvar[myvar]", "Returns the value stored in `myvar` global variable")]
         public object Getgvar(string varname) {
-            if (GlobalExpressionVariablesCache.ContainsKey(varname)) {
-                return GlobalExpressionVariablesCache[varname];
-            }
             var variable = UB.Database.GlobalVariables.FindOne(
                 LiteDB.Query.And(
                     LiteDB.Query.EQ("Name", varname),
@@ -484,7 +480,6 @@ namespace UtilityBelt.Tools {
             );
 
             var val = variable == null ? "0" : EvaluateExpression(variable.Value);
-            GlobalExpressionVariablesCache.Add(varname, variable == null ? null : val);
 
             return val;
         }
@@ -520,11 +515,6 @@ namespace UtilityBelt.Tools {
                 UB.Database.GlobalVariables.Update(variable);
             }
 
-            if (!GlobalExpressionVariablesCache.ContainsKey(varname))
-                GlobalExpressionVariablesCache.Add(varname, value);
-            else
-                GlobalExpressionVariablesCache[varname] = value;
-
             return EvaluateExpression(expressionValue);
         }
         #endregion //setgvar[string varname, object value]
@@ -550,7 +540,6 @@ namespace UtilityBelt.Tools {
         [ExpressionReturn(typeof(double), "Returns 1")]
         [Example("clearallgvars[]", "Unset all global variables")]
         public object Clearallgvars() {
-            GlobalExpressionVariablesCache.Clear();
             UB.Database.GlobalVariables.Delete(
                 LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server)
             );
@@ -564,9 +553,6 @@ namespace UtilityBelt.Tools {
         [ExpressionReturn(typeof(double), "Returns 1 if the variable was defined, 0 otherwise")]
         [Example("cleargvar[myvar]", "Clears the value stored in `myvar` global variable")]
         public object Cleargvar(string varname) {
-            if (GlobalExpressionVariablesCache.ContainsKey(varname))
-                GlobalExpressionVariablesCache.Remove(varname);
-
             if ((bool)Testpvar(varname)) {
                 UB.Database.GlobalVariables.Delete(
                     LiteDB.Query.And(
