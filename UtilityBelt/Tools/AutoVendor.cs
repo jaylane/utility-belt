@@ -740,16 +740,14 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
 
                 if (shouldAutoStack) {
                     shouldAutoStack = false;
-                    if (UB.InventoryManager.AutoStack && UBHelper.InventoryManager.AutoStack()) {
-                        UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent;
+                    if (UB.InventoryManager.AutoStack && Lib.Inventory.AutoStack(didSomething => { if (didSomething) waitingForAutoStackCram = false; })) {
                         waitingForAutoStackCram = true;
                         return;
                     }
                 }
                 if (shouldAutoCram) {
                     shouldAutoCram = false;
-                    if (UB.InventoryManager.AutoCram && UBHelper.InventoryManager.AutoCram()) {
-                        UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent;
+                    if (UB.InventoryManager.AutoCram && Lib.Inventory.AutoCram(didSomething => { if (didSomething) waitingForAutoStackCram = false; })) {
                         waitingForAutoStackCram = true;
                         return;
                     }
@@ -781,14 +779,6 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                         Stop();
                     }
                 }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void ActionQueue_InventoryEvent(object sender, EventArgs e) {
-            try {
-                waitingForAutoStackCram = false;
-                UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -955,24 +945,14 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                 LogDebug("Attempted to split item while another split was in progress");
                 return;
             }
-            splitQueue = new UBHelper.ActionQueue.Item();
+            splitQueue = new Lib.ActionQueue.Item(_ => { splitQueue = null; });
             var weenie = new UBHelper.Weenie(item.Id);
-            UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_DoSplit;
             weenie.Split(UB.Core.CharacterFilter.Id, 0, newStackSize);
             splitQueue.Queue(weenie.Id);
             waitingForSplit = true;
             LogDebug($"DoSplit Splitting {Util.GetObjectName(item.Id)}:{item.Id:X8}. old: {item.Values(LongValueKey.StackCount)} new: {newStackSize}");
         }
 
-        private void ActionQueue_InventoryEvent_DoSplit(object sender, EventArgs e) {
-            try {
-                if (sender.Equals(splitQueue)) {
-                    splitQueue = null;
-                    UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_DoSplit;
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
 
         private float GetVendorSellPrice(VendorItem item) {
             return (float)((int)(item.Value / item.StackCount) * (item.ObjectClass == ObjectClass.TradeNote ? 1.15f : vendorSellRate));

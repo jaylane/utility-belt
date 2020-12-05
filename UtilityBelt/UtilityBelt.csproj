@@ -115,6 +115,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Lib\ActionQueue.cs" />
     <Compile Include="Lib\Attributes.cs" />
     <Compile Include="Lib\Constants\WeenieType.cs" />
     <Compile Include="Lib\Coordinate.cs" />
