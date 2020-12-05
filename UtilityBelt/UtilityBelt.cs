@@ -533,6 +533,8 @@ namespace UtilityBelt {
                     LandscapeMapView.Dispose();
                 if (ItemGiverView != null)
                     ItemGiverView.Dispose();
+
+                Lib.ActionQueue.Dispose();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

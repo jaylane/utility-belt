@@ -4,11 +4,6 @@
         <name>UBHelper</name>
     </assembly>
     <members>
-        <member name="T:UBHelper.ActionQueue">
-            <summary>
-            A queue for managing inventory actions
-            </summary>
-        </member>
         <member name="T:UBHelper.Jumper">
             <summary>
             Helper class to assist with jumping
@@ -123,26 +118,6 @@
             <summary>
             Helper class for working with your inventory
             </summary>
-        </member>
-        <member name="M:UBHelper.InventoryManager.AutoCram">
-            <summary>
-            Crams all backpack items into sidepacks
-            </summary>
-            <returns>true if it did something</returns>
-        </member>
-        <member name="M:UBHelper.InventoryManager.AutoStack">
-            <summary>
-            Stacks all items in your backpack and sidepacks into as few stacks as possible
-            </summary>
-            <returns>true if it did something</returns>
-        </member>
-        <member name="M:UBHelper.InventoryManager.UnStack(System.Int32,System.Int32)">
-            <summary>
-            Unstacks splitItem or the currently selected item in your inventory if splitItem is 0
-            </summary>
-            <param name="splitItem">the item id to split, if 0 it will use currently selected item</param>
-            <param name="splitCount">how many splits to do</param>
-            <returns>true if it did anything</returns>
         </member>
         <member name="M:UBHelper.InventoryManager.GetInventory(System.Collections.Generic.List{System.Int32}@,UBHelper.InventoryManager.GetInventoryType,UBHelper.Weenie.INVENTORY_LOC)">
             <summary>
@@ -435,19 +410,19 @@
             Clears the client busy count
             </summary>
         </member>
-        <member name="M:UBHelper.Core.GetBusyState">
+        <member name="P:UBHelper.Core.GetBusyState">
             <summary>
             Gets the clients current busy state
             </summary>
             <returns></returns>
         </member>
-        <member name="M:UBHelper.Core.GetBusyStateId">
+        <member name="P:UBHelper.Core.GetBusyStateId">
             <summary>
             Gets the clients current busy state id
             </summary>
             <returns></returns>
         </member>
-        <member name="M:UBHelper.Core.GetBusyStateTime">
+        <member name="P:UBHelper.Core.GetBusyStateTime">
             <summary>
             Gets the clients current busy state time
             </summary>
@@ -501,13 +476,6 @@
             <param name="environmentDetail"></param>
             <param name="sceneryDraw"></param>
             <param name="landscapeDraw"></param>
-        </member>
-        <member name="M:UBHelper.Core.GetHeight(System.Int32)">
-            <summary>
-            returns the physics height of the object_id
-            </summary>
-            <param name="object_id"></param>
-            <returns></returns>
         </member>
         <member name="M:UBHelper.Core.DirtyDistance(System.Int32)">
             <summary>

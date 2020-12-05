@@ -413,8 +413,7 @@ Provides a command-line interface to inventory management.
         [Usage("/ub autostack")]
         [CommandPattern("autostack", @"^$")]
         public void DoAutoStack(string _, Match _1) {
-            if (UBHelper.InventoryManager.AutoStack()) {
-                UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_AutoStack;
+            if (Lib.Inventory.AutoStack(didSomething => { if (didSomething) Logger.WriteToChat("AutoStack complete."); })) {
                 Logger.WriteToChat("AutoStack running");
             }
             else {
@@ -422,34 +421,38 @@ Provides a command-line interface to inventory management.
             }
         }
 
-        private void ActionQueue_InventoryEvent_AutoStack(object sender, EventArgs e) {
-            try {
-                Logger.WriteToChat("AutoStack complete.");
-                UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoStack;
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
         #endregion
         #region /ub autocram
         [Summary("Auto Cram into side packs")]
         [Usage("/ub autocram")]
         [CommandPattern("autocram", @"^$")]
         public void DoAutoCram(string _, Match _1) {
-            if (UBHelper.InventoryManager.AutoCram()) {
-                UBHelper.ActionQueue.InventoryEvent += ActionQueue_InventoryEvent_AutoCram;
+            if (Lib.Inventory.AutoCram(didSomething => { if (didSomething) Logger.WriteToChat("AutoCram complete."); })) {
                 Logger.WriteToChat("AutoCram running");
             }
             else {
                 Logger.WriteToChat("AutoCram - nothing to do");
             }
         }
+        #endregion
 
-        private void ActionQueue_InventoryEvent_AutoCram(object sender, EventArgs e) {
-            try {
-                Logger.WriteToChat("AutoCram complete.");
-                UBHelper.ActionQueue.InventoryEvent -= ActionQueue_InventoryEvent_AutoCram;
+        /// <summary>
+        /// NOT PUBLIC - DO NOT LEAVE THIS IN FOR RELEASE
+        /// (not secret, but completely useless, outside of testing)
+        /// </summary>
+        /// <param name="_"></param>
+        /// <param name="_1"></param>
+        #region /ub unstack
+        [Summary("Unstack olive the things")]
+        [Usage("/ub unstack")]
+        [CommandPattern("unstack", @"^$")]
+        public void DoUnStack(string _, Match _1) {
+            if (Lib.Inventory.UnStack(didSomething => { if (didSomething) Logger.WriteToChat("Unstack complete."); })) {
+                Logger.WriteToChat("Unstack running");
             }
-            catch (Exception ex) { Logger.LogException(ex); }
+            else {
+                Logger.WriteToChat("Unstack - nothing to do");
+            }
         }
         #endregion
 
@@ -459,7 +462,7 @@ Provides a command-line interface to inventory management.
         [CommandPattern("clearbugged", @"^$")]
         public void DoClearBugged(string _, Match _1) {
             List<int> inv = new List<int>();
-            UBHelper.InventoryManager.GetInventory(ref inv, UBHelper.InventoryManager.GetInventoryType.AllItems, UBHelper.Weenie.INVENTORY_LOC.ALL_LOC);
+            UBHelper.InventoryManager.GetInventory(ref inv, UBHelper.InventoryManager.GetInventoryType.Everything, UBHelper.Weenie.INVENTORY_LOC.ALL_LOC);
             WriteToChat($"ClearBugged: Identifying {inv.Count} items, to check for bugged items...");
             new Assessor.Job(UB.Assessor, ref inv, null, () => { WriteToChat($"ClearBugged: Done!"); }, false);
         }
