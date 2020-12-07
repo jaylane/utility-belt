@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using UBHelper;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Expressions;
 using UtilityBelt.Lib.VTNav;
@@ -1009,14 +1008,16 @@ namespace UtilityBelt.Tools {
         [Summary("Gets a worldobject representing the first inventory item matching an exact name, or 0 if none was found")]
         [Example("wobjectfindininventorybyname[Massive Mana Charge]", "Returns a worldobject of the first inventory item that is named `Massive Mana Charge`")]
         public object Wobjectfindininventorybyname(string name) {
-            List<int> weenies = new List<int>();
-            UBHelper.InventoryManager.GetInventory(ref weenies, UBHelper.InventoryManager.GetInventoryType.Everything, Weenie.INVENTORY_LOC.ALL_LOC);
+            var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetInventory();
+            wos.SetFilter(new ByNameFilter(name));
 
-            foreach (var id in weenies) {
-                if (Util.GetObjectName(id) == name) {
-                    return new Wobject(id);
-                }
+            if (wos.Count > 0) {
+                var first = wos.First();
+                wos.Dispose();
+                return new Wobject(first.Id);
             }
+            wos.Dispose();
+
             return 0;
         }
         #endregion //wobjectfindininventorybyname[string name]
@@ -1027,15 +1028,16 @@ namespace UtilityBelt.Tools {
         [Summary("Gets a worldobject representing the first inventory item matching name regex, or 0 if none was found")]
         [Example("wobjectfindininventorybynamerx[`Massive.*`]", "Returns a worldobject of the first inventory item that matches regex `Massive.*`")]
         public object Wobjectfindininventorybynamerx(string namerx) {
+            var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetInventory();
             var re = new Regex(namerx);
-            List<int> weenies = new List<int>();
-            UBHelper.InventoryManager.GetInventory(ref weenies, UBHelper.InventoryManager.GetInventoryType.Everything, Weenie.INVENTORY_LOC.ALL_LOC);
-
-            foreach (var id in weenies) {
-                if (re.IsMatch(Util.GetObjectName(id))) {
-                    return new Wobject(id);
+            foreach (var wo in wos) {
+                if (re.IsMatch(wo.Name)) {
+                    wos.Dispose();
+                    return new Wobject(wo.Id);
                 }
             }
+
+            wos.Dispose();
 
             return 0;
         }
