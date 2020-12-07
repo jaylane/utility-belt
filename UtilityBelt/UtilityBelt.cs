@@ -105,6 +105,7 @@ namespace UtilityBelt {
 
     public class UtilityBeltPlugin {
         internal static UtilityBeltPlugin Instance;
+        private PerfMonitor PerfMonitor;
         private bool didInit = false;
         internal delegate void CommandHandlerDelegate(string verb, Match args);
         internal readonly Dictionary<string, Command> RegisteredCommands = new Dictionary<string, Command>();
@@ -160,6 +161,10 @@ namespace UtilityBelt {
 
         public UtilityBeltPlugin() {
             Instance = this;
+            PerfMonitor = new PerfMonitor();
+
+            //this will kill performance, it hooks every method in Tools/Lib
+            //PerfMonitor.HookAll();
         }
 
 
@@ -242,6 +247,7 @@ namespace UtilityBelt {
 
             LoadTools();
             Settings.Load();
+
             InitTools();
             InitCommands();
             InitHotkeys();
@@ -535,6 +541,7 @@ namespace UtilityBelt {
                     ItemGiverView.Dispose();
 
                 Lib.ActionQueue.Dispose();
+                PerfMonitor.Dispose();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
