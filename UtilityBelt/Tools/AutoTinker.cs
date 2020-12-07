@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Decal.Adapter;
 using Decal.Adapter.Wrappers;
 using UtilityBelt.Lib.Salvage;
@@ -70,7 +70,6 @@ The Rend All button will automatically do the following:
         readonly HudButton PopulateListButton;
         readonly HudStaticText AutoTinkItemNameLabel;
         readonly HudCombo AutoTinkCombo;
-        readonly HudCombo AutoTinkMaxTinksCombo;
         readonly HudTextBox AutoTinkMinPercentTextBox;
 
         //AutoImbue Stuff
@@ -203,9 +202,6 @@ The Rend All button will automatically do the following:
 
                 AutoTinkCombo = (HudCombo)UB.MainView.view["AutoTinkCombo"];
 
-                AutoTinkMaxTinksCombo = (HudCombo)UB.MainView.view["AutoTinkMaxTinksCombo"];
-                AutoTinkMaxTinksCombo.Change += AutoTinkMaxTinksCombo_Change;
-
                 AutoTinkAddSelectedButton = (HudButton)UB.MainView.view["AutoTinkAddSelectedButton"];
                 AutoTinkAddSelectedButton.Hit += AutoTinkAddSelectedButton_Hit;
 
@@ -250,10 +246,6 @@ The Rend All button will automatically do the following:
                 PopulateAutoTinkCombo();
 
                 tinkerCalc.BuildDifficultyTable();
-
-                UB.Core.RenderFrame += Core_RenderFrame;
-
-                PopulateAutoTinkMaxTinksCombo();
 
                 PopulateAutoImbueSalvageCombo();
                 PopulateAutoImbueDmgTypeCombo();
@@ -324,72 +316,6 @@ The Rend All button will automatically do the following:
         public void AutoImbueSalvageCombo_Change(object sender, EventArgs e) {
             try {
                 PopulateAutoImbue();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        public void AutoTinkMaxTinksCombo_Change(object sender, EventArgs e) {
-            try {
-                Stop();
-                if (storedTargetItem == null) {
-                    //Logger.WriteToChat("select an item first");
-                    return;
-                }
-                runType = "single";
-                SetTinkerSkills();
-                if (isPopulating) {
-                    Logger.WriteToChat("is populating is running");
-                    return;
-                }
-                else {
-                    tinkerJobManager.Stop();
-                    isPopulating = true;
-                    List<int> rescanItem = new List<int>();
-                    List<int> matchingMaterial = new List<int>();
-                    AutoTinkerList.ClearRows();
-                    tinkerJobManager.ScanInventory();
-
-                    string selectedItem = AutoTinkItemNameLabel.Text.ToString();
-
-
-                    List<string> usableSalvageOnItem = new List<string>();
-                    if (tinkerJobManager.CanBeTinkered(storedTargetItem)) {
-                        UpdateNameLabel(storedTargetItem.Id);
-                        usableSalvageOnItem = tinkerJobManager.GetUsableSalvage(storedTargetItem.Id);
-                        FilterSalvageCombo(usableSalvageOnItem);
-                        usableSalvageOnItem = usableSalvageOnItem.Distinct().ToList();
-
-                        tinkerJobManager.CreatePossibleMaterialList(usableSalvageOnItem, false);
-
-                        if (selectedItem == "[None]") {
-                            Logger.WriteToChat("Select an item first");
-                            return;
-                        }
-                    }
-
-
-                    float.TryParse(AutoTinkMinPercentTextBox.Text, out float minPercent);
-                    //Logger.WriteToChat(minPercent.ToString());
-
-                    rescanItem.Add(storedTargetItem.Id);
-
-
-                    HudStaticText c = (HudStaticText)(AutoTinkCombo[AutoTinkCombo.Current]);
-                    string currentSalvageChoice = c.Text.ToString();
-                    HudStaticText maxTinksString = (HudStaticText)(AutoTinkMaxTinksCombo[AutoTinkMaxTinksCombo.Current]);
-                    int.TryParse(maxTinksString.Text, out int maxTinks);
-
-                    new Assessor.Job(UB.Assessor, ref rescanItem, (_) => { }, () => {
-                        tinkerJobManager.TinkerListFinished += TinkerList_Finished;
-                        tinkerJobManager.TinkerListChanged += TinkerList_Changed;
-                        //tinkerJobManager.PopulateTinkerList();
-                        tinkerJobManager.BuildSalvageToBeApplied(storedTargetItem, currentSalvageChoice, runType, maxTinks);
-                        //tinkerJobManager.WriteSalvageToBeApplied();
-                        tinkerJobManager.BuildTinkerList(storedTargetItem, minPercent, "single", maxTinks);
-                        rescanItem.Clear();
-                    });
-                    tinkerJob.minPercent = minPercent;
-                }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -553,15 +479,6 @@ The Rend All button will automatically do the following:
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        public void Core_RenderFrame(object sender, EventArgs e) {
-            try {
-                if (!waitingForIds) {
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-
         private void AutoTinkStopButton_Hit(object sender, EventArgs e) {
             try {
                 Logger.Debug("AutoTinkStopButton_Hit");
@@ -705,16 +622,14 @@ The Rend All button will automatically do the following:
 
                     HudStaticText c = (HudStaticText)(AutoTinkCombo[AutoTinkCombo.Current]);
                     string currentSalvageChoice = c.Text.ToString();
-                    HudStaticText maxTinksString = (HudStaticText)(AutoTinkMaxTinksCombo[AutoTinkMaxTinksCombo.Current]);
-                    int.TryParse(maxTinksString.Text, out int maxTinks);
 
                     new Assessor.Job(UB.Assessor, ref rescanItem, (_) => { }, () => {
                         tinkerJobManager.TinkerListFinished += TinkerList_Finished;
                         tinkerJobManager.TinkerListChanged += TinkerList_Changed;
                         //tinkerJobManager.PopulateTinkerList();
-                        tinkerJobManager.BuildSalvageToBeApplied(storedTargetItem, currentSalvageChoice, runType, maxTinks);
+                        tinkerJobManager.BuildSalvageToBeApplied(storedTargetItem, currentSalvageChoice, runType);
                         //tinkerJobManager.WriteSalvageToBeApplied();
-                        tinkerJobManager.BuildTinkerList(storedTargetItem, minPercent, "single", maxTinks);
+                        tinkerJobManager.BuildTinkerList(storedTargetItem, minPercent);
                         rescanItem.Clear();
                     });
                     tinkerJob.minPercent = minPercent;
@@ -829,18 +744,8 @@ The Rend All button will automatically do the following:
             return maxDamage;
         }
 
-        private bool CheckSettings() {
-            if ((UB.Core.CharacterFilter.CharacterOptions & 0x80000000) == 0) {
-                Logger.WriteToChat("Error: You must enable the UseCraftSuccessDialog setting!");
-                return false;
-            }
-            return true;
-        }
-
-
         private void Start() {
             try {
-                if (!CheckSettings()) return;
                 if (isRunning) {
                     Logger.WriteToChat("already running");
                     return;
@@ -937,7 +842,7 @@ The Rend All button will automatically do the following:
             HudList.HudListRowAccessor newTinkRow = AutoTinkerList.AddRow();
             ((HudStaticText)newTinkRow[0]).Text = tinkCount.ToString();
             ((HudStaticText)newTinkRow[1]).Text = Util.GetObjectName(targetItem.Id).ToString();
-            ((HudStaticText)newTinkRow[2]).Text = Util.GetObjectName(targetSalvage.Id).Replace(" Salvaged", "").Replace(" Salvage", "").Replace("(100)", "") + "(" + Math.Round(targetSalvage.Values(DoubleValueKey.SalvageWorkmanship),2, MidpointRounding.AwayFromZero) + ") " ;
+            ((HudStaticText)newTinkRow[2]).Text = Util.GetObjectName(targetSalvage.Id).Replace(" Salvage","") + "(" + Math.Round(targetSalvage.Values(DoubleValueKey.SalvageWorkmanship),2, MidpointRounding.AwayFromZero) + ") " ;
             ((HudStaticText)newTinkRow[3]).Text = successChance.ToString("P");
             ((HudStaticText)newTinkRow[4]).Text = targetSalvage.Id.ToString();
             ((HudStaticText)newTinkRow[5]).Text = targetItem.Id.ToString();
@@ -947,7 +852,7 @@ The Rend All button will automatically do the following:
             HudList.HudListRowAccessor newTinkRow = AutoImbueList.AddRow();
             ((HudStaticText)newTinkRow[0]).Text = tinkCount.ToString();
             ((HudStaticText)newTinkRow[1]).Text = Util.GetObjectName(targetItem.Id).ToString();
-            ((HudStaticText)newTinkRow[2]).Text = Util.GetObjectName(targetSalvage.Id).Replace(" Salvaged", "").Replace(" Salvage", "").Replace("(100)","") + "(" + Math.Round(targetSalvage.Values(DoubleValueKey.SalvageWorkmanship), 2, MidpointRounding.AwayFromZero) + ") ";
+            ((HudStaticText)newTinkRow[2]).Text = Util.GetObjectName(targetSalvage.Id).Replace(" Salvage", "") + "(" + Math.Round(targetSalvage.Values(DoubleValueKey.SalvageWorkmanship), 2, MidpointRounding.AwayFromZero) + ") ";
             ((HudStaticText)newTinkRow[3]).Text = successChance.ToString("P");
             ((HudStaticText)newTinkRow[4]).Text = targetSalvage.Id.ToString();
             ((HudStaticText)newTinkRow[5]).Text = targetItem.Id.ToString();
@@ -1051,18 +956,10 @@ The Rend All button will automatically do the following:
             var SortedSalvageList = AutoTinkerSalvageList.Keys.ToList();
             foreach (var item in AutoTinkerSalvageList.OrderBy(i => i.Key)) {
                     AutoTinkCombo.AddItem(item.Key.ToString(), null);
+                //Logger.WriteToChat(item.Key.ToString());
             }
             AutoTinkCombo.AddItem("Granite/Iron", null);
         } 
-
-        public void PopulateAutoTinkMaxTinksCombo() {
-            AutoTinkMaxTinksCombo.Clear();
-
-            for (int i = 1; i <= 10; i++) {
-                AutoTinkMaxTinksCombo.AddItem(i.ToString(), null);
-            }
-            AutoTinkMaxTinksCombo.Current = AutoTinkMaxTinksCombo.Count - 1;
-        }
 
         public double GetDPS(double maxDamage, double variance) {
             double minDmg = maxDamage * (1 - variance);
@@ -1075,7 +972,6 @@ The Rend All button will automatically do the following:
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
-                    UB.Core.RenderFrame -= Core_RenderFrame;
                     base.Dispose(disposing);
                 }
                 disposedValue = true;
