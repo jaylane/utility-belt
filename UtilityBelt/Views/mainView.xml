@@ -7,19 +7,16 @@
         <control progid="DecalControls.PushButton" name="AutoVendorTestMode" left="96" top="8" width="22" height="24" text="T"/>
         <control progid="DecalControls.PushButton" name="AutoTradeEnable" left="8" top="40" width="88" height="24" text="  Auto Trade"/>
         <control progid="DecalControls.PushButton" name="AutoTradeTestMode" left="96" top="40" width="22" height="24" text="T"/>
-        <control progid="DecalControls.PushButton" name="ArrowEnabled" left="8" top="72" width="110" height="24" text="Arrow"/>
         <control progid="DecalControls.PushButton" name="ExportPCap" left="8" top="184" width="110" height="24" text="Export PCAP"/>
         
         <control progid="DecalControls.PushButton" name="DungeonMapsEnabled" left="144" top="8" width="110" height="24" text=" Dungeon Maps"/>
-        <control progid="DecalControls.PushButton" name="LandscapeMapsEnabled" left="144" top="40" width="110" height="24" text="   Landscape Maps"/>
+        <control progid="DecalControls.PushButton" name="NameTagsEnabled" left="144" top="40" width="110" height="24" text="Name Tags  "/>
         <control progid="DecalControls.PushButton" name="VisualNavEnabled" left="144" top="72" width="110" height="24" text="   Visual Nav Lines"/>
-        <control progid="DecalControls.PushButton" name="NameTagsEnabled" left="144" top="104" width="110" height="24" text="Name Tags  "/>
         <control progid="DecalControls.PushButton" name="CheckForUpdate" left="144" top="184" width="110" height="24" text="Check For Update"/>
 
         <control progid="DecalControls.PushButton" name="VideoPatchEnabled" left="280" top="8" width="88" height="24" text="  Video Patch"/>
         <control progid="DecalControls.PushButton" name="VideoPatchFocusEnabled" left="368" top="8" width="22" height="24" text="F"/>
         <control progid="DecalControls.PushButton" name="VitalSharingEnabled" left="280" top="40" width="110" height="24" text="Vital Sharing"/>
-        <control progid="DecalControls.PushButton" name="DerethTimeEnabled" left="280" top="72" width="110" height="24" text="Dereth Time"/>
         <control progid="DecalControls.PushButton" name="Debug" left="280" top="184" width="110" height="24" text="  Debug Mode"/>
       </control>
     </page>
@@ -31,7 +28,7 @@
               <control progid="DecalControls.List" name="AutoTinkerList" left="0" top="95" width="400" height="110">
                 <column progid="DecalControls.TextColumn" name="TinkCount" fixedwidth="25" text="" />
                 <column progid="DecalControls.TextColumn" name="ItemName" fixedwidth="170" justify="Center"/>
-                <column progid="DecalControls.TextColumn" name="Salvage" fixedwidth="100" text="" justify="Center"/>
+                <column progid="DecalControls.TextColumn" name="Salvage" fixedwidth="120" text="" justify="Center"/>
                 <column progid="DecalControls.TextColumn" name="SuccessPercent" fixedwidth="50" text="" />
                 <column progid="DecalControls.TextColumn" name="SalvID" fixedwidth="0" text="" />
                 <column progid="DecalControls.TextColumn" name="ItemID" fixedwidth="0" text="" />
@@ -51,6 +48,9 @@
               <control progid="DecalControls.PushButton" name="PopulateListButton" left="65" top="55" width="70" height="20" text="Populate"/>
               <control progid="DecalControls.PushButton" name="AutoTinkStartButton" left="165" top="55" width="70" height="20" text="Start"/>
               <control progid="DecalControls.PushButton" name="AutoTinkStopButton" left="265" top="55" width="70" height="20" text="Stop"/>
+              <control progid="DecalControls.StaticText" name="StopAtLabel" left="336" top="55" width="20" height="20" text=" at "/>
+              <control progid="DecalControls.Choice" name="AutoTinkMaxTinksCombo" left="360" top="55" width="35" height="24"/>
+              
             </control>
           </page>
           <page label="Imbue">
