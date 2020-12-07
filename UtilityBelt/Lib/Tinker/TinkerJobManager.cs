@@ -131,8 +131,8 @@ namespace UtilityBelt.Lib.Tinker {
                     if ((CoreManager.Current.WorldFilter[item.Key].Values(LongValueKey.DamageType) == dmgTypeID ||
                         CoreManager.Current.WorldFilter[item.Key].Values(LongValueKey.WandElemDmgType) == dmgTypeID) &&
                         AllowedObjectClasses.Contains(CoreManager.Current.WorldFilter[item.Key].ObjectClass)) {
-                        BuildSalvageToBeApplied(CoreManager.Current.WorldFilter[item.Key], salType, "imbue");
-                        BuildTinkerList(CoreManager.Current.WorldFilter[item.Key], 0, "imbue");
+                        BuildSalvageToBeApplied(CoreManager.Current.WorldFilter[item.Key], salType, "imbue", 1);
+                        BuildTinkerList(CoreManager.Current.WorldFilter[item.Key], 0, "imbue", 1);
                     }
                 }
 
@@ -225,11 +225,11 @@ namespace UtilityBelt.Lib.Tinker {
         public delegate void TinkerJobChangedEvent(int salvageID, bool succeeded);
         public event TinkerJobChangedEvent TinkerJobChanged;
 
-        public void BuildTinkerList(WorldObject targetItem, double minPercent, string runType = "single") {
+        public void BuildTinkerList(WorldObject targetItem, double minPercent, string runType = "single", int maxTinks = 1) {
             if (runType == "single") {
                 SalvageUsedList.Clear();
                 int tinkCount = targetItem.Values(LongValueKey.NumberTimesTinkered);
-                int tinksRemaining = 10 - targetItem.Values(LongValueKey.NumberTimesTinkered);
+                int tinksRemaining = maxTinks - targetItem.Values(LongValueKey.NumberTimesTinkered);
                 for (int i = 1; i <= tinksRemaining; i++) {
                     int salvBagID = GetSalvageToBeApplied(targetItem, tinkCount, minPercent);
                     if (salvBagID == 0) {
@@ -386,13 +386,13 @@ namespace UtilityBelt.Lib.Tinker {
             SalvageUsedList.Clear();
     }
 
-        public void BuildSalvageToBeApplied(WorldObject targetItem, string currentSalvageChoice, string runType) {
+        public void BuildSalvageToBeApplied(WorldObject targetItem, string currentSalvageChoice, string runType, int maxTinks = 1) {
             int nextSal;
             if (runType == "single") {
                 salvageToBeApplied.Clear();
                 fakeMaxDamage = GetMaxDamage(targetItem);
                 fakeVariance = targetItem.Values(DoubleValueKey.Variance);
-                int tinksRemaining = 10 - targetItem.Values(LongValueKey.NumberTimesTinkered);
+                int tinksRemaining = maxTinks - targetItem.Values(LongValueKey.NumberTimesTinkered);
                 //Logger.WriteToChat("runType: " + runType.ToString());
                 for (int i = 1; i <= tinksRemaining; i++) {
                     if (currentSalvageChoice == "Granite/Iron") {
@@ -423,7 +423,7 @@ namespace UtilityBelt.Lib.Tinker {
             else {
                 fakeMaxDamage = GetMaxDamage(targetItem);
                 fakeVariance = targetItem.Values(DoubleValueKey.Variance);
-                int tinksRemaining = 10 - targetItem.Values(LongValueKey.NumberTimesTinkered);
+                int tinksRemaining = maxTinks - targetItem.Values(LongValueKey.NumberTimesTinkered);
                 for (int i = 1; i <= tinksRemaining; i++) {
                     if (targetItem.ObjectClass == ObjectClass.MeleeWeapon) {
                         nextSal = GetGraniteIron(fakeMaxDamage, fakeVariance);
@@ -482,8 +482,8 @@ namespace UtilityBelt.Lib.Tinker {
             //Logger.WriteToChat("Variance: " + variance.ToString());
             double ironDPS = GetDPS(maxDamage + 1, variance);
             double graniteDPS = GetDPS(maxDamage, variance * .8);
-            Logger.WriteToChat("Dmg with Iron: " + ironDPS.ToString());
-            Logger.WriteToChat("Dmg with Granite: " + graniteDPS.ToString());
+            //Logger.WriteToChat("Dmg with Iron: " + ironDPS.ToString());
+            //Logger.WriteToChat("Dmg with Granite: " + graniteDPS.ToString());
             if (ironDPS >= graniteDPS) {
                 fakeMaxDamage = maxDamage + 1;
                 return 61;
