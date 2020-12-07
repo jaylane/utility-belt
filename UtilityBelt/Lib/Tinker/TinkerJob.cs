@@ -5,7 +5,6 @@ using UtilityBelt.Lib.Salvage;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Decal.Filters;
 
 namespace UtilityBelt.Lib.Tinker {
     public class MyEventArgs : EventArgs {
@@ -38,9 +37,9 @@ namespace UtilityBelt.Lib.Tinker {
         public void StartTinkering(TinkerJob job) {
             isRunning = true;
             activeJob = job;
-            Logger.Debug("Autotinker: " + Util.GetObjectName(activeJob.itemID));
+            Logger.Debug(Util.GetObjectName(activeJob.itemID));
             int i = 0;
-            Logger.Debug("Autotinker: " + activeJob.salvageToBeApplied.Count.ToString());
+            Logger.Debug(activeJob.salvageToBeApplied.Count.ToString());
             //salvagesto.First();
             //foreach (int s in activeJob.salvageToBeApplied) {
             //    i++;
@@ -96,20 +95,18 @@ namespace UtilityBelt.Lib.Tinker {
                 lastSkill = currentSkill;
 
                 //Logger.WriteToChat(nextSalvage.ToString());
-                FileService service = CoreManager.Current.Filter<FileService>();
-                var material = service.MaterialTable.GetById(tinkeringItem.Values(LongValueKey.Material, 0));
-                tinkeringItemName = string.Format("{0} {1}", material.Name.Trim(), tinkeringItem.Name);
+                tinkeringItemName = Util.GetObjectName(tinkeringItem.Id);
                 tinkeringSalvage = CoreManager.Current.WorldFilter[nextSalvage];
-                tinkeringSalvageName = Util.GetObjectName(tinkeringSalvage.Id).Replace("Salvaged ", "").Replace("Salvage ", "").Replace("Salvage", "").Replace("(100)", "").Trim();
+                tinkeringSalvageName = Util.GetObjectName(tinkeringSalvage.Id).Replace("Salvage", "").Replace("(100)","").Trim();
                 tinkeringSalvageWorkmanship = tinkeringSalvage.Values(DoubleValueKey.SalvageWorkmanship);
                 CoreManager.Current.Actions.SelectItem(nextSalvage);
 
                 //Logger.WriteToChat("isRunning: " + isRunning);
                 if (CoreManager.Current.Actions.CurrentSelection == nextSalvage && isRunning) {
-
+                    
                     //Logger.WriteToChat("successChance: " + tinkerCalc.DoCalc(nextSalvage, tinkeringItem, tinkerCount).ToString());
                     //Logger.WriteToChat("Do tinks: Applying " + nextSalvage.ToString() + " to " + activeJob.itemID.ToString());
-
+                    
                     //Logger.WriteToChat(CoreManager.Current.WorldFilter[nextSalvage].Values(DoubleValueKey.SalvageWorkmanship).ToString("0.00"));
                     UBHelper.ConfirmationRequest.ConfirmationRequestEvent += UBHelper_ConfirmationRequest;
                     CoreManager.Current.ChatBoxMessage += Current_ChatBoxMessage;
@@ -140,7 +137,6 @@ namespace UtilityBelt.Lib.Tinker {
             isRunning = false;
             activeJob = null;
             CoreManager.Current.ChatBoxMessage -= Current_ChatBoxMessage;
-            UBHelper.ConfirmationRequest.ConfirmationRequestEvent -= UBHelper_ConfirmationRequest;
         }
 
         public void Current_ChatBoxMessage(object sender, ChatTextInterceptEventArgs e) {
