@@ -70,6 +70,7 @@ The Rend All button will automatically do the following:
         readonly HudButton PopulateListButton;
         readonly HudStaticText AutoTinkItemNameLabel;
         readonly HudCombo AutoTinkCombo;
+        readonly HudCombo AutoTinkMaxTinksCombo;
         readonly HudTextBox AutoTinkMinPercentTextBox;
 
         //AutoImbue Stuff
@@ -202,6 +203,9 @@ The Rend All button will automatically do the following:
 
                 AutoTinkCombo = (HudCombo)UB.MainView.view["AutoTinkCombo"];
 
+                AutoTinkMaxTinksCombo = (HudCombo)UB.MainView.view["AutoTinkMaxTinksCombo"];
+                AutoTinkMaxTinksCombo.Change += AutoTinkMaxTinksCombo_Change;
+
                 AutoTinkAddSelectedButton = (HudButton)UB.MainView.view["AutoTinkAddSelectedButton"];
                 AutoTinkAddSelectedButton.Hit += AutoTinkAddSelectedButton_Hit;
 
@@ -247,14 +251,14 @@ The Rend All button will automatically do the following:
 
                 tinkerCalc.BuildDifficultyTable();
 
+                PopulateAutoTinkMaxTinksCombo();
+
                 PopulateAutoImbueSalvageCombo();
                 PopulateAutoImbueDmgTypeCombo();
                 DefaultImbueList = tinkerJobManager.BuildDefaultImbueList();
 
                 HudStaticText c = (HudStaticText)(AutoImbueDmgTypeCombo[AutoImbueDmgTypeCombo.Current]);
                 SelectDefaultSalvage(c.Text.ToString());
-
-
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -275,7 +279,6 @@ The Rend All button will automatically do the following:
         }
 
         public void CalculateBestDamage(WorldObject item) {
-            Logger.Debug("test");
             double fakeMaxDamage = 0;
             double fakeVariance = 0;
             double finalMaxDamage = 0;
@@ -294,8 +297,6 @@ The Rend All button will automatically do the following:
                     }
                     double ironDPS = GetDPS(fakeMaxDamage + 1, fakeVariance);
                     double graniteDPS = GetDPS(fakeMaxDamage, fakeVariance * .8);
-                    LogDebug("Dmg with Iron: " + ironDPS.ToString());
-                    LogDebug("Dmg with Granite: " + graniteDPS.ToString());
                     if (ironDPS >= graniteDPS) {
                         finalMaxDamage = ironDPS;
                         fakeMaxDamage = fakeMaxDamage + 1;
@@ -307,15 +308,79 @@ The Rend All button will automatically do the following:
                         granite++;
                     }
                 }
-                Logger.WriteToChat("final max damage: " + finalMaxDamage);
-                Logger.WriteToChat("granite: " + granite.ToString());
-                Logger.WriteToChat("iron: " + iron.ToString());
             }
         }
 
         public void AutoImbueSalvageCombo_Change(object sender, EventArgs e) {
             try {
                 PopulateAutoImbue();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        public void AutoTinkMaxTinksCombo_Change(object sender, EventArgs e) {
+            try {
+                Stop();
+                if (storedTargetItem == null) {
+                    //Logger.WriteToChat("select an item first");
+                    return;
+                }
+                Logger.Debug("PopulateListButton_Hit");
+                runType = "single";
+                SetTinkerSkills();
+                if (isPopulating) {
+                    WriteToChat("is populating is running");
+                    return;
+                }
+                else {
+                    tinkerJobManager.Stop();
+                    isPopulating = true;
+                    List<int> rescanItem = new List<int>();
+                    List<int> matchingMaterial = new List<int>();
+                    AutoTinkerList.ClearRows();
+                    tinkerJobManager.ScanInventory();
+
+                    string selectedItem = AutoTinkItemNameLabel.Text.ToString();
+
+
+                    List<string> usableSalvageOnItem = new List<string>();
+                    if (tinkerJobManager.CanBeTinkered(storedTargetItem)) {
+                        UpdateNameLabel(storedTargetItem.Id);
+                        usableSalvageOnItem = tinkerJobManager.GetUsableSalvage(storedTargetItem.Id);
+                        FilterSalvageCombo(usableSalvageOnItem);
+                        usableSalvageOnItem = usableSalvageOnItem.Distinct().ToList();
+
+                        tinkerJobManager.CreatePossibleMaterialList(usableSalvageOnItem, false);
+
+                        if (selectedItem == "[None]") {
+                            WriteToChat("Select an item first");
+                            return;
+                        }
+                    }
+
+
+                    float.TryParse(AutoTinkMinPercentTextBox.Text, out float minPercent);
+                    //Logger.WriteToChat(minPercent.ToString());
+
+                    rescanItem.Add(storedTargetItem.Id);
+
+
+                    HudStaticText c = (HudStaticText)(AutoTinkCombo[AutoTinkCombo.Current]);
+                    string currentSalvageChoice = c.Text.ToString();
+                    HudStaticText maxTinksString = (HudStaticText)(AutoTinkMaxTinksCombo[AutoTinkMaxTinksCombo.Current]);
+                    int.TryParse(maxTinksString.Text, out int maxTinks);
+
+                    new Assessor.Job(UB.Assessor, ref rescanItem, (_) => { }, () => {
+                        tinkerJobManager.TinkerListFinished += TinkerList_Finished;
+                        tinkerJobManager.TinkerListChanged += TinkerList_Changed;
+                        //tinkerJobManager.PopulateTinkerList();
+                        tinkerJobManager.BuildSalvageToBeApplied(storedTargetItem, currentSalvageChoice, runType, maxTinks);
+                        //tinkerJobManager.WriteSalvageToBeApplied();
+                        tinkerJobManager.BuildTinkerList(storedTargetItem, minPercent, "single", maxTinks);
+                        rescanItem.Clear();
+                    });
+                    tinkerJob.minPercent = minPercent;
+                }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -346,7 +411,7 @@ The Rend All button will automatically do the following:
             new Assessor.Job(UB.Assessor, ref itemsToId, (_) => { }, () => {
                 tinkerJobManager.AutoImbueListFinished += AutoImbueList_Finished;
                 tinkerJobManager.AutoImbueListChanged += AutoImbueList_Changed;
-                Logger.WriteToChat("done scanning");
+                WriteToChat("done scanning");
                 tinkerJobManager.CreatePossibleMaterialList(salList, false);
                 tinkerJobManager.CreateTinkerableItemsList(TinkerableItemDict, dmgType.Text, salType.Text);
                 itemsToId.Clear();
@@ -358,9 +423,8 @@ The Rend All button will automatically do the following:
 
         private void AutoImbueRefreshListButton_Hit(object sender, EventArgs e) {
             try {
-                Logger.Debug("AutoImbueRefreshListButton_Hit");
                 if (!isRunning) {
-                    Logger.WriteToChat("Be patient... Already made your life easy enough");
+                    WriteToChat("Be patient... Already made your life easy enough");
                     SetTinkerSkills();
                     PopulateAutoImbue();
                 }
@@ -380,7 +444,6 @@ The Rend All button will automatically do the following:
 
         private void AutoImbueStartButton_Hit(object sender, EventArgs e) {
             try {
-                Logger.Debug("AutoImbueStartButton_Hit");
                 if (CheckTinkerSkillChange()) {
                     Start();
                 }
@@ -389,7 +452,6 @@ The Rend All button will automatically do the following:
         }
 
         private void AutoImbueAllButton_Hit(object sender, EventArgs e) {
-            Logger.Debug("AutoImbueAllButton_Hit");
             SetTinkerSkills();
             tinkerJobManager.ClearAll();
             AutoImbueList.ClearRows();
@@ -400,14 +462,13 @@ The Rend All button will automatically do the following:
                 tinkerJobManager.AutoImbueListFinished += AutoImbueList_Finished;
                 tinkerJobManager.AutoImbueListChanged += AutoImbueList_Changed;
                 tinkerJobManager.CreatePossibleMaterialList(null, true);
-                Logger.WriteToChat("done scanning");
+                WriteToChat("done scanning");
                 tinkerJobManager.CreateTinkerableItemsList(TinkerableItemDict, null, null, true);
                 itemsToId.Clear();
             });
         }
 
         private void AutoImbueStopButton_Hit(object sender, EventArgs e) {
-            Logger.Debug("AutoImbueStopButton_Hit");
             try {
                 Stop();
             }
@@ -434,7 +495,6 @@ The Rend All button will automatically do the following:
         }
 
         private void PopulateAutoImbueDmgTypeCombo() {
-
             var dmgTypes = Enum.GetValues(typeof(Lib.Constants.DamageTypes));
             foreach (var dmg in dmgTypes) {
                 dmgList.Add(dmg.ToString());
@@ -481,7 +541,6 @@ The Rend All button will automatically do the following:
 
         private void AutoTinkStopButton_Hit(object sender, EventArgs e) {
             try {
-                Logger.Debug("AutoTinkStopButton_Hit");
                 Stop();
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -577,14 +636,13 @@ The Rend All button will automatically do the following:
         private void PopulateListButton_Hit(object sender, EventArgs e) {
             try {
                 if (storedTargetItem == null) {
-                    Logger.WriteToChat("select an item first");
+                    WriteToChat("select an item first");
                     return;
                 }
-                Logger.Debug("PopulateListButton_Hit");
                 runType = "single";
                 SetTinkerSkills();
                 if (isPopulating) {
-                    Logger.WriteToChat("is populating is running");
+                    WriteToChat("is populating is running");
                     return;
                 }
                 else {
@@ -608,7 +666,7 @@ The Rend All button will automatically do the following:
                         tinkerJobManager.CreatePossibleMaterialList(usableSalvageOnItem, false);
 
                         if (selectedItem == "[None]") {
-                            Logger.WriteToChat("Select an item first");
+                            WriteToChat("Select an item first");
                             return;
                         }
                     }
@@ -622,14 +680,16 @@ The Rend All button will automatically do the following:
 
                     HudStaticText c = (HudStaticText)(AutoTinkCombo[AutoTinkCombo.Current]);
                     string currentSalvageChoice = c.Text.ToString();
+                    HudStaticText maxTinksString = (HudStaticText)(AutoTinkMaxTinksCombo[AutoTinkMaxTinksCombo.Current]);
+                    int.TryParse(maxTinksString.Text, out int maxTinks);
 
                     new Assessor.Job(UB.Assessor, ref rescanItem, (_) => { }, () => {
                         tinkerJobManager.TinkerListFinished += TinkerList_Finished;
                         tinkerJobManager.TinkerListChanged += TinkerList_Changed;
                         //tinkerJobManager.PopulateTinkerList();
-                        tinkerJobManager.BuildSalvageToBeApplied(storedTargetItem, currentSalvageChoice, runType);
+                        tinkerJobManager.BuildSalvageToBeApplied(storedTargetItem, currentSalvageChoice, runType, maxTinks);
                         //tinkerJobManager.WriteSalvageToBeApplied();
-                        tinkerJobManager.BuildTinkerList(storedTargetItem, minPercent);
+                        tinkerJobManager.BuildTinkerList(storedTargetItem, minPercent, "single", maxTinks);
                         rescanItem.Clear();
                     });
                     tinkerJob.minPercent = minPercent;
@@ -654,10 +714,9 @@ The Rend All button will automatically do the following:
         private void AutoTinkAddSelectedButton_Hit(object sender, EventArgs e) {
             try {
                 ClearAllTinks();
-                Logger.Debug("AutoTinkAddSelectedButton_Hit");
                 runType = "single";
                 if (isSelecting) {
-                    Logger.WriteToChat("still selecting");
+                    WriteToChat("still selecting");
                     return;
                 }
                 else {
@@ -718,7 +777,6 @@ The Rend All button will automatically do the following:
 
         private double GetMaxDamage(WorldObject targetItem) {
             double maxDamage = targetItem.Values(LongValueKey.MaxDamage);
-            Logger.WriteToChat("max damage: " + maxDamage.ToString());
             int spellCount = targetItem.SpellCount;
             for (int s = 0; s <= spellCount - 1; s++) {
                 int spell = GetSpellID(targetItem, s);
@@ -740,14 +798,23 @@ The Rend All button will automatically do the following:
                 }
             }
             maxDamage += 24;
-            Logger.WriteToChat(maxDamage.ToString());
             return maxDamage;
         }
 
+        private bool CheckSettings() {
+            if ((UB.Core.CharacterFilter.CharacterOptions & 0x80000000) == 0) {
+                LogError("You must enable the UseCraftSuccessDialog setting!");
+                return false;
+            }
+            return true;
+        }
+
+
         private void Start() {
             try {
+                if (!CheckSettings()) return;
                 if (isRunning) {
-                    Logger.WriteToChat("already running");
+                    WriteToChat("already running");
                     return;
                 }
                 tinkerJobManager.TinkerJobChanged += TinkerJob_Changed;
@@ -829,7 +896,6 @@ The Rend All button will automatically do the following:
         }
 
         private void AutoTinkStartButton_Hit(object sender, EventArgs e) {
-            Logger.Debug("AutoTinkStartButton_Hit");
             if (CheckTinkerSkillChange() && storedTargetItem != null) {
                 Start();
             }
@@ -923,19 +989,19 @@ The Rend All button will automatically do the following:
                 jackofalltradesbonus = 5;
             }
             if ((CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.WeaponTinkering] + jackofalltradesbonus) < weaponTinkeringSkill) {
-                Logger.WriteToChat("weapon tinkering dropped... stopping tinkering");
+                WriteToChat("weapon tinkering dropped... stopping tinkering");
                 return false;
             }
             if ((CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.MagicItemTinkering] + jackofalltradesbonus) < magicItemTinkeringSkill) {
-                Logger.WriteToChat("magic item tinkering dropped... stopping tinkering");
+                WriteToChat("magic item tinkering dropped... stopping tinkering");
                 return false;
             }
             if ((CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.ArmorTinkering] + jackofalltradesbonus) < armorTinkeringSkill) {
-                Logger.WriteToChat("armor tinkering dropped... stopping tinkering");
+                WriteToChat("armor tinkering dropped... stopping tinkering");
                 return false;
             }
             if ((CoreManager.Current.CharacterFilter.EffectiveSkill[CharFilterSkillType.ItemTinkering] + jackofalltradesbonus) < itemTinkeringSkill) {
-                Logger.WriteToChat("item tinkering dropped... stopping tinkering");
+                WriteToChat("item tinkering dropped... stopping tinkering");
                 return false;
             }
             return true;
@@ -956,10 +1022,18 @@ The Rend All button will automatically do the following:
             var SortedSalvageList = AutoTinkerSalvageList.Keys.ToList();
             foreach (var item in AutoTinkerSalvageList.OrderBy(i => i.Key)) {
                     AutoTinkCombo.AddItem(item.Key.ToString(), null);
-                //Logger.WriteToChat(item.Key.ToString());
             }
             AutoTinkCombo.AddItem("Granite/Iron", null);
         } 
+
+        public void PopulateAutoTinkMaxTinksCombo() {
+            AutoTinkMaxTinksCombo.Clear();
+
+            for (int i = 1; i <= 10; i++) {
+                AutoTinkMaxTinksCombo.AddItem(i.ToString(), null);
+            }
+            AutoTinkMaxTinksCombo.Current = AutoTinkMaxTinksCombo.Count - 1;
+        }
 
         public double GetDPS(double maxDamage, double variance) {
             double minDmg = maxDamage * (1 - variance);
