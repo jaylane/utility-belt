@@ -128,9 +128,9 @@ namespace UtilityBelt {
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
-
+        private static string exceptionsLog => Path.Combine(Util.GetPluginDirectory(), "exceptions.txt");
         private static void TruncateLogFiles() {
-            TruncateLogFile(Path.Combine(Util.GetPluginDirectory(), "exceptions.txt"));
+            TruncateLogFile(exceptionsLog);
         }
 
         private static void TruncateLogFile(string logFile) {
@@ -147,38 +147,14 @@ namespace UtilityBelt {
         }
 
         public static void LogException(Exception ex) {
-            try {
+            if (exceptionCount > MAX_LOG_EXCEPTION) return;
+            exceptionCount++;
+            UBLoader.File.TryWrite(exceptionsLog, $"== {DateTime.Now} ==================================================\r\n{ex.ToString()}\r\n============================================================================\r\n\r\n", true);
 
-                if (exceptionCount > MAX_LOG_EXCEPTION) return;
-
-                exceptionCount++;
-
-                using (StreamWriter writer = new StreamWriter(Path.Combine(Util.GetPluginDirectory(), "exceptions.txt"), true)) {
-
-                    writer.WriteLine($"== {DateTime.Now} ==================================================");
-                    writer.WriteLine(ex.ToString());
-                    writer.WriteLine("============================================================================");
-                    writer.WriteLine("");
-                    writer.Close();
-                }
-            }
-            catch {
-            }
         }
 
         public static void LogException(string ex) {
-            try {
-                using (StreamWriter writer = new StreamWriter(Path.Combine(Util.GetPluginDirectory(), "exceptions.txt"), true)) {
-
-                    writer.WriteLine("============================================================================");
-                    writer.WriteLine(ex);
-                    writer.WriteLine("============================================================================");
-                    writer.WriteLine("");
-                    writer.Close();
-                }
-            }
-            catch {
-            }
+            UBLoader.File.TryWrite(exceptionsLog, $"== {DateTime.Now} {ex}\r\n", true);
         }
     }
 }

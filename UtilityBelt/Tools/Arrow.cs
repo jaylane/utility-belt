@@ -134,7 +134,7 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
 
                 PropertyChanged += Arrow_PropertyChanged;
 
-                if (UB.Core.CharacterFilter.LoginStatus != 3)
+                if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
                     UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
                 else
                     TryEnable();
@@ -208,7 +208,7 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
         }
 
         private void Arrow_PropertyChanged(object sender, PropertyChangedEventArgs e) {
-            if (UB.Core.CharacterFilter.LoginStatus != 3)
+            if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
                 return;
 
             switch (e.PropertyName) {

@@ -217,7 +217,7 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
                 return;
             }
 
-            if (UB.Core.CharacterFilter.LoginStatus == 0) {
+            if (UBHelper.Core.GameState != UBHelper.GameState.In_Game) {
                 UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
 
             }

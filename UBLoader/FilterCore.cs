@@ -170,7 +170,7 @@ namespace UBLoader {
                     UnloadPluginAssembly();
                 }
 
-                CurrentAssembly = Assembly.Load(File.ReadAllBytes(PluginAssemblyPath));
+                CurrentAssembly = Assembly.Load(System.IO.File.ReadAllBytes(PluginAssemblyPath));
                 PluginType = CurrentAssembly.GetType(PluginAssemblyNamespace);
                 MethodInfo startupMethod = PluginType.GetMethod("Startup");
                 PluginInstance = Activator.CreateInstance(PluginType);
@@ -213,35 +213,14 @@ namespace UBLoader {
         }
 
         public void LogException(Exception ex) {
-            try {
-                using (StreamWriter writer = new StreamWriter(System.IO.Path.Combine(PluginStorageDirectory, "exceptions.txt"), true)) {
-                    writer.WriteLine("============================================================================");
-                    writer.WriteLine(DateTime.Now.ToString());
-                    writer.WriteLine("Error: " + ex.Message);
-                    writer.WriteLine("Source: " + ex.Source);
-                    writer.WriteLine("Stack: " + ex.StackTrace);
-                    if (ex.InnerException != null) {
-                        writer.WriteLine("Inner: " + ex.InnerException.Message);
-                        writer.WriteLine("Inner Stack: " + ex.InnerException.StackTrace);
-                    }
-                    writer.WriteLine("============================================================================");
-                    writer.WriteLine("");
-                    writer.Close();
-                }
-            }
-            catch {
-            }
+            UBLoader.File.TryWrite(System.IO.Path.Combine(PluginStorageDirectory, "exceptions.txt"), $"== {DateTime.Now} ==================================================\r\n{ex.ToString()}\r\n============================================================================\r\n\r\n", true);
+
         }
 
-        public void LogError(string message) {
-            try {
-                using (StreamWriter writer = new StreamWriter(System.IO.Path.Combine(PluginStorageDirectory, "exceptions.txt"), true)) {
-                    writer.WriteLine($"{DateTime.Now} {message}");
-                    writer.Close();
-                }
-            }
-            catch {
-            }
+        public void LogError(string ex) {
+            UBLoader.File.TryWrite(System.IO.Path.Combine(PluginStorageDirectory, "exceptions.txt"), $"== {DateTime.Now} {ex}\r\n", true);
         }
+
+
     }
 }

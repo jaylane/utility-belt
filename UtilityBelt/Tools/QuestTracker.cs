@@ -200,7 +200,7 @@ namespace UtilityBelt.Tools {
             UB.Core.CommandLineText += Core_CommandLineText;
             UB.Core.ChatBoxMessage += Current_ChatBoxMessage;
             if (AutoRequest) {
-                if (UB.Core.CharacterFilter.LoginStatus == 0)
+                if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
                     UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
                 else
                     GetMyQuestsList(3);

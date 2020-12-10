@@ -564,7 +564,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                 MapZoom = (5f - scale);
             };
 
-            if (UB.Core.CharacterFilter.LoginStatus != 3) {
+            if (UBHelper.Core.GameState != UBHelper.GameState.In_Game) {
                 UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
             }
 

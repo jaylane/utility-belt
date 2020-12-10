@@ -194,7 +194,7 @@ namespace UtilityBelt {
 
                 // if we are logged in already, we need to init manually.
                 // this happens during hot reloads while logged in.
-                if (Core.CharacterFilter.LoginStatus != 0) {
+                if (UBHelper.Core.GameState == UBHelper.GameState.In_Game) {
                     Init();
                 }
                 else {
@@ -542,6 +542,7 @@ namespace UtilityBelt {
 
                 Lib.ActionQueue.Dispose();
                 PerfMonitor.Dispose();
+                UBLoader.File.FlushFiles();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

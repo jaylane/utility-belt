@@ -88,7 +88,7 @@ For portals, it will show the destination.
         /// Overall Enable function- based purely on user preference
         /// </summary>
         private void Enable() {
-            if (UB.Core.CharacterFilter.LoginStatus != 0) {
+            if (UBHelper.Core.GameState == UBHelper.GameState.In_Game) {
                 UBHelper.VideoPatch.Changed += VideoPatch_Changed;
                 VideoPatch_Changed();
             }

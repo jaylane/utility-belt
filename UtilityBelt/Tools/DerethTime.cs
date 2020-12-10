@@ -268,7 +268,7 @@ namespace UtilityBelt.Tools {
 
                 PropertyChanged += DerethTime_PropertyChanged;
 
-                if (UB.Core.CharacterFilter.LoginStatus != 3)
+                if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
                     UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
                 else
                     TryEnable();
@@ -301,7 +301,7 @@ namespace UtilityBelt.Tools {
         }
 
         private void DerethTime_PropertyChanged(object sender, PropertyChangedEventArgs e) {
-            if (UB.Core.CharacterFilter.LoginStatus != 3)
+            if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
                 return;
 
             switch (e.PropertyName) {
