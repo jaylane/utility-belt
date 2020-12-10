@@ -84,10 +84,6 @@ namespace UtilityBelt
             return path;
         }
 
-        private static string GetLogDirectory() {
-            return Path.Combine(GetCharacterDirectory(), "logs");
-        }
-
         internal static string GetResourcesDirectory() {
             return Path.Combine(AssemblyDirectory, "Resources");
         }
@@ -95,7 +91,6 @@ namespace UtilityBelt
         public static void CreateDataDirectories() {
             System.IO.Directory.CreateDirectory(GetPluginDirectory());
             System.IO.Directory.CreateDirectory(GetCharacterDirectory());
-            System.IO.Directory.CreateDirectory(GetLogDirectory());
         }
 
         public static void WriteToDebugLog(string message) {
@@ -103,14 +98,10 @@ namespace UtilityBelt
         }
 
         public static void WriteToLogFile(string logName, string message, bool addTimestamp = false) {
-            var today = DateTime.Now.ToString("yyyy-MM-dd");
-            var logFileName = String.Format("{0}.{1}.txt", logName, today);
-
-            if (addTimestamp) {
-                message = String.Format("{0} {1}", DateTime.Now.ToString("yy/MM/dd H:mm:ss"), message);
-            }
-
-            File.AppendAllText(Path.Combine(Util.GetLogDirectory(), logFileName), message + Environment.NewLine);
+            string logFileName = $"{pluginDirectory}\\{logName}.{DateTime.Now.ToString("yyyy-MM-dd")}.txt";
+            string logMessage = $"{(addTimestamp?DateTime.Now.ToString("yy/MM/dd H:mm:ss "):null)}[{UBHelper.Core.WorldName}:{UBHelper.Core.UserName.GetHashCode():X8}] {message}\r\n";
+            UBLoader.File.TryWrite(logFileName, logMessage);
+            //File.AppendAllText(Path.Combine(Util.GetLogDirectory(), logFileName), message + Environment.NewLine);
         }
 
         internal static int UnixTimeStamp() {

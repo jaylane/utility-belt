@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- todo: move these somewhere easier to get to? -->
   <Import Project="..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.props" Condition="Exists('..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.props')" />
@@ -96,6 +96,10 @@
     <Reference Include="UBHelper">
       <HintPath>..\UBLoader\Deps\UBHelper.dll</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="UBLoader, Version=0.1.9.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\bin\UBLoader.dll</HintPath>
     </Reference>
     <Reference Include="utank2-i">
       <HintPath>C:\Games\VirindiPlugins\VirindiTank\utank2-i.dll</HintPath>

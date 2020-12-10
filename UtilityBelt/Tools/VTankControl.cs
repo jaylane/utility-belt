@@ -1503,7 +1503,7 @@ namespace UtilityBelt.Tools {
         public VTankControl(UtilityBeltPlugin ub, string name) : base(ub, name) {
             DoVTankPatches();
 
-            if (UB.Core.CharacterFilter.LoginStatus != 0) Enable();
+            if (UBHelper.Core.GameState == UBHelper.GameState.In_Game) Enable();
             else UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
 
             PropertyChanged += VTankControl_PropertyChanged;

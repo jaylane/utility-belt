@@ -1247,7 +1247,7 @@ namespace UtilityBelt.Tools {
         public Plugin(UtilityBeltPlugin ub, string name) : base(ub, name) {
             try {
                 UB.Core.CharacterFilter.Logoff += CharacterFilter_Logoff_Follow;
-                if (UB.Core.CharacterFilter.LoginStatus != 0) UB_Follow_Clear();
+                if (UBHelper.Core.GameState == UBHelper.GameState.In_Game) UB_Follow_Clear();
                 else UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete_Follow;
 
                 mediaPlayer = new Mp3Player(UB.Core);

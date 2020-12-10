@@ -308,7 +308,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         public override void Init() {
             base.Init();
 
-            if (UB.Core.CharacterFilter.LoginStatus != 3)
+            if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
                 UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
             else
                 CheckPyrealMaxStack();

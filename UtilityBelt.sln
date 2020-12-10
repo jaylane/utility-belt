@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.29418.71
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilityBelt", "UtilityBelt\UtilityBelt.csproj", "{C2880823-67E7-4B3D-A481-9ADC9847C39C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BB14F564-6E92-4FD0-9394-120E517EA5BA} = {BB14F564-6E92-4FD0-9394-120E517EA5BA}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2785F013-4EB4-4F1D-A219-B7C2A07BB726}"
 	ProjectSection(SolutionItems) = preProject

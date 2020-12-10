@@ -173,7 +173,7 @@ namespace UtilityBelt.Lib.Settings {
                 var json = JsonConvert.SerializeObject(UtilityBeltPlugin.Instance, Newtonsoft.Json.Formatting.Indented);
                 var path = Path.Combine(Util.GetCharacterDirectory(), "settings.json");
 
-                File.WriteAllText(path, json);
+                UBLoader.File.TryWrite(path, json, false);
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
