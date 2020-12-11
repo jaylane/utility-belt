@@ -1023,7 +1023,7 @@ namespace UtilityBelt.Tools {
         [Example("/ub swearallegiancep Yo", "Swear Allegiance to a character with a name partially matching `Yo`.")]
         [Example("/ub swearallegiance", "Swear Allegiance to the closest character")]
         [Example("/ub swearallegiance selected", "Swear Allegiance to the selected character")]
-        [CommandPattern("swearallegiance", @"^(?<charName>.+)?$")]
+        [CommandPattern("swearallegiance", @"^(?<charName>.+)?$", true)]
         public void DoSwearAllegiance(string command, Match args) {
             string charName = args.Groups["charName"].Value;
             if (charName.Length == 0) charName = null;
@@ -1043,7 +1043,7 @@ namespace UtilityBelt.Tools {
         [Example("/ub breakallegiancep Yo", "Break Allegiance from a character with a name partially matching `Yo`.")]
         [Example("/ub breakallegiance", "Break Allegiance from the closest character")]
         [Example("/ub breakallegiance selected", "Break Allegiance from the selected character")]
-        [CommandPattern("breakallegiance", @"^(?<charName>.+)?$")]
+        [CommandPattern("breakallegiance", @"^(?<charName>.+)?$", true)]
         public void DoBreakAllegiance(string command, Match args) {
             string charName = args.Groups["charName"].Value;
             if (charName.Length == 0) charName = null;
