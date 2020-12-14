@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Dungeon;
 using UtilityBelt.Lib.Maps.Markers;
+using UtilityBelt.Lib.Settings;
 using VirindiViewService;
 using static UtilityBelt.Tools.VTankControl;
 
@@ -37,64 +38,25 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
 
         #region Config
         [Summary("Enabled")]
-        [DefaultValue(true)]
-        public bool Enabled {
-            get { return (bool)GetSetting("Enabled"); }
-            set {
-                UpdateSetting("Enabled", value);
-            }
-        }
+        public Setting<bool> Enabled = new Setting<bool>(true);
 
         [Summary("Wether the hud is visible or not.")]
-        [DefaultValue(true)]
-        public bool Visible {
-            get { return (bool)GetSetting("Visible"); }
-            set {
-                UpdateSetting("Visible", value);
-            }
-        }
+        public readonly Setting<bool> Visible = new Setting<bool>(true);
 
         [Summary("Arrow HUD Size")]
-        [DefaultValue(32)]
-        public int HudSize {
-            get { return (int)GetSetting("HudSize"); }
-            set { UpdateSetting("HudSize", value); }
-        }
+        public readonly Setting<int> HudSize = new Setting<int>(32);
 
         [Summary("Arrow HUD Position X")]
-        [DefaultValue(215)]
-        public int HudX {
-            get { return (int)GetSetting("HudX"); }
-            set { UpdateSetting("HudX", value); }
-        }
+        public readonly Setting<int> HudX = new Setting<int>(215);
 
         [Summary("Arrow HUD Position Y")]
-        [DefaultValue(5)]
-        public int HudY {
-            get { return (int)GetSetting("HudY"); }
-            set { UpdateSetting("HudY", value); }
-        }
+        public readonly Setting<int> HudY = new Setting<int>(5);
 
         [Summary("Target EW coordinate")]
-        [DefaultValue(0.00)]
-        public double TargetEW {
-            get { return (double)GetSetting("TargetEW"); }
-            set { UpdateSetting("TargetEW", value); }
-        }
+        public readonly Setting<double> TargetEW = new Setting<double>(0);
 
         [Summary("Target NS coordinate")]
-        [DefaultValue(0.00)]
-        public double TargetNS {
-            get { return (double)GetSetting("TargetNS"); }
-            set { UpdateSetting("TargetNS", value); }
-        }
-
-        [Summary("Summary text for the target coordinates, currently unused")]
-        [DefaultValue("")]
-        public string TargetText {
-            get { return (string)GetSetting("TargetText"); }
-            set { UpdateSetting("TargetText", value); }
-        }
+        public readonly Setting<double> TargetNS = new Setting<double>(0);
         #endregion // Config
 
         #region Commands
@@ -124,6 +86,7 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
         #endregion
 
         public Arrow(UtilityBeltPlugin ub, string name) : base(ub, name) {
+
         }
 
         public override void Init() {
@@ -132,7 +95,7 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
                 fontFace = UB.LandscapeMapView.view.MainControl.Theme.GetVal<string>("DefaultTextFontFace");
                 fontWeight = UB.LandscapeMapView.view.MainControl.Theme.GetVal<int>("ViewTextFontWeight");
 
-                PropertyChanged += Arrow_PropertyChanged;
+                Changed += Arrow_PropertyChanged;
 
                 if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
                     UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
@@ -207,17 +170,14 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void Arrow_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+        private void Arrow_PropertyChanged(object sender, SettingChangedEventArgs e) {
             if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
                 return;
-
             switch (e.PropertyName) {
                 case "Enabled":
                     TryEnable();
                     break;
-                case "Visible":
-                case "HudSize":
-                case "LabelFontSize":
+                default:
                     if (hud != null) {
                         hud.Enabled = Visible;
                         if (Visible)
@@ -244,12 +204,12 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
         }
 
         private void Hud_OnClose(object sender, EventArgs e) {
-            Visible = false;
+            Visible.Value = false;
         }
 
         private void Hud_OnMove(object sender, EventArgs e) {
-            HudX = hud.X;
-            HudY = hud.Y;
+            HudX.Value = hud.X;
+            HudY.Value = hud.Y;
         }
         #endregion
 
@@ -266,16 +226,15 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
         /// </summary>
         /// <param name="ew"></param>
         /// <param name="ns"></param>
-        /// <param name="text"></param>
+        /// <param name="text">currently unused</param>
         /// <returns></returns>
         public void PointTo(double ew, double ns, string text="") {
             if (!Enabled)
                 return;
 
-            TargetEW = ew;
-            TargetNS = ns;
-            TargetText = text;
-            Visible = true;
+            TargetEW.Value = ew;
+            TargetNS.Value = ns;
+            Visible.Value = true;
             hud?.Render();
 
             UpdateMapMarker();
@@ -316,14 +275,14 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
                     MaxZoomLevel = 1
                 };
                 mapMarker.AttachLabel(mapLabel);
-                UB.LandscapeMaps.AddMarker(mapMarker);
+                UB.LandscapeMaps?.AddMarker(mapMarker);
             }
             else {
                 mapMarker.NS = TargetNS;
                 mapMarker.EW = TargetEW;
                 mapLabel.NS = TargetNS;
                 mapLabel.EW = TargetEW;
-                UB.LandscapeMaps.Redraw();
+                UB.LandscapeMaps?.Redraw();
             }
         }
         #endregion // landscape map marker
@@ -407,12 +366,13 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
                     }
                     UB.Core.ChatBoxMessage -= Core_ChatBoxMessage;
                     UB.Core.ChatNameClicked -= Core_ChatNameClicked;
-                    PropertyChanged -= Arrow_PropertyChanged;
+
+                    Changed -= Arrow_PropertyChanged;
+
                     RemoveMapMarker();
                     ClearHud();
                     if (arrowTexture != null) arrowTexture.Dispose();
                     if (arrowMapTexture != null) arrowMapTexture.Dispose();
-                    base.Dispose(disposing);
                 }
                 disposedValue = true;
             }

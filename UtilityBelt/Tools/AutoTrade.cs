@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
+using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("AutoTrade")]
@@ -62,48 +63,27 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
 
         #region Settings
         [Summary("Enable AutoTrade when Trade Window is Opened")]
-        [DefaultValue(false)]
         [Hotkey("AutoTrade", "Toggle AutoTrade functionality")]
-        public bool Enabled {
-            get { return (bool)GetSetting("Enabled"); }
-            set { UpdateSetting("Enabled", value); }
-        }
+        public readonly Setting<bool> Enabled = new Setting<bool>(false);
 
         [Summary("Test mode (don't actually add to trade window, just echo to the chat window)")]
-        [DefaultValue(false)]
-        public bool TestMode {
-            get { return (bool)GetSetting("TestMode"); }
-            set { UpdateSetting("TestMode", value); }
-        }
+        public readonly Setting<bool> TestMode = new Setting<bool>(false);
 
         [Summary("Think to yourself when auto trade is completed")]
-        [DefaultValue(false)]
-        public bool Think {
-            get { return (bool)GetSetting("Think"); }
-            set { UpdateSetting("Think", value); }
-        }
+        public readonly Setting<bool> Think = new Setting<bool>(false);
 
         [Summary("Only trade things in your main pack")]
-        [DefaultValue(false)]
-        public bool OnlyFromMainPack {
-            get { return (bool)GetSetting("OnlyFromMainPack"); }
-            set { UpdateSetting("OnlyFromMainPack", value); }
-        }
+        public readonly Setting<bool> OnlyFromMainPack = new Setting<bool>(false);
 
         [Summary("Auto accept trade after all items added")]
-        [DefaultValue(false)]
-        public bool AutoAccept {
-            get { return (bool)GetSetting("AutoAccept"); }
-            set { UpdateSetting("AutoAccept", value); }
-        }
+        public readonly Setting<bool> AutoAccept = new Setting<bool>(false);
 
         [Summary("List of characters to auto-accept trade from")]
-        [DefaultValue(null)]
-        public ObservableCollection<string> AutoAcceptChars { get; set; } = new ObservableCollection<string>();
+        public readonly Setting<ObservableCollection<string>> AutoAcceptChars = new Setting<ObservableCollection<string>>(new ObservableCollection<string>());
 
         private void AutoAcceptChars_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) {
             try {
-                OnPropertyChanged(nameof(AutoAcceptChars));
+                //OnPropertyChanged(nameof(AutoAcceptChars));
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -142,6 +122,11 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
         #endregion
 
         public AutoTrade(UtilityBeltPlugin ub, string name) : base(ub, name) {
+
+        }
+
+        public override void Init() {
+            base.Init();
             try {
                 Directory.CreateDirectory(Path.Combine(Util.GetPluginDirectory(), "autotrade"));
                 Directory.CreateDirectory(Path.Combine(Util.GetCharacterDirectory(), "autotrade"));
@@ -153,7 +138,7 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
                 UB.Core.WorldFilter.FailToAddTradeItem += WorldFilter_FailToAddTradeItem;
                 UB.Core.WorldFilter.AcceptTrade += WorldFilter_AcceptTrade;
 
-                AutoAcceptChars.CollectionChanged += AutoAcceptChars_CollectionChanged;
+                AutoAcceptChars.Value.CollectionChanged += AutoAcceptChars_CollectionChanged;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -341,7 +326,7 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
             var serverChars = ReadAutoAcceptCharFile(Path.Combine(Path.Combine(Util.GetServerDirectory(), "autotrade"), AutoAcceptListFileName));
             var localChars = ReadAutoAcceptCharFile(Path.Combine(Path.Combine(Util.GetCharacterDirectory(), "autotrade"), AutoAcceptListFileName));
 
-            return globalChars.Union(serverChars).Union(localChars).Union(AutoAcceptChars);
+            return globalChars.Union(serverChars).Union(localChars).Union(AutoAcceptChars.Value);
         }
 
         private IEnumerable<string> ReadAutoAcceptCharFile(string file) {

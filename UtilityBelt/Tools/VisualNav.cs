@@ -16,8 +16,7 @@ using Newtonsoft.Json;
 namespace UtilityBelt.Tools {
     #region VisualNav Display Config
     [Section("VisualNav display options")]
-    public class VisualNavDisplayOptions : DisplaySectionBase {
-        [JsonIgnore]
+    public class VisualNavDisplayOptions : ISetting {
         public List<string> ValidSettings = new List<string>() {
                 "Lines",
                 "ChatText",
@@ -32,96 +31,55 @@ namespace UtilityBelt.Tools {
                 "FollowArrow"
             };
 
+        public event EventHandler<SettingChangedEventArgs> Changed;
+
         [Summary("Point to point lines")]
-        [DefaultEnabled(true)]
-        [DefaultColor(-65281)]
-        public ColorToggleOption Lines {
-            get { return (ColorToggleOption)GetSetting("Lines"); }
-            private set { UpdateSetting("Lines", value); }
-        }
+        public readonly ColorToggleOption Lines = new ColorToggleOption(true, -65281);
 
         [Summary("Chat commands")]
-        [DefaultEnabled(true)]
-        [DefaultColor(-1)]
-        public ColorToggleOption ChatText {
-            get { return (ColorToggleOption)GetSetting("ChatText"); }
-            private set { UpdateSetting("ChatText", value); }
-        }
+        public readonly ColorToggleOption ChatText = new ColorToggleOption(true, -1);
 
         [Summary("Jump commands")]
-        [DefaultEnabled(true)]
-        [DefaultColor(-1)]
-        public ColorToggleOption JumpText {
-            get { return (ColorToggleOption)GetSetting("JumpText"); }
-            private set { UpdateSetting("JumpText", value); }
-        }
+        public readonly ColorToggleOption JumpText = new ColorToggleOption(true, -1);
 
         [Summary("Jump heading arrow")]
-        [DefaultEnabled(true)]
-        [DefaultColor(-256)]
-        public ColorToggleOption JumpArrow {
-            get { return (ColorToggleOption)GetSetting("JumpArrow"); }
-            private set { UpdateSetting("JumpArrow", value); }
-        }
+        public readonly ColorToggleOption JumpArrow = new ColorToggleOption(true, -256);
 
         [Summary("Open vendor")]
-        [DefaultEnabled(true)]
-        [DefaultColor(-1)]
-        public ColorToggleOption OpenVendor {
-            get { return (ColorToggleOption)GetSetting("OpenVendor"); }
-            private set { UpdateSetting("OpenVendor", value); }
-        }
+        public readonly ColorToggleOption OpenVendor = new ColorToggleOption(true, -1);
 
         [Summary("Pause commands")]
-        [DefaultEnabled(true)]
-        [DefaultColor(-1)]
-        public ColorToggleOption Pause {
-            get { return (ColorToggleOption)GetSetting("Pause"); }
-            private set { UpdateSetting("Pause", value); }
-        }
+        public readonly ColorToggleOption Pause = new ColorToggleOption(true, -1);
 
         [Summary("Portal commands")]
-        [DefaultEnabled(true)]
-        [DefaultColor(-1)]
-        public ColorToggleOption Portal {
-            get { return (ColorToggleOption)GetSetting("Portal"); }
-            private set { UpdateSetting("Portal", value); }
-        }
+        public readonly ColorToggleOption Portal = new ColorToggleOption(true, -1);
 
         [Summary("Recall spells")]
-        [DefaultEnabled(true)]
-        [DefaultColor(-1)]
-        public ColorToggleOption Recall {
-            get { return (ColorToggleOption)GetSetting("Recall"); }
-            private set { UpdateSetting("Recall", value); }
-        }
+        public readonly ColorToggleOption Recall = new ColorToggleOption(true, -1);
 
         [Summary("Use NPC commands")]
-        [DefaultEnabled(true)]
-        [DefaultColor(-1)]
-        public ColorToggleOption UseNPC {
-            get { return (ColorToggleOption)GetSetting("UseNPC"); }
-            private set { UpdateSetting("UseNPC", value); }
-        }
+        public readonly ColorToggleOption UseNPC = new ColorToggleOption(true, -1);
 
         [Summary("Follow character arrow")]
-        [DefaultEnabled(true)]
-        [DefaultColor(-23296)]
-        public ColorToggleOption FollowArrow {
-            get { return (ColorToggleOption)GetSetting("FollowArrow"); }
-            private set { UpdateSetting("FollowArrow", value); }
-        }
+        public readonly ColorToggleOption FollowArrow = new ColorToggleOption(true, -23296);
 
         [Summary("Current waypoint ring")]
-        [DefaultEnabled(true)]
-        [DefaultColor(-7722014)]
-        public ColorToggleOption CurrentWaypoint {
-            get { return (ColorToggleOption)GetSetting("CurrentWaypoint"); }
-            private set { UpdateSetting("CurrentWaypoint", value); }
+        public readonly ColorToggleOption CurrentWaypoint = new ColorToggleOption(true, -7722014);
+
+        public VisualNavDisplayOptions() {
+
         }
 
-        public VisualNavDisplayOptions(SectionBase parent) : base(parent) {
-            Name = "Display";
+        public override object GetDefaultValue() {
+            return null;
+        }
+
+        public override object GetValue() {
+            return this;
+        }
+
+        public override void SetValue(object newValue) {
+            throw new NotImplementedException();
         }
     }
     #endregion
@@ -161,40 +119,24 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
 
         #region Config
         [Summary("Enabled")]
-        [DefaultValue(true)]
         [Hotkey("VisualNav", "Toggle VisualNav display")]
-        public bool Enabled {
-            get { return (bool)GetSetting("Enabled"); }
-            set { UpdateSetting("Enabled", value); }
-        }
+        public readonly Setting<bool> Enabled = new Setting<bool>(true);
 
         [Summary("ScaleCurrentWaypoint")]
-        [DefaultValue(true)]
-        public bool ScaleCurrentWaypoint {
-            get { return (bool)GetSetting("ScaleCurrentWaypoint"); }
-            set { UpdateSetting("ScaleCurrentWaypoint", value); }
-        }
+        public readonly Setting<bool> ScaleCurrentWaypoint = new Setting<bool>(true);
 
         [Summary("Line offset from the ground, in meters")]
-        [DefaultValue(0.05f)]
-        public float LineOffset {
-            get { return (float)GetSetting("LineOffset"); }
-            set { UpdateSetting("LineOffset", value); }
-        }
+        public readonly Setting<float> LineOffset = new Setting<float>(0.05f);
 
         [Summary("Automatically save [None] routes. Enabling this allows embedded routes to be drawn.")]
-        [DefaultValue(false)]
-        public bool SaveNoneRoutes {
-            get { return (bool)GetSetting("SaveNoneRoutes"); }
-            set { UpdateSetting("SaveNoneRoutes", value); }
-        }
+        public readonly Setting<bool> SaveNoneRoutes = new Setting<bool>(false);
 
         [Summary("VisualNav display options")]
-        public VisualNavDisplayOptions Display { get; set; } = null;
+        public readonly VisualNavDisplayOptions Display = new VisualNavDisplayOptions();
         #endregion
 
         public VisualNav(UtilityBeltPlugin ub, string name) : base(ub, name) {
-            Display = new VisualNavDisplayOptions(this);
+
         }
 
         public override void Init() {
@@ -225,17 +167,15 @@ On the VisualNav tab of the main UtilityBelt window you can see the different wa
                 needsDraw = true;
             }
 
-            Display.PropertyChanged += (s, e) => { needsDraw = true; };
+            Display.Changed += (s, e) => { needsDraw = true; };
 
             uTank2.PluginCore.PC.NavRouteChanged += PC_NavRouteChanged;
             uTank2.PluginCore.PC.NavWaypointChanged += PC_NavWaypointChanged;
             UBHelper.VideoPatch.Changed += VideoPatch_Changed;
 
-            PropertyChanged += (s, e) => {
-                if (e.PropertyName == "Enabled") {
-                    forceUpdate = true;
-                    DrawCurrentRoute();
-                }
+            Enabled.Changed += (s, e) => {
+                forceUpdate = true;
+                DrawCurrentRoute();
             };
         }
 

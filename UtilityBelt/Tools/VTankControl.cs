@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using UBHelper;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Expressions;
+using UtilityBelt.Lib.Settings;
 using UtilityBelt.Lib.VTNav;
 
 namespace UtilityBelt.Tools {
@@ -59,34 +60,18 @@ namespace UtilityBelt.Tools {
 
         #region Config
         [Summary("VitalSharing")]
-        [DefaultValue(true)]
         [Hotkey("VitalSharing", "Toggle VitalSharing functionality")]
-        public bool VitalSharing {
-            get { return (bool)GetSetting("VitalSharing"); }
-            set { UpdateSetting("VitalSharing", value); }
-        }
+        public readonly Setting<bool> VitalSharing = new Setting<bool>(true);
 
         [Summary("PatchExpressionEngine")]
-        [DefaultValue(false)]
         [Hotkey("PatchExpressionEngine", "Overrides vtank's meta expression engine. This allows for new meta expression functions and language features.")]
-        public bool PatchExpressionEngine {
-            get { return (bool)GetSetting("PatchExpressionEngine"); }
-            set { UpdateSetting("PatchExpressionEngine", value); }
-        }
+        public readonly Setting<bool> PatchExpressionEngine = new Setting<bool>(false);
 
         [Summary("Detect and fix vtank nav portal loops")]
-        [DefaultValue(false)]
-        public bool FixPortalLoops {
-            get { return (bool)GetSetting("FixPortalLoops"); }
-            set { UpdateSetting("FixPortalLoops", value); }
-        }
+        public readonly Setting<bool> FixPortalLoops = new Setting<bool>(false);
 
         [Summary("Number of portal loops to the same location to trigger portal loop fix")]
-        [DefaultValue(3)]
-        public int PortalLoopCount {
-            get { return (int)GetSetting("PortalLoopCount"); }
-            set { UpdateSetting("PortalLoopCount", value); }
-        }
+        public readonly Setting<int> PortalLoopCount = new Setting<int>(3);
         #endregion
 
         #region Commands
@@ -1501,12 +1486,18 @@ namespace UtilityBelt.Tools {
         private List<string> expressionExceptions = new List<string>();
 
         public VTankControl(UtilityBeltPlugin ub, string name) : base(ub, name) {
+
+        }
+
+        public override void Init() {
+            base.Init();
             DoVTankPatches();
 
             if (UBHelper.Core.GameState == UBHelper.GameState.In_Game) Enable();
             else UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
 
-            PropertyChanged += VTankControl_PropertyChanged;
+            FixPortalLoops.Changed += VTankControl_PropertyChanged;
+            PatchExpressionEngine.Changed += VTankControl_PropertyChanged;
 
             if (FixPortalLoops) {
                 UB.Core.CharacterFilter.ChangePortalMode += CharacterFilter_ChangePortalMode;
@@ -1584,7 +1575,7 @@ namespace UtilityBelt.Tools {
         }
         #endregion
 
-        private void VTankControl_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+        private void VTankControl_PropertyChanged(object sender, SettingChangedEventArgs e) {
             if (e.PropertyName.Equals("FixPortalLoops")) {
                 if (FixPortalLoops && !isFixingPortalLoops) {
                     UB.Core.CharacterFilter.ChangePortalMode += CharacterFilter_ChangePortalMode;
@@ -1654,6 +1645,8 @@ namespace UtilityBelt.Tools {
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
+                    FixPortalLoops.Changed -= VTankControl_PropertyChanged;
+                    PatchExpressionEngine.Changed -= VTankControl_PropertyChanged;
                     UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
                     UB.Core.CharacterFilter.Logoff -= CharacterFilter_Logoff;
                     

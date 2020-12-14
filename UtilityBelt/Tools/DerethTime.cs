@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Dungeon;
+using UtilityBelt.Lib.Settings;
 using VirindiViewService;
 
 namespace UtilityBelt.Tools {
@@ -104,36 +105,16 @@ namespace UtilityBelt.Tools {
 
         #region Config
         [Summary("Enabled")]
-        [DefaultValue(true)]
-        public bool Enabled {
-            get { return (bool)GetSetting("Enabled"); }
-            set {
-                UpdateSetting("Enabled", value);
-            }
-        }
+        public readonly Setting<bool> Enabled = new Setting<bool>(true);
 
         [Summary("DerethTime HUD Position X")]
-        [DefaultValue(415)]
-        public int HudX {
-            get { return (int)GetSetting("HudX"); }
-            set { UpdateSetting("HudX", value); }
-        }
+        public readonly Setting<int> HudX = new Setting<int>(415);
 
         [Summary("DerethTime HUD Position Y")]
-        [DefaultValue(5)]
-        public int HudY {
-            get { return (int)GetSetting("HudY"); }
-            set { UpdateSetting("HudY", value); }
-        }
+        public readonly Setting<int> HudY = new Setting<int>(5);
 
         [Summary("Show the label text, with minutes remaining until the next day/night")]
-        [DefaultValue(true)]
-        public bool ShowLabel {
-            get { return (bool)GetSetting("ShowLabel"); }
-            set {
-                UpdateSetting("ShowLabel", value);
-            }
-        }
+        public readonly Setting<bool> ShowLabel = new Setting<bool>(true);
         #endregion
 
         #region Expressions
@@ -258,6 +239,7 @@ namespace UtilityBelt.Tools {
         private TimerClass drawTimer;
 
         public DerethTime(UtilityBeltPlugin ub, string name) : base(ub, name) {
+
         }
 
         public override void Init() {
@@ -266,7 +248,8 @@ namespace UtilityBelt.Tools {
                 fontFace = UB.LandscapeMapView.view.MainControl.Theme.GetVal<string>("DefaultTextFontFace");
                 fontWeight = UB.LandscapeMapView.view.MainControl.Theme.GetVal<int>("ViewTextFontWeight");
 
-                PropertyChanged += DerethTime_PropertyChanged;
+                Enabled.Changed += DerethTime_PropertyChanged;
+                ShowLabel.Changed += DerethTime_PropertyChanged;
 
                 if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
                     UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
@@ -300,7 +283,7 @@ namespace UtilityBelt.Tools {
             TryEnable();
         }
 
-        private void DerethTime_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+        private void DerethTime_PropertyChanged(object sender, SettingChangedEventArgs e) {
             if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
                 return;
 
@@ -320,12 +303,12 @@ namespace UtilityBelt.Tools {
         }
 
         private void Hud_OnMove(object sender, EventArgs e) {
-            HudX = hud.X;
-            HudY = hud.Y;
+            HudX.Value = hud.X;
+            HudY.Value = hud.Y;
         }
 
         private void Hud_OnClose(object sender, EventArgs e) {
-            Enabled = false;
+            Enabled.Value = false;
         }
         #endregion // Event Handlers
 
@@ -409,6 +392,8 @@ namespace UtilityBelt.Tools {
 
         protected override void Dispose(bool disposing) {
             base.Dispose(disposing);
+            Enabled.Changed -= DerethTime_PropertyChanged;
+            ShowLabel.Changed -= DerethTime_PropertyChanged;
             if (drawTimer != null) drawTimer.Stop();
             if (hud != null) {
                 hud.OnRender -= Hud_OnRender;

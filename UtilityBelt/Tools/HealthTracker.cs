@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using UtilityBelt.Lib;
+using UtilityBelt.Lib.Settings;
 using static UtilityBelt.Tools.VTankControl;
 
 namespace UtilityBelt.Tools {
@@ -14,11 +15,7 @@ namespace UtilityBelt.Tools {
 
         #region Config
         [Summary("Enable health tracking for players/mobs")]
-        [DefaultValue(true)]
-        public bool Enabled {
-            get { return (bool)GetSetting("Enabled"); }
-            set { UpdateSetting("Enabled", value); }
-        }
+        public readonly Setting<bool> Enabled = new Setting<bool>(true);
         #endregion //Config
 
         #region Expressions
@@ -38,11 +35,14 @@ namespace UtilityBelt.Tools {
         #endregion //Expressions
 
         public HealthTracker(UtilityBeltPlugin ub, string name) : base(ub, name) {
-            try {
-                UB.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
-                UB.Core.WorldFilter.ReleaseObject += WorldFilter_ReleaseObject;
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+
+        }
+
+        public override void Init() {
+            base.Init();
+
+            UB.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
+            UB.Core.WorldFilter.ReleaseObject += WorldFilter_ReleaseObject;
         }
 
         private void WorldFilter_ReleaseObject(object sender, Decal.Adapter.Wrappers.ReleaseObjectEventArgs e) {

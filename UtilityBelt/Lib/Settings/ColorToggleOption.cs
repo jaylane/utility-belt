@@ -6,38 +6,19 @@ using System.Linq;
 using System.Text;
 
 namespace UtilityBelt.Lib.Settings {
-    public class ColorToggleOption : SectionBase {
-        private bool enabled;
-        [DefaultValue(true)]
+    public class ColorToggleOption : ISetting {
         [Summary("Enabled / Disabled")]
-        public bool Enabled {
-            get { return enabled; }
-            set {
-                if (enabled == value) return;
-                enabled = value;
-                OnPropertyChanged("Enabled");
-            }
-        }
-        
-        private int color;
-        [DefaultValue(-1)]
-        [Summary("Color")]
-        public int Color {
-            get { return color; }
-            set {
-                if (color == value) return;
-                color = value;
-                OnPropertyChanged("Color");
-            }
-        }
+        public readonly Setting<bool> Enabled = new Setting<bool>();
 
-        [JsonIgnore]
+        [Summary("Color")]
+        public readonly Setting<int> Color = new Setting<int>();
+
         public int DefaultColor { get; set; } = System.Drawing.Color.White.ToArgb();
 
-        public ColorToggleOption(SectionBase parent, bool show, int color) : base(parent) {
-            Enabled = show;
-            Color = color;
-            DefaultColor = color;
+        public ColorToggleOption(bool enabled, int defaultColor) : base() {
+            Enabled.Value = enabled;
+            DefaultColor = defaultColor;
+            Color.Value = defaultColor;
         }
 
         new public string ToString() {

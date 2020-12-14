@@ -27,60 +27,41 @@ For portals, it will show the destination.
 
         #region Config
         [Summary("Enabled")]
-        [DefaultValue(true)]
         [Hotkey("NameTags", "Toggle NameTags display")]
-        public bool Enabled {
-            get { return (bool)GetSetting("Enabled"); }
-            set { UpdateSetting("Enabled", value); }
-        }
+        public readonly Setting<bool> Enabled = new Setting<bool>(true);
 
         [Summary("Maximum Range for Nametags")]
-        [DefaultValue(35f)]
-        public float MaxRange {
-            get { return (float)GetSetting("MaxRange"); }
-            set { UpdateSetting("MaxRange", value); }
-        }
+        public readonly Setting<float> MaxRange = new Setting<float>(35f);
 
         [Summary("Player Nametag")]
-        [DefaultEnabled(true)]
-        [DefaultColor(-16711681)]
-        public ColorToggleOption Player {
-            get { return (ColorToggleOption)GetSetting("Player"); }
-            private set { UpdateSetting("Player", value); }
-        }
-        [Summary("Portal Nametag")]
-        [DefaultEnabled(true)]
-        [DefaultColor(-16711936)]
-        public ColorToggleOption Portal {
-            get { return (ColorToggleOption)GetSetting("Portal"); }
-            private set { UpdateSetting("Portal", value); }
-        }
-        [Summary("Npc Nametag")]
-        [DefaultEnabled(true)]
-        [DefaultColor(-256)]
-        public ColorToggleOption Npc {
-            get { return (ColorToggleOption)GetSetting("Npc"); }
-            private set { UpdateSetting("Npc", value); }
-        }
-        [Summary("Vendor Nametag")]
-        [DefaultEnabled(true)]
-        [DefaultColor(-65281)]
-        public ColorToggleOption Vendor {
-            get { return (ColorToggleOption)GetSetting("Vendor"); }
-            private set { UpdateSetting("Vendor", value); }
-        }
-        [Summary("Monster Nametag")]
-        [DefaultEnabled(true)]
-        [DefaultColor(-65536)]
-        public ColorToggleOption Monster {
-            get { return (ColorToggleOption)GetSetting("Monster"); }
-            private set { UpdateSetting("Monster", value); }
-        }
+        public readonly ColorToggleOption Player = new ColorToggleOption(true, -16711681);
 
+        [Summary("Portal Nametag")]
+        public readonly ColorToggleOption Portal = new ColorToggleOption(true, -16711936);
+
+        [Summary("Npc Nametag")]
+        public readonly ColorToggleOption Npc = new ColorToggleOption(true, -256);
+
+        [Summary("Vendor Nametag")]
+        public readonly ColorToggleOption Vendor = new ColorToggleOption(true, -65281);
+
+        [Summary("Monster Nametag")]
+        public readonly ColorToggleOption Monster = new ColorToggleOption(true, -65536);
         #endregion
 
         public Nametags(UtilityBeltPlugin ub, string name) : base(ub, name) {
-            PropertyChanged += Nametags_PropertyChanged;
+
+        }
+
+        public override void Init() {
+            base.Init();
+            Enabled.Changed += Nametags_PropertyChanged;
+            MaxRange.Changed += Nametags_PropertyChanged;
+            Player.Changed += Nametags_DisplayPropertyChanged;
+            Portal.Changed += Nametags_DisplayPropertyChanged;
+            Npc.Changed += Nametags_DisplayPropertyChanged;
+            Vendor.Changed += Nametags_DisplayPropertyChanged;
+            Monster.Changed += Nametags_DisplayPropertyChanged;
             if (Enabled) Enable();
         }
 
@@ -146,22 +127,24 @@ For portals, it will show the destination.
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
-                    PropertyChanged -= Nametags_PropertyChanged;
+                    Enabled.Changed -= Nametags_PropertyChanged;
+                    MaxRange.Changed -= Nametags_PropertyChanged;
+
+                    Player.Changed -= Nametags_DisplayPropertyChanged;
+                    Portal.Changed -= Nametags_DisplayPropertyChanged;
+                    Npc.Changed -= Nametags_DisplayPropertyChanged;
+                    Vendor.Changed -= Nametags_DisplayPropertyChanged;
+                    Monster.Changed -= Nametags_DisplayPropertyChanged;
                     Disable();
                     base.Dispose(disposing);
                 }
                 disposedValue = true;
             }
         }
-        private void Nametags_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
-            switch (e.PropertyName) {
-                case "Enabled":
-                    if (Enabled) Enable();
-                    else Disable();
-                    return;
-                case "MaxRange":
-                    maxRange = MaxRange;
-                    return;
+        private void Nametags_DisplayPropertyChanged(object sender, SettingChangedEventArgs e) {
+            var parts = e.FullName.Split('.');
+            var displayProperty = parts[parts.Length - 2];
+            switch (displayProperty) {
                 case "Player":
                     enabled_types[ObjectClass.Player] = Player.Enabled;
                     colors[ObjectClass.Player] = Player.Color;
@@ -182,6 +165,18 @@ For portals, it will show the destination.
                     enabled_types[ObjectClass.Monster] = Monster.Enabled;
                     colors[ObjectClass.Monster] = Monster.Color;
                     break;
+            }
+            evaluate_tags_time = DateTime.UtcNow + TimeSpan.FromMilliseconds(250);
+        }
+        private void Nametags_PropertyChanged(object sender, SettingChangedEventArgs e) {
+            switch (e.PropertyName) {
+                case "Enabled":
+                    if (Enabled) Enable();
+                    else Disable();
+                    return;
+                case "MaxRange":
+                    maxRange = MaxRange;
+                    return;
             }
             evaluate_tags_time = DateTime.UtcNow + TimeSpan.FromMilliseconds(250);
         }

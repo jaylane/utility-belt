@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
+using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     internal class ProfessorCommand {
@@ -29,11 +30,7 @@ namespace UtilityBelt.Tools {
 
         #region Config
         [Summary("Spell Professors timeout in seconds")]
-        [DefaultValue(60 * 10)] // 10 minutes
-        public int Timeout {
-            get { return (int)GetSetting("Timeout"); }
-            set { UpdateSetting("Timeout", value); }
-        }
+        public readonly Setting<int> Timeout = new Setting<int>(60 * 10);
         #endregion
 
         #region Commands
@@ -82,7 +79,7 @@ namespace UtilityBelt.Tools {
         #endregion
 
         public Professors(UtilityBeltPlugin ub, string name) : base(ub, name) {
-            //UBHelper.Core.SendTellByGUID();
+            
         }
 
         private void Stop() {

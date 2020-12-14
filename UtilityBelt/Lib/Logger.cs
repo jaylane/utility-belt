@@ -150,9 +150,7 @@ namespace UtilityBelt {
             if (exceptionCount > MAX_LOG_EXCEPTION) return;
             exceptionCount++;
             UBLoader.File.TryWrite(exceptionsLog, $"== {DateTime.Now} ==================================================\r\n{ex.ToString()}\r\n============================================================================\r\n\r\n", true);
-
         }
-
         public static void LogException(string ex) {
             UBLoader.File.TryWrite(exceptionsLog, $"== {DateTime.Now} {ex}\r\n", true);
         }

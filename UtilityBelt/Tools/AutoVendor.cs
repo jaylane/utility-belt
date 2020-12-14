@@ -9,6 +9,7 @@ using Decal.Adapter;
 using Decal.Adapter.Wrappers;
 using UBHelper;
 using UtilityBelt.Lib;
+using UtilityBelt.Lib.Settings;
 using UtilityBelt.Lib.VendorCache;
 using UtilityBelt.Views;
 using VirindiViewService.Controls;
@@ -102,69 +103,33 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
 
         #region Config
         [Summary("Enabled")]
-        [DefaultValue(true)]
         [Hotkey("AutoVendor", "Toggle AutoVendor functionality")]
-        public bool Enabled {
-            get { return (bool)GetSetting("Enabled"); }
-            set { UpdateSetting("Enabled", value); }
-        }
+        public readonly Setting<bool> Enabled = new Setting<bool>(true);
 
         [Summary("EnableBuying")]
-        [DefaultValue(true)]
-        public bool EnableBuying {
-            get { return (bool)GetSetting("EnableBuying"); }
-            set { UpdateSetting("EnableBuying", value); }
-        }
+        public readonly Setting<bool> EnableBuying = new Setting<bool>(true);
 
         [Summary("EnableSelling")]
-        [DefaultValue(true)]
-        public bool EnableSelling {
-            get { return (bool)GetSetting("EnableSelling"); }
-            set { UpdateSetting("EnableSelling", value); }
-        }
-
-        [Summary("Think to yourself when auto vendor is completed")]
-        [DefaultValue(false)]
-        public bool Think {
-            get { return (bool)GetSetting("Think"); }
-            set { UpdateSetting("Think", value); }
-        }
+        public readonly Setting<bool> EnableSelling = new Setting<bool>(true);
 
         [Summary("Test mode (don't actually sell/buy, just echo to the chat window)")]
-        [DefaultValue(false)]
         [Hotkey("AutoVendorTestMode", "Toggle AutoVendor TestMode functionality")]
-        public bool TestMode {
-            get { return (bool)GetSetting("TestMode"); }
-            set { UpdateSetting("TestMode", value); }
-        }
+        public readonly Setting<bool> TestMode = new Setting<bool>(false);
+
+        [Summary("Think to yourself when auto vendor is completed")]
+        public readonly Setting<bool> Think = new Setting<bool>(false);
 
         [Summary("Show merchant info on approach vendor")]
-        [DefaultValue(true)]
-        public bool ShowMerchantInfo {
-            get { return (bool)GetSetting("ShowMerchantInfo"); }
-            set { UpdateSetting("ShowMerchantInfo", value); }
-        }
+        public readonly Setting<bool> ShowMerchantInfo = new Setting<bool>(true);
 
         [Summary("Only vendor things in your main pack")]
-        [DefaultValue(false)]
-        public bool OnlyFromMainPack {
-            get { return (bool)GetSetting("OnlyFromMainPack"); }
-            set { UpdateSetting("OnlyFromMainPack", value); }
-        }
+        public readonly Setting<bool> OnlyFromMainPack = new Setting<bool>(false);
 
         [Summary("Attempts to open vendor on /ub vendor open[p]")]
-        [DefaultValue(4)]
-        public int Tries {
-            get { return (int)GetSetting("Tries"); }
-            set { UpdateSetting("Tries", value); }
-        }
+        public readonly Setting<int> Tries = new Setting<int>(4);
 
         [Summary("Tine between open vendor attempts (in milliseconds)")]
-        [DefaultValue(5000)]
-        public int TriesTime {
-            get { return (int)GetSetting("TriesTime"); }
-            set { UpdateSetting("TriesTime", value); }
-        }
+        public readonly Setting<int> TriesTime = new Setting<int>(5000);
         #endregion
 
         #region Commands
@@ -296,17 +261,19 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         #endregion
 
         public AutoVendor(UtilityBeltPlugin ub, string name) : base(ub, name) {
+
+        }
+
+        public override void Init() {
+            base.Init();
             try {
                 Directory.CreateDirectory(Path.Combine(Util.GetPluginDirectory(), "autovendor"));
                 Directory.CreateDirectory(Path.Combine(Util.GetCharacterDirectory(), "autovendor"));
                 Directory.CreateDirectory(Path.Combine(Util.GetServerDirectory(), "autovendor"));
 
                 UB.Core.WorldFilter.ApproachVendor += WorldFilter_ApproachVendor;
-            } catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        public override void Init() {
-            base.Init();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
 
             if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
                 UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
@@ -611,7 +578,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     LogError("Unable to load VTClassic, something went wrong.");
                     if (Enabled) {
                         WriteToChat("Disabled");
-                        Enabled = false;
+                        Enabled.Value = false;
                     }
                     return;
                 }

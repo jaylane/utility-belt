@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Timers;
 using UtilityBelt.Lib;
+using UtilityBelt.Lib.Settings;
 using VirindiViewService;
 using VirindiViewService.Controls;
 using VirindiViewService.XMLParsers;
@@ -45,8 +46,8 @@ namespace UtilityBelt.Views {
 
                 timer.Elapsed += (s, e) => {
                     timer.Stop();
-                    UB.InventoryManager.IGWindowX = view.Location.X;
-                    UB.InventoryManager.IGWindowY = view.Location.Y;
+                    UB.InventoryManager.IGWindowX.Value = view.Location.X;
+                    UB.InventoryManager.IGWindowY.Value = view.Location.Y;
                 };
 
                 view.Moved += (s, e) => {
@@ -89,7 +90,7 @@ namespace UtilityBelt.Views {
                 LP_LootProfile.Change += LP_LootProfile_Change;
 
                 view.ShowInBar = UB.InventoryManager.IGUIEnabled;
-                UB.InventoryManager.PropertyChanged += InventoryManager_PropertyChanged;
+                UB.InventoryManager.IGUIEnabled.Changed += InventoryManager_PropertyChanged;
                 UB.InventoryManager.Started += InventoryManager_Started;
                 UB.InventoryManager.Finished += InventoryManager_Finished;
 
@@ -205,13 +206,12 @@ namespace UtilityBelt.Views {
             LP_StartGiveItems.Text = "Start";
         }
 
-        private void InventoryManager_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
-            if (e.PropertyName != "IGUIEnabled")
-                return;
+        private void InventoryManager_PropertyChanged(object sender, SettingChangedEventArgs e) {
             view.ShowInBar = UB.InventoryManager.IGUIEnabled;
         }
 
         ~ItemGiverView() {
+            UB.InventoryManager.IGUIEnabled.Changed -= InventoryManager_PropertyChanged;
             if (timer != null) timer.Dispose();
         }
     }

@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Dungeon;
 using UtilityBelt.Lib.Models;
+using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     public class DataUpdatedEventArgs : EventArgs {
@@ -41,30 +42,13 @@ namespace UtilityBelt.Tools {
 
         #region Config
         [Summary("Enabled")]
-        [DefaultValue(false)]
-        public bool Enabled {
-            get { return (bool)GetSetting("Enabled"); }
-            set { UpdateSetting("Enabled", value); }
-        }
+        public readonly Setting<bool> Enabled = new Setting<bool>(false);
 
         [Summary("Lifestoned web root")]
-        [DefaultValue("https://lifestoned.org/")]
-        public string LSDWebRoot {
-            get {
-                return (string)GetSetting("LSDWebRoot");
-            }
-            set {
-                if (!value.EndsWith("/")) value += "/";
-                UpdateSetting("LSDWebRoot", value);
-            }
-        }
+        public readonly Setting<string> LSDWebRoot = new Setting<string>("https://lifestoned.org/");
 
         [Summary("How long Lifestoned results are cached for before redownloading (in seconds)")]
-        [DefaultValue(60 * 60 * 24 * 180)] // 180 days
-        public int LSDCacheSeconds {
-            get { return (int)GetSetting("LSDCacheSeconds"); }
-            set { UpdateSetting("LSDCacheSeconds", value); }
-        }
+        public readonly Setting<int> LSDCacheSeconds = new Setting<int>(60 * 60 * 24 * 180);
         #endregion
 
         #region Commands
@@ -100,6 +84,11 @@ namespace UtilityBelt.Tools {
         #endregion
 
         public LSD(UtilityBeltPlugin ub, string name) : base(ub, name) {
+        }
+
+        public override void Init() {
+            base.Init();
+
             landblockClient = new WebClient();
             landblockClient.CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate);
             landblockClient.DownloadStringCompleted += LbClient_DownloadStringCompleted;
@@ -107,9 +96,6 @@ namespace UtilityBelt.Tools {
             weenieClient = new WebClient();
             weenieClient.CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate);
             weenieClient.UploadStringCompleted += WeenieClient_UploadStringCompleted;
-        }
-
-        public override void Init() {
         }
 
         internal bool EnsureLandblockSpawnsReady(uint landblock) {

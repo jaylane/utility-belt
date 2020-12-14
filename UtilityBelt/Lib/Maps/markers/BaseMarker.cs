@@ -47,7 +47,7 @@ namespace UtilityBelt.Lib.Maps.Markers {
 
         public virtual void Dispose() {
             IsDisposed = true;
-            UtilityBeltPlugin.Instance.LandscapeMaps.Redraw();
+            UtilityBeltPlugin.Instance.LandscapeMaps?.Redraw();
         }
     }
 }

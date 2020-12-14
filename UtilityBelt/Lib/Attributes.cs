@@ -13,7 +13,7 @@ namespace UtilityBelt.Lib {
         }
     }
 
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Field)]
     public class SummaryAttribute : Attribute {
         public string Summary { get; }
 
@@ -122,7 +122,7 @@ namespace UtilityBelt.Lib {
         }
     }
 
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Field)]
     public class HotkeyAttribute : Attribute {
         public string Title { get; }
         public string Description { get; }

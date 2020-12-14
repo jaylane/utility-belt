@@ -35,8 +35,7 @@ namespace UtilityBelt.Lib.VTNav {
             NavPath = navPath;
 
             uTank2.PluginCore.PC.NavWaypointChanged += PC_NavWaypointChanged;
-            UB.VisualNav.Display.CurrentWaypoint.PropertyChanged += (s, e) => { UpdateCurrentWaypoint(); };
-            UB.VisualNav.PropertyChanged += (s, e) => { UpdateCurrentWaypoint(); };
+            UB.VisualNav.Changed += (s, e) => { UpdateCurrentWaypoint(); };
         }
 
         public void AddOffset(double ns, double ew, double offset) {

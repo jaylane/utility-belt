@@ -153,7 +153,12 @@
     <Compile Include="Lib\Models\WeenieAttribute.cs" />
     <Compile Include="Lib\Models\WeenieSpawn.cs" />
     <Compile Include="Lib\PerfMonitor.cs" />
+    <Compile Include="Lib\Settings\ISetting.cs" />
+    <Compile Include="Lib\Settings\OptionResult.cs" />
     <Compile Include="Lib\Settings\PluginMessageDisplay.cs" />
+    <Compile Include="Lib\Settings\Setting.cs" />
+    <Compile Include="Lib\Settings\SettingsJsonConverter.cs" />
+    <Compile Include="Lib\Settings\ShouldSerializeContractResolver.cs" />
     <Compile Include="Lib\Spells.cs" />
     <Compile Include="Lib\TextureCache.cs" />
     <Compile Include="Lib\Dungeon\TrackedObject.cs" />
@@ -187,9 +192,7 @@
     <Compile Include="Lib\Salvage\TinkerCalc.cs" />
     <Compile Include="Lib\Salvage\TinkerType.cs" />
     <Compile Include="Lib\Settings\ColorToggleOption.cs" />
-    <Compile Include="Lib\Settings\DisplaySectionBase.cs" />
     <Compile Include="Lib\Settings\MarkerToggleOption.cs" />
-    <Compile Include="Lib\Settings\SectionBase.cs" />
     <Compile Include="Lib\Settings\Settings.cs" />
     <Compile Include="Lib\Constants\CharOptions2.cs" />
     <Compile Include="Lib\Constants\CharOptions.cs" />

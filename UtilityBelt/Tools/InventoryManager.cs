@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using UBHelper;
 using uTank2.LootPlugins;
 using UtilityBelt.Lib;
+using UtilityBelt.Lib.Settings;
 using VTClassic;
 
 namespace UtilityBelt.Tools {
@@ -55,76 +56,37 @@ Provides a command-line interface to inventory management.
 
         #region Config
         [Summary("Automatically cram items into side packs")]
-        [DefaultValue(false)]
-        public bool AutoCram {
-            get { return (bool)GetSetting("AutoCram"); }
-            set { UpdateSetting("AutoCram", value); }
-        }
+        public readonly Setting<bool> AutoCram = new Setting<bool>(false);
 
         [Summary("Automatically combine stacked items")]
-        [DefaultValue(false)]
-        public bool AutoStack {
-            get { return (bool)GetSetting("AutoStack"); }
-            set { UpdateSetting("AutoStack", value); }
-        }
+        public readonly Setting<bool> AutoStack = new Setting<bool>(false);
 
         [Summary("Think to yourself when ItemGiver Finishes")]
-        [DefaultValue(false)]
-        public bool IGThink {
-            get { return (bool)GetSetting("IGThink"); }
-            set { UpdateSetting("IGThink", value); }
-        }
+        public readonly Setting<bool> IGThink = new Setting<bool>(false);
+
         [Summary("Item Failure Count to fail ItemGiver")]
-        [DefaultValue(3)]
-        public int IGFailure {
-            get { return (int)GetSetting("IGFailure"); }
-            set { UpdateSetting("IGFailure", value); }
-        }
+        public readonly Setting<int> IGFailure = new Setting<int>(3);
+
         [Summary("Busy Count to fail ItemGiver give")]
-        [DefaultValue(10)]
-        public int IGBusyCount {
-            get { return (int)GetSetting("IGBusyCount"); }
-            set { UpdateSetting("IGBusyCount", value); }
-        }
+        public readonly Setting<int> IGBusyCount = new Setting<int>(10);
+
         [Summary("Maximum Range for ItemGiver commands")]
-        [DefaultValue(15f)]
-        public float IGRange {
-            get { return (float)GetSetting("IGRange"); }
-            set { UpdateSetting("IGRange", value); }
-        }
+        public readonly Setting<float> IGRange = new Setting<float>(15f);
+
         [Summary("Enable the ItemGiver UI window")]
-        [DefaultValue(true)]
-        public bool IGUIEnabled {
-            get { return (bool)GetSetting("IGUIEnabled"); }
-            set { UpdateSetting("IGUIEnabled", value); }
-        }
+        public readonly Setting<bool> IGUIEnabled = new Setting<bool>(true);
+
         [Summary("ItemGiver window X position")]
-        [DefaultValue(250)]
-        public int IGWindowX {
-            get { return (int)GetSetting("IGWindowX"); }
-            set { UpdateSetting("IGWindowX", value); }
-        }
+        public readonly Setting<int> IGWindowX = new Setting<int>(250);
+
         [Summary("ItemGiver window Y position")]
-        [DefaultValue(250)]
-        public int IGWindowY {
-            get { return (int)GetSetting("IGWindowY"); }
-            set { UpdateSetting("IGWindowY", value); }
-        }
+        public readonly Setting<int> IGWindowY = new Setting<int>(250);
+
         [Summary("Treat stacks as single item")]
-        [DefaultValue(true)]
-        public bool TreatStackAsSingleItem {
-            get { return (bool)GetSetting("TreatStackAsSingleItem"); }
-            set { UpdateSetting("TreatStackAsSingleItem", value); }
-        }
+        public readonly Setting<bool> TreatStackAsSingleItem = new Setting<bool>(true);
+
         [Summary("Watch VTank Loot Profile for changes, and reload")]
-        [DefaultValue(false)]
-        public bool WatchLootProfile {
-            get { return (bool)GetSetting("WatchLootProfile"); }
-            set {
-                UpdateSetting("WatchLootProfile", value);
-                WatchLootProfile_Changed(value);
-            }
-        }
+        public readonly Setting<bool> WatchLootProfile = new Setting<bool>(false);
         #endregion
 
         #region Commands
@@ -540,14 +502,17 @@ Provides a command-line interface to inventory management.
 
         // TODO: support AutoPack profiles when cramming
         public InventoryManager(UtilityBeltPlugin ub, string name) : base(ub, name) {
-            profilePath = Path.Combine(Util.GetPluginDirectory(), "itemgiver");
-            Directory.CreateDirectory(profilePath);
 
-            UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
         }
 
         public override void Init() {
             base.Init();
+
+            profilePath = Path.Combine(Util.GetPluginDirectory(), "itemgiver");
+            Directory.CreateDirectory(profilePath);
+
+            UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
+
             IGRunning = false;
 
             if (UB.Core.CharacterFilter.LoginStatus != 0) {
@@ -583,7 +548,7 @@ Provides a command-line interface to inventory management.
                 string profilePath = Util.GetVTankProfilesDirectory();
                 if (!Directory.Exists(profilePath)) {
                     LogError($"WatchLootProfile_Changed(true) Error: {profilePath} does not exist!");
-                    WatchLootProfile = false;
+                    WatchLootProfile.Value = false;
                     return;
                 }
                 string loadedProfile = UBHelper.vTank.Instance?.GetLootProfile();

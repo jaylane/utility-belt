@@ -13,6 +13,7 @@ using UtilityBelt.Lib;
 using UtilityBelt.Lib.Tinker;
 using System.ComponentModel;
 using UBHelper;
+using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("AutoTinker")]
@@ -63,25 +64,25 @@ The Rend All button will automatically do the following:
     public class AutoTinker : ToolBase {
 
         //AutoTinker Buttons
-        readonly HudButton AutoTinkAddSelectedButton;
-        readonly HudList AutoTinkerList;
-        readonly HudButton AutoTinkStartButton;
-        readonly HudButton AutoTinkStopButton;
-        readonly HudButton PopulateListButton;
-        readonly HudStaticText AutoTinkItemNameLabel;
-        readonly HudCombo AutoTinkCombo;
-        readonly HudCombo AutoTinkMaxTinksCombo;
-        readonly HudTextBox AutoTinkMinPercentTextBox;
+        HudButton AutoTinkAddSelectedButton;
+        HudList AutoTinkerList;
+        HudButton AutoTinkStartButton;
+        HudButton AutoTinkStopButton;
+        HudButton PopulateListButton;
+        HudStaticText AutoTinkItemNameLabel;
+        HudCombo AutoTinkCombo;
+        HudCombo AutoTinkMaxTinksCombo;
+        HudTextBox AutoTinkMinPercentTextBox;
 
         //AutoImbue Stuff
-        readonly HudList AutoImbueList;
-        readonly HudButton AutoImbueStartButton;
-        readonly HudButton AutoImbueStopButton;
-        readonly HudCombo AutoImbueSalvageCombo;
-        readonly HudCombo AutoImbueDmgTypeCombo;
-        readonly HudButton AutoImbueRefreshListButton;
-        readonly HudButton AutoImbueAllButton;
-        readonly Dictionary<string, int> DefaultImbueList = new Dictionary<string, int>();
+        HudList AutoImbueList;
+        HudButton AutoImbueStartButton;
+        HudButton AutoImbueStopButton;
+        HudCombo AutoImbueSalvageCombo;
+        HudCombo AutoImbueDmgTypeCombo;
+        HudButton AutoImbueRefreshListButton;
+        HudButton AutoImbueAllButton;
+        Dictionary<string, int> DefaultImbueList = new Dictionary<string, int>();
 
         //private readonly TinkerJob tinkerJob = new TinkerJob();
         internal DataTable tinkerDT = new DataTable();
@@ -115,11 +116,7 @@ The Rend All button will automatically do the following:
 
         #region Config
         [Summary("Minimum percentage required to perform tinker")]
-        [DefaultValue(99.5f)]
-        public float MinPercentage {
-            get { return (float)GetSetting("MinPercentage"); }
-            set { UpdateSetting("MinPercentage", value); }
-        }
+        public readonly Setting<float> MinPercentage = new Setting<float>(99.5f);
 
         #endregion
 
@@ -197,6 +194,11 @@ The Rend All button will automatically do the following:
         #endregion
 
         public AutoTinker(UtilityBeltPlugin ub, string name) : base(ub, name) {
+
+        }
+
+        public override void Init() {
+            base.Init();
             try {
                 AutoTinkerList = (HudList)UB.MainView.view["AutoTinkerList"];
                 AutoTinkerList.Click += AutoTinkerList_Click;
@@ -262,6 +264,7 @@ The Rend All button will automatically do the following:
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
+
         private void SelectDefaultSalvage(string dmgType) {
             FileService service = CoreManager.Current.Filter<FileService>();
 
@@ -587,7 +590,7 @@ The Rend All button will automatically do the following:
                     f = 0;
                 }
 
-                MinPercentage = f;
+                MinPercentage.Value = f;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

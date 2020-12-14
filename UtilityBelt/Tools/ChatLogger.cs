@@ -76,7 +76,7 @@ Chat logger supports the following message types:
         private string filter = null;
         private readonly ObservableCollection<ChatLog> chatLogList = new ObservableCollection<ChatLog>();
         private readonly ObservableCollection<ChatLog> filteredChatLogList = new ObservableCollection<ChatLog>();
-        private readonly Timer debounceTimer;
+        private Timer debounceTimer;
         private readonly ChatLogWriter writer = new ChatLogWriter();
         private readonly Dictionary<int, ChatMessageType> typeTable = new Dictionary<int, ChatMessageType>();
         private readonly List<ChatMessageType> currentSelectedTypes = new List<ChatMessageType>();
@@ -93,18 +93,11 @@ Chat logger supports the following message types:
 
         #region Config
         [Summary("Save chat log to disk")]
-        [DefaultValue(false)]
-        public bool SaveToFile {
-            get { return (bool)GetSetting("SaveToFile"); }
-            set { UpdateSetting("SaveToFile", value); }
-        }
+        public readonly Setting<bool> SaveToFile = new Setting<bool>(false);
 
         //[Summary("List of message types to log")]
         public ObservableCollection<ChatLogRule> Rules { get; set; } = new ObservableCollection<ChatLogRule>();
 
-        private void Rules_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) {
-            base.OnPropertyChanged(nameof(Rules));
-        }
         #endregion
 
         internal string Filter {
@@ -130,6 +123,11 @@ Chat logger supports the following message types:
         }
 
         public ChatLogger(UtilityBeltPlugin ub, string name) : base(ub, name) {
+
+        }
+
+        public override void Init() {
+            base.Init();
             try {
                 UIChatLogFilter = (HudTextBox)UB.MainView.view["ChatLogFilterText"];
                 UIChatLogFilter.Change += UIChatLogFilter_Change;
@@ -185,8 +183,7 @@ Chat logger supports the following message types:
 
                 debounceTimer = new Timer(Timer_Tick);
 
-                PropertyChanged += (s, e) => UpdateUI();
-                Rules.CollectionChanged += Rules_CollectionChanged;
+                SaveToFile.Changed += (s, e) => UpdateUI();
 
                 UpdateUI();
             }
@@ -285,7 +282,7 @@ Chat logger supports the following message types:
 
         private void UIChatLogSaveToFile_Change(object sender, EventArgs e) {
             try {
-                SaveToFile = UIChatLogSaveToFile.Checked;
+                SaveToFile.Value = UIChatLogSaveToFile.Checked;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

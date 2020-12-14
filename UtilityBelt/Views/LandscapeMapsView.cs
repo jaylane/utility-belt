@@ -39,10 +39,10 @@ namespace UtilityBelt.Views {
 
                 timer.Elapsed += (s, e) => {
                     timer.Stop();
-                    UB.LandscapeMaps.MapWindowX = view.Location.X;
-                    UB.LandscapeMaps.MapWindowY = view.Location.Y;
-                    UB.LandscapeMaps.MapWindowWidth = view.Width;
-                    UB.LandscapeMaps.MapWindowHeight = view.Height;
+                    UB.LandscapeMaps.MapWindowX.Value = view.Location.X;
+                    UB.LandscapeMaps.MapWindowY.Value = view.Location.Y;
+                    UB.LandscapeMaps.MapWindowWidth.Value = view.Width;
+                    UB.LandscapeMaps.MapWindowHeight.Value = view.Height;
                 };
 
                 view.Moved += (s, e) => {
@@ -62,15 +62,8 @@ namespace UtilityBelt.Views {
                     }
                     catch (Exception ex) { Logger.LogException(ex); }
                 };
-
-                //view.ShowInBar = UB.DungeonMaps.Enabled;
-                UB.LandscapeMaps.PropertyChanged += LandscapeMaps_PropertyChanged;
             }
             catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void LandscapeMaps_PropertyChanged(object sender, PropertyChangedEventArgs e) {
-            
         }
 
         ~LandscapeMapsView() {

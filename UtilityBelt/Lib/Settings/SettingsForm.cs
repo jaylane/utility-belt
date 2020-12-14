@@ -25,8 +25,8 @@ namespace UtilityBelt.Lib.Settings {
             Type = type;
 
             if (Type == null) {
-                Value = UtilityBeltPlugin.Instance.Settings.Get(setting);
-                Type = UtilityBeltPlugin.Instance.Settings.GetOptionProperty(Setting).Object.GetType();
+                Value = UtilityBeltPlugin.Instance.Settings.Get(setting).Setting;
+                Type = ((ISetting)UtilityBeltPlugin.Instance.Settings.Get(Setting).Setting).GetValue().GetType();
             }
             else {
                 Value = "";
@@ -97,8 +97,8 @@ namespace UtilityBelt.Lib.Settings {
                 return DrawBooleanSettingsForm(settingsForm, setting);
             }
             else if (Type.IsEnum) {
-                var prop = UtilityBeltPlugin.Instance.Settings.GetOptionProperty(setting);
-                var supportsFlagsAttributes = prop.Property.GetCustomAttributes(typeof(SupportsFlagsAttribute), true);
+                var prop = UtilityBeltPlugin.Instance.Settings.Get(setting);
+                var supportsFlagsAttributes = prop.FieldInfo.GetCustomAttributes(typeof(SupportsFlagsAttribute), true);
 
                 if (supportsFlagsAttributes.Length > 0) {
                     new EnumFlagEditor(UtilityBeltPlugin.Instance.MainView.view, setting);
@@ -194,17 +194,17 @@ namespace UtilityBelt.Lib.Settings {
             var colorPickerRect = new Rectangle(0, 0, 20, 20);
             var childViews = new List<HudControl>();
 
-            colorPickerPreview.Add(colorPickerRect, GetColorIcon((int)Value));
+            colorPickerPreview.Add(colorPickerRect, GetColorIcon((int)((ISetting)Value).GetValue()));
 
             var edit = new HudTextBox();
-            edit.Text = ((int)Value).ToString("X8");
+            edit.Text = ((int)((ISetting)Value).GetValue()).ToString("X8");
             edit.Change += (s, e) => {
                 var type = Type;
 
                 if (int.TryParse(edit.Text, System.Globalization.NumberStyles.HexNumber, null, out int parsedInt)) {
                     colorPickerPreview.Clear();
-                    colorPickerPreview.Add(colorPickerRect, GetColorIcon((int)Value));
-                    Value = parsedInt;
+                    colorPickerPreview.Add(colorPickerRect, GetColorIcon((int)((ISetting)Value).GetValue()));
+                    ((ISetting)Value).SetValue(parsedInt);
                     Changed?.Invoke(this, null);
                 }
                 else {
@@ -215,7 +215,7 @@ namespace UtilityBelt.Lib.Settings {
             var pickerButton = new HudButton();
             pickerButton.Text = "Color Picker";
             pickerButton.Hit += (sender, evt) => {
-                var originalColor = Color.FromArgb((int)Value);
+                var originalColor = Color.FromArgb((int)((ISetting)Value).GetValue());
                 var picker = new ColorPicker(UtilityBeltPlugin.Instance.MainView, "Test", originalColor);
 
                 UtilityBeltPlugin.Instance.Settings.DisableSaving();
@@ -223,7 +223,7 @@ namespace UtilityBelt.Lib.Settings {
                 picker.RaiseColorPickerCancelEvent += (s, e) => {
                     // restore color
                     edit.Text = originalColor.ToArgb().ToString("X8");
-                    Value = originalColor.ToArgb();
+                    ((ISetting)Value).SetValue(originalColor.ToArgb());
                     Changed?.Invoke(this, null);
                     colorPickerPreview.Clear();
                     colorPickerPreview.Add(colorPickerRect, GetColorIcon(originalColor.ToArgb()));
@@ -232,15 +232,16 @@ namespace UtilityBelt.Lib.Settings {
                 };
 
                 picker.RaiseColorPickerSaveEvent += (s, e) => {
+                    ((ISetting)Value).SetValue(originalColor.ToArgb());
                     UtilityBeltPlugin.Instance.Settings.EnableSaving();
-                    Value = e.Color.ToArgb();
+                    ((ISetting)Value).SetValue(e.Color.ToArgb());
                     Changed?.Invoke(this, null);
                     picker.Dispose();
                 };
 
                 picker.RaiseColorPickerChangeEvent += (s, e) => {
                     edit.Text = e.Color.ToArgb().ToString("X8");
-                    Value = e.Color.ToArgb();
+                    ((ISetting)Value).SetValue(e.Color.ToArgb());
                     Changed?.Invoke(this, null);
                     colorPickerPreview.Clear();
                     colorPickerPreview.Add(colorPickerRect, GetColorIcon(e.Color.ToArgb()));
@@ -249,7 +250,7 @@ namespace UtilityBelt.Lib.Settings {
                 picker.view.VisibleChanged += (s, e) => {
                     // restore color
                     edit.Text = originalColor.ToArgb().ToString("X8");
-                    Value = originalColor.ToArgb();
+                    ((ISetting)Value).SetValue(originalColor.ToArgb());
                     Changed?.Invoke(this, null);
                     colorPickerPreview.Clear();
                     colorPickerPreview.Add(colorPickerRect, GetColorIcon(originalColor.ToArgb()));
@@ -308,14 +309,14 @@ namespace UtilityBelt.Lib.Settings {
             var childViews = new List<HudControl>();
 
             enabled.Text = "True";
-            enabled.Checked = (bool)Value;
+            enabled.Checked = (bool)((ISetting)Value).GetValue();
             enabled.Change += (s, e) => {
                 disabled.Checked = !enabled.Checked;
                 Value = enabled.Checked;
                 Changed?.Invoke(this, null);
             };
             disabled.Text = "False";
-            disabled.Checked = !(bool)Value;
+            disabled.Checked = !(bool)((ISetting)Value).GetValue();
             disabled.Change += (s, e) => {
                 enabled.Checked = !disabled.Checked;
                 Value = !disabled.Checked;
