@@ -11,6 +11,7 @@ using UtilityBelt.Lib;
 using UtilityBelt.Lib.Dungeon;
 using UtilityBelt.Lib.Maps;
 using UtilityBelt.Lib.Maps.Markers;
+using UtilityBelt.Lib.Settings;
 using VirindiViewService;
 using VirindiViewService.Controls;
 
@@ -117,70 +118,43 @@ namespace UtilityBelt.Tools {
 
         #region Config
         [Summary("Enabled")]
-        [DefaultValue(true)]
-        public bool Enabled {
-            get { return (bool)GetSetting("Enabled"); }
-            set {
-                UpdateSetting("Enabled", value);
-            }
-        }
+        public readonly Setting<bool> Enabled = new Setting<bool>(true);
 
         [Summary("Map opacity")]
-        [DefaultValue(16)]
-        public int Opacity {
-            get { return (int)GetSetting("Opacity"); }
-            set {
-                UpdateSetting("Opacity", value);
-                //if (UIOpacitySlider != null) UIOpacitySlider.Position = Opacity;
-            }
-        }
+        public readonly Setting<int> Opacity = new Setting<int>(16);
 
         [Summary("Map Window X")]
-        [DefaultValue(40)]
-        public int MapWindowX {
-            get { return (int)GetSetting("MapWindowX"); }
-            set { UpdateSetting("MapWindowX", value); }
-        }
+        public readonly Setting<int> MapWindowX = new Setting<int>(40);
 
         [Summary("Map Window Y")]
-        [DefaultValue(200)]
-        public int MapWindowY {
-            get { return (int)GetSetting("MapWindowY"); }
-            set { UpdateSetting("MapWindowY", value); }
-        }
+        public readonly Setting<int> MapWindowY = new Setting<int>(200);
 
         [Summary("Map Window width")]
-        [DefaultValue(320)]
-        public int MapWindowWidth {
-            get { return (int)GetSetting("MapWindowWidth"); }
-            set { UpdateSetting("MapWindowWidth", value); }
-        }
+        public readonly Setting<int> MapWindowWidth = new Setting<int>(320);
 
         [Summary("Map Window height")]
-        [DefaultValue(280)]
-        public int MapWindowHeight {
-            get { return (int)GetSetting("MapWindowHeight"); }
-            set { UpdateSetting("MapWindowHeight", value); }
-        }
+        public readonly Setting<int> MapWindowHeight = new Setting<int>(280);
         #endregion // Config
 
         public LandscapeMaps(UtilityBeltPlugin ub, string name) : base(ub, name) {
-            try {
-                followButton = (HudButton)UB.LandscapeMapView.view["FollowCharacter"];
 
-                followButton.Hit += FollowButton_Hit;
+        }
 
-                fontFace = UB.LandscapeMapView.view.MainControl.Theme.GetVal<string>("DefaultTextFontFace");
-                fontWeight = UB.LandscapeMapView.view.MainControl.Theme.GetVal<int>("ViewTextFontWeight");
+        public override void Init() {
+            base.Init();
+            followButton = (HudButton)UB.LandscapeMapView.view["FollowCharacter"];
 
-                UB.LandscapeMapView.view.VisibleChanged += View_VisibleChanged;
-                PropertyChanged += LandscapeMaps_PropertyChanged;
-            }
-            catch (Exception ex) { Logger.LogException(ex);  }
+            followButton.Hit += FollowButton_Hit;
+
+            fontFace = UB.LandscapeMapView.view.MainControl.Theme.GetVal<string>("DefaultTextFontFace");
+            fontWeight = UB.LandscapeMapView.view.MainControl.Theme.GetVal<int>("ViewTextFontWeight");
+
+            UB.LandscapeMapView.view.VisibleChanged += View_VisibleChanged;
+            Enabled.Changed += LandscapeMaps_PropertyChanged;
         }
 
         #region event handlers
-        private void LandscapeMaps_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+        private void LandscapeMaps_PropertyChanged(object sender, SettingChangedEventArgs e) {
             if (e.PropertyName == "Enabled") {
                 if (!Enabled)
                     UB.LandscapeMapView.view.Visible = false;
@@ -767,7 +741,7 @@ namespace UtilityBelt.Tools {
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
-                    PropertyChanged -= LandscapeMaps_PropertyChanged;
+                    Enabled.Changed -= LandscapeMaps_PropertyChanged;
                     UB.LandscapeMapView.view.VisibleChanged -= View_VisibleChanged;
                     UB.Core.RegionChange3D -= Core_RegionChange3D;
                     UB.Core.RenderFrame -= Core_RenderFrame;

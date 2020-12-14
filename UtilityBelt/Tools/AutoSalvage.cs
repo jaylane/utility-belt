@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Text.RegularExpressions;
 using UtilityBelt.Constants;
 using UtilityBelt.Lib;
+using UtilityBelt.Lib.Settings;
 using VirindiViewService.Controls;
 
 namespace UtilityBelt.Tools {
@@ -35,18 +36,10 @@ This plugin will attempt to salvage all items in your inventory that match loot 
 
         #region Settings
         [Summary("Think to yourself when auto salvage is completed")]
-        [DefaultValue(false)]
-        public bool Think {
-            get { return (bool)GetSetting("Think"); }
-            set { UpdateSetting("Think", value); }
-        }
+        public readonly Setting<bool> Think = new Setting<bool>(false);
 
         [Summary("Only salvage things in your main pack")]
-        [DefaultValue(false)]
-        public bool OnlyFromMainPack {
-            get { return (bool)GetSetting("OnlyFromMainPack"); }
-            set { UpdateSetting("OnlyFromMainPack", value); }
-        }
+        public readonly Setting<bool> OnlyFromMainPack = new Setting<bool>(false);
         #endregion
 
         #region commands

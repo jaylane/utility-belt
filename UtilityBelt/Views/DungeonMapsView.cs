@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Timers;
 using UtilityBelt.Lib;
+using UtilityBelt.Lib.Settings;
 using VirindiViewService;
 using VirindiViewService.Controls;
 using VirindiViewService.XMLParsers;
@@ -38,10 +39,10 @@ namespace UtilityBelt.Views {
 
                 timer.Elapsed += (s, e) => {
                     timer.Stop();
-                    UB.DungeonMaps.MapWindowX = view.Location.X;
-                    UB.DungeonMaps.MapWindowY = view.Location.Y;
-                    UB.DungeonMaps.MapWindowWidth = view.Width;
-                    UB.DungeonMaps.MapWindowHeight = view.Height;
+                    UB.DungeonMaps.MapWindowX.Value = view.Location.X;
+                    UB.DungeonMaps.MapWindowY.Value = view.Location.Y;
+                    UB.DungeonMaps.MapWindowWidth.Value = view.Width;
+                    UB.DungeonMaps.MapWindowHeight.Value = view.Height;
                 };
 
                 view.Moved += (s, e) => {
@@ -70,14 +71,12 @@ namespace UtilityBelt.Views {
                 };
 
                 view.ShowInBar = UB.DungeonMaps.Enabled;
-                UB.DungeonMaps.PropertyChanged += DungeonMaps_PropertyChanged;
+                UB.DungeonMaps.Enabled.Changed += DungeonMaps_EnabledChanged;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void DungeonMaps_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
-            if (e.PropertyName != "Enabled")
-                return;
+        private void DungeonMaps_EnabledChanged(object sender, SettingChangedEventArgs e) {
             view.Icon = GetIcon();
             view.ShowInBar = UB.DungeonMaps.Enabled;
             if (UB.DungeonMaps.Enabled && !UB.DungeonMaps.DrawWhenClosed) {
@@ -96,6 +95,7 @@ namespace UtilityBelt.Views {
             return GetIcon("UtilityBelt.Resources.icons.dungeonmaps.png");
         }
         ~DungeonMapsView() {
+            UB.DungeonMaps.Enabled.Changed -= DungeonMaps_EnabledChanged;
             if (timer != null) timer.Dispose();
         }
     }

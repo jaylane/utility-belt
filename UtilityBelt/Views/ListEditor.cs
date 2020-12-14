@@ -30,7 +30,7 @@ namespace UtilityBelt.Views {
 
         public ListEditor(MainView mainView, string setting) {
             this.mainView = mainView;
-            this.prop = UtilityBeltPlugin.Instance.Settings.GetOptionProperty(setting);
+            this.prop = UtilityBeltPlugin.Instance.Settings.Get(setting);
             Setting = setting;
 
             VirindiViewService.XMLParsers.Decal3XMLParser parser = new VirindiViewService.XMLParsers.Decal3XMLParser();
@@ -80,7 +80,7 @@ namespace UtilityBelt.Views {
 
                     case 1: // delete
                         var bindingFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod;
-                        var value = prop.Property.GetValue(prop.Parent, null);
+                        var value = ((ISetting)prop.FieldInfo.GetValue(prop.Parent)).GetValue();
                         value.GetType().InvokeMember("RemoveAt", bindingFlags, null, value, new object[] { row });
                         ResetForm();
                         break;
@@ -92,7 +92,7 @@ namespace UtilityBelt.Views {
         private void AddOrUpdate_Hit(object sender, EventArgs e) {
             try {
                 var bindingFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod;
-                var value = prop.Property.GetValue(prop.Parent, null);
+                var value = ((ISetting)prop.FieldInfo.GetValue(prop.Parent)).GetValue();
 
                 if (selectedIndex != -1) {
                     value.GetType().InvokeMember("RemoveAt", bindingFlags, null, value, new object[] { selectedIndex });
@@ -132,12 +132,12 @@ namespace UtilityBelt.Views {
                 form = null;
             }
 
-            foreach (object child in (IEnumerable)prop.Property.GetValue(prop.Parent, null)) {
+            foreach (object child in (IEnumerable)(((ISetting)prop.Setting).GetValue())) {
                 var row = ChildList.AddRow();
 
                 if (selectedIndex == i) {
                     ((HudStaticText)row[0]).TextColor = Color.Red;
-                    form = new SettingsForm(Setting, SettingsFormLayout, prop.Object.GetType().GetGenericArguments().Single());
+                    form = new SettingsForm(Setting, SettingsFormLayout, ((ISetting)prop.Setting).GetValue().GetType().GetGenericArguments().Single());
                 }
 
                 ((HudStaticText)row[0]).Text = child.ToString();
@@ -150,7 +150,7 @@ namespace UtilityBelt.Views {
             ChildList.ScrollPosition = scrollPosition;
 
             if (form == null) {
-                form = new SettingsForm(Setting, SettingsFormLayout, prop.Object.GetType().GetGenericArguments().Single());
+                form = new SettingsForm(Setting, SettingsFormLayout, ((ISetting)prop.Setting).GetValue().GetType().GetGenericArguments().Single());
             }
         }
 

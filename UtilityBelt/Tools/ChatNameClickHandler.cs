@@ -9,6 +9,11 @@ namespace UtilityBelt.Tools {
     [Name("ChatNameClickHandler")]
     public class ChatNameClickHandler : ToolBase {
         public ChatNameClickHandler(UtilityBeltPlugin ub, string name) : base(ub, name) {
+
+        }
+
+        public override void Init() {
+            base.Init();
             CoreManager.Current.ChatNameClicked += Core_ChatNameClicked;
         }
 

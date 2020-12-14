@@ -22,7 +22,7 @@ namespace UtilityBelt.Views {
 
         public EnumFlagEditor(HudView parentView, string setting) {
             this.parentView = parentView;
-            this.prop = UtilityBeltPlugin.Instance.Settings.GetOptionProperty(setting);
+            this.prop = UtilityBeltPlugin.Instance.Settings.Get(setting);
 
             VirindiViewService.XMLParsers.Decal3XMLParser parser = new VirindiViewService.XMLParsers.Decal3XMLParser();
             parser.ParseFromResource("UtilityBelt.Views.EnumFlagEditor.xml", out properties, out controls);
@@ -54,7 +54,7 @@ namespace UtilityBelt.Views {
         }
 
         private void Draw() {
-            foreach (var value in Enum.GetValues(prop.Object.GetType())) {
+            foreach (var value in Enum.GetValues(prop.Setting.GetType())) {
                 // this could probably be improved, but we want to sort this list
                 HudList.HudListRowAccessor row = null;
                 for (var i = 0; i < ChildList.RowCount; i++) {
@@ -66,19 +66,19 @@ namespace UtilityBelt.Views {
 
                 if (row == null) row = ChildList.AddRow();
 
-                ((HudCheckBox)row[0]).Checked = (((uint)prop.Object & (uint)value) != 0);
+                ((HudCheckBox)row[0]).Checked = (((uint)(prop.Setting.GetValue()) & (uint)value) != 0);
                 ((HudCheckBox)row[0]).Text = value.ToString();
                 ((HudCheckBox)row[0]).Change += (s, e) => {
                     try {
-                        var flag = (uint)Enum.Parse(prop.Object.GetType(), value.ToString());
+                        var flag = (uint)Enum.Parse(prop.Setting.GetType(), value.ToString());
 
                         if (((HudCheckBox)s).Checked) {
-                            var newValue = (uint)prop.Property.GetValue(prop.Parent, null) | flag;
-                            prop.Property.SetValue(prop.Parent, Enum.ToObject(prop.Object.GetType(), newValue), null);
+                            var newValue = (uint)prop.FieldInfo.GetValue(prop.Parent) | flag;
+                            prop.FieldInfo.SetValue(prop.Parent, Enum.ToObject(prop.Setting.GetType(), newValue));
                         }
                         else {
-                            var newValue = (uint)prop.Property.GetValue(prop.Parent, null) & ~flag;
-                            prop.Property.SetValue(prop.Parent, Enum.ToObject(prop.Object.GetType(), newValue), null);
+                            var newValue = (uint)prop.FieldInfo.GetValue(prop.Parent) & ~flag;
+                            prop.FieldInfo.SetValue(prop.Parent, Enum.ToObject(prop.Setting.GetType(), newValue));
                         }
                     }
                     catch (Exception ex) { Logger.LogException(ex); }

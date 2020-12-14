@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -11,7 +12,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
+using UtilityBelt;
 using UtilityBelt.Lib;
+using UtilityBelt.Lib.Settings;
 
 namespace UBDocsGen {
     #region UB Attribute data
@@ -116,6 +119,7 @@ namespace UBDocsGen {
 
         public static string AssemblyPath { get; private set; }
         public static string ProjectRoot { get; private set; }
+        public static UtilityBeltPlugin UB { get; private set; }
 
         static void Main(string[] args) {
             try {
@@ -131,7 +135,10 @@ namespace UBDocsGen {
         }
 
         private static void Init() {
-            var UB = new UtilityBelt.UtilityBeltPlugin();
+            UB = new UtilityBelt.UtilityBeltPlugin();
+            UB.Settings = new UtilityBelt.Lib.Settings.Settings();
+            UB.LoadTools();
+
             InitToolInfo(UB);
 
             GenerateToolSummaries(Path.Combine(ProjectRoot, "Site/layouts/partials/tool-summaries.html"));
@@ -175,10 +182,10 @@ namespace UBDocsGen {
         }
 
         private static void InitToolInfo(UtilityBelt.UtilityBeltPlugin UB) {
-            var toolProps = UB.GetToolProps();
+            var toolProps = UB.GetToolInfos();
 
             foreach (var toolProp in toolProps) {
-                var nameAttrs = toolProp.PropertyType.GetCustomAttributes(typeof(NameAttribute), true);
+                var nameAttrs = toolProp.FieldType.GetCustomAttributes(typeof(NameAttribute), true);
 
                 if (nameAttrs.Length == 1) {
                     var name = ((NameAttribute)nameAttrs[0]).Name;
@@ -196,9 +203,9 @@ namespace UBDocsGen {
         }
 
         #region Attribute getters
-        private static string GetSummary(PropertyInfo prop) {
+        private static string GetSummary(FieldInfo prop) {
             var summary = "";
-            var attrs = prop.PropertyType.GetCustomAttributes(typeof(SummaryAttribute), true);
+            var attrs = prop.FieldType.GetCustomAttributes(typeof(SummaryAttribute), true);
 
             if (attrs.Length == 1) {
                 summary = ((SummaryAttribute)attrs[0]).Summary;
@@ -264,9 +271,9 @@ namespace UBDocsGen {
             return parameters;
         }
 
-        private static string GetFullDescription(PropertyInfo toolProp) {
+        private static string GetFullDescription(FieldInfo toolProp) {
             var description = "";
-            var attrs = toolProp.PropertyType.GetCustomAttributes(typeof(FullDescriptionAttribute), true);
+            var attrs = toolProp.FieldType.GetCustomAttributes(typeof(FullDescriptionAttribute), true);
 
             if (attrs.Length == 1) {
                 description = ((FullDescriptionAttribute)attrs[0]).Description;
@@ -277,10 +284,10 @@ namespace UBDocsGen {
         #endregion
 
         #region Tool Reflectors
-        private static List<CommandInfo> GetCommands(PropertyInfo toolProp) {
+        private static List<CommandInfo> GetCommands(FieldInfo toolProp) {
             var commandInfos = new List<CommandInfo>();
 
-            foreach (var method in toolProp.PropertyType.GetMethods()) {
+            foreach (var method in toolProp.FieldType.GetMethods()) {
                 var commandPatternAttrs = method.GetCustomAttributes(typeof(CommandPatternAttribute), true);
 
                 foreach (var attr in commandPatternAttrs) {
@@ -299,10 +306,26 @@ namespace UBDocsGen {
             return commandInfos;
         }
 
-        private static List<SettingInfo> GetSettings(PropertyInfo toolProp) {
+        private static List<SettingInfo> GetSettings(FieldInfo toolProp) {
+            var toolInstance = toolProp.GetValue(UB);
             var settings = new List<SettingInfo>();
+            var children = toolProp.FieldType.GetFields(BindingFlags.Public | BindingFlags.Instance)
+                .Where(f => typeof(ISetting).IsAssignableFrom(f.FieldType));
+            foreach (var prop in children) {
+                var summaryAttrs = prop.GetCustomAttributes(typeof(SummaryAttribute), true);
+                var summary = "";
+                var setting = ((ISetting)prop.GetValue(toolInstance));
+                var defaultValue = setting.GetDefaultValue();
+                if (summaryAttrs.Length == 1 && defaultValue != null && !typeof(ISetting).IsAssignableFrom(defaultValue.GetType())) {
+                    summary = ((SummaryAttribute)summaryAttrs[0]).Summary;
 
-            foreach (var prop in toolProp.PropertyType.GetProperties()) {
+                    var settingInfo = new SettingInfo($"{toolProp.Name}.{prop.Name}", defaultValue, summary);
+
+                    settings.Add(settingInfo);
+                }
+            }
+
+            foreach (var prop in toolProp.FieldType.GetProperties()) {
                 var defaultValueAttrs = prop.GetCustomAttributes(typeof(DefaultValueAttribute), true);
 
                 if (defaultValueAttrs.Length == 1) {
@@ -322,10 +345,10 @@ namespace UBDocsGen {
             return settings;
         }
 
-        private static List<ExpressionInfo> GetExpressions(PropertyInfo toolProp) {
+        private static List<ExpressionInfo> GetExpressions(FieldInfo toolProp) {
             var expresionInfos = new List<ExpressionInfo>();
 
-            foreach (var method in toolProp.PropertyType.GetMethods()) {
+            foreach (var method in toolProp.FieldType.GetMethods()) {
                 var expressionMethodAttrs = method.GetCustomAttributes(typeof(ExpressionMethodAttribute), true);
 
                 foreach (var attr in expressionMethodAttrs) {
@@ -521,11 +544,20 @@ All settings take immediate effect on the plugin, and will save to your [charact
         #region Template Writers
         private static void WriteSetting(StringWriter stringWriter, SettingInfo setting) {
             var type = setting.DefaultValue.GetType().ToString().Replace("System.", "");
+            var defaultValue = setting.DefaultValue.ToString();
+
+            if (typeof(IList).IsAssignableFrom(setting.DefaultValue.GetType())) {
+                type = "List";
+                defaultValue = ((IList)setting.DefaultValue).Count == 0 ? "Empty List" : "";
+                foreach (var item in ((IList)setting.DefaultValue)) {
+                    defaultValue += $"{item}, ";
+                }
+            }
 
             stringWriter.WriteLine($"#### {setting.Name}");
             stringWriter.WriteLine("> " + setting.Summary + "<br />");
             stringWriter.WriteLine("> **Type:** <span style=\"color:black\">" + type + "</span><br />");
-            stringWriter.WriteLine("> **Default Value:** <span style=\"color:black\">" + setting.DefaultValue.ToString() + "</span>");
+            stringWriter.WriteLine("> **Default Value:** <span style=\"color:black\">" + defaultValue + "</span>");
 
             stringWriter.WriteLine("");
         }

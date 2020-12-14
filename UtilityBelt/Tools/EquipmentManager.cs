@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
+using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("EquipmentManager")]
@@ -86,11 +87,7 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
 
         #region Config
         [Summary("Think to yourself when done equipping items")]
-        [DefaultValue(false)]
-        public bool Think {
-            get => (bool)GetSetting("Think");
-            set => UpdateSetting("Think", value);
-        }
+        public readonly Setting<bool> Think = new Setting<bool>(false);
         #endregion
 
         #region Commands
@@ -191,6 +188,11 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
         #endregion
 
         public EquipmentManager(UtilityBeltPlugin ub, string name) : base(ub, name) {
+
+        }
+
+        public override void Init() {
+            base.Init();
             try {
                 Directory.CreateDirectory(Path.Combine(Util.GetPluginDirectory(), "equip"));
                 Directory.CreateDirectory(Path.Combine(Util.GetCharacterDirectory(), "equip"));
@@ -207,19 +209,19 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
                 LongValueKeySpellEffects[2592] = new SpellInfo<LongValueKey>(LongValueKey.ArmorLevel, 40, 40); // Major Impenetrability
                 LongValueKeySpellEffects[4667] = new SpellInfo<LongValueKey>(LongValueKey.ArmorLevel, 60, 60); // Epic Impenetrability
                 LongValueKeySpellEffects[6095] = new SpellInfo<LongValueKey>(LongValueKey.ArmorLevel, 80, 80); // Legendary Impenetrability
-                
+
                 DoubleValueKeySpellEffects[3251] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ElementalDamageVersusMonsters, .01, .01); // Minor Spirit Thirst
                 DoubleValueKeySpellEffects[3250] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ElementalDamageVersusMonsters, .03, .03); // Major Spirit Thirst
                 DoubleValueKeySpellEffects[4670] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ElementalDamageVersusMonsters, .05, .05); // Epic Spirit Thirst
                 DoubleValueKeySpellEffects[6098] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ElementalDamageVersusMonsters, .07, .07); // Legendary Spirit Thirst
 
                 DoubleValueKeySpellEffects[3735] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ElementalDamageVersusMonsters, .15); // Prodigal Spirit Drinker
-                
+
                 DoubleValueKeySpellEffects[2603] = new SpellInfo<DoubleValueKey>(DoubleValueKey.AttackBonus, .03, .03); // Minor Heart Thirst
                 DoubleValueKeySpellEffects[2591] = new SpellInfo<DoubleValueKey>(DoubleValueKey.AttackBonus, .05, .05); // Major Heart Thirst
                 DoubleValueKeySpellEffects[4666] = new SpellInfo<DoubleValueKey>(DoubleValueKey.AttackBonus, .07, .07); // Epic Heart Thirst
                 DoubleValueKeySpellEffects[6094] = new SpellInfo<DoubleValueKey>(DoubleValueKey.AttackBonus, .09, .09); // Legendary Heart Thirst
-                
+
                 DoubleValueKeySpellEffects[2600] = new SpellInfo<DoubleValueKey>(DoubleValueKey.MeleeDefenseBonus, .03, .03); // Minor Defender
                 DoubleValueKeySpellEffects[3985] = new SpellInfo<DoubleValueKey>(DoubleValueKey.MeleeDefenseBonus, .04, .04); // Mukkir Sense
                 DoubleValueKeySpellEffects[2588] = new SpellInfo<DoubleValueKey>(DoubleValueKey.MeleeDefenseBonus, .05, .05); // Major Defender
@@ -227,7 +229,7 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
                 DoubleValueKeySpellEffects[6091] = new SpellInfo<DoubleValueKey>(DoubleValueKey.MeleeDefenseBonus, .09, .09); // Legendary Defender
 
                 DoubleValueKeySpellEffects[3699] = new SpellInfo<DoubleValueKey>(DoubleValueKey.MeleeDefenseBonus, .25); // Prodigal Defender
-                
+
                 DoubleValueKeySpellEffects[3201] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ManaCBonus, 1.05, 1.05); // Feeble Hermetic Link
                 DoubleValueKeySpellEffects[3199] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ManaCBonus, 1.10, 1.10); // Minor Hermetic Link
                 DoubleValueKeySpellEffects[3202] = new SpellInfo<DoubleValueKey>(DoubleValueKey.ManaCBonus, 1.15, 1.15); // Moderate Hermetic Link

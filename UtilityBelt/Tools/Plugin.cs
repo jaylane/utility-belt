@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
@@ -35,7 +36,7 @@ namespace UtilityBelt.Tools {
 'The Junk Drawer of UtilityBelt' -Cosmic Jester
     ")]
     public class Plugin : ToolBase {
-        private readonly Mp3Player mediaPlayer;
+        private Mp3Player mediaPlayer;
 
         private DateTime portalTimestamp = DateTime.MinValue;
         private int portalAttempts = 0;
@@ -45,144 +46,54 @@ namespace UtilityBelt.Tools {
 
         #region Config
         [Summary("Check for plugin updates on login")]
-        [DefaultValue(true)]
-        public bool CheckForUpdates {
-            get { return (bool)GetSetting("CheckForUpdates"); }
-            set { UpdateSetting("CheckForUpdates", value); }
-        }
+        public readonly Setting<bool> CheckForUpdates = new Setting<bool>(true);
 
         [Summary("Show debug messages")]
-        [DefaultValue(false)]
         [Hotkey("Debug", "Toggle Debug logging")]
-        public bool Debug {
-            get { return (bool)GetSetting("Debug"); }
-            set { UpdateSetting("Debug", value); UBHelper.Core.Debug = value; }
-        }
+        public readonly Setting<bool> Debug = new Setting<bool>(false);
 
         [Summary("Main UB Window X position for this character (left is 0)")]
-        [DefaultValue(100)]
-        public int WindowPositionX {
-            get { return (int)GetSetting("WindowPositionX"); }
-            set { UpdateSetting("WindowPositionX", value); }
-        }
+        public readonly Setting<int> WindowPositionX = new Setting<int>(100);
 
         [Summary("Main UB Window Y position for this character (top is 0)")]
-        [DefaultValue(100)]
-        public int WindowPositionY {
-            get { return (int)GetSetting("WindowPositionY"); }
-            set { UpdateSetting("WindowPositionY", value); }
-        }
+        public readonly Setting<int> WindowPositionY = new Setting<int>(100);
 
         [Summary("Think to yourself when portal use success/fail")]
-        [DefaultValue(false)]
-        public bool PortalThink {
-            get { return (bool)GetSetting("PortalThink"); }
-            set { UpdateSetting("PortalThink", value); }
-        }
+        public readonly Setting<bool> PortalThink = new Setting<bool>(false);
 
-        [Summary("Timeout to retry portal use")]
-        [DefaultValue(5000)]
-        public int PortalTimeout {
-            get { return (int)GetSetting("PortalTimeout"); }
-            set { UpdateSetting("PortalTimeout", value); }
-        }
+        [Summary("Timeout to retry portal use, in milliseconds")]
+        public readonly Setting<int> PortalTimeout = new Setting<int>(5000);
 
         [Summary("Attempts to retry using a portal")]
-        [DefaultValue(3)]
-        public int PortalAttempts {
-            get { return (int)GetSetting("PortalAttempts"); }
-            set { UpdateSetting("PortalAttempts", value); }
-        }
+        public readonly Setting<int> PortalAttempts = new Setting<int>(3);
 
         [Summary("Patches the client (in realtime) to disable 3d rendering")]
-        [DefaultValue(false)]
         [Hotkey("VideoPatch", "Toggle VideoPatch functionality")]
-        public bool VideoPatch {
-            get { return (bool)GetSetting("VideoPatch"); }
-            set {
-                UpdateSetting("VideoPatch", value);
-                UBHelper.VideoPatch.Enabled = value;
-            }
-        }
+        public readonly Setting<bool> VideoPatch = new Setting<bool>(false);
 
         [Summary("Disables VideoPatch while the client has focus")]
-        [DefaultValue(false)]
-        public bool VideoPatchFocus {
-            get { return (bool)GetSetting("VideoPatchFocus"); }
-            set {
-                UpdateSetting("VideoPatchFocus", value);
-                UBHelper.VideoPatch.bgOnly = value;
-            }
-        }
+        public readonly Setting<bool> VideoPatchFocus = new Setting<bool>(false);
+
         [Summary("Limits frame while the client does not have focus")]
-        [DefaultValue(0)]
-        public int BackgroundFrameLimit {
-            get => (int)GetSetting("BackgroundFrameLimit");
-            set {
-                UpdateSetting("BackgroundFrameLimit", value);
-                UBHelper.SimpleFrameLimiter.bgMax = value;
-            }
-        }
+        public readonly Setting<int> BackgroundFrameLimit = new Setting<int>(0);
 
         [Summary("Enables a rolling PCAP buffer, to export recent packets")]
-        [DefaultValue(false)]
-        public bool PCap {
-            get { return (bool)GetSetting("PCap"); }
-            set {
-                UpdateSetting("PCap", value);
-
-                if (value) {
-                    UBHelper.PCap.Enable(PCapBufferDepth);
-                }
-                else {
-                    UBHelper.PCap.Disable();
-                }
-            }
-        }
+        public readonly Setting<bool> PCap = new Setting<bool>(false);
 
         [Summary("PCap rolling buffer depth")]
-        [DefaultValue(5000)]
-        public int PCapBufferDepth {
-            get { return (int)GetSetting("PCapBufferDepth"); }
-            set {
-                if (value < 200) value = 200;
-                else if (value > 524287) value = 524287;
-                UpdateSetting("PCapBufferDepth", value);
-                if (PCap) UBHelper.PCap.Enable(value);
-            }
-        }
+        public readonly Setting<int> PCapBufferDepth = new Setting<int>(5000);
 
         [Summary("Plugin generic messages")]
-        [DefaultEnabled(true)]
-        [DefaultChatColor(5)]
-        public PluginMessageDisplay GenericMessageDisplay {
-            get { return (PluginMessageDisplay)GetSetting("GenericMessageDisplay"); }
-            private set { UpdateSetting("GenericMessageDisplay", value); }
-        }
+        public readonly PluginMessageDisplay GenericMessageDisplay = new PluginMessageDisplay(true, 5);
 
         [Summary("Plugin debug messages")]
-        [DefaultEnabled(true)]
-        [DefaultChatColor(14)]
-        public PluginMessageDisplay DebugMessageDisplay {
-            get { return (PluginMessageDisplay)GetSetting("DebugMessageDisplay"); }
-            private set { UpdateSetting("DebugMessageDisplay", value); }
-        }
+        public readonly PluginMessageDisplay DebugMessageDisplay = new PluginMessageDisplay(true, 14);
 
         [Summary("Plugin expression messages")]
-        [DefaultEnabled(true)]
-        [DefaultChatColor(5)]
-        public PluginMessageDisplay ExpressionMessageDisplay {
-            get { return (PluginMessageDisplay)GetSetting("ExpressionMessageDisplay"); }
-            private set { UpdateSetting("ExpressionMessageDisplay", value); }
-        }
+        public readonly PluginMessageDisplay ExpressionMessageDisplay = new PluginMessageDisplay(true, 5);
 
         [Summary("Plugin error messages")]
-        [DefaultEnabled(true)]
-        [DefaultChatColor(15)]
-        public PluginMessageDisplay ErrorMessageDisplay {
-            get { return (PluginMessageDisplay)GetSetting("ErrorMessageDisplay"); }
-            private set { UpdateSetting("ErrorMessageDisplay", value); }
-        }
+        public readonly PluginMessageDisplay ErrorMessageDisplay = new PluginMessageDisplay(true, 15);
         #endregion
 
         #region Commands
@@ -229,7 +140,7 @@ namespace UtilityBelt.Tools {
         [Example("/ub get Plugin.Debug", "Gets the current value for the \"Plugin.Debug\" setting")]
         [Example("/ub toggle Plugin.Debug", "Toggles the current value for the \"Plugin.Debug\" setting")]
         [Example("/ub set Plugin.Debug true", "Sets the \"Plugin.Debug\" setting to True")]
-        [CommandPattern("opt", @"^ *(?<params>(list|toggle \S+|get \S+|set \S+ \S+)) *$")]
+        [CommandPattern("opt", @"^ *(?<params>(list|toggle \S+|get \S+|set \S+ .*)) *$")]
         public void DoOpt(string command, Match args) {
             UB_opt(args.Groups["params"].Value);
         }
@@ -238,32 +149,33 @@ namespace UtilityBelt.Tools {
         private void UB_opt(string args) {
             try {
                 if (args.ToLower().Trim() == "list") {
-                    Logger.WriteToChat("All Settings:\n" + ListOptions(UB, ""));
+                    Logger.WriteToChat("All Settings:\n" + ListOptions(UB, null, ""));
                     return;
                 }
 
                 if (!optionRe.IsMatch(args.Trim())) return;
 
                 var match = optionRe.Match(args.Trim());
-                var option = UB.Settings.GetOptionProperty(match.Groups["option"].Value);
+                var option = UB.Settings.Get(match.Groups["option"].Value);
                 string name = match.Groups["option"].Value;
                 string newValue = match.Groups["value"].Value;
 
-                if (option == null || option.Object == null) {
+                if (option == null || option.Setting == null) {
                     Logger.Error("Invalid option: " + name);
                     return;
                 }
 
                 if (args.ToLower().Trim().StartsWith("toggle ")) {
                     try {
-                        option.Property.SetValue(option.Parent, Convert.ChangeType(!(bool)option.Property.GetValue(option.Parent, null), option.Property.PropertyType), null);
+                        var setting = UB.Settings.Get(name).Setting;
+                        setting.SetValue(!(bool)setting.GetValue());
                         if (!UB.Plugin.Debug) Logger.WriteToChat(name + " = " + UB.Settings.DisplayValue(name));
                     }
                     catch (Exception ex) { Logger.Error($"Unable to toggle setting {name}: {ex.Message}"); }
                     return;
                 }
 
-                if (option.Object is System.Collections.IList list) {
+                if (option.Setting.GetValue() is System.Collections.IList list) {
                     var b = new StringBuilder();
                     if (!string.IsNullOrEmpty(newValue)) {
                         var parts = newValue.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
@@ -310,8 +222,14 @@ namespace UtilityBelt.Tools {
                 }
                 else {
                     try {
-                        option.Property.SetValue(option.Parent, Convert.ChangeType(newValue, option.Property.PropertyType), null);
-                        if (!UB.Plugin.Debug) Logger.WriteToChat(name + " = " + UB.Settings.DisplayValue(name));
+                        var setting = UB.Settings.Get(name);
+                        if (setting == null) {
+                            Logger.Error($"Invalid setting: {name}");
+                            return;
+                        }
+                        setting.Setting.SetValue(newValue);
+                        if (!UB.Plugin.Debug)
+                            Logger.WriteToChat(name + " = " + UB.Settings.DisplayValue(name));
                     }
                     catch (Exception ex) { Logger.LogException(ex); }
                 }
@@ -319,31 +237,12 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private string ListOptions(object obj, string history) {
+        private string ListOptions(object obj, object parentObj, string history) {
             var results = "";
-            obj = obj ?? UB;
+            var settings = UB.Settings.GetAll();
 
-            if (string.IsNullOrEmpty(history)) {
-                var props = UB.GetToolProps();
-
-                foreach (var prop in props) {
-                    results += ListOptions(prop.GetValue(UB, null), $"{history}{prop.Name}.");
-                }
-            }
-            else {
-                var props = obj.GetType().GetProperties();
-
-                foreach (var prop in props) {
-                    var summaryAttributes = prop.GetCustomAttributes(typeof(SummaryAttribute), true);
-                    var defaultValueAttributes = prop.GetCustomAttributes(typeof(DefaultValueAttribute), true);
-
-                    if (defaultValueAttributes.Length > 0) {
-                        results += $"{history}{prop.Name} = {UB.Settings.DisplayValue(history + prop.Name, true)}\n";
-                    }
-                    else if (summaryAttributes.Length > 0) {
-                        results += ListOptions(prop.GetValue(obj, null), $"{history}{prop.Name}.");
-                    }
-                }
+            foreach (var setting in settings) {
+                results += $"{setting.GetName()} = {UB.Settings.DisplayValue(setting.GetName(), true)}\n";
             }
             return results;
         }
@@ -813,17 +712,17 @@ namespace UtilityBelt.Tools {
             switch (parameter[0]) {
                 case "enable":
                     if (parameter.Length == 2 && Int32.TryParse(parameter[1], out int parsedBufferDepth)) {
-                        PCapBufferDepth = parsedBufferDepth;
+                        PCapBufferDepth.Value = parsedBufferDepth;
                     }
 
                     if (PCapBufferDepth > 65535)
                         Logger.Error($"WARNING: Large buffers can have negative performance impacts on the game. Buffer depths between 1000 and 20000 are recommended.");
                     Logger.WriteToChat($"Enabled rolling PCap logger with a bufferDepth of {PCapBufferDepth:n0}. This will consume {(PCapBufferDepth * 505):n0} bytes of memory.");
                     Logger.WriteToChat($"Issue the command [/ub pcap print] to write this out to a .pcap file for submission!");
-                    PCap = true;
+                    PCap.Value = true;
                     break;
                 case "disable":
-                    PCap = false;
+                    PCap.Value = false;
                     break;
                 case "print":
                     string filename = $"{Util.GetPluginDirectory()}\\pkt_{DateTime.UtcNow:yyyy-M-d}_{(int)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds}_log.pcap";
@@ -958,13 +857,13 @@ namespace UtilityBelt.Tools {
             string[] parameter = args.Groups["params"].Value.Split(stringSplit, 2);
             switch (parameter[0]) {
                 case "enable":
-                    VideoPatch = true;
+                    VideoPatch.Value = true;
                     break;
                 case "disable":
-                    VideoPatch = false;
+                    VideoPatch.Value = false;
                     break;
                 case "toggle":
-                    VideoPatch = !VideoPatch;
+                    VideoPatch.Value = !VideoPatch;
                     break;
                 default:
                     Logger.Error("Usage: /ub videopatch {enable,disable,toggle}");
@@ -1006,7 +905,7 @@ namespace UtilityBelt.Tools {
                 LogError($"Requested frameRate was not valid ({frameRate})");
                 return;
             }
-            BackgroundFrameLimit = frameRate;
+            BackgroundFrameLimit.Value = frameRate;
             WriteToChat($"Background FrameRate Limited to {frameRate} fps, and saved to Plugin.BackgroundFrameLimit");
         }
         #endregion
@@ -1245,19 +1144,76 @@ namespace UtilityBelt.Tools {
         #endregion //Expressions
 
         public Plugin(UtilityBeltPlugin ub, string name) : base(ub, name) {
-            try {
-                UB.Core.CharacterFilter.Logoff += CharacterFilter_Logoff_Follow;
-                if (UBHelper.Core.GameState == UBHelper.GameState.In_Game) UB_Follow_Clear();
-                else UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete_Follow;
 
-                mediaPlayer = new Mp3Player(UB.Core);
+        }
+
+        public override void Init() {
+            base.Init();
+
+            UB.Core.CharacterFilter.Logoff += CharacterFilter_Logoff_Follow;
+            if (UBHelper.Core.GameState == UBHelper.GameState.In_Game) UB_Follow_Clear();
+            else UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete_Follow;
+
+            mediaPlayer = new Mp3Player(UB.Core);
+
+            BackgroundFrameLimit.Changed += BackgroundFrameLimit_Changed;
+            PCap.Changed += PCap_Changed;
+            PCapBufferDepth.Changed += PCapBufferDepth_Changed;
+            VideoPatch.Changed += VideoPatch_Changed;
+            VideoPatchFocus.Changed += VideoPatchFocus_Changed;
+
+            if (Debug)
+                UBHelper.Core.Debug = Debug;
+            if (VideoPatchFocus)
+                UBHelper.VideoPatch.bgOnly = VideoPatchFocus;
+            if (VideoPatch)
+                UBHelper.VideoPatch.Enabled = VideoPatch;
+            if (PCap)
+                UBHelper.PCap.Enable(PCapBufferDepth);
+            if (BackgroundFrameLimit > 0)
+                UBHelper.SimpleFrameLimiter.bgMax = BackgroundFrameLimit;
+        }
+
+        private void VideoPatchFocus_Changed(object sender, SettingChangedEventArgs e) {
+            UBHelper.VideoPatch.bgOnly = VideoPatchFocus;
+        }
+
+        private void VideoPatch_Changed(object sender, SettingChangedEventArgs e) {
+            UBHelper.VideoPatch.Enabled = VideoPatch;
+        }
+
+        private void PCapBufferDepth_Changed(object sender, SettingChangedEventArgs e) {
+            if (PCapBufferDepth < 200) {
+                PCapBufferDepth.Value = 200;
+                return;
             }
-            catch (Exception ex) { Logger.LogException(ex); }
+            else if (PCapBufferDepth > 524287) {
+                PCapBufferDepth.Value = 524287;
+                return;
+            }
+            if (PCap)
+                UBHelper.PCap.Enable(PCapBufferDepth);
+        }
+
+        private void PCap_Changed(object sender, SettingChangedEventArgs e) {
+            if (PCap)
+                UBHelper.PCap.Enable(PCapBufferDepth);
+            else
+                UBHelper.PCap.Disable();
+        }
+
+        private void BackgroundFrameLimit_Changed(object sender, SettingChangedEventArgs e) {
+            UBHelper.SimpleFrameLimiter.bgMax = BackgroundFrameLimit;
         }
 
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
+                    VideoPatch.Changed -= VideoPatch_Changed;
+                    VideoPatchFocus.Changed -= VideoPatchFocus_Changed;
+                    BackgroundFrameLimit.Changed -= BackgroundFrameLimit_Changed;
+                    PCap.Changed -= PCap_Changed;
+                    PCapBufferDepth.Changed -= PCapBufferDepth_Changed;
                     UB.Core.RenderFrame -= Core_RenderFrame_PortalOpen;
                     UB.Core.RenderFrame -= Core_RenderFrame_Delay;
                     UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch_PortalOpen;

@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using VirindiViewService.Controls;
 using UtilityBelt.Lib;
 using System.ComponentModel;
+using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("Jumper")]
@@ -33,33 +34,17 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
         private int jumpTries = 0;
 
         #region Config
-        [Summary("PauseNav")]
-        [DefaultValue(true)]
-        public bool PauseNav {
-            get { return (bool)GetSetting("PauseNav"); }
-            set { UpdateSetting("PauseNav", value); }
-        }
+        [Summary("Pause Navigation while jumping")]
+        public readonly Setting<bool> PauseNav = new Setting<bool>(true);
 
-        [Summary("ThinkComplete")]
-        [DefaultValue(false)]
-        public bool ThinkComplete {
-            get { return (bool)GetSetting("ThinkComplete"); }
-            set { UpdateSetting("ThinkComplete", value); }
-        }
+        [Summary("Think to yourself when the jump is complete")]
+        public readonly Setting<bool> ThinkComplete = new Setting<bool>(false);
 
-        [Summary("ThinkFail")]
-        [DefaultValue(false)]
-        public bool ThinkFail {
-            get { return (bool)GetSetting("ThinkFail"); }
-            set { UpdateSetting("ThinkFail", value); }
-        }
+        [Summary("The to yourself when(if) the jump fails")]
+        public readonly Setting<bool> ThinkFail = new Setting<bool>(false);
 
-        [Summary("Attempts")]
-        [DefaultValue(3)]
-        public int Attempts {
-            get { return (int)GetSetting("Attempts"); }
-            set { UpdateSetting("Attempts", value); }
-        }
+        [Summary("Jump attempts before it gives up")]
+        public readonly Setting<int> Attempts = new Setting<int>(3);
         #endregion
 
         #region Commands

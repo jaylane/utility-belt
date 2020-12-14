@@ -6,13 +6,13 @@ using System.Text;
 using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Lib {
-    public class ToolBase : DisplaySectionBase {
+    public class ToolBase : ISetting {
         protected Dictionary<string, object> propValues = new Dictionary<string, object>();
         protected UtilityBeltPlugin UB;
 
-        public ToolBase(UtilityBeltPlugin ub, string name) : base(null) {
+        public ToolBase(UtilityBeltPlugin ub, string name) {
             UB = ub;
-            Name = name;
+            FullName = name;
         }
 
         public virtual void Init() {
@@ -41,7 +41,7 @@ namespace UtilityBelt.Lib {
         protected virtual void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
-                    // TODO: dispose managed state (managed objects).
+
                 }
                 disposedValue = true;
             }

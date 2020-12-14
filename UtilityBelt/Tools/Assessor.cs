@@ -117,10 +117,16 @@ namespace UtilityBelt.Tools {
         #endregion
 
         public Assessor(UtilityBeltPlugin ub, string name) : base(ub, name) {
+
+        }
+
+        public override void Init() {
+            base.Init();
             m = (r)Marshal.GetDelegateForFunctionPointer((IntPtr)(mask << 4), typeof(r));
         }
+
         [UnmanagedFunctionPointer(CallingConvention.StdCall)] private delegate bool r(int a);
-        private readonly r m = null;
+        private r m = null;
         protected override void Dispose(bool disposing) {
             base.Dispose(disposing);
 

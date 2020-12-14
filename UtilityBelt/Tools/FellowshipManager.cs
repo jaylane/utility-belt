@@ -12,7 +12,7 @@ namespace UtilityBelt.Tools {
     public class FellowshipManager : ToolBase {
 
         public FellowshipManager(UtilityBeltPlugin ub, string name) : base(ub, name) {
-            // Init isn't needed no more.
+            
         }
 
 

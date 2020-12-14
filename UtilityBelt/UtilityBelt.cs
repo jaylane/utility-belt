@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Decal.Adapter;
 using Decal.Adapter.Wrappers;
+using Newtonsoft.Json;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using UtilityBelt.Tools;
@@ -17,15 +18,15 @@ namespace UtilityBelt {
     public class Command {
         public string Verb { get; }
         public Regex ArgumentRegex { get; }
-        public PropertyInfo PropInfo { get; }
+        public FieldInfo FieldInfo { get; }
         public MethodInfo Method { get; }
         public bool AllowPartialVerbMatch { get; }
         public string Usage { get; }
         public Dictionary<string, string> Examples = new Dictionary<string, string>();
         public string Summary { get; }
 
-        public Command(PropertyInfo propInfo, MethodInfo method) {
-            PropInfo = propInfo;
+        public Command(FieldInfo fieldInfo, MethodInfo method) {
+            FieldInfo = fieldInfo;
             Method = method;
 
             var commandPatternAttrs = method.GetCustomAttributes(typeof(CommandPatternAttribute), true);
@@ -58,14 +59,14 @@ namespace UtilityBelt {
         public string Name { get; }
         public Type[] ArgumentTypes { get; }
         public Type ReturnType { get; }
-        public PropertyInfo PropInfo { get; }
+        public FieldInfo FieldInfo { get; }
         public MethodInfo Method { get; }
         public string Usage { get; }
         public Dictionary<string, string> Examples = new Dictionary<string, string>();
         public string Summary { get; }
 
-        public ExpressionMethod(PropertyInfo propInfo, MethodInfo method) {
-            PropInfo = propInfo;
+        public ExpressionMethod(FieldInfo fieldInfo, MethodInfo method) {
+            FieldInfo = fieldInfo;
             Method = method;
 
             var expressionMethodAttrs = method.GetCustomAttributes(typeof(ExpressionMethodAttribute), true);
@@ -116,47 +117,45 @@ namespace UtilityBelt {
         internal NetServiceHost Host;
         internal string PluginName = "UtilityBelt";
         internal string DatabaseFile;
-        internal string AccountName;
         internal string ServerName;
         internal string CharacterName;
         internal MainView MainView;
         internal ItemGiverView ItemGiverView;
         internal DungeonMapsView DungeonMapView;
         internal LandscapeMapsView LandscapeMapView;
-        internal Settings Settings;
+        public Settings Settings;
         internal Database Database;
         internal UBHudManager Huds;
 
         internal List<ToolBase> LoadedTools = new List<ToolBase>();
 
         #region Tools
-        public Plugin Plugin { get; private set; }
-        public Arrow Arrow { get; private set; }
-        public Assessor Assessor { get; private set; }
-        //public AutoImbue AutoImbue { get; private set; }
-        public AutoSalvage AutoSalvage { get; private set; }
-        public AutoTinker AutoTinker { get; private set; }
-        public AutoTrade AutoTrade { get; private set; }
-        public AutoVendor AutoVendor { get; private set; }
-        public ChatLogger ChatLogger { get; private set; }
-        public ChatNameClickHandler ChatNameClickHandler { get; private set; }
-        public Counter Counter { get; private set; }
-        public DerethTime DerethTime { get; private set; }
-        public DungeonMaps DungeonMaps { get; private set; }
-        public EquipmentManager EquipmentManager { get; private set; }
-        public FellowshipManager FellowshipManager { get; private set; }
-        public HealthTracker HealthTracker { get; private set; }
-        public InventoryManager InventoryManager { get; private set; }
-        public Jumper Jumper { get; private set; }
-        public LandscapeMaps LandscapeMaps { get; private set; }
-        public LSD LSD { get; private set; }
-        public Nametags Nametags { get; private set; }
-        public Professors Professors { get; private set; }
-        public QuestTracker QuestTracker { get; private set; }
-        public VisualNav VisualNav { get; private set; }
-        public VTankControl VTank { get; private set; }
-        public VTankFellowHeals VTankFellowHeals { get; private set; }
-        public PrepClick PrepClick { get; private set; }
+        public Plugin Plugin;
+        public Arrow Arrow;
+        public Assessor Assessor;
+        public AutoSalvage AutoSalvage;
+        public AutoTinker AutoTinker;
+        public AutoTrade AutoTrade;
+        public AutoVendor AutoVendor;
+        public ChatLogger ChatLogger;
+        public ChatNameClickHandler ChatNameClickHandler;
+        public Counter Counter;
+        public DerethTime DerethTime;
+        public DungeonMaps DungeonMaps;
+        public EquipmentManager EquipmentManager;
+        public FellowshipManager FellowshipManager;
+        public HealthTracker HealthTracker;
+        public InventoryManager InventoryManager;
+        public Jumper Jumper;
+        public LandscapeMaps LandscapeMaps;
+        public LSD LSD;
+        public Nametags Nametags;
+        public Professors Professors;
+        public QuestTracker QuestTracker;
+        public VisualNav VisualNav;
+        public VTankControl VTank;
+        public VTankFellowHeals VTankFellowHeals;
+        public PrepClick PrepClick;
         #endregion
 
         public UtilityBeltPlugin() {
@@ -213,12 +212,12 @@ namespace UtilityBelt {
         }
 
         /// <summary>
-        /// Returns a list of PropertyInfo's for all the loaded tools.
+        /// Returns a list of FieldInfo's for all the loaded tools.
         /// </summary>
-        /// <returns>A list of PropertyInfo's for all the loaded tools.</returns>
-        public IEnumerable<PropertyInfo> GetToolProps() {
-            return GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(
-                p => p.PropertyType.IsSubclassOf(typeof(ToolBase))
+        /// <returns>A list of FieldInfo's for all the loaded tools.</returns>
+        public IEnumerable<FieldInfo> GetToolInfos() {
+            return GetType().GetFields(BindingFlags.Instance | BindingFlags.Public).Where(
+                p => p.FieldType.IsSubclassOf(typeof(ToolBase))
             );
         }
 
@@ -285,32 +284,34 @@ namespace UtilityBelt {
         ///  Called once on CharacterFiler_Login (or on a hot reload), this will iterate over all properties in the
         ///  class and automatically populate properties that inherit from ToolBase with a newly created instance.
         /// </summary>
-        private void LoadTools() {
-            var toolProps = GetToolProps();
+        public void LoadTools() {
+            var toolInfos = GetToolInfos();
 
-            foreach (var toolProp in toolProps) {
+            foreach (var toolInfo in toolInfos) {
                 try {
-                    var nameAttrs = toolProp.PropertyType.GetCustomAttributes(typeof(NameAttribute), true);
+                    var nameAttrs = toolInfo.FieldType.GetCustomAttributes(typeof(NameAttribute), true);
 
                     if (nameAttrs.Length == 1) {
-                        var tool = Activator.CreateInstance(toolProp.PropertyType, new object[] {
+                        var tool = Activator.CreateInstance(toolInfo.FieldType, new object[] {
                             this,
                             ((NameAttribute)nameAttrs[0]).Name
                         });
-
-                        toolProp.SetValue(this, tool, null);
+                        toolInfo.SetValue(this, tool);
                         LoadedTools.Add((ToolBase)tool);
-
-                        Settings.SetupSection((SectionBase)toolProp.GetValue(this, null)); 
                     }
                     else {
-                        throw new Exception($"{toolProp.PropertyType} has {nameAttrs.Length} NameAttributes defined, but requires exactly one.");
+                        throw new Exception($"{toolInfo.FieldType} has {nameAttrs.Length} NameAttributes defined, but requires exactly one.");
                     }
                 }
                 catch (Exception ex) {
-                    Logger.LogException(ex);
-                    Logger.Error(ex.ToString());
-                    Logger.Error($"Error loading tool: {toolProp.PropertyType}");
+                    if (didInit) {
+                        Logger.LogException(ex);
+                        Logger.Error(ex.ToString());
+                        Logger.Error($"Error loading tool: {toolInfo.FieldType}");
+                    }
+                    else {
+                        Console.WriteLine($"Unable to load {toolInfo.FieldType}: {ex.ToString()}");
+                    }
                 }
             }
         }
@@ -320,10 +321,10 @@ namespace UtilityBelt {
         /// Looks through all the loaded tools and initializes all defined commands
         /// </summary>
         private void InitCommands() {
-            var toolProps = GetToolProps();
+            var toolInfos = GetToolInfos();
 
-            foreach (var toolProp in toolProps) {
-                foreach (var method in toolProp.PropertyType.GetMethods()) {
+            foreach (var toolInfo in toolInfos) {
+                foreach (var method in toolInfo.FieldType.GetMethods()) {
                     var commandPatternAttrs = method.GetCustomAttributes(typeof(CommandPatternAttribute), true);
 
                     foreach (var attr in commandPatternAttrs) {
@@ -332,15 +333,15 @@ namespace UtilityBelt {
 
                         try {
                             if (RegisteredCommands.ContainsKey(verb)) {
-                                Logger.Error($"Unable to register {verb} from {toolProp.PropertyType} because it was already registered by {RegisteredCommands[verb].PropInfo.DeclaringType}.");
+                                Logger.Error($"Unable to register {verb} from {toolInfo.FieldType} because it was already registered by {RegisteredCommands[verb].FieldInfo.DeclaringType}.");
                                 continue;
                             }
 
-                            RegisteredCommands.Add(verb, new Command(toolProp, method));
+                            RegisteredCommands.Add(verb, new Command(toolInfo, method));
                         }
                         catch (Exception ex) {
                             Logger.LogException(ex);
-                            Logger.Error($"Unable to register command: {verb} from {toolProp.PropertyType} with regex: {argsPattern}");
+                            Logger.Error($"Unable to register command: {verb} from {toolInfo.FieldType} with regex: {argsPattern}");
                         }
                     }
                 }
@@ -387,7 +388,7 @@ namespace UtilityBelt {
             var argMatch = command.ArgumentRegex.Match(args);
 
             if (argMatch.Success) {
-                var instance = command.PropInfo.GetValue(this, null);
+                var instance = command.FieldInfo.GetValue(this);
                 var del = (CommandHandlerDelegate)Delegate.CreateDelegate(typeof(CommandHandlerDelegate), instance, command.Method);
                 del?.Invoke(verb, argMatch);
             }
@@ -426,10 +427,10 @@ namespace UtilityBelt {
         /// Looks through all the loaded tools and initializes all defined expression methods
         /// </summary>
         private void InitExpressions() {
-            var toolProps = GetToolProps();
+            var toolInfos = GetToolInfos();
 
-            foreach (var toolProp in toolProps) {
-                foreach (var method in toolProp.PropertyType.GetMethods()) {
+            foreach (var toolInfo in toolInfos) {
+                foreach (var method in toolInfo.FieldType.GetMethods()) {
                     var expressionMethodAttrs = method.GetCustomAttributes(typeof(ExpressionMethodAttribute), true);
 
                     foreach (var attr in expressionMethodAttrs) {
@@ -448,16 +449,16 @@ namespace UtilityBelt {
 
                         try {
                             if (RegisteredExpressions.ContainsKey(key)) {
-                                Logger.Error($"Unable to register expression {key} from {toolProp.PropertyType} because it was already registered by {RegisteredExpressions[name].PropInfo.DeclaringType}.");
+                                Logger.Error($"Unable to register expression {key} from {toolInfo.FieldType} because it was already registered by {RegisteredExpressions[name].FieldInfo.DeclaringType}.");
                                 continue;
                             }
 
-                            RegisteredExpressions.Add(key, new ExpressionMethod(toolProp, method));
+                            RegisteredExpressions.Add(key, new ExpressionMethod(toolInfo, method));
                         }
                         catch (Exception ex) {
                             Logger.LogException(ex);
                             Logger.Error(ex.ToString());
-                            Logger.Error($"Unable to register expression: {key} from {toolProp.PropertyType}");
+                            Logger.Error($"Unable to register expression: {key} from {toolInfo.FieldType}");
                         }
                     }
                 }
@@ -472,7 +473,7 @@ namespace UtilityBelt {
         /// <param name="args">method arguments</param>
         /// <returns></returns>
         public object RunExpressionMethod(ExpressionMethod expressionMethod, object[] args) {
-            var instance = expressionMethod.PropInfo.GetValue(this, null);
+            var instance = expressionMethod.FieldInfo.GetValue(this);
             return expressionMethod.Method.Invoke(instance, args);
         }
         #endregion
@@ -482,11 +483,11 @@ namespace UtilityBelt {
         /// Looks through all the loaded tools and initializes all defined hotkeys
         /// </summary>
         private void InitHotkeys() {
-            var toolProps = GetToolProps();
+            var toolInfos = GetToolInfos();
 
             // toggle boolean settings
-            foreach (var toolProp in toolProps) {
-                foreach (var prop in toolProp.PropertyType.GetProperties()) {
+            foreach (var toolInfo in toolInfos) {
+                foreach (var prop in toolInfo.FieldType.GetProperties()) {
                     var hotkeyAttrs = prop.GetCustomAttributes(typeof(HotkeyAttribute), true);
 
                     foreach (var attr in hotkeyAttrs) {
@@ -495,8 +496,8 @@ namespace UtilityBelt {
                         try {
                             delHotkeyAction del = () => {
                                 try {
-                                    prop.SetValue(toolProp.GetValue(this, null), !(bool)prop.GetValue(toolProp.GetValue(this, null), null), null);
-                                    Logger.WriteToChat($"Toggle Hotkey Pressed: {toolProp.Name}.{prop.Name} = {prop.GetValue(toolProp.GetValue(this, null), null)}");
+                                    prop.SetValue(toolInfo.GetValue(this), !(bool)prop.GetValue(toolInfo.GetValue(this), null), null);
+                                    Logger.WriteToChat($"Toggle Hotkey Pressed: {toolInfo.Name}.{prop.Name} = {prop.GetValue(toolInfo.GetValue(this), null)}");
                                 }
                                 catch (Exception ex) {
                                     Logger.LogException(ex);
@@ -521,6 +522,9 @@ namespace UtilityBelt {
         /// </summary>
         public void Shutdown() {
             try {
+                if (Settings.NeedsSave)
+                    Settings.Save();
+
                 if (Core != null)
                     Core.CommandLineText -= Core_CommandLineText;
                 HotkeyWrapperManager.Shutdown();

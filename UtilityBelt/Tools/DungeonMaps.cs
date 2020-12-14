@@ -76,7 +76,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
         private double mapRotation;
         private float centerX;
         private float centerY;
-        readonly System.Timers.Timer zoomSaveTimer;
+        private System.Timers.Timer zoomSaveTimer;
         private bool isRunning = false;
         private bool isPortaling = true;
 
@@ -92,128 +92,63 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
         private const double Z_REDRAW_DISTANCE = 0.5f;
 
         [Summary("Enabled")]
-        [DefaultValue(false)]
         [Hotkey("DungeonMaps", "Toggle DungeonMaps display")]
-        public bool Enabled {
-            get { return (bool)GetSetting("Enabled"); }
-            set { UpdateSetting("Enabled", value); }
-        }
+        public readonly Setting<bool> Enabled = new Setting<bool>(true);
 
         [Summary("Show debug information while drawing maps")]
-        [DefaultValue(false)]
-        public bool Debug {
-            get { return (bool)GetSetting("Debug"); }
-            set { UpdateSetting("Debug", value); }
-        }
+        public readonly Setting<bool> Debug = new Setting<bool>(false);
 
         [Summary("Dungeon name header")]
-        [DefaultEnabled(true)]
-        [DefaultColor(-1)]
-        public ColorToggleOption DungeonName {
-            get { return (ColorToggleOption)GetSetting("DungeonName"); }
-            private set { UpdateSetting("DungeonName", value); }
-        }
+        public readonly Setting<ColorToggleOption> DungeonName = new Setting<ColorToggleOption>(new ColorToggleOption(true, -1));
 
         [Summary("Draw dungeon maps even when map window is closed")]
-        [DefaultValue(true)]
-        public bool DrawWhenClosed {
-            get { return (bool)GetSetting("DrawWhenClosed"); }
-            set { UpdateSetting("DrawWhenClosed", value); }
-        }
+        public readonly Setting<bool> DrawWhenClosed = new Setting<bool>(true);
 
         [Summary("Show visited tiles")]
-        [DefaultValue(true)]
-        public bool ShowVisitedTiles {
-            get { return (bool)GetSetting("ShowVisitedTiles"); }
-            set { UpdateSetting("ShowVisitedTiles", value); }
-        }
+        public readonly Setting<bool> ShowVisitedTiles = new Setting<bool>(true);
 
         [Summary("Visited tiles tint color")]
-        [DefaultValue(-26881)]
-        public int VisitedTilesColor {
-            get { return (int)GetSetting("VisitedTilesColor"); }
-            set { UpdateSetting("VisitedTilesColor", value); }
-        }
+        public readonly Setting<int> VisitedTilesColor = new Setting<int>(-26881);
 
         [Summary("Show compass")]
-        [DefaultValue(true)]
-        public bool ShowCompass {
-            get { return (bool)GetSetting("ShowCompass"); }
-            set { UpdateSetting("ShowCompass", value); }
-        }
+        public readonly Setting<bool> ShowCompass = new Setting<bool>(true);
 
         [Summary("Map opacity")]
-        [DefaultValue(16)]
-        public int Opacity {
-            get { return (int)GetSetting("Opacity"); }
-            set {
-                UpdateSetting("Opacity", value);
-                if (UIOpacitySlider != null) UIOpacitySlider.Position = Opacity;
-            }
-        }
+        public readonly Setting<int> Opacity = new Setting<int>(16);
 
         [Summary("Map zoom level")]
-        [DefaultValue(4.2f)]
-        public float MapZoom {
-            get { return (float)GetSetting("MapZoom"); }
-            set {
-                UpdateSetting("MapZoom", value);
-                scale = (5f - MapZoom);
-            }
-        }
+        public readonly Setting<float> MapZoom = new Setting<float>(4.2f);
 
         [Summary("Map Window X")]
-        [DefaultValue(40)]
-        public int MapWindowX {
-            get { return (int)GetSetting("MapWindowX"); }
-            set { UpdateSetting("MapWindowX", value); }
-        }
+        public readonly Setting<int> MapWindowX = new Setting<int>(40);
 
         [Summary("Map Window Y")]
-        [DefaultValue(200)]
-        public int MapWindowY {
-            get { return (int)GetSetting("MapWindowY"); }
-            set { UpdateSetting("MapWindowY", value); }
-        }
+        public readonly Setting<int> MapWindowY = new Setting<int>(200);
 
         [Summary("Map Window width")]
-        [DefaultValue(320)]
-        public int MapWindowWidth {
-            get { return (int)GetSetting("MapWindowWidth"); }
-            set { UpdateSetting("MapWindowWidth", value); }
-        }
+        public readonly Setting<int> MapWindowWidth = new Setting<int>(320);
 
         [Summary("Map Window height")]
-        [DefaultValue(280)]
-        public int MapWindowHeight {
-            get { return (int)GetSetting("MapWindowHeight"); }
-            set { UpdateSetting("MapWindowHeight", value); }
-        }
+        public readonly Setting<int> MapWindowHeight = new Setting<int>(280);
 
         [Summary("Label Font Size")]
-        [DefaultValue(10)]
-        public int LabelFontSize {
-            get { return (int)GetSetting("LabelFontSize"); }
-            set { UpdateSetting("LabelFontSize", value); }
-        }
+        public readonly Setting<int> LabelFontSize = new Setting<int>(10);
 
         [Summary("Map display options")]
-        public MapDisplayOptions Display { get; set; } = null;
+        public readonly MapDisplayOptions Display = new MapDisplayOptions();
 
         #region MapDisplayOptions
-        [Section("DungeonMaps display options")]
-        public class MapDisplayOptions : DisplaySectionBase {
-            [JsonIgnore]
-            public List<string> TileOptions = new List<string>() {
+        [Summary("DungeonMaps display options")]
+        public class MapDisplayOptions : ISetting {
+            public static List<string> TileOptions = new List<string>() {
                 "Walls",
                 "InnerWalls",
                 "RampedWalls",
                 "Stairs",
                 "Floors"
             };
-
-            [JsonIgnore]
-            public List<string> ValidSettings = new List<string>() {
+            
+            public static List<string> ValidSettings = new List<string>() {
                 "Walls",
                 "InnerWalls",
                 "RampedWalls",
@@ -224,77 +159,39 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
             };
 
             [Summary("Walls")]
-            [DefaultEnabled(true)]
-            [DefaultColor(-16777089)]
-            public ColorToggleOption Walls {
-                get { return (ColorToggleOption)GetSetting("Walls"); }
-                private set { UpdateSetting("Walls", value); }
-            }
+            public readonly ColorToggleOption Walls = new ColorToggleOption(true, -16777089);
 
             [Summary("Inner wall")]
-            [DefaultEnabled(true)]
-            [DefaultColor(-8404993)]
-            public ColorToggleOption InnerWalls {
-                get { return (ColorToggleOption)GetSetting("InnerWalls"); }
-                private set { UpdateSetting("InnerWalls", value); }
-            }
+            public readonly ColorToggleOption InnerWalls = new ColorToggleOption(true, -8404993);
 
             [Summary("Ramped wall")]
-            [DefaultEnabled(true)]
-            [DefaultColor(-11622657)]
-            public ColorToggleOption RampedWalls {
-                get { return (ColorToggleOption)GetSetting("RampedWalls"); }
-                private set { UpdateSetting("RampedWalls", value); }
-            }
+            public readonly ColorToggleOption RampedWalls = new ColorToggleOption(true, -11622657);
 
             [Summary("Stairs")]
-            [DefaultEnabled(true)]
-            [DefaultColor(-16760961)]
-            public ColorToggleOption Stairs {
-                get { return (ColorToggleOption)GetSetting("Stairs"); }
-                private set { UpdateSetting("Stairs", value); }
-            }
+            public readonly ColorToggleOption Stairs = new ColorToggleOption(true, -16760961);
 
             [Summary("Floor")]
-            [DefaultEnabled(true)]
-            [DefaultColor(-16744513)]
-            public ColorToggleOption Floors {
-                get { return (ColorToggleOption)GetSetting("Floors"); }
-                private set { UpdateSetting("Floors", value); }
-            }
+            public readonly ColorToggleOption Floors = new ColorToggleOption(true, -16744513);
 
             [Summary("VisualNav sticky point")]
-            [DefaultEnabled(true)]
-            [DefaultColor(-5374161)]
-            public ColorToggleOption VisualNavStickyPoint {
-                get { return (ColorToggleOption)GetSetting("VisualNavStickyPoint"); }
-                private set { UpdateSetting("VisualNavStickyPoint", value); }
-            }
+            public readonly ColorToggleOption VisualNavStickyPoint = new ColorToggleOption(true, -5374161);
 
             [Summary("VisualNav lines")]
-            [DefaultEnabled(true)]
-            [DefaultColor(-65281)]
-            public ColorToggleOption VisualNavLines {
-                get { return (ColorToggleOption)GetSetting("VisualNavLines"); }
-                private set { UpdateSetting("VisualNavLines", value); }
-            }
+            public readonly ColorToggleOption VisualNavLines = new ColorToggleOption(true, -65281);
 
             [Summary("Marker display options")]
-            public MarkerDisplayOptions Markers { get; set; } = null;
+            public readonly MarkerDisplayOptions Markers = new MarkerDisplayOptions();
 
-            public MapDisplayOptions(SectionBase parent) : base(parent) {
-                Name = "Display";
-                Markers = new MarkerDisplayOptions(this);
-                Markers.Name = "Markers";
+            public MapDisplayOptions() {
+
             }
         }
         #endregion
 
         #region MarkerDisplayOptions
         [Section("DungeonMaps marker display options")]
-        public class MarkerDisplayOptions : DisplaySectionBase {
-            [JsonIgnore]
-            public List<string> ValidSettings = new List<string>() {
+        public class MarkerDisplayOptions : ISetting {
+            public static List<string> ValidSettings = new List<string>() {
                 "You",
                 "Others",
                 "Items",
@@ -309,170 +206,82 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
             };
 
             [Summary("You")]
-            [DefaultEnabled(true)]
-            [DefaultColor(-65536)] // red
-            [DefaultUseIcon(false)]
-            [DefaultShowLabel(false)]
-            [DefaultSize(3)]
-            public MarkerToggleOption You {
-                get { return (MarkerToggleOption)GetSetting("You"); }
-                private set { UpdateSetting("You", value); }
-            }
+            public readonly MarkerToggleOption You = new MarkerToggleOption(true, false, false, -65536, 3);
 
             [Summary("Others")]
-            [DefaultEnabled(true)]
-            [DefaultColor(-1)] // white
-            [DefaultUseIcon(true)]
-            [DefaultShowLabel(true)]
-            [DefaultSize(3)]
-            public MarkerToggleOption Others {
-                get { return (MarkerToggleOption)GetSetting("Others"); }
-                private set { UpdateSetting("Others", value); }
-            }
+            public readonly MarkerToggleOption Others = new MarkerToggleOption(true, true, true, -1, 3);
 
             [Summary("Items")]
-            [DefaultEnabled(true)]
-            [DefaultColor(-1)] // white
-            [DefaultUseIcon(true)]
-            [DefaultShowLabel(true)]
-            [DefaultSize(3)]
-            public MarkerToggleOption Items {
-                get { return (MarkerToggleOption)GetSetting("Items"); }
-                private set { UpdateSetting("Items", value); }
-            }
+            public readonly MarkerToggleOption Items = new MarkerToggleOption(true, true, true, -1, 3);
 
             [Summary("Monsters")]
-            [DefaultEnabled(true)]
-            [DefaultColor(-23296)] // orange
-            [DefaultUseIcon(true)]
-            [DefaultShowLabel(false)]
-            [DefaultSize(3)]
-            public MarkerToggleOption Monsters {
-                get { return (MarkerToggleOption)GetSetting("Monsters"); }
-                private set { UpdateSetting("Monsters", value); }
-            }
+            public readonly MarkerToggleOption Monsters = new MarkerToggleOption(true, true, false, -23296, 3);
 
             [Summary("NPCs")]
-            [DefaultEnabled(true)]
-            [DefaultColor(-256)] // yellow
-            [DefaultUseIcon(true)]
-            [DefaultShowLabel(false)]
-            [DefaultSize(3)]
-            public MarkerToggleOption NPCs {
-                get { return (MarkerToggleOption)GetSetting("NPCs"); }
-                private set { UpdateSetting("NPCs", value); }
-            }
+            public readonly MarkerToggleOption NPCs = new MarkerToggleOption(true, true, false, -256, 3);
 
             [Summary("My Corpse")]
-            [DefaultEnabled(true)]
-            [DefaultColor(-65536)] // red 
-            [DefaultUseIcon(true)]
-            [DefaultShowLabel(true)]
-            [DefaultSize(3)]
-            public MarkerToggleOption MyCorpse {
-                get { return (MarkerToggleOption)GetSetting("MyCorpse"); }
-                private set { UpdateSetting("MyCorpse", value); }
-            }
+            public readonly MarkerToggleOption MyCorpse = new MarkerToggleOption(true, true, true, -65536, 3);
 
             [Summary("Other Corpses")]
-            [DefaultEnabled(false)]
-            [DefaultColor(-657931)] // white smoke
-            [DefaultUseIcon(true)]
-            [DefaultShowLabel(false)]
-            [DefaultSize(3)]
-            public MarkerToggleOption OtherCorpses {
-                get { return (MarkerToggleOption)GetSetting("OtherCorpses"); }
-                private set { UpdateSetting("OtherCorpses", value); }
-            }
+            public readonly MarkerToggleOption OtherCorpses = new MarkerToggleOption(false, true, false, -657931, 3);
 
             [Summary("Portals")]
-            [DefaultEnabled(true)]
-            [DefaultColor(-3841)] // very light purple/pink (mostly white)
-            [DefaultUseIcon(true)]
-            [DefaultShowLabel(true)]
-            [DefaultSize(3)]
-            public MarkerToggleOption Portals {
-                get { return (MarkerToggleOption)GetSetting("Portals"); }
-                private set { UpdateSetting("Portals", value); }
-            }
+            public readonly MarkerToggleOption Portals = new MarkerToggleOption(true, true, true, -3841, 3);
 
             [Summary("Containers")]
-            [DefaultEnabled(true)]
-            [DefaultColor(-744352)] // sandy brown
-            [DefaultUseIcon(true)]
-            [DefaultShowLabel(false)]
-            [DefaultSize(3)]
-            public MarkerToggleOption Containers {
-                get { return (MarkerToggleOption)GetSetting("Containers"); }
-                private set { UpdateSetting("Containers", value); }
-            }
+            public readonly MarkerToggleOption Containers = new MarkerToggleOption(true, true, false, -744352, 3);
 
             [Summary("Doors")]
-            [DefaultEnabled(true)]
-            [DefaultColor(-5952982)] // brown
-            [DefaultUseIcon(false)]
-            [DefaultShowLabel(false)]
-            [DefaultSize(3)]
-            public MarkerToggleOption Doors {
-                get { return (MarkerToggleOption)GetSetting("Doors"); }
-                private set { UpdateSetting("Doors", value); }
-            }
+            public readonly MarkerToggleOption Doors = new MarkerToggleOption(true, false, false, -5952982, 3);
 
             [Summary("Everything Else")]
-            [DefaultEnabled(false)]
-            [DefaultColor(-657931)] // white smoke
-            [DefaultUseIcon(true)]
-            [DefaultShowLabel(false)]
-            [DefaultSize(3)]
-            public MarkerToggleOption EverythingElse {
-                get { return (MarkerToggleOption)GetSetting("EverythingElse"); }
-                private set { UpdateSetting("EverythingElse", value); }
-            }
+            public readonly MarkerToggleOption EverythingElse = new MarkerToggleOption(false, true, false, -657931, 3);
 
-            public MarkerDisplayOptions(SectionBase parent) : base(parent) {
-                Name = "Markers";
+            public MarkerDisplayOptions() {
+
             }
 
             public int GetMarkerColor(TrackedObject obj) {
                 var propName = GetMarkerNameFromTO(obj);
-                var prop = (MarkerToggleOption)(this.GetPropValue(propName));
+                var opt = (MarkerToggleOption)((ISetting)this.GetFieldValue(propName)).GetValue();
 
-                return prop == null ? Color.White.ToArgb() : prop.Color;
+                return opt == null ? Color.White.ToArgb() : opt.Color;
             }
 
             public bool ShouldShowlabel(TrackedObject wo) {
                 var propName = GetMarkerNameFromTO(wo);
-                var prop = (MarkerToggleOption)(this.GetPropValue(propName));
+                var opt = (MarkerToggleOption)((ISetting)this.GetFieldValue(propName)).GetValue();
 
-                return prop == null ? false : prop.ShowLabel;
+                return opt == null ? false : opt.ShowLabel;
             }
 
             internal bool ShouldDraw(TrackedObject wo) {
                 var propName = GetMarkerNameFromTO(wo);
-                var prop = (MarkerToggleOption)(this.GetPropValue(propName));
+                var opt = (MarkerToggleOption)((ISetting)this.GetFieldValue(propName)).GetValue();
 
-                return prop == null ? false : prop.Enabled;
+                return opt == null ? false : opt.Enabled;
             }
 
             internal int GetLabelColor(TrackedObject wo) {
                 var propName = GetMarkerNameFromTO(wo);
-                var prop = (MarkerToggleOption)(this.GetPropValue(propName));
+                var opt = (MarkerToggleOption)((ISetting)this.GetFieldValue(propName)).GetValue();
 
-                return prop == null ? Color.White.ToArgb() : prop.Color;
+                return opt == null ? Color.White.ToArgb() : opt.Color;
             }
 
             internal bool ShouldUseIcon(TrackedObject wo) {
                 var propName = GetMarkerNameFromTO(wo);
-                var prop = (MarkerToggleOption)(this.GetPropValue(propName));
+                var opt = (MarkerToggleOption)((ISetting)this.GetFieldValue(propName)).GetValue();
 
-                return prop == null ? true : prop.UseIcon;
+                return opt == null ? true : opt.UseIcon;
             }
 
             internal int GetSize(TrackedObject wo) {
                 var propName = GetMarkerNameFromTO(wo);
-                var prop = (MarkerToggleOption)(this.GetPropValue(propName));
+                var opt = (MarkerToggleOption)((ISetting)this.GetFieldValue(propName)).GetValue();
 
-                return prop == null ? 4 : prop.Size;
+                return opt == null ? 4 : opt.Size;
             }
 
             public string GetMarkerNameFromTO(TrackedObject obj) {
@@ -524,16 +333,16 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
         #endregion
 
         public DungeonMaps(UtilityBeltPlugin ub, string name) : base(ub, name) {
-            Display = new MapDisplayOptions(this);
+
+        }
+
+        public override void Init() {
+            base.Init();
 
             zoomSaveTimer = new System.Timers.Timer {
                 AutoReset = true,
                 Interval = 2000 // save the window position 2 seconds after it has stopped moving
             };
-        }
-
-        public override void Init() {
-            base.Init();
 
             UIMapNotebook = (HudTabView)UB.DungeonMapView.view["MapNotebook"];
             UISearch = (HudTextBox)UB.DungeonMapView.view["Search"];
@@ -561,20 +370,24 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
             
             zoomSaveTimer.Elapsed += (s, e) => {
                 zoomSaveTimer.Stop();
-                MapZoom = (5f - scale);
+                MapZoom.Value = (5f - scale);
             };
 
             if (UBHelper.Core.GameState != UBHelper.GameState.In_Game) {
                 UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
             }
 
-            PropertyChanged += DungeonMaps_PropertyChanged;
+            Opacity.Changed += DungeonMaps_PropertyChanged;
+            DrawWhenClosed.Changed += DungeonMaps_PropertyChanged;
+            Enabled.Changed += DungeonMaps_PropertyChanged;
+
+            UIOpacitySlider.Position = Opacity;
 
             UpdateDungeonList();
         }
 
         #region Event Handlers
-        private void DungeonMaps_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+        private void DungeonMaps_PropertyChanged(object sender, SettingChangedEventArgs e) {
             switch (e.PropertyName) {
                 case "Opacity":
                     return;
@@ -652,7 +465,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
 
         private void UIOpacitySlider_Changed(int min, int max, int pos) {
             try {
-                Opacity = pos;
+                Opacity.Value = pos;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -776,8 +589,8 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                             hud.Texture.Fill(new Rectangle(0, 0, hud.Texture.Width, hud.Texture.Height), Color.Transparent);
                             try {
                                 hud.Texture.BeginText(fontFace, 10f, 150, false, 1, (int)byte.MaxValue);
-                                if (DungeonName.Enabled) {
-                                    hud.Texture.WriteText(UB.Core.Actions.Landcell.ToString("X8"), Color.FromArgb(DungeonName.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
+                                if (DungeonName.Value.Enabled) {
+                                    hud.Texture.WriteText(UB.Core.Actions.Landcell.ToString("X8"), Color.FromArgb(DungeonName.Value.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
                                 }
                             }
                             finally {
@@ -1202,11 +1015,11 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
 
                 try {
                     hud.Texture.BeginText(fontFace, 10f, 150, false, 1, (int)byte.MaxValue);
-                    if (DungeonName.Enabled) {
+                    if (DungeonName.Value.Enabled) {
                         var name = dungeon.Name + $" (Z:{(int)(Math.Floor((drawZ + 3) / 6))})";
                         if (Debug)
                             name += $" {UB.Core.Actions.Landcell:X8}";
-                        hud.Texture.WriteText(name, Color.FromArgb(DungeonName.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
+                        hud.Texture.WriteText(name, Color.FromArgb(DungeonName.Value.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
                     }
                     if (Debug) {
                         var sobjCount = 0;
@@ -1537,6 +1350,9 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                 if (!ShouldDrawMarker(obj))
                     return;
 
+                if (obj.IsLSD && !isManualLoad && obj.ObjectClass == ObjectClass.Monster)
+                    return;
+
                 DungeonLayer zLayer = dungeon.ZLayers[roundedZ];
                 bool shouldUseIcon = Display.Markers.ShouldUseIcon(obj);
                 Color color = Color.FromArgb(Display.Markers.GetMarkerColor(obj));
@@ -1546,9 +1362,6 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                     color = TrackedObject.Legend[obj.Wcid].Color;
                     tintColor = color;
                 }
-
-                if (obj.IsLSD && !isManualLoad && obj.ObjectClass == ObjectClass.Monster)
-                    return;
 
                 float x = (float)((zLayer.Width - 5 - (obj.Position.X - zLayer.minX)) * TextureCache.TileScale);
                 float y = (float)((obj.Position.Y + 5 - zLayer.minY) * TextureCache.TileScale);
@@ -1595,7 +1408,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
 
             // sticky point
             if (allPoints.Length == 1 && (route.NavType == Lib.VTNav.eNavType.Circular || route.NavType == Lib.VTNav.eNavType.Linear)) {
-                if (!UB.DungeonMaps.Display.VisualNavStickyPoint.Enabled) return;
+                if (!Display.VisualNavStickyPoint.Enabled) return;
 
                 VTNPoint point = allPoints[0];
                 var landblock = Geometry.GetLandblockFromCoordinates((float)point.EW, (float)point.NS);
@@ -1613,7 +1426,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
             }
 
             // circular / once / linear routes.. currently not discriminating
-            if (!UB.DungeonMaps.Display.VisualNavLines.Enabled) return;
+            if (!Display.VisualNavLines.Enabled) return;
 
             for (var i = route.NavOffset; i < route.points.Count; i++) {
                 var point = route.points[i];
@@ -1650,7 +1463,9 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
 
         protected override void Dispose(bool disposing) {
             if (disposing) {
-                PropertyChanged -= DungeonMaps_PropertyChanged;
+                Opacity.Changed += DungeonMaps_PropertyChanged;
+                DrawWhenClosed.Changed += DungeonMaps_PropertyChanged;
+                Enabled.Changed += DungeonMaps_PropertyChanged;
 
                 if (isRunning) {
                     zoomSaveTimer.Stop();

@@ -31,6 +31,11 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
         private int BUFFER_SIZE = 1024 * 1024;
 
         public VTankFellowHeals(UtilityBeltPlugin ub, string name) : base(ub, name) {
+
+        }
+
+        public override void Init() {
+            base.Init();
             try {
                 sharedBuffer = new SharedMemory.BufferReadWrite(BUFFER_NAME, BUFFER_SIZE);
 

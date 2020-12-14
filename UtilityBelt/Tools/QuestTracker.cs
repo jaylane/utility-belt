@@ -8,6 +8,7 @@ using System.Linq;
 using System.Windows.Forms;
 using UtilityBelt.Lib.Quests;
 using UtilityBelt.Lib;
+using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("QuestTracker")]
@@ -33,11 +34,7 @@ namespace UtilityBelt.Tools {
 
         #region Config
         [Summary("Loads Quests from server on login")]
-        [DefaultValue(true)]
-        public bool AutoRequest {
-            get { return (bool)GetSetting("AutoRequest"); }
-            set { UpdateSetting("AutoRequest", value); }
-        }
+        public readonly Setting<bool> AutoRequest = new Setting<bool>(true);
         #endregion
 
         #region Commands
@@ -175,6 +172,11 @@ namespace UtilityBelt.Tools {
         #endregion
 
         public QuestTracker(UtilityBeltPlugin ub, string name) : base(ub, name) {
+        }
+
+        public override void Init() {
+            base.Init();
+
             UIQuestsListFilter = (HudTextBox)UB.MainView.view["QuestsListFilter"];
             UIQuestListNotebook = (HudTabView)UB.MainView.view["QuestListNotebook"];
             UIQuestListRefresh = (HudButton)UB.MainView.view["QuestListRefresh"];
@@ -182,7 +184,7 @@ namespace UtilityBelt.Tools {
             UITimedQuestList = (HudList)UB.MainView.view["TimedQuestList"];
             UIKillTaskQuestList = (HudList)UB.MainView.view["KillTaskQuestList"];
             UIOnceQuestList = (HudList)UB.MainView.view["OnceQuestList"];
-            
+
             UIQuestsListFilter.Change += (s, e) => { DrawQuestLists(); };
 
             UIQuestListRefresh.Hit += (s, e) => { GetMyQuestsList(1); };
@@ -190,11 +192,9 @@ namespace UtilityBelt.Tools {
             UITimedQuestList.Click += (s, r, c) => { HandleRowClicked(UITimedQuestList, r, c); };
             UIKillTaskQuestList.Click += (s, r, c) => { HandleRowClicked(UIKillTaskQuestList, r, c); };
             UIOnceQuestList.Click += (s, r, c) => { HandleRowClicked(UIOnceQuestList, r, c); };
-        }
 
-        public override void Init() {
             UB.MainView.view.VisibleChanged += MainView_VisibleChanged;
-            questRedrawTimer.Tick += QuestRedrawTimer_Tick;
+            //questRedrawTimer.Tick += QuestRedrawTimer_Tick;
             questRedrawTimer.Interval = 1000;
 
             UB.Core.CommandLineText += Core_CommandLineText;
