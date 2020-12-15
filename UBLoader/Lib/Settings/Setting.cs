@@ -7,21 +7,11 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace UtilityBelt.Lib.Settings {
-    public class SettingChangedEventArgs : EventArgs {
-        public string PropertyName { get; private set; }
-        public string FullName { get; private set; }
-        public ISetting Setting { get; private set; }
-
-        public SettingChangedEventArgs(string propertyName, string fullName, ISetting setting) {
-            PropertyName = propertyName;
-            FullName = fullName;
-            Setting = setting;
-        }
-    }
-
+namespace UBLoader.Lib.Settings {
     public class Setting<T> : ISetting {
         private bool hasDefault = false;
+
+        public bool IsDefault { get => Value.Equals(DefaultValue); }
 
         private T _value;
 

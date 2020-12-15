@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using UtilityBelt.Lib.Settings;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Lib {
     public class ToolBase : ISetting {

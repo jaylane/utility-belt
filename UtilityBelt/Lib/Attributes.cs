@@ -13,15 +13,6 @@ namespace UtilityBelt.Lib {
         }
     }
 
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Field)]
-    public class SummaryAttribute : Attribute {
-        public string Summary { get; }
-
-        public SummaryAttribute(string summary) {
-            Summary = summary;
-        }
-    }
-
     [AttributeUsage(AttributeTargets.Class)]
     public class SectionAttribute : Attribute {
         public string Section { get; }
@@ -107,10 +98,6 @@ namespace UtilityBelt.Lib {
             Verb = command;
             AllowPartialVerbMatch = allowPartialVerbMatch;
         }
-    }
-
-    [AttributeUsage(AttributeTargets.Property)]
-    public class SupportsFlagsAttribute : Attribute {
     }
 
     [AttributeUsage(AttributeTargets.Class)]

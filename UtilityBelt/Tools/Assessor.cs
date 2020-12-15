@@ -7,6 +7,7 @@ using Decal.Adapter.Wrappers;
 using UtilityBelt.Lib.Constants;
 using UtilityBelt.Lib;
 using System.Text.RegularExpressions;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("Assessor")]

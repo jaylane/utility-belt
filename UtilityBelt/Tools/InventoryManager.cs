@@ -11,6 +11,7 @@ using uTank2.LootPlugins;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using VTClassic;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("InventoryManager")]

@@ -11,6 +11,7 @@ using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using UtilityBelt.Tools;
 using UtilityBelt.Views;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt {
 
@@ -234,7 +235,11 @@ namespace UtilityBelt {
 
             Logger.Init();
             Huds = new UBHudManager();
-            Settings = new Settings();
+
+            var defaultSettingsPath = System.IO.Path.Combine(Util.AssemblyDirectory, "settings.default.json");
+            var settingsPath = System.IO.Path.Combine(Util.GetCharacterDirectory(), "settings.json");
+            Settings = new Settings(this, settingsPath, defaultSettingsPath);
+
             Database = new Database(DatabaseFile);
 
             MainView = new MainView(this);
@@ -266,6 +271,19 @@ namespace UtilityBelt {
             if (UBHelper.Core.version < 2020112000) {
                 Logger.Error($"UBHelper.dll is out of date. 2020112000 Expected, received {UBHelper.Core.version}");
             }
+
+            Settings.Changed += Settings_Changed;
+            UBLoader.FilterCore.Settings.Changed += FilterSettings_Changed;
+        }
+
+        private void FilterSettings_Changed(object sender, SettingChangedEventArgs e) {
+            if (UBLoader.FilterCore.Settings.ShouldSave || (UBLoader.FilterCore.Settings.IsLoaded && UBLoader.FilterCore.Settings.IsLoading))
+                Logger.Debug($"[Global] {e.FullName} = {e.Setting.GetValue()}");
+        }
+
+        private void Settings_Changed(object sender, SettingChangedEventArgs e) {
+            if (Settings.ShouldSave || (Settings.IsLoaded && Settings.IsLoading))
+                Logger.Debug($"{e.FullName} = {e.Setting.GetValue()}");
         }
 
         /// <summary>
@@ -522,6 +540,9 @@ namespace UtilityBelt {
         /// </summary>
         public void Shutdown() {
             try {
+                UBLoader.FilterCore.Settings.Changed -= FilterSettings_Changed;
+                Settings.Changed -= Settings_Changed;
+
                 if (Settings.NeedsSave)
                     Settings.Save();
 
@@ -547,6 +568,7 @@ namespace UtilityBelt {
                 Lib.ActionQueue.Dispose();
                 PerfMonitor.Dispose();
                 UBLoader.File.FlushFiles();
+                Settings.Dispose();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

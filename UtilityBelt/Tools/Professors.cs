@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     internal class ProfessorCommand {

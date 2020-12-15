@@ -15,6 +15,7 @@ using System.Web.UI;
 using UtilityBelt;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
+using UBLoader.Lib.Settings;
 
 namespace UBDocsGen {
     #region UB Attribute data
@@ -120,6 +121,8 @@ namespace UBDocsGen {
         public static string AssemblyPath { get; private set; }
         public static string ProjectRoot { get; private set; }
         public static UtilityBeltPlugin UB { get; private set; }
+        public static UBLoader.FilterCore Loader { get; private set; }
+        public static List<SettingInfo> GlobalSettingInfos { get; private set; }
 
         static void Main(string[] args) {
             try {
@@ -135,11 +138,14 @@ namespace UBDocsGen {
         }
 
         private static void Init() {
-            UB = new UtilityBelt.UtilityBeltPlugin();
-            UB.Settings = new UtilityBelt.Lib.Settings.Settings();
+            Loader = new UBLoader.FilterCore();
+            UBLoader.FilterCore.Settings = new Settings(Loader, "");
+            UB = new UtilityBeltPlugin();
+            UB.Settings = new Settings(UB, "");
             UB.LoadTools();
 
             InitToolInfo(UB);
+            GlobalSettingInfos = GetSettings(Loader, "Global");
 
             GenerateToolSummaries(Path.Combine(ProjectRoot, "Site/layouts/partials/tool-summaries.html"));
             GenerateReleases(Path.Combine(ProjectRoot, "Site/content/releases/"), Path.Combine(ProjectRoot, "Site/layouts/partials/"));
@@ -192,7 +198,7 @@ namespace UBDocsGen {
                     var summary = GetSummary(toolProp);
                     var description = GetFullDescription(toolProp);
                     var commands = GetCommands(toolProp);
-                    var settings = GetSettings(toolProp);
+                    var settings = GetSettings(toolProp.GetValue(UB), toolProp.Name);
                     var expressions = GetExpressions(toolProp);
 
                     var info = new ToolInfo(name, summary, description, commands, settings, expressions);
@@ -306,43 +312,40 @@ namespace UBDocsGen {
             return commandInfos;
         }
 
-        private static List<SettingInfo> GetSettings(FieldInfo toolProp) {
-            var toolInstance = toolProp.GetValue(UB);
+        private static List<SettingInfo> GetSettings(object parent, string history="") {
             var settings = new List<SettingInfo>();
-            var children = toolProp.FieldType.GetFields(BindingFlags.Public | BindingFlags.Instance)
+            var children = parent.GetType().GetFields(Settings.BindingFlags)
                 .Where(f => typeof(ISetting).IsAssignableFrom(f.FieldType));
-            foreach (var prop in children) {
-                var summaryAttrs = prop.GetCustomAttributes(typeof(SummaryAttribute), true);
-                var summary = "";
-                var setting = ((ISetting)prop.GetValue(toolInstance));
-                var defaultValue = setting.GetDefaultValue();
-                if (summaryAttrs.Length == 1 && defaultValue != null && !typeof(ISetting).IsAssignableFrom(defaultValue.GetType())) {
-                    summary = ((SummaryAttribute)summaryAttrs[0]).Summary;
-
-                    var settingInfo = new SettingInfo($"{toolProp.Name}.{prop.Name}", defaultValue, summary);
-
+            foreach (var field in children) {
+                var settingInfo = RegisterSetting(field, parent, history);
+                if (settingInfo != null)
                     settings.Add(settingInfo);
-                }
             }
-
-            foreach (var prop in toolProp.FieldType.GetProperties()) {
-                var defaultValueAttrs = prop.GetCustomAttributes(typeof(DefaultValueAttribute), true);
-
-                if (defaultValueAttrs.Length == 1) {
-                    var defaultValue = ((DefaultValueAttribute)defaultValueAttrs[0]).Value;
-                    var summaryAttrs = prop.GetCustomAttributes(typeof(SummaryAttribute), true);
-                    var summary = "";
-                    if (summaryAttrs.Length == 1 && defaultValue != null) {
-                        summary = ((SummaryAttribute)summaryAttrs[0]).Summary;
-
-                        var settingInfo = new SettingInfo($"{toolProp.Name}.{prop.Name}", defaultValue, summary);
-
-                        settings.Add(settingInfo);
-                    }
-                }
-            }
-
             return settings;
+        }
+
+        private static SettingInfo RegisterSetting(FieldInfo settingField, object parent, string history="") {
+            var summaryAttrs = settingField.GetCustomAttributes(typeof(SummaryAttribute), true);
+            var summary = "";
+            var setting = ((ISetting)settingField.GetValue(parent));
+            var defaultValue = setting.GetDefaultValue();
+            var name = string.IsNullOrEmpty(history) ? settingField.Name : $"{history}.{settingField.Name}";
+
+            // these default paths get set to the environment variable on the build machine... so we need to override
+            if (name == "Global.PluginStorageDirectory") {
+                defaultValue = @"`[Environment.SpecialFolder.Personal]`\Decal Plugins\UtilityBelt";
+            }
+            else if (name == "Global.DatabaseFile") {
+                defaultValue = @"`[Environment.SpecialFolder.Personal]`\Decal Plugins\UtilityBelt\utilitybelt.db";
+            }
+
+            if (summaryAttrs.Length == 1 && defaultValue != null && !typeof(ISetting).IsAssignableFrom(defaultValue.GetType())) {
+                summary = ((SummaryAttribute)summaryAttrs[0]).Summary;
+
+                var settingInfo = new SettingInfo(name, defaultValue, summary);
+                return settingInfo;
+            }
+            return null;
         }
 
         private static List<ExpressionInfo> GetExpressions(FieldInfo toolProp) {
@@ -500,6 +503,10 @@ All settings take immediate effect on the plugin, and will save to your [charact
             ");
 
             WriteCommand(stringWriter, AvailableTools["Plugin"].Commands.Find(t => t.Verb == "opt"));
+
+            foreach (var setting in GlobalSettingInfos) {
+                WriteSetting(stringWriter, setting);
+            }
 
             foreach (var tool in AvailableTools) {
                 foreach (var setting in tool.Value.Settings) {

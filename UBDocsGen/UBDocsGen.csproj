@@ -74,6 +74,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\UBLoader\UBLoader.csproj">
+      <Project>{bb14f564-6e92-4fd0-9394-120e517ea5ba}</Project>
+      <Name>UBLoader</Name>
+    </ProjectReference>
     <ProjectReference Include="..\UtilityBelt\UtilityBelt.csproj">
       <Project>{c2880823-67e7-4b3d-a481-9adc9847c39c}</Project>
       <Name>UtilityBelt</Name>

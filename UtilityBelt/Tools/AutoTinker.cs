@@ -14,6 +14,7 @@ using UtilityBelt.Lib.Tinker;
 using System.ComponentModel;
 using UBHelper;
 using UtilityBelt.Lib.Settings;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("AutoTinker")]

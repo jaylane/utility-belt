@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using Decal.Adapter.Wrappers;
 using Decal.Adapter;
 using System.Runtime.InteropServices;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("Fellowships")]

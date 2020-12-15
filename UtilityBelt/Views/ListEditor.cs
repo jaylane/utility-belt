@@ -9,6 +9,7 @@ using System.Text;
 using UtilityBelt.Lib.Settings;
 using VirindiViewService;
 using VirindiViewService.Controls;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Views {
 
@@ -26,11 +27,10 @@ namespace UtilityBelt.Views {
         private OptionResult prop;
         private int selectedIndex = -1;
         private SettingsForm form;
-        private string Setting;
+        private ISetting Setting;
 
-        public ListEditor(MainView mainView, string setting) {
+        public ListEditor(MainView mainView, ISetting setting) {
             this.mainView = mainView;
-            this.prop = UtilityBeltPlugin.Instance.Settings.Get(setting);
             Setting = setting;
 
             VirindiViewService.XMLParsers.Decal3XMLParser parser = new VirindiViewService.XMLParsers.Decal3XMLParser();
@@ -38,7 +38,7 @@ namespace UtilityBelt.Views {
 
             view = new VirindiViewService.HudView(properties, controls);
 
-            view.Title = $"Editing {setting}";
+            view.Title = $"Editing {Setting.Name}";
 
             int x = (mainView.view.Location.X + (mainView.view.Width / 2)) - (view.Width / 2);
             int y = (mainView.view.Location.Y + (mainView.view.Height / 2)) - (view.Height / 2);
