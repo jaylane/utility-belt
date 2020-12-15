@@ -13,6 +13,7 @@ using System.Windows.Forms;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Dungeon;
 using UtilityBelt.Lib.Settings;
+using UBLoader.Lib.Settings;
 using UtilityBelt.Lib.VTNav.Waypoints;
 using VirindiViewService;
 using VirindiViewService.Controls;

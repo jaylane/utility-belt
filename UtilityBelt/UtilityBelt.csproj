@@ -70,6 +70,7 @@
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>True</EmbedInteropTypes>
       <HintPath>C:\Program Files (x86)\Decal 3.0\.NET 2.0 PIA\Decal.Interop.Render.DLL</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="LiteDB, Version=4.1.4.0, Culture=neutral, PublicKeyToken=4ee40123013c9f27, processorArchitecture=MSIL">
       <HintPath>..\packages\LiteDB.4.1.4\lib\net35\LiteDB.dll</HintPath>
@@ -96,10 +97,6 @@
     <Reference Include="UBHelper">
       <HintPath>..\UBLoader\Deps\UBHelper.dll</HintPath>
       <Private>False</Private>
-    </Reference>
-    <Reference Include="UBLoader, Version=0.1.9.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\bin\UBLoader.dll</HintPath>
     </Reference>
     <Reference Include="utank2-i">
       <HintPath>C:\Games\VirindiPlugins\VirindiTank\utank2-i.dll</HintPath>
@@ -153,12 +150,7 @@
     <Compile Include="Lib\Models\WeenieAttribute.cs" />
     <Compile Include="Lib\Models\WeenieSpawn.cs" />
     <Compile Include="Lib\PerfMonitor.cs" />
-    <Compile Include="Lib\Settings\ISetting.cs" />
-    <Compile Include="Lib\Settings\OptionResult.cs" />
     <Compile Include="Lib\Settings\PluginMessageDisplay.cs" />
-    <Compile Include="Lib\Settings\Setting.cs" />
-    <Compile Include="Lib\Settings\SettingsJsonConverter.cs" />
-    <Compile Include="Lib\Settings\ShouldSerializeContractResolver.cs" />
     <Compile Include="Lib\Spells.cs" />
     <Compile Include="Lib\TextureCache.cs" />
     <Compile Include="Lib\Dungeon\TrackedObject.cs" />
@@ -193,7 +185,6 @@
     <Compile Include="Lib\Salvage\TinkerType.cs" />
     <Compile Include="Lib\Settings\ColorToggleOption.cs" />
     <Compile Include="Lib\Settings\MarkerToggleOption.cs" />
-    <Compile Include="Lib\Settings\Settings.cs" />
     <Compile Include="Lib\Constants\CharOptions2.cs" />
     <Compile Include="Lib\Constants\CharOptions.cs" />
     <Compile Include="Lib\Geometry.cs" />
@@ -977,6 +968,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\icons\daynight.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UBLoader\UBLoader.csproj">
+      <Project>{bb14f564-6e92-4fd0-9394-120e517ea5ba}</Project>
+      <Name>UBLoader</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

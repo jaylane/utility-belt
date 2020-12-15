@@ -4,8 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace UtilityBelt.Lib.Settings {
-    internal class OptionResult {
+namespace UBLoader.Lib.Settings {
+    public class OptionResult {
         public ISetting Setting;
         public object Parent;
         public FieldInfo FieldInfo;

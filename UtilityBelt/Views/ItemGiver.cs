@@ -11,6 +11,7 @@ using UtilityBelt.Lib.Settings;
 using VirindiViewService;
 using VirindiViewService.Controls;
 using VirindiViewService.XMLParsers;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Views {
     public class ItemGiverView : BaseView {

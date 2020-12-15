@@ -12,6 +12,7 @@ using UtilityBelt.Lib.ChatLog;
 using UtilityBelt.Lib.Constants;
 using UtilityBelt.Lib.Settings;
 using VirindiViewService.Controls;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Tools {
 

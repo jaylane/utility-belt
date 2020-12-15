@@ -134,6 +134,16 @@
             <param name="weenie_id">weenie id of the door to check</param>
             <returns>true if door is open</returns>
         </member>
+        <member name="P:UBHelper.Weenie.ItemsContained">
+            <summary>
+            Allows set, for batch operations- set value with only persist inside of this Weenie reference
+            </summary>
+        </member>
+        <member name="P:UBHelper.Weenie.StackCount">
+            <summary>
+            Allows set, for batch operations- set value with only persist inside of this Weenie reference
+            </summary>
+        </member>
         <member name="T:UBHelper.PCap">
             <summary>
             Adds functionality to capture packets ingame, and save to pcap format.

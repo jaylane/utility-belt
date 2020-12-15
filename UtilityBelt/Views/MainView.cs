@@ -13,6 +13,7 @@ using UtilityBelt.Lib.Settings;
 using VirindiViewService;
 using VirindiViewService.Controls;
 using VirindiViewService.XMLParsers;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Views {
     public class MainView : BaseView {
@@ -101,7 +102,7 @@ namespace UtilityBelt.Views {
 
                 if (!UB.Plugin.PCap) ExportPCap.Visible = false;
 
-                PopulateSettings(UB, "");
+                PopulateSettings();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -154,7 +155,7 @@ namespace UtilityBelt.Views {
         private void SettingsList_Click(object sender, int rowIndex, int colIndex) {
             try {
                 var row = ((HudList.HudListRowAccessor)SettingsList[rowIndex]);
-                var prop = UB.Settings.Get(((HudStaticText)row[0]).Text);
+                var prop = GetSettingPropFromText(((HudStaticText)row[0]).Text);
 
                 if (selectedIndex >= 0 && SettingsList.RowCount > selectedIndex) {
                     ((HudStaticText)((HudList.HudListRowAccessor)SettingsList[selectedIndex])[0]).TextColor = view.Theme.GetColor("ListText");
@@ -163,17 +164,25 @@ namespace UtilityBelt.Views {
                 ((HudStaticText)row[0]).TextColor = Color.Red;
                 selectedIndex = rowIndex;
 
-                DrawSetting(((HudStaticText)row[0]).Text);
+                DrawSetting(prop.Setting);
 
                 if (colIndex == 1 && prop.Setting.GetValue().GetType() == typeof(bool)) {
                     prop.Setting.SetValue(!(bool)prop.Setting.GetValue());
-                    DrawSetting(((HudStaticText)row[0]).Text);
+                    DrawSetting(prop.Setting);
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void DrawSetting(string setting) {
+        private OptionResult GetSettingPropFromText(string setting) {
+            Logger.WriteToChat($"{setting}: {setting.Substring(7)}");
+            if (setting.StartsWith("Global."))
+                return UBLoader.FilterCore.Settings.Get(setting.Substring(7));
+            else
+                return UB.Settings.Get(setting);
+        }
+
+        private void DrawSetting(ISetting setting) {
             if (currentForm != null) {
                 currentForm.Dispose();
                 currentForm = null;
@@ -187,36 +196,43 @@ namespace UtilityBelt.Views {
                 FormLayout = new HudFixedLayout();
                 SettingEditLayout.AddControl(FormLayout, new Rectangle(5, descriptionHeight, 390, 25));
             }
-            
-            var prop = UB.Settings.Get(setting);
+
             SummaryText.TextAlignment = WriteTextFormats.WordBreak;
 
-            var summaryAttr = prop.FieldInfo.GetCustomAttributes(typeof(SummaryAttribute), true);
+            var summaryAttr = setting.FieldInfo.GetCustomAttributes(typeof(SummaryAttribute), true);
             if (summaryAttr.Length == 1) {
                 SummaryText.Text = ((SummaryAttribute)summaryAttr[0]).Summary;
             }
             else {
-                SummaryText.Text = prop.FieldInfo.Name;
+                SummaryText.Text = setting.FieldInfo.Name;
             }
 
-            SummaryText.Text += " (" + prop.Setting.GetValue().GetType() + ")";
+            SummaryText.Text += " (" + setting.GetValue().GetType() + ")";
 
             currentForm = new SettingsForm(setting, FormLayout);
             currentForm.Changed += (s, e) => {
-                prop.Setting.SetValue(currentForm.Value);
+                setting.SetValue(currentForm.Value);
             };
         }
 
-        private void PopulateSettings(object obj, string history, bool clear = false) {
+        private void PopulateSettings(bool clear = false) {
             var settings = UB.Settings.GetAll();
+            var globalSettings = UBLoader.FilterCore.Settings.GetAll();
 
             if (clear)
                 SettingsList.ClearRows();
 
+            foreach (var setting in globalSettings) {
+                var row = SettingsList.AddRow();
+                ((HudStaticText)row[0]).Text = $"Global.{setting.GetName()}";
+                ((HudStaticText)row[1]).Text = setting.DisplayValue();
+                ((HudStaticText)row[1]).TextAlignment = WriteTextFormats.Right;
+            }
+
             foreach (var setting in settings) {
                 var row = SettingsList.AddRow();
                 ((HudStaticText)row[0]).Text = setting.GetName();
-                ((HudStaticText)row[1]).Text = UB.Settings.DisplayValue(setting.GetName());
+                ((HudStaticText)row[1]).Text = setting.DisplayValue();
                 ((HudStaticText)row[1]).TextAlignment = WriteTextFormats.Right;
             }
         }

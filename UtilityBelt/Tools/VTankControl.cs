@@ -14,6 +14,7 @@ using UtilityBelt.Lib;
 using UtilityBelt.Lib.Expressions;
 using UtilityBelt.Lib.Settings;
 using UtilityBelt.Lib.VTNav;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("VTank")]

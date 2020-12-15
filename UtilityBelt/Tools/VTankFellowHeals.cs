@@ -11,6 +11,7 @@ using UtilityBelt.Lib;
 using System.Threading;
 using System.Diagnostics;
 using System.ComponentModel;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("VTankFellowHeals")]

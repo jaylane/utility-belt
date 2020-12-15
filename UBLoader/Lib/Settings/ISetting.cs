@@ -5,14 +5,18 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace UtilityBelt.Lib.Settings {
+namespace UBLoader.Lib.Settings {
     public abstract class ISetting {
         public event EventHandler<SettingChangedEventArgs> Changed;
 
         public string FullName { get; protected set; } = "";
         public string Name => FullName.Split('.').Last();
+        public bool IsContainer { get => typeof(ISetting).IsAssignableFrom(GetValue().GetType()); }
+        public ISetting Parent { get; internal set; } = null;
+        public Settings Settings { get; internal set; } = null;
+        public FieldInfo FieldInfo { get; internal set; } = null;
 
-        public bool HasParent { get => !(this is ToolBase); }
+        public bool HasParent { get => Parent != null; }
         public IEnumerable<FieldInfo> Children { get; private set; }
 
         internal void InvokeChange() {
@@ -21,9 +25,9 @@ namespace UtilityBelt.Lib.Settings {
         }
 
         internal void InvokeChange(ISetting s, SettingChangedEventArgs e) {
-            if (UtilityBeltPlugin.Instance.Settings.EventsEnabled) {
+            if (Settings != null && Settings.EventsEnabled) {
                 Changed?.Invoke(s, e);
-                UtilityBeltPlugin.Instance.Settings.InvokeChange(s, e);
+                Settings.InvokeChange(s, e);
             }
         }
 
@@ -53,8 +57,8 @@ namespace UtilityBelt.Lib.Settings {
 
         public IEnumerable<FieldInfo> GetChildren() {
             if (Children == null)
-             Children = GetValue().GetType().GetFields(BindingFlags.Public | BindingFlags.Instance)
-                .Where(f => typeof(ISetting).IsAssignableFrom(f.FieldType));
+                Children = GetValue().GetType().GetFields(BindingFlags.Public | BindingFlags.Instance)
+                   .Where(f => typeof(ISetting).IsAssignableFrom(f.FieldType));
             return Children;
         }
 
@@ -68,6 +72,10 @@ namespace UtilityBelt.Lib.Settings {
 
         public virtual void SetValue(object newValue) {
             throw new NotImplementedException();
+        }
+
+        public string DisplayValue(bool expandLists=false) {
+            return Settings.DisplayValue(FullName, expandLists);
         }
     }
 }

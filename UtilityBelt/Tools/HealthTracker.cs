@@ -7,6 +7,7 @@ using System.Text;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using static UtilityBelt.Tools.VTankControl;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("HealthTracker")]

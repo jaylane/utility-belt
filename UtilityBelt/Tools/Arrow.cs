@@ -12,6 +12,7 @@ using UtilityBelt.Lib.Maps.Markers;
 using UtilityBelt.Lib.Settings;
 using VirindiViewService;
 using static UtilityBelt.Tools.VTankControl;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("Arrow")]

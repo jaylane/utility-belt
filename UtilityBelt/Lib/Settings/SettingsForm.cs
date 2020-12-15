@@ -7,11 +7,12 @@ using System.Text;
 using UtilityBelt.Views;
 using VirindiViewService;
 using VirindiViewService.Controls;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Lib.Settings {
     public class SettingsForm : IDisposable {
         public HudFixedLayout ParentLayout;
-        public string Setting;
+        public ISetting Setting;
         public object Value;
         public Type Type;
 
@@ -19,20 +20,20 @@ namespace UtilityBelt.Lib.Settings {
 
         private List<HudControl> ChildViews = new List<HudControl>();
 
-        public SettingsForm(string setting, HudFixedLayout parentLayout, Type type=null) {
+        public SettingsForm(ISetting setting, HudFixedLayout parentLayout, Type type=null) {
             Setting = setting;
             ParentLayout = parentLayout;
             Type = type;
 
             if (Type == null) {
-                Value = UtilityBeltPlugin.Instance.Settings.Get(setting).Setting;
-                Type = ((ISetting)UtilityBeltPlugin.Instance.Settings.Get(Setting).Setting).GetValue().GetType();
+                Value = Setting;
+                Type = Setting.GetValue().GetType();
             }
             else {
                 Value = "";
             }
 
-            ChildViews = DrawSettingsForm(parentLayout, setting);
+            ChildViews = DrawSettingsForm(parentLayout, Setting);
         }
 
         internal void SetValue(string newValue) {
@@ -92,29 +93,28 @@ namespace UtilityBelt.Lib.Settings {
             return colorIcon;
         }
 
-        private List<HudControl> DrawSettingsForm(HudFixedLayout settingsForm, string setting) {
+        private List<HudControl> DrawSettingsForm(HudFixedLayout settingsForm, ISetting setting) {
             if (Type == typeof(bool)) {
-                return DrawBooleanSettingsForm(settingsForm, setting);
+                return DrawBooleanSettingsForm(settingsForm);
             }
             else if (Type.IsEnum) {
-                var prop = UtilityBeltPlugin.Instance.Settings.Get(setting);
-                var supportsFlagsAttributes = prop.FieldInfo.GetCustomAttributes(typeof(SupportsFlagsAttribute), true);
+                var supportsFlagsAttributes = Setting.FieldInfo.GetCustomAttributes(typeof(SupportsFlagsAttribute), true);
 
                 if (supportsFlagsAttributes.Length > 0) {
                     new EnumFlagEditor(UtilityBeltPlugin.Instance.MainView.view, setting);
                 }
                 else {
-                    return DrawEnumSettingsForm(settingsForm, setting);
+                    return DrawEnumSettingsForm(settingsForm);
                 }
             }
-            else if (Type == typeof(int) && setting.Contains("Color")) {
-                return DrawColorSettingsForm(settingsForm, setting);
+            else if (Type == typeof(int) && setting.Name.Contains("Color")) {
+                return DrawColorSettingsForm(settingsForm);
             }
             else if (Type == typeof(int) || Type == typeof(float) || Type == typeof(double) || Type == typeof(short)) {
-                return DrawNumberSettingsForm(settingsForm, setting);
+                return DrawNumberSettingsForm(settingsForm);
             }
             else if (Type == typeof(string)) {
-                return DrawStringSettingsForm(settingsForm, setting);
+                return DrawStringSettingsForm(settingsForm);
             }
             else if (Type.GetInterfaces().Contains(typeof(IEnumerable))) {
                 new ListEditor(UtilityBeltPlugin.Instance.MainView, setting);
@@ -123,7 +123,7 @@ namespace UtilityBelt.Lib.Settings {
             return new List<HudControl>();
         }
 
-        private List<HudControl> DrawEnumSettingsForm(HudFixedLayout settingsForm, string setting) {
+        private List<HudControl> DrawEnumSettingsForm(HudFixedLayout settingsForm) {
             var childViews = new List<HudControl>();
             var combo = new HudCombo(new ControlGroup());
             var values = Enum.GetValues(Type);
@@ -170,7 +170,7 @@ namespace UtilityBelt.Lib.Settings {
             return childViews;
         }
 
-        private List<HudControl> DrawStringSettingsForm(HudFixedLayout settingsForm, string setting) {
+        private List<HudControl> DrawStringSettingsForm(HudFixedLayout settingsForm) {
             var childViews = new List<HudControl>();
             var edit = new HudTextBox();
             edit.Text = Value.ToString();
@@ -189,7 +189,7 @@ namespace UtilityBelt.Lib.Settings {
             return childViews;
         }
 
-        private List<HudControl> DrawColorSettingsForm(HudFixedLayout settingsForm, string setting) {
+        private List<HudControl> DrawColorSettingsForm(HudFixedLayout settingsForm) {
             var colorPickerPreview = new HudImageStack();
             var colorPickerRect = new Rectangle(0, 0, 20, 20);
             var childViews = new List<HudControl>();
@@ -227,13 +227,13 @@ namespace UtilityBelt.Lib.Settings {
                     Changed?.Invoke(this, null);
                     colorPickerPreview.Clear();
                     colorPickerPreview.Add(colorPickerRect, GetColorIcon(originalColor.ToArgb()));
-                    UtilityBeltPlugin.Instance.Settings.EnableSaving();
+                    ((ISetting)Value).Settings.EnableSaving();
                     picker.Dispose();
                 };
 
                 picker.RaiseColorPickerSaveEvent += (s, e) => {
                     ((ISetting)Value).SetValue(originalColor.ToArgb());
-                    UtilityBeltPlugin.Instance.Settings.EnableSaving();
+                    ((ISetting)Value).Settings.EnableSaving();
                     ((ISetting)Value).SetValue(e.Color.ToArgb());
                     Changed?.Invoke(this, null);
                     picker.Dispose();
@@ -271,7 +271,7 @@ namespace UtilityBelt.Lib.Settings {
             return childViews;
         }
 
-        private List<HudControl> DrawNumberSettingsForm(HudFixedLayout settingsForm, string setting) {
+        private List<HudControl> DrawNumberSettingsForm(HudFixedLayout settingsForm) {
             var childViews = new List<HudControl>();
             var edit = new HudTextBox();
             edit.Text = Value.ToString();
@@ -303,7 +303,7 @@ namespace UtilityBelt.Lib.Settings {
             return childViews;
         }
 
-        private List<HudControl> DrawBooleanSettingsForm(HudFixedLayout settingsForm, string setting) {
+        private List<HudControl> DrawBooleanSettingsForm(HudFixedLayout settingsForm) {
             var enabled = new HudCheckBox();
             var disabled = new HudCheckBox();
             var childViews = new List<HudControl>();

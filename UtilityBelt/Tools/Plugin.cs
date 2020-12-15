@@ -16,6 +16,7 @@ using UtilityBelt.Lib.Dungeon;
 using UtilityBelt.Lib.Expressions;
 using UtilityBelt.Lib.Settings;
 using static UtilityBelt.Tools.VTankControl;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     public class DelayedCommand {
@@ -156,9 +157,13 @@ namespace UtilityBelt.Tools {
                 if (!optionRe.IsMatch(args.Trim())) return;
 
                 var match = optionRe.Match(args.Trim());
-                var option = UB.Settings.Get(match.Groups["option"].Value);
                 string name = match.Groups["option"].Value;
                 string newValue = match.Groups["value"].Value;
+                OptionResult option;
+                if (name.StartsWith("Global."))
+                    option = UBLoader.FilterCore.Settings.Get(name.Replace("Global.",""));
+                else
+                    option = UB.Settings.Get(name);
 
                 if (option == null || option.Setting == null) {
                     Logger.Error("Invalid option: " + name);
@@ -167,9 +172,8 @@ namespace UtilityBelt.Tools {
 
                 if (args.ToLower().Trim().StartsWith("toggle ")) {
                     try {
-                        var setting = UB.Settings.Get(name).Setting;
-                        setting.SetValue(!(bool)setting.GetValue());
-                        if (!UB.Plugin.Debug) Logger.WriteToChat(name + " = " + UB.Settings.DisplayValue(name));
+                        option.Setting.SetValue(!(bool)option.Setting.GetValue());
+                        if (!UB.Plugin.Debug) Logger.WriteToChat(name + " = " + option.Setting.DisplayValue());
                     }
                     catch (Exception ex) { Logger.Error($"Unable to toggle setting {name}: {ex.Message}"); }
                     return;
@@ -218,18 +222,13 @@ namespace UtilityBelt.Tools {
                     Logger.WriteToChat(b.ToString());
                 }
                 else if (string.IsNullOrEmpty(newValue)) {
-                    Logger.WriteToChat(name + " = " + UB.Settings.DisplayValue(name));
+                    Logger.WriteToChat(name + " = " + option.Setting.DisplayValue());
                 }
                 else {
                     try {
-                        var setting = UB.Settings.Get(name);
-                        if (setting == null) {
-                            Logger.Error($"Invalid setting: {name}");
-                            return;
-                        }
-                        setting.Setting.SetValue(newValue);
+                        option.Setting.SetValue(newValue);
                         if (!UB.Plugin.Debug)
-                            Logger.WriteToChat(name + " = " + UB.Settings.DisplayValue(name));
+                            Logger.WriteToChat(name + " = " + option.Setting.DisplayValue());
                     }
                     catch (Exception ex) { Logger.LogException(ex); }
                 }
@@ -240,6 +239,11 @@ namespace UtilityBelt.Tools {
         private string ListOptions(object obj, object parentObj, string history) {
             var results = "";
             var settings = UB.Settings.GetAll();
+            var globalSettings = UBLoader.FilterCore.Settings.GetAll();
+
+            foreach (var setting in globalSettings) {
+                results += $"Global.{setting.GetName()} = {UBLoader.FilterCore.Settings.DisplayValue(setting.GetName(), true)}";
+            }
 
             foreach (var setting in settings) {
                 results += $"{setting.GetName()} = {UB.Settings.DisplayValue(setting.GetName(), true)}\n";
@@ -880,17 +884,12 @@ namespace UtilityBelt.Tools {
         public void DoGlobalFrameLimit(string _, Match args) {
             int.TryParse(args.Groups["frameRate"].Value, out int frameRate);
             if (frameRate < 0 || frameRate > 500) {
-                LogError($"Requested frameRate was not valid ({frameRate})");
+                LogError($"Requested frameRate was not valid ({frameRate}). Must be betwen 0-500");
                 return;
             }
-            System.Configuration.Configuration AssemblyConfig = System.Configuration.ConfigurationManager.OpenExeConfiguration(Util.AssemblyLocation);
-            System.Configuration.KeyValueConfigurationCollection AssemblySettings = AssemblyConfig.AppSettings.Settings;
-
-            if (AssemblySettings.AllKeys.Contains("FrameRate")) AssemblySettings["FrameRate"].Value = $"{frameRate}";
-            else AssemblySettings.Add("FrameRate", $"{frameRate}");
-            AssemblyConfig.Save();
-            UBHelper.SimpleFrameLimiter.globalMax = frameRate;
-            WriteToChat($"FrameRate Limited to {frameRate} fps, and saved to UtilityBelt.dll.config");
+            UBLoader.FilterCore.FrameRate.Value = frameRate;
+            if (!Debug)
+                Logger.WriteToChat($"[Global] FrameRate = {UBLoader.FilterCore.FrameRate}");
         }
         #endregion
         #region /ub bgframelimit <frameRate>
@@ -1162,15 +1161,15 @@ namespace UtilityBelt.Tools {
             VideoPatch.Changed += VideoPatch_Changed;
             VideoPatchFocus.Changed += VideoPatchFocus_Changed;
 
-            if (Debug)
+            if (!Debug.IsDefault)
                 UBHelper.Core.Debug = Debug;
-            if (VideoPatchFocus)
+            if (!VideoPatchFocus.IsDefault)
                 UBHelper.VideoPatch.bgOnly = VideoPatchFocus;
-            if (VideoPatch)
+            if (!VideoPatch.IsDefault)
                 UBHelper.VideoPatch.Enabled = VideoPatch;
-            if (PCap)
+            if (!PCap.IsDefault)
                 UBHelper.PCap.Enable(PCapBufferDepth);
-            if (BackgroundFrameLimit > 0)
+            if (!BackgroundFrameLimit.IsDefault)
                 UBHelper.SimpleFrameLimiter.bgMax = BackgroundFrameLimit;
         }
 

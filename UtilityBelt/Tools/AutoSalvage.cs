@@ -8,6 +8,7 @@ using UtilityBelt.Constants;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using VirindiViewService.Controls;
+using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("AutoSalvage")]
