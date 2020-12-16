@@ -54,10 +54,10 @@ namespace UtilityBelt.Tools {
         public readonly Setting<bool> Debug = new Setting<bool>(false);
 
         [Summary("Main UB Window X position for this character (left is 0)")]
-        public readonly Setting<int> WindowPositionX = new Setting<int>(100);
+        public readonly CharacterState<int> WindowPositionX = new CharacterState<int>(100);
 
         [Summary("Main UB Window Y position for this character (top is 0)")]
-        public readonly Setting<int> WindowPositionY = new Setting<int>(100);
+        public readonly CharacterState<int> WindowPositionY = new CharacterState<int>(100);
 
         [Summary("Think to yourself when portal use success/fail")]
         public readonly Setting<bool> PortalThink = new Setting<bool>(false);

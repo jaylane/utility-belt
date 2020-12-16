@@ -238,7 +238,8 @@ namespace UtilityBelt {
 
             var defaultSettingsPath = System.IO.Path.Combine(Util.AssemblyDirectory, "settings.default.json");
             var settingsPath = System.IO.Path.Combine(Util.GetCharacterDirectory(), "settings.json");
-            Settings = new Settings(this, settingsPath, defaultSettingsPath);
+            var statePath = System.IO.Path.Combine(Util.GetCharacterDirectory(), "state.json");
+            Settings = new Settings(this, settingsPath, defaultSettingsPath, statePath);
 
             Database = new Database(DatabaseFile);
 
@@ -543,8 +544,10 @@ namespace UtilityBelt {
                 UBLoader.FilterCore.Settings.Changed -= FilterSettings_Changed;
                 Settings.Changed -= Settings_Changed;
 
-                if (Settings.NeedsSave)
-                    Settings.Save();
+                if (Settings.NeedsSettingsSave)
+                    Settings.SaveSettings();
+                if (Settings.NeedsStateSave)
+                    Settings.SaveState();
 
                 if (Core != null)
                     Core.CommandLineText -= Core_CommandLineText;
@@ -567,7 +570,7 @@ namespace UtilityBelt {
 
                 Lib.ActionQueue.Dispose();
                 PerfMonitor.Dispose();
-                UBLoader.File.FlushFiles();
+                UBLoader.Lib.File.FlushFiles();
                 Settings.Dispose();
             }
             catch (Exception ex) { Logger.LogException(ex); }

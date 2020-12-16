@@ -78,10 +78,10 @@ Provides a command-line interface to inventory management.
         public readonly Setting<bool> IGUIEnabled = new Setting<bool>(true);
 
         [Summary("ItemGiver window X position")]
-        public readonly Setting<int> IGWindowX = new Setting<int>(250);
+        public readonly CharacterState<int> IGWindowX = new CharacterState<int>(250);
 
         [Summary("ItemGiver window Y position")]
-        public readonly Setting<int> IGWindowY = new Setting<int>(250);
+        public readonly CharacterState<int> IGWindowY = new CharacterState<int>(250);
 
         [Summary("Treat stacks as single item")]
         public readonly Setting<bool> TreatStackAsSingleItem = new Setting<bool>(true);

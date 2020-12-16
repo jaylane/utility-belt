@@ -4,11 +4,22 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace UBLoader {
+namespace UBLoader.Lib {
     public static class File {
         private static bool isHooked_pendingFile = false;
         // this is never Disposed. It's static- it will live until acclient dies.
         internal static Queue<pendingWrite> pendingWrites = new Queue<pendingWrite>();
+
+        public static string ReadAllText(string path) {
+            using (FileStream fs = new FileStream(path,
+                                      FileMode.Open,
+                                      FileAccess.Read,
+                                      FileShare.ReadWrite)) {
+                using (StreamReader sr = new StreamReader(fs)) {
+                    return sr.ReadToEnd();
+                }
+            }
+        }
 
         /// <summary>
         /// Use this for ANY attempt to write a file.
@@ -19,9 +30,16 @@ namespace UBLoader {
         /// <param name="writeTries">do not supply- used internally.</param>
         public static void TryWrite(string fileName, string data, bool append = true, int writeTries = 0) {
             try {
-                using (StreamWriter writer = new StreamWriter(fileName, append)) {
-                    writer.Write(data);
-                    writer.Close();
+                using (FileStream fs = new FileStream(fileName,
+                                          append ? FileMode.Append : FileMode.OpenOrCreate,
+                                          FileAccess.Write,
+                                          FileShare.ReadWrite)) {
+                    using (StreamWriter sr = new StreamWriter(fs)) {
+                        if (!append) {
+                            sr.BaseStream.SetLength(0);
+                        }
+                        sr.Write(data);
+                    }
                 }
             }
             catch (IOException) {

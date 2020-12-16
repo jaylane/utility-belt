@@ -178,7 +178,7 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
             if (autoAcceptList.Count <= 0)
                 File.Delete(path);
             else
-                UBLoader.File.TryWrite(path, JsonConvert.SerializeObject(autoAcceptList), false);
+                UBLoader.Lib.File.TryWrite(path, JsonConvert.SerializeObject(autoAcceptList), false);
         }
 
         private void WorldFilter_AcceptTrade(object sender, AcceptTradeEventArgs e) {

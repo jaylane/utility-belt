@@ -62,12 +62,28 @@ namespace UtilityBelt.Views {
                     }
                     catch (Exception ex) { Logger.LogException(ex); }
                 };
+
+                UB.LandscapeMaps.MapWindowX.Changed += MapWindow_Changed;
+                UB.LandscapeMaps.MapWindowY.Changed += MapWindow_Changed;
+                UB.LandscapeMaps.MapWindowWidth.Changed += MapWindow_Changed;
+                UB.LandscapeMaps.MapWindowWidth.Changed += MapWindow_Changed;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
+        private void MapWindow_Changed(object sender, UBLoader.Lib.Settings.SettingChangedEventArgs e) {
+            view.Location = new Point(UB.LandscapeMaps.MapWindowX, UB.LandscapeMaps.MapWindowY);
+            view.Width = UB.LandscapeMaps.MapWindowWidth;
+            view.Height = UB.LandscapeMaps.MapWindowHeight;
+        }
+
         ~LandscapeMapsView() {
             if (timer != null) timer.Dispose();
+
+            UB.LandscapeMaps.MapWindowX.Changed -= MapWindow_Changed;
+            UB.LandscapeMaps.MapWindowY.Changed -= MapWindow_Changed;
+            UB.LandscapeMaps.MapWindowWidth.Changed -= MapWindow_Changed;
+            UB.LandscapeMaps.MapWindowWidth.Changed -= MapWindow_Changed;
         }
     }
 }

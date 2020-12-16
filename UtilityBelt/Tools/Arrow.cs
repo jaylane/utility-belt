@@ -54,10 +54,10 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
         public readonly Setting<int> HudY = new Setting<int>(5);
 
         [Summary("Target EW coordinate")]
-        public readonly Setting<double> TargetEW = new Setting<double>(0);
+        public readonly CharacterState<double> TargetEW = new CharacterState<double>(0);
 
         [Summary("Target NS coordinate")]
-        public readonly Setting<double> TargetNS = new Setting<double>(0);
+        public readonly CharacterState<double> TargetNS = new CharacterState<double>(0);
         #endregion // Config
 
         #region Commands

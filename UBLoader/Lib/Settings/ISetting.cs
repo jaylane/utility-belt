@@ -12,6 +12,7 @@ namespace UBLoader.Lib.Settings {
         public string FullName { get; protected set; } = "";
         public string Name => FullName.Split('.').Last();
         public bool IsContainer { get => typeof(ISetting).IsAssignableFrom(GetValue().GetType()); }
+        public bool IsCharacterState { get; protected set; } = false;
         public ISetting Parent { get; internal set; } = null;
         public Settings Settings { get; internal set; } = null;
         public FieldInfo FieldInfo { get; internal set; } = null;
@@ -39,14 +40,16 @@ namespace UBLoader.Lib.Settings {
             return FullName;
         }
 
-        public bool HasChanges() {
+        public bool HasChanges(Func<ISetting, bool> shouldCheck) {
             if (GetChildren().Count() > 0) {
                 foreach (var child in GetChildren()) {
-                    if (((ISetting)child.GetValue(GetValue())).HasChanges())
+                    if (((ISetting)child.GetValue(GetValue())).HasChanges(shouldCheck))
                         return true;
                 }
                 return false;
             }
+            else if (!shouldCheck(this))
+                return false;
             else
                 return GetDefaultValue() == null ? false : !GetDefaultValue().Equals(GetValue());
         }
@@ -57,7 +60,7 @@ namespace UBLoader.Lib.Settings {
 
         public IEnumerable<FieldInfo> GetChildren() {
             if (Children == null)
-                Children = GetValue().GetType().GetFields(BindingFlags.Public | BindingFlags.Instance)
+                Children = GetValue().GetType().GetFields(Settings.BindingFlags)
                    .Where(f => typeof(ISetting).IsAssignableFrom(f.FieldType));
             return Children;
         }

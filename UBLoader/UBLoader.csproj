@@ -81,8 +81,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="File.cs" />
+    <Compile Include="Lib\File.cs" />
     <Compile Include="FilterCore.cs" />
+    <Compile Include="Lib\Settings\CharacterState.cs" />
     <Compile Include="Lib\Settings\ISetting.cs" />
     <Compile Include="Lib\Settings\OptionResult.cs" />
     <Compile Include="Lib\Settings\Setting.cs" />
@@ -95,7 +96,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="VersionWatermark.cs" />
+    <Compile Include="Lib\VersionWatermark.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

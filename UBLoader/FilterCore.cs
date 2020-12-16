@@ -222,8 +222,8 @@ namespace UBLoader {
         /// </summary>
         protected override void Shutdown() {
             try {
-                if (Settings.NeedsSave)
-                    Settings.Save();
+                if (Settings.NeedsSettingsSave)
+                    Settings.SaveSettings();
                 FrameRate.Changed -= FrameRate_Changed;
                 Settings.Dispose();
                 UBHelper.Core.GameStateChanged -= Core_GameStateChanged;
@@ -234,12 +234,12 @@ namespace UBLoader {
         }
 
         public static void LogException(Exception ex) {
-            UBLoader.File.TryWrite(System.IO.Path.Combine(PluginStorageDirectory, "exceptions.txt"), $"== {DateTime.Now} ==================================================\r\n{ex.ToString()}\r\n============================================================================\r\n\r\n", true);
+            Lib.File.TryWrite(System.IO.Path.Combine(PluginStorageDirectory, "exceptions.txt"), $"== {DateTime.Now} ==================================================\r\n{ex.ToString()}\r\n============================================================================\r\n\r\n", true);
 
         }
 
         public static void LogError(string ex) {
-            UBLoader.File.TryWrite(System.IO.Path.Combine(PluginStorageDirectory, "exceptions.txt"), $"== {DateTime.Now} {ex}\r\n", true);
+            Lib.File.TryWrite(System.IO.Path.Combine(PluginStorageDirectory, "exceptions.txt"), $"== {DateTime.Now} {ex}\r\n", true);
         }
 
 
