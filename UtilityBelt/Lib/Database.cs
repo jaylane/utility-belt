@@ -13,6 +13,7 @@ namespace UtilityBelt.Lib {
     public class Database : IDisposable {
         internal LiteDatabase ldb;
         private LiteCollection<Landblock> landblocks;
+        private bool didInitRetry = false;
         internal LiteCollection<Landblock> Landblocks {
             get {
                 if (landblocks == null)
@@ -59,26 +60,42 @@ namespace UtilityBelt.Lib {
         }
 
         private void Init() {
-            if (ldb != null)
-                return;
+            try {
+                if (ldb != null)
+                    ldb.Dispose();
 
-            ldb = new LiteDatabase(DBPath);
-            weenies = ldb.GetCollection<Weenie>("weenies");
-            landblocks = ldb.GetCollection<Landblock>("landblocks");
-            persistentVariables = ldb.GetCollection<PersistentVariable>("persistent_variables");
-            globalVariables = ldb.GetCollection<GlobalVariable>("global_variables");
-            questFlags = ldb.GetCollection<QuestFlag>("quest_flags");
+                ldb = new LiteDatabase(DBPath);
+                weenies = ldb.GetCollection<Weenie>("weenies");
+                landblocks = ldb.GetCollection<Landblock>("landblocks");
+                persistentVariables = ldb.GetCollection<PersistentVariable>("persistent_variables");
+                globalVariables = ldb.GetCollection<GlobalVariable>("global_variables");
+                questFlags = ldb.GetCollection<QuestFlag>("quest_flags");
 
-            persistentVariables.EnsureIndex("Server");
-            persistentVariables.EnsureIndex("Character");
-            persistentVariables.EnsureIndex("Name");
+                persistentVariables.EnsureIndex("Server");
+                persistentVariables.EnsureIndex("Character");
+                persistentVariables.EnsureIndex("Name");
 
-            globalVariables.EnsureIndex("Server");
-            globalVariables.EnsureIndex("Name");
+                globalVariables.EnsureIndex("Server");
+                globalVariables.EnsureIndex("Name");
 
-            questFlags.EnsureIndex("Server");
-            questFlags.EnsureIndex("Character");
-            questFlags.EnsureIndex("Key");
+                questFlags.EnsureIndex("Server");
+                questFlags.EnsureIndex("Character");
+                questFlags.EnsureIndex("Key");
+            }
+            catch (Exception ex) {
+                Logger.LogException(ex);
+                if (!didInitRetry) {
+                    Logger.LogException($"Deleting corrupt database file: {DBPath}");
+                    try {
+                        File.Move(DBPath, $"{DBPath}.corruptBackup");
+                    }
+                    catch (Exception innerEx) {
+                        Logger.LogException(innerEx);
+                    }
+                    didInitRetry = true;
+                    Init();
+                }
+            }
         }
 
         #region IDisposable Support
