@@ -108,10 +108,10 @@ namespace UtilityBelt.Tools {
         public readonly Setting<bool> Enabled = new Setting<bool>(true);
 
         [Summary("DerethTime HUD Position X")]
-        public readonly Setting<int> HudX = new Setting<int>(415);
+        public readonly CharacterState<int> HudX = new CharacterState<int>(415);
 
         [Summary("DerethTime HUD Position Y")]
-        public readonly Setting<int> HudY = new Setting<int>(5);
+        public readonly CharacterState<int> HudY = new CharacterState<int>(5);
 
         [Summary("Show the label text, with minutes remaining until the next day/night")]
         public readonly Setting<bool> ShowLabel = new Setting<bool>(true);

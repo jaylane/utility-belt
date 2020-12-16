@@ -105,7 +105,8 @@ namespace UBLoader.Lib.Settings {
 
             if (childFields.Count() == 0) {
                 ((ISetting)field.GetValue(parent)).SetName(name);
-                optionResultCache.Add(name, new OptionResult(setting, field, parent));
+                if (!setting.IsContainer)
+                    optionResultCache.Add(name, new OptionResult(setting, field, parent));
             }
             else {
                 foreach (var childField in childFields) {
