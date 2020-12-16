@@ -1,4 +1,4 @@
-﻿using Antlr4.Runtime;
+using Antlr4.Runtime;
 using Decal.Adapter;
 using Decal.Adapter.Wrappers;
 using Decal.Filters;
@@ -138,9 +138,9 @@ namespace UtilityBelt.Tools {
         [Summary("Manage plugin settings from the command line")]
         [Usage("/ub opt {list | get <option> | set <option> <newValue> | toggle <options>}")]
         [Example("/ub opt list", "Lists all available settings.")]
-        [Example("/ub get Plugin.Debug", "Gets the current value for the \"Plugin.Debug\" setting")]
-        [Example("/ub toggle Plugin.Debug", "Toggles the current value for the \"Plugin.Debug\" setting")]
-        [Example("/ub set Plugin.Debug true", "Sets the \"Plugin.Debug\" setting to True")]
+        [Example("/ub opt get Plugin.Debug", "Gets the current value for the \"Plugin.Debug\" setting")]
+        [Example("/ub opt toggle Plugin.Debug", "Toggles the current value for the \"Plugin.Debug\" setting")]
+        [Example("/ub opt set Plugin.Debug true", "Sets the \"Plugin.Debug\" setting to True")]
         [CommandPattern("opt", @"^ *(?<params>(list|toggle \S+|get \S+|set \S+ .*)) *$")]
         public void DoOpt(string command, Match args) {
             UB_opt(args.Groups["params"].Value);
