@@ -42,16 +42,16 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
         public Setting<bool> Enabled = new Setting<bool>(true);
 
         [Summary("Wether the hud is visible or not.")]
-        public readonly Setting<bool> Visible = new Setting<bool>(true);
+        public readonly CharacterState<bool> Visible = new CharacterState<bool>(true);
 
         [Summary("Arrow HUD Size")]
-        public readonly Setting<int> HudSize = new Setting<int>(32);
+        public readonly CharacterState<int> HudSize = new CharacterState<int>(32);
 
         [Summary("Arrow HUD Position X")]
-        public readonly Setting<int> HudX = new Setting<int>(215);
+        public readonly CharacterState<int> HudX = new CharacterState<int>(215);
 
         [Summary("Arrow HUD Position Y")]
-        public readonly Setting<int> HudY = new Setting<int>(5);
+        public readonly CharacterState<int> HudY = new CharacterState<int>(5);
 
         [Summary("Target EW coordinate")]
         public readonly CharacterState<double> TargetEW = new CharacterState<double>(0);
