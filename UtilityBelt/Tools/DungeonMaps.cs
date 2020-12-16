@@ -121,16 +121,16 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
         public readonly Setting<float> MapZoom = new Setting<float>(4.2f);
 
         [Summary("Map Window X")]
-        public readonly Setting<int> MapWindowX = new Setting<int>(40);
+        public readonly CharacterState<int> MapWindowX = new CharacterState<int>(40);
 
         [Summary("Map Window Y")]
-        public readonly Setting<int> MapWindowY = new Setting<int>(200);
+        public readonly CharacterState<int> MapWindowY = new CharacterState<int>(200);
 
         [Summary("Map Window width")]
-        public readonly Setting<int> MapWindowWidth = new Setting<int>(320);
+        public readonly CharacterState<int> MapWindowWidth = new CharacterState<int>(320);
 
         [Summary("Map Window height")]
-        public readonly Setting<int> MapWindowHeight = new Setting<int>(280);
+        public readonly CharacterState<int> MapWindowHeight = new CharacterState<int>(280);
 
         [Summary("Label Font Size")]
         public readonly Setting<int> LabelFontSize = new Setting<int>(10);

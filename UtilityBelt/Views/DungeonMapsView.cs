@@ -73,8 +73,18 @@ namespace UtilityBelt.Views {
 
                 view.ShowInBar = UB.DungeonMaps.Enabled;
                 UB.DungeonMaps.Enabled.Changed += DungeonMaps_EnabledChanged;
+                UB.DungeonMaps.MapWindowX.Changed += MapWindow_Changed;
+                UB.DungeonMaps.MapWindowY.Changed += MapWindow_Changed;
+                UB.DungeonMaps.MapWindowWidth.Changed += MapWindow_Changed;
+                UB.DungeonMaps.MapWindowHeight.Changed += MapWindow_Changed;
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void MapWindow_Changed(object sender, SettingChangedEventArgs e) {
+            view.Location = new Point(UB.DungeonMaps.MapWindowX, UB.DungeonMaps.MapWindowY);
+            view.Width = UB.DungeonMaps.MapWindowWidth;
+            view.Height = UB.DungeonMaps.MapWindowHeight;
         }
 
         private void DungeonMaps_EnabledChanged(object sender, SettingChangedEventArgs e) {
@@ -97,6 +107,10 @@ namespace UtilityBelt.Views {
         }
         ~DungeonMapsView() {
             UB.DungeonMaps.Enabled.Changed -= DungeonMaps_EnabledChanged;
+            UB.DungeonMaps.MapWindowX.Changed -= MapWindow_Changed;
+            UB.DungeonMaps.MapWindowY.Changed -= MapWindow_Changed;
+            UB.DungeonMaps.MapWindowWidth.Changed -= MapWindow_Changed;
+            UB.DungeonMaps.MapWindowHeight.Changed -= MapWindow_Changed;
             if (timer != null) timer.Dispose();
         }
     }

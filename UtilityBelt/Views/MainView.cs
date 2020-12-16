@@ -17,6 +17,7 @@ using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Views {
     public class MainView : BaseView {
+        private Timer timer;
 
         private HudList SettingsList;
         private HudFixedLayout SettingEditLayout;
@@ -57,10 +58,21 @@ namespace UtilityBelt.Views {
                     UB.Plugin.WindowPositionY
                 );
 
-                view.Moved += (s, e) => {
+                timer = new Timer(2000);
+
+                timer.Elapsed += (s, e) => {
+                    timer.Stop();
                     UB.Plugin.WindowPositionX.Value = view.Location.X;
                     UB.Plugin.WindowPositionY.Value = view.Location.Y;
                 };
+
+                view.Moved += (s, e) => {
+                    if (timer.Enabled) timer.Stop();
+                    timer.Start();
+                };
+
+                UB.Plugin.WindowPositionX.Changed += WindowPosition_Changed;
+                UB.Plugin.WindowPositionY.Changed += WindowPosition_Changed;
 
                 SettingsList = (HudList)view["SettingsList"];
                 SettingEditLayout = (HudFixedLayout)view["SettingsForm"];
@@ -71,11 +83,13 @@ namespace UtilityBelt.Views {
                 CheckForUpdate.Hit += CheckForUpdate_Hit;
                 ExportPCap.Hit += ExportPCap_Hit;
                 UB.Settings.Changed += Settings_Changed;
+                UBLoader.FilterCore.Settings.Changed += FilterSettings_Changed;
+                UB.Plugin.PCap.Changed += PCap_Changed;
 
                 foreach (var kv in buttons) {
                     UpdateButton(kv);
                     var hudButton = (HudButton)view[kv.Key];
-                    var setting = UB.Settings.Get(kv.Value);
+                    var setting = GetSettingPropFromText(kv.Value);
 
                     if (setting == null) {
                         Logger.WriteToChat($"Setting was null: {kv.Value}");
@@ -93,29 +107,42 @@ namespace UtilityBelt.Views {
                         try {
                             setting.Setting.SetValue(!(bool)setting.Setting.GetValue());
                             if (!UB.Plugin.Debug) {
-                                Logger.WriteToChat($"{kv.Value} = {UB.Settings.DisplayValue(kv.Value)}");
+                                Logger.WriteToChat($"{kv.Value} = {setting.Setting.DisplayValue()}");
                             }
                         }
                         catch (Exception ex) { Logger.LogException(ex); }
                     };
                 }
 
-                if (!UB.Plugin.PCap) ExportPCap.Visible = false;
+                ExportPCap.Visible = UB.Plugin.PCap;
 
                 PopulateSettings();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
+        private void PCap_Changed(object sender, SettingChangedEventArgs e) {
+            ExportPCap.Visible = UB.Plugin.PCap;
+        }
+
+        private void WindowPosition_Changed(object sender, SettingChangedEventArgs e) {
+            view.Location = new Point(UB.Plugin.WindowPositionX, UB.Plugin.WindowPositionY);
+        }
+
         private void Settings_Changed(object sender, EventArgs e) {
-            var name = ((ISetting)sender).GetName();
-            for(var i = 0; i < SettingsList.RowCount; i++) {
+            UpdateSettingsList(((ISetting)sender).GetName(), (ISetting)sender);
+        }
+
+        private void FilterSettings_Changed(object sender, EventArgs e) {
+            UpdateSettingsList("Global." + ((ISetting)sender).GetName(), (ISetting)sender);
+        }
+
+        private void UpdateSettingsList(string name, ISetting sender) {
+            for (var i = 0; i < SettingsList.RowCount; i++) {
                 if (((HudStaticText)SettingsList[i][0]).Text == name) {
-                    ((HudStaticText)SettingsList[i][1]).Text = UB.Settings.DisplayValue(name);
+                    ((HudStaticText)SettingsList[i][1]).Text = ((ISetting)sender).DisplayValue();
                 }
             }
-
-            ExportPCap.Visible = UB.Plugin.PCap;
         }
 
         private void CheckForUpdate_Hit(object sender, EventArgs e) {
@@ -140,7 +167,7 @@ namespace UtilityBelt.Views {
                     return;
 
                 hudButton.OverlayImageRectangle = new Rectangle(3, 4, 16, 16);
-                if ((bool)UB.Settings.Get(kv.Value).Setting.GetValue()) {
+                if ((bool)GetSettingPropFromText(kv.Value).Setting.GetValue()) {
                     hudButton.OverlayImage = 0x060069A1;
                 }
                 else {
@@ -175,7 +202,6 @@ namespace UtilityBelt.Views {
         }
 
         private OptionResult GetSettingPropFromText(string setting) {
-            Logger.WriteToChat($"{setting}: {setting.Substring(7)}");
             if (setting.StartsWith("Global."))
                 return UBLoader.FilterCore.Settings.Get(setting.Substring(7));
             else
@@ -245,7 +271,11 @@ namespace UtilityBelt.Views {
         }
         ~MainView() {
             if (icon != null) icon.Dispose();
+            UB.Plugin.PCap.Changed -= PCap_Changed;
+            UB.Plugin.WindowPositionX.Changed -= WindowPosition_Changed;
+            UB.Plugin.WindowPositionY.Changed -= WindowPosition_Changed;
             UB.Settings.Changed -= Settings_Changed;
+            UBLoader.FilterCore.Settings.Changed -= FilterSettings_Changed;
         }
     }
 }

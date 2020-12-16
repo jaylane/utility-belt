@@ -59,14 +59,6 @@ namespace UtilityBelt.Views {
                     catch (Exception ex) { Logger.LogException(ex); }
                 };
 
-                view.Resize += (s, e) => {
-                    try {
-                        if (timer.Enabled) timer.Stop();
-                        timer.Start();
-                    }
-                    catch (Exception ex) { Logger.LogException(ex); }
-                };
-
                 ItemGiverTabs = (HudTabView)view["ItemGiverTabs"];
 
                 StartGiveItems = (HudButton)view["StartGiveItems"];
@@ -96,8 +88,15 @@ namespace UtilityBelt.Views {
                 UB.InventoryManager.Finished += InventoryManager_Finished;
 
                 ItemGiverTabs.OpenTabChange += ItemGiverTabs_OpenTabChange;
+
+                UB.InventoryManager.IGWindowX.Changed += IGWindow_Changed;
+                UB.InventoryManager.IGWindowY.Changed += IGWindow_Changed;
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void IGWindow_Changed(object sender, SettingChangedEventArgs e) {
+            view.Location = new Point(UB.InventoryManager.IGWindowX, UB.InventoryManager.IGWindowY);
         }
 
         private void LP_LootProfile_Change(object sender, EventArgs e) {
@@ -212,6 +211,8 @@ namespace UtilityBelt.Views {
         }
 
         ~ItemGiverView() {
+            UB.InventoryManager.IGWindowX.Changed -= IGWindow_Changed;
+            UB.InventoryManager.IGWindowY.Changed -= IGWindow_Changed;
             UB.InventoryManager.IGUIEnabled.Changed -= InventoryManager_PropertyChanged;
             if (timer != null) timer.Dispose();
         }
