@@ -14,6 +14,7 @@ using VirindiViewService;
 using VirindiViewService.Controls;
 using VirindiViewService.XMLParsers;
 using UBLoader.Lib.Settings;
+using Hellosam.Net.Collections;
 
 namespace UtilityBelt.Views {
     public class MainView : BaseView {
@@ -233,9 +234,16 @@ namespace UtilityBelt.Views {
                 SummaryText.Text = setting.FieldInfo.Name;
             }
 
-            SummaryText.Text += " (" + setting.GetValue().GetType() + ")";
+            var type = setting.GetValue().GetType().ToString().Replace("System.","");
+            if (setting.GetValue() is ObservableCollection<string>) {
+                type = "List";
+            }
+            else if (setting.GetValue() is ObservableDictionary<string, string>) {
+                type = "Dictionary";
+            }
+            currentForm = new SettingsForm(setting, FormLayout, setting.GetValue().GetType());
+            SummaryText.Text += " (" + type + ")";
 
-            currentForm = new SettingsForm(setting, FormLayout);
             currentForm.Changed += (s, e) => {
                 setting.SetValue(currentForm.Value);
             };

@@ -20,31 +20,23 @@ namespace UtilityBelt.Lib.Settings {
 
         private List<HudControl> ChildViews = new List<HudControl>();
 
-        public SettingsForm(ISetting setting, HudFixedLayout parentLayout, Type type=null) {
+        public SettingsForm(ISetting setting, HudFixedLayout parentLayout, Type type=null, object value=null) {
             Setting = setting;
             ParentLayout = parentLayout;
-            Type = type;
-
-            if (Type == null) {
-                Value = Setting;
-                Type = Setting.GetValue().GetType();
-            }
-            else {
-                Value = "";
-            }
+            Type = type == null ? Setting.GetValue().GetType() : type;
+            Value = value == null ? setting.GetValue() : value;
 
             ChildViews = DrawSettingsForm(parentLayout, Setting);
         }
 
-        internal void SetValue(string newValue) {
+        internal void SetValue(object newValue) {
             try {
-                Logger.WriteToChat("SetValue: " + newValue);
                 if (Type == typeof(string)) {
-                    Value = newValue;
+                    Value = ((string)newValue);
                     Changed?.Invoke(this, null);
                 }
                 else if (Type == typeof(bool)) {
-                    var lower = newValue.ToLower();
+                    var lower = ((string)newValue).ToLower();
                     if (lower == "on" || lower == "true" || lower == "enabled") {
                         Value = true;
                     }
@@ -53,24 +45,24 @@ namespace UtilityBelt.Lib.Settings {
                     }
                     Changed?.Invoke(this, null);
                 }
-                else if (Type == typeof(int) && int.TryParse(newValue, out int parsedInt)) {
+                else if (Type == typeof(int) && int.TryParse(((string)newValue), out int parsedInt)) {
                     Value = parsedInt;
                     Changed?.Invoke(this, null);
                 }
-                else if (Type == typeof(float) && float.TryParse(newValue, out float parsedFloat)) {
+                else if (Type == typeof(float) && float.TryParse(((string)newValue), out float parsedFloat)) {
                     Value = parsedFloat;
                     Changed?.Invoke(this, null);
                 }
-                else if (Type == typeof(double) && double.TryParse(newValue, out double parsedDouble)) {
+                else if (Type == typeof(double) && double.TryParse(((string)newValue), out double parsedDouble)) {
                     Value = parsedDouble;
                     Changed?.Invoke(this, null);
                 }
-                else if (Type == typeof(short) && short.TryParse(newValue, out short parsedShort)) {
+                else if (Type == typeof(short) && short.TryParse(((string)newValue), out short parsedShort)) {
                     Value = parsedShort;
                     Changed?.Invoke(this, null);
                 }
                 else {
-                    Logger.Error($"Error, can't parse {Type}: {newValue}");
+                    Value = newValue;
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -116,8 +108,14 @@ namespace UtilityBelt.Lib.Settings {
             else if (Type == typeof(string)) {
                 return DrawStringSettingsForm(settingsForm);
             }
-            else if (Type.GetInterfaces().Contains(typeof(IEnumerable))) {
+            else if (Type == typeof(KeyValuePair<string, string>)) {
+                return DrawKeyValueSettingsForm(settingsForm);
+            }
+            else if (Type == typeof(System.Collections.ObjectModel.ObservableCollection<string>)) {
                 new ListEditor(UtilityBeltPlugin.Instance.MainView, setting);
+            }
+            else if (Type == typeof(Hellosam.Net.Collections.ObservableDictionary<string, string>)) {
+                new DictionaryEditor(UtilityBeltPlugin.Instance.MainView, setting);
             }
 
             return new List<HudControl>();
@@ -189,15 +187,53 @@ namespace UtilityBelt.Lib.Settings {
             return childViews;
         }
 
+        private List<HudControl> DrawKeyValueSettingsForm(HudFixedLayout settingsForm) {
+            var childViews = new List<HudControl>();
+            var keyEdit = new HudTextBox();
+            var valueEdit = new HudTextBox();
+            var keyLabel = new HudStaticText();
+            var valueLabel = new HudStaticText();
+
+            keyLabel.Text = "Key:";
+            valueLabel.Text = "Value:";
+
+            keyEdit.Text = ((KeyValuePair<string, string>)Value).Key;
+            keyEdit.Change += (s, e) => {
+                Value = new KeyValuePair<string, string>(keyEdit.Text, valueEdit.Text);
+                Changed?.Invoke(this, null);
+            };
+            valueEdit.Text = ((KeyValuePair<string, string>)Value).Value;
+            valueEdit.Change += (s, e) => {
+                Value = new KeyValuePair<string, string>(keyEdit.Text, valueEdit.Text);
+                Changed?.Invoke(this, null);
+            };
+
+            Changed += (s, e) => {
+                keyEdit.Text = ((KeyValuePair<string, string>)Value).Key;
+                valueEdit.Text = ((KeyValuePair<string, string>)Value).Value;
+            };
+
+            childViews.Add(keyEdit);
+            childViews.Add(valueEdit);
+            childViews.Add(keyLabel);
+            childViews.Add(valueLabel);
+            settingsForm.AddControl(keyLabel, new Rectangle(5, 0, 40, 20));
+            settingsForm.AddControl(valueLabel, new Rectangle(5, 20, 40, 20));
+            settingsForm.AddControl(keyEdit, new Rectangle(50, 0, 300, 20));
+            settingsForm.AddControl(valueEdit, new Rectangle(50, 20, 300, 20));
+
+            return childViews;
+        }
+
         private List<HudControl> DrawColorSettingsForm(HudFixedLayout settingsForm) {
             var colorPickerPreview = new HudImageStack();
             var colorPickerRect = new Rectangle(0, 0, 20, 20);
             var childViews = new List<HudControl>();
 
-            colorPickerPreview.Add(colorPickerRect, GetColorIcon((int)((ISetting)Value).GetValue()));
+            colorPickerPreview.Add(colorPickerRect, GetColorIcon((int)Value));
 
             var edit = new HudTextBox();
-            edit.Text = ((int)((ISetting)Value).GetValue()).ToString("X8");
+            edit.Text = ((int)Setting.GetValue()).ToString("X8");
             edit.Change += (s, e) => {
                 var type = Type;
 
@@ -218,7 +254,7 @@ namespace UtilityBelt.Lib.Settings {
                 var originalColor = Color.FromArgb((int)((ISetting)Value).GetValue());
                 var picker = new ColorPicker(UtilityBeltPlugin.Instance.MainView, "Test", originalColor);
 
-                UtilityBeltPlugin.Instance.Settings.DisableSaving();
+                ((ISetting)Value).Settings.DisableSaving();
 
                 picker.RaiseColorPickerCancelEvent += (s, e) => {
                     // restore color
@@ -254,7 +290,7 @@ namespace UtilityBelt.Lib.Settings {
                     Changed?.Invoke(this, null);
                     colorPickerPreview.Clear();
                     colorPickerPreview.Add(colorPickerRect, GetColorIcon(originalColor.ToArgb()));
-                    UtilityBeltPlugin.Instance.Settings.EnableSaving();
+                    ((ISetting)Value).Settings.EnableSaving();
                     if (!picker.view.Visible) {
                         picker.Dispose();
                     }
@@ -309,17 +345,19 @@ namespace UtilityBelt.Lib.Settings {
             var childViews = new List<HudControl>();
 
             enabled.Text = "True";
-            enabled.Checked = (bool)((ISetting)Value).GetValue();
+            enabled.Checked = (bool)Value;
             enabled.Change += (s, e) => {
                 disabled.Checked = !enabled.Checked;
+                ((ISetting)Setting).SetValue(enabled.Checked);
                 Value = enabled.Checked;
                 Changed?.Invoke(this, null);
             };
             disabled.Text = "False";
-            disabled.Checked = !(bool)((ISetting)Value).GetValue();
+            disabled.Checked = !(bool)Value;
             disabled.Change += (s, e) => {
                 enabled.Checked = !disabled.Checked;
-                Value = !disabled.Checked;
+                ((ISetting)Setting).SetValue(!disabled.Checked);
+                Value = enabled.Checked;
                 Changed?.Invoke(this, null);
             };
 

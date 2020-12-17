@@ -8,6 +8,8 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Decal.Interop.Input;
+using Hellosam.Net.Collections;
+using System.Collections.ObjectModel;
 
 namespace UBLoader.Lib.Settings {
     public class Settings : IDisposable {
@@ -162,7 +164,7 @@ namespace UBLoader.Lib.Settings {
                     return prop.Setting.GetValue().ToString();
                 }
             }
-            else if (prop.Setting.GetValue().GetType() != typeof(string) && prop.Setting.GetValue().GetType().GetInterfaces().Contains(typeof(IEnumerable))) {
+            else if (prop.Setting.GetValue() is IList) {
                 if (expandLists) {
                     var results = new List<string>();
 
@@ -174,6 +176,21 @@ namespace UBLoader.Lib.Settings {
                 }
                 else {
                     return "[List]";
+                }
+            }
+            else if (prop.Setting.GetValue() is IDict) {
+                if (expandLists) {
+                    var results = new List<string>();
+                    var dict = prop.Setting.GetValue() as ObservableDictionary<string, string>;
+
+                    foreach (var dk in dict.Keys) {
+                        results.Add($"{dk}: {dict[dk]}");
+                    }
+
+                    return $"{{{string.Join(",", results.ToArray())}}}";
+                }
+                else {
+                    return "{Dictionary}";
                 }
             }
             else if (prop.Setting.GetValue().GetType() == typeof(int) && prop.FieldInfo.Name.Contains("Color")) {
@@ -295,13 +312,29 @@ namespace UBLoader.Lib.Settings {
         private List<string> Deserialize(JToken jToken, object setting, string path, Func<ISetting, bool> shouldDeserialize) {
             var deserializedSettings = new List<string>();
             if (jToken.Type == JTokenType.Object) {
-                foreach (var kv in (JObject)jToken) {
-                    var field = setting.GetType().GetField(kv.Key, BindingFlags);
-                    if (field != null && typeof(ISetting).IsAssignableFrom(field.FieldType)) {
-                        var newHistory = $"{(string.IsNullOrEmpty(path) ? "" : path + ".")}{field.Name}";
-                        var settings = Deserialize(kv.Value, ((ISetting)field.GetValue(setting)), newHistory, shouldDeserialize);
-                        deserializedSettings.AddRange(settings);
+                if (setting is ISetting && !((ISetting)setting).IsContainer) {
+                    var dict = ((ISetting)setting).GetValue() as ObservableDictionary<string, string>;
+                    dict.Clear();
+                    foreach (var kv in (JObject)jToken) {
+                        dict.Add(kv.Key, kv.Value.ToString());
                     }
+                }
+                else {
+                    foreach (var kv in (JObject)jToken) {
+                        var field = setting.GetType().GetField(kv.Key, BindingFlags);
+                        if (field != null && typeof(ISetting).IsAssignableFrom(field.FieldType)) {
+                            var newHistory = $"{(string.IsNullOrEmpty(path) ? "" : path + ".")}{field.Name}";
+                            var settings = Deserialize(kv.Value, ((ISetting)field.GetValue(setting)), newHistory, shouldDeserialize);
+                            deserializedSettings.AddRange(settings);
+                        }
+                    }
+                }
+            }
+            else if (jToken.Type == JTokenType.Array) {
+                var collection = ((ISetting)setting).GetValue() as ObservableCollection<string>;
+                collection.Clear();
+                foreach (var item in (JArray)jToken) {
+                    collection.Add(item.ToString());
                 }
             }
             else if (shouldDeserialize != null && shouldDeserialize((ISetting)setting)) {
@@ -372,7 +405,25 @@ namespace UBLoader.Lib.Settings {
                 jObj.Add(field.Name, cObj);
             }
             else if (serializeCheck == null || serializeCheck(setting)) {
-                jObj.Add(field.Name, JToken.FromObject(setting.GetValue()));
+                if (setting.GetValue() is IList) {
+                    var collection = setting.GetValue() as ObservableCollection<string>;
+                    var jArray = new JArray();
+                    foreach (var item in collection) {
+                        jArray.Add(item);
+                    }
+                    jObj.Add(field.Name, jArray);
+                }
+                else if (setting.GetValue() is IDict) {
+                    var dict = setting.GetValue() as ObservableDictionary<string, string>;
+                    var dObj = new JObject();
+                    foreach (var key in dict.Keys) {
+                        dObj.Add(key, dict[key]);
+                    }
+                    jObj.Add(field.Name, dObj);
+                }
+                else {
+                    jObj.Add(field.Name, JToken.FromObject(setting.GetValue()));
+                }
             }
             return true;
         }

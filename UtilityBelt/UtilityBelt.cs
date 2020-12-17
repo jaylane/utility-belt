@@ -279,12 +279,12 @@ namespace UtilityBelt {
 
         private void FilterSettings_Changed(object sender, SettingChangedEventArgs e) {
             if (UBLoader.FilterCore.Settings.ShouldSave || (UBLoader.FilterCore.Settings.IsLoaded && UBLoader.FilterCore.Settings.IsLoading))
-                Logger.Debug($"[Global] {e.FullName} = {e.Setting.GetValue()}");
+                Logger.Debug($"[Global] {e.FullName} = {e.Setting.DisplayValue(true)}");
         }
 
         private void Settings_Changed(object sender, SettingChangedEventArgs e) {
             if (Settings.ShouldSave || (Settings.IsLoaded && Settings.IsLoading))
-                Logger.Debug($"{e.FullName} = {e.Setting.GetValue()}");
+                Logger.Debug($"{e.FullName} = {e.Setting.DisplayValue(true)}");
         }
 
         /// <summary>

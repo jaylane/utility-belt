@@ -17,6 +17,8 @@ using UtilityBelt.Lib.Expressions;
 using UtilityBelt.Lib.Settings;
 using static UtilityBelt.Tools.VTankControl;
 using UBLoader.Lib.Settings;
+using System.Collections.ObjectModel;
+using Hellosam.Net.Collections;
 
 namespace UtilityBelt.Tools {
     public class DelayedCommand {
@@ -180,7 +182,6 @@ namespace UtilityBelt.Tools {
                 }
 
                 if (option.Setting.GetValue() is System.Collections.IList list) {
-                    var b = new StringBuilder();
                     if (!string.IsNullOrEmpty(newValue)) {
                         var parts = newValue.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
                         switch (parts[0].ToLower()) {
@@ -209,26 +210,16 @@ namespace UtilityBelt.Tools {
                                 return;
                         }
                     }
-
-                    b.Append(name);
-                    b.Append(" = [ ");
-                    int i = 0;
-                    foreach (var o in list) {
-                        if (i++ > 0)
-                            b.Append(", ");
-                        b.Append(o);
-                    }
-                    b.Append(" ]");
-                    Logger.WriteToChat(b.ToString());
+                    Logger.WriteToChat(name + " = " + option.Setting.DisplayValue(true));
                 }
                 else if (string.IsNullOrEmpty(newValue)) {
-                    Logger.WriteToChat(name + " = " + option.Setting.DisplayValue());
+                    Logger.WriteToChat(name + " = " + option.Setting.DisplayValue(true));
                 }
                 else {
                     try {
                         option.Setting.SetValue(newValue);
                         if (!UB.Plugin.Debug)
-                            Logger.WriteToChat(name + " = " + option.Setting.DisplayValue());
+                            Logger.WriteToChat(name + " = " + option.Setting.DisplayValue(true));
                     }
                     catch (Exception ex) { Logger.LogException(ex); }
                 }
