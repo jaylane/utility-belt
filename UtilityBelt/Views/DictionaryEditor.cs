@@ -10,32 +10,37 @@ using UtilityBelt.Lib.Settings;
 using VirindiViewService;
 using VirindiViewService.Controls;
 using UBLoader.Lib.Settings;
+using Hellosam.Net.Collections;
 
 namespace UtilityBelt.Views {
 
-    public class ListEditor : IDisposable {
+    public class DictionaryEditor : IDisposable {
         public VirindiViewService.ViewProperties properties;
         public VirindiViewService.ControlGroup controls;
         public VirindiViewService.HudView view;
         bool disposed = false;
+
+        public enum Columns : int {
+            Key = 0,
+            Value = 1,
+            Delete = 2
+        };
 
         private HudList ChildList;
         private HudFixedLayout SettingsFormLayout;
         private HudButton Cancel;
         private HudButton AddOrUpdate;
         private MainView mainView;
-        private int selectedIndex = -1;
+        private string selectedKey = "";
         private SettingsForm form;
-        private ISetting Setting;
-        private ObservableCollection<string> Collection;
+        private Setting<ObservableDictionary<string, string>> Setting;
 
-        public ListEditor(MainView mainView, ISetting setting) {
+        public DictionaryEditor(MainView mainView, ISetting setting) {
             this.mainView = mainView;
-            Setting = setting;
-            Collection = setting.GetValue() as ObservableCollection<string>;
+            Setting = setting as Setting<ObservableDictionary<string, string>>;
 
             VirindiViewService.XMLParsers.Decal3XMLParser parser = new VirindiViewService.XMLParsers.Decal3XMLParser();
-            parser.ParseFromResource("UtilityBelt.Views.ListEditor.xml", out properties, out controls);
+            parser.ParseFromResource("UtilityBelt.Views.DictionaryEditor.xml", out properties, out controls);
 
             view = new VirindiViewService.HudView(properties, controls);
 
@@ -71,22 +76,28 @@ namespace UtilityBelt.Views {
 
         private void ChildList_Click(object sender, int row, int col) {
             try {
-                switch (col) {
-                    case 0: // edit
-                        if (selectedIndex != -1) {
-                            ((HudStaticText)((HudList.HudListRowAccessor)ChildList[selectedIndex])[0]).TextColor = view.Theme.GetColor("ListText");
+                HudList.HudListRowAccessor selectedRow = ChildList[row];
+                var keyCol = (HudStaticText)selectedRow[(int)Columns.Key];
+                var valCol = (HudStaticText)selectedRow[(int)Columns.Value];
+                switch ((Columns)col) {
+                    case Columns.Key:
+                    case Columns.Value: // edit
+                        if (selectedKey != "") {
+                            keyCol.TextColor = view.Theme.GetColor("ListText");
+                            valCol.TextColor = view.Theme.GetColor("ListText");
                         }
 
-                        selectedIndex = row;
-                        ((HudStaticText)((HudList.HudListRowAccessor)ChildList[selectedIndex])[0]).TextColor = Color.Red;
-                        form.SetValue(((HudStaticText)((HudList.HudListRowAccessor)ChildList[selectedIndex])[0]).Text);
+                        selectedKey = keyCol.Text;
+                        keyCol.TextColor = Color.Red;
+                        valCol.TextColor = Color.Red;
+                        form.SetValue(new KeyValuePair<string, string>(keyCol.Text, valCol.Text));
                         AddOrUpdate.Text = "Update";
                         Cancel.Visible = true;
                         Redraw();
                         break;
 
-                    case 1: // delete
-                        Collection.RemoveAt(row);
+                    case Columns.Delete: // delete
+                        Setting.Value.Remove(keyCol.Text);
                         ResetForm();
                         break;
                 }
@@ -96,13 +107,14 @@ namespace UtilityBelt.Views {
 
         private void AddOrUpdate_Hit(object sender, EventArgs e) {
             try {
-                if (selectedIndex != -1) {
-                    Collection.RemoveAt(selectedIndex);
-                    Collection.Insert(selectedIndex, (string)form.Value);
+                KeyValuePair<string, string> kv = (KeyValuePair<string, string>)form.Value;
+
+                if (selectedKey != "") {
+                    Setting.Value.Remove(selectedKey);
                 }
-                else {
-                    Collection.Add((string)form.Value);
-                }
+
+                Setting.Value.Remove(kv.Key);
+                Setting.Value.Add(kv.Key, kv.Value);
 
                 ResetForm();
             }
@@ -119,7 +131,7 @@ namespace UtilityBelt.Views {
         private void ResetForm() {
             Cancel.Visible = false;
             AddOrUpdate.Text = "Add";
-            selectedIndex = -1;
+            selectedKey = "";
             Redraw();
         }
 
@@ -133,25 +145,26 @@ namespace UtilityBelt.Views {
                 form = null;
             }
 
-            foreach (var child in Collection) {
+            foreach (var key in Setting.Value.Keys) {
                 var row = ChildList.AddRow();
 
-                if (selectedIndex == i) {
-                    ((HudStaticText)row[0]).TextColor = Color.Red;
-                    form = new SettingsForm(Setting, SettingsFormLayout, typeof(string), Collection[selectedIndex]);
+                if (selectedKey == key) {
+                    ((HudStaticText)row[(int)Columns.Key]).TextColor = Color.Red;
+                    ((HudStaticText)row[(int)Columns.Value]).TextColor = Color.Red;
+                    form = new SettingsForm(Setting, SettingsFormLayout, typeof(KeyValuePair<string, string>), new KeyValuePair<string, string>(key, Setting.Value[key]));
                 }
 
-                ((HudStaticText)row[0]).Text = child;
-                //((HudPictureBox)row[1]).Image = 100673788;  // up arrow
-                //((HudPictureBox)row[2]).Image = 100673789;  // down arrow
-                ((HudPictureBox)row[1]).Image = 0x060011F8; // delete
+                ((HudStaticText)row[(int)Columns.Key]).Text = key;
+                ((HudStaticText)row[(int)Columns.Value]).Text = Setting.Value[key];
+                ((HudStaticText)row[(int)Columns.Value]).TextAlignment = WriteTextFormats.Right;
+                ((HudPictureBox)row[(int)Columns.Delete]).Image = 0x060011F8; // delete
 
                 i++;
             }
             ChildList.ScrollPosition = scrollPosition;
 
             if (form == null) {
-                form = new SettingsForm(Setting, SettingsFormLayout, typeof(string), "");
+                form = new SettingsForm(Setting, SettingsFormLayout, typeof(KeyValuePair<string, string>), new KeyValuePair<string, string>("",""));
             }
         }
 

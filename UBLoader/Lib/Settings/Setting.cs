@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
-using System.Text;
+using Hellosam.Net.Collections;
 
 namespace UBLoader.Lib.Settings {
     public class Setting<T> : ISetting {
@@ -41,8 +38,24 @@ namespace UBLoader.Lib.Settings {
             Value = initialValue;
             hasDefault = true;
 
-            if (Value is ObservableCollection<string>) {
-                (Value as ObservableCollection<string>).CollectionChanged += (s, e) => {
+            if (Value is ObservableCollection<string> collection) {
+                DefaultValue = (T)Convert.ChangeType(new ObservableCollection<string>(), Value.GetType());
+                var defaultCollection = DefaultValue as ObservableCollection<string>;
+                foreach (var item in collection)
+                    defaultCollection.Add(item);
+
+                collection.CollectionChanged += (s, e) => {
+                    FilterCore.LogError("ObservableCollection changed");
+                    InvokeChange();
+                };
+            }
+            else if (Value is ObservableDictionary<string, string> dict) {
+                DefaultValue = (T)Convert.ChangeType(new ObservableDictionary<string, string>(), Value.GetType());
+                var defaultDict = DefaultValue as ObservableDictionary<string, string>;
+                foreach (var key in dict.Keys)
+                    defaultDict.Add(key, dict[key]);
+                dict.CollectionChanged += (s, e) => {
+                    FilterCore.LogError("ObservableDictionary changed");
                     InvokeChange();
                 };
             }
@@ -57,10 +70,13 @@ namespace UBLoader.Lib.Settings {
         }
 
         public override void SetValue(object newValue) {
-            if (typeof(T) != typeof(string) && typeof(T).GetInterfaces().Contains(typeof(IList<string>))) {
+            if (Value is ObservableCollection<string>) {
                 foreach (var v in (System.Collections.IEnumerable)newValue) {
-                    ((IList<string>)Value).Add(v.ToString());
+                    (Value as ObservableCollection<string>).Add(v.ToString());
                 }
+            }
+            else if (Value is ObservableDictionary<string, string>) {
+                throw new NotImplementedException();
             }
             else if (!typeof(ISetting).IsAssignableFrom(newValue.GetType())) {
                 Value = (T)Convert.ChangeType(newValue, Value.GetType());

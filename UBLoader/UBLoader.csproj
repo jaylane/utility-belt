@@ -83,6 +83,7 @@
   <ItemGroup>
     <Compile Include="Lib\File.cs" />
     <Compile Include="FilterCore.cs" />
+    <Compile Include="Lib\ObservableDictionary.cs" />
     <Compile Include="Lib\Settings\CharacterState.cs" />
     <Compile Include="Lib\Settings\ISetting.cs" />
     <Compile Include="Lib\Settings\OptionResult.cs" />

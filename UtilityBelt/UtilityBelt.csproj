@@ -231,6 +231,7 @@
     <Compile Include="Lib\Util.cs" />
     <Compile Include="Views\BaseView.cs" />
     <Compile Include="Views\ColorPicker.cs" />
+    <Compile Include="Views\DictionaryEditor.cs" />
     <Compile Include="Views\EnumFlagEditor.cs" />
     <Compile Include="Views\ItemGiver.cs" />
     <Compile Include="Views\LandscapeMapsView.cs" />
@@ -974,6 +975,11 @@
       <Project>{bb14f564-6e92-4fd0-9394-120e517ea5ba}</Project>
       <Name>UBLoader</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\DictionaryEditor.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
