@@ -21,7 +21,7 @@ namespace UBLoader.Lib.Settings {
         public string FullName { get; protected set; } = "";
         public string Name => FullName.Split('.').Last();
         public bool IsContainer { get => typeof(ISetting).IsAssignableFrom(GetValue().GetType()); }
-        public bool IsDefault { get => GetValue().Equals(GetDefaultValue()); }
+        public bool IsDefault { get => !HasChanges(p => true); }
         public ISetting Parent { get; internal set; } = null;
         public Settings Settings { get; internal set; } = null;
         public FieldInfo FieldInfo { get; internal set; } = null;

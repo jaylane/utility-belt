@@ -8,9 +8,6 @@ using System.Collections.Specialized;
 namespace UBLoader.Lib.Settings {
     public class Setting<T> : ISetting {
         private bool hasDefault = false;
-
-        new public bool IsDefault { get => HasChanges(p => true); }
-
         private T _value;
 
         public T Value {
