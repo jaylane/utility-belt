@@ -45,8 +45,8 @@ namespace UBLoader.Lib.Settings {
 
 
         public Settings(object parent, string settingsPath, string defaultSettingsPath=null, string characterStatePath=null) {
-            isSettingLambda = s => !s.IsCharacterState;
-            isStateLambda = s => s.IsCharacterState;
+            isSettingLambda = s => s.SettingType != SettingType.State;
+            isStateLambda = s => s.SettingType == SettingType.State;
 
             Parent = parent;
             SettingsPath = settingsPath;
@@ -72,7 +72,7 @@ namespace UBLoader.Lib.Settings {
 
         private void Settings_Changed(object sender, SettingChangedEventArgs e) {
             if (ShouldSave) {
-                if (sender is ISetting && ((ISetting)sender).IsCharacterState) {
+                if (sender is ISetting && ((ISetting)sender).SettingType == SettingType.State) {
                     NeedsStateSave = true;
                     lastStateChange = UBHelper.Core.Uptime;
                 }
@@ -92,8 +92,20 @@ namespace UBLoader.Lib.Settings {
             var setting = (ISetting)field.GetValue(parent);
             IEnumerable<FieldInfo> childFields;
 
+            setting.SetName(name);
             setting.Settings = this;
             setting.FieldInfo = field;
+
+            if (setting.SettingType == SettingType.Unknown) {
+                if (parent is ISetting && ((ISetting)parent).SettingType == SettingType.Global)
+                    setting.SettingType = SettingType.Global;
+                else
+                    setting.SettingType = Parent.GetType() == typeof(UBLoader.FilterCore) ? SettingType.Global : SettingType.Profile;
+            }
+
+            var summary = field.GetCustomAttributes(typeof(SummaryAttribute), false).FirstOrDefault();
+            if (summary != null)
+                setting.Summary = ((SummaryAttribute)summary).Summary;
 
             if (typeof(ISetting).IsAssignableFrom(parent.GetType())) {
                 setting.Parent = (ISetting)parent;
@@ -106,9 +118,8 @@ namespace UBLoader.Lib.Settings {
                                 .Where(f => typeof(ISetting).IsAssignableFrom(f.FieldType));
 
             if (childFields.Count() == 0) {
-                ((ISetting)field.GetValue(parent)).SetName(name);
                 if (!setting.IsContainer)
-                    optionResultCache.Add(name, new OptionResult(setting, field, parent));
+                    optionResultCache.Add(name.ToLower(), new OptionResult(setting, field, parent));
             }
             else {
                 foreach (var childField in childFields) {
@@ -137,8 +148,8 @@ namespace UBLoader.Lib.Settings {
         }
 
         public OptionResult Get(string key) {
-            if (optionResultCache.ContainsKey(key))
-                return optionResultCache[key];
+            if (optionResultCache.ContainsKey(key.ToLower()))
+                return optionResultCache[key.ToLower()];
             else
                 return null;
         }
@@ -151,24 +162,25 @@ namespace UBLoader.Lib.Settings {
             ShouldSave = false;
         }
 
-        public string DisplayValue(string key, bool expandLists = false) {
+        public string DisplayValue(string key, bool expandLists = false, bool useDefault=false) {
             var prop = Get(key);
+            var value = useDefault ? prop.Setting.GetDefaultValue() : prop.Setting.GetValue();
 
-            if (prop.Setting.GetValue().GetType().IsEnum) {
+            if (value.GetType().IsEnum) {
                 var supportsFlagsAttributes = prop.FieldInfo.GetCustomAttributes(typeof(SupportsFlagsAttribute), true);
 
                 if (supportsFlagsAttributes.Length > 0) {
-                    return "0x" + ((uint)prop.Setting.GetValue()).ToString("X8");
+                    return "0x" + ((uint)value).ToString("X8");
                 }
                 else {
                     return prop.Setting.GetValue().ToString();
                 }
             }
-            else if (prop.Setting.GetValue() is IList) {
+            else if (value is IList) {
                 if (expandLists) {
                     var results = new List<string>();
 
-                    foreach (var item in (IEnumerable)(prop.Setting.GetValue())) {
+                    foreach (var item in (IEnumerable)(value)) {
                         results.Add(item.ToString());
                     }
 
@@ -178,10 +190,10 @@ namespace UBLoader.Lib.Settings {
                     return "[List]";
                 }
             }
-            else if (prop.Setting.GetValue() is IDict) {
+            else if (value is IDict) {
                 if (expandLists) {
                     var results = new List<string>();
-                    var dict = prop.Setting.GetValue() as ObservableDictionary<string, string>;
+                    var dict = value as ObservableDictionary<string, string>;
 
                     foreach (var dk in dict.Keys) {
                         results.Add($"{dk}: {dict[dk]}");
@@ -193,11 +205,11 @@ namespace UBLoader.Lib.Settings {
                     return "{Dictionary}";
                 }
             }
-            else if (prop.Setting.GetValue().GetType() == typeof(int) && prop.FieldInfo.Name.Contains("Color")) {
-                return "0x" + ((int)(prop.Setting.GetValue())).ToString("X8");
+            else if (value.GetType() == typeof(int) && prop.FieldInfo.Name.Contains("Color")) {
+                return "0x" + ((int)value).ToString("X8");
             }
             else {
-                return prop.Setting.GetValue().ToString();
+                return value.ToString();
             }
         }
         #endregion Public API

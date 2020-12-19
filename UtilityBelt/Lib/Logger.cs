@@ -87,13 +87,13 @@ namespace UtilityBelt {
                 return 5;
             switch (messageType) {
                 case LogMessageType.Debug:
-                    return UtilityBeltPlugin.Instance.Plugin.DebugMessageDisplay.Color;
+                    return (int)UtilityBeltPlugin.Instance.Plugin.DebugMessageDisplay.Color.Value;
                 case LogMessageType.Error:
-                    return UtilityBeltPlugin.Instance.Plugin.ErrorMessageDisplay.Color;
+                    return (int)UtilityBeltPlugin.Instance.Plugin.ErrorMessageDisplay.Color.Value;
                 case LogMessageType.Expression:
-                    return UtilityBeltPlugin.Instance.Plugin.ExpressionMessageDisplay.Color;
+                    return (int)UtilityBeltPlugin.Instance.Plugin.ExpressionMessageDisplay.Color.Value;
                 default:
-                    return UtilityBeltPlugin.Instance.Plugin.GenericMessageDisplay.Color;
+                    return (int)UtilityBeltPlugin.Instance.Plugin.GenericMessageDisplay.Color.Value;
             }
         }
 

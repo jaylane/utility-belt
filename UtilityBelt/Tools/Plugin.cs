@@ -61,6 +61,12 @@ namespace UtilityBelt.Tools {
         [Summary("Main UB Window Y position for this character (top is 0)")]
         public readonly CharacterState<int> WindowPositionY = new CharacterState<int>(100);
 
+        [Summary("Settings Window X position for this character (left is 0)")]
+        public readonly CharacterState<int> SettingsWindowPositionX = new CharacterState<int>(140);
+
+        [Summary("Settings Window Y position for this character (top is 0)")]
+        public readonly CharacterState<int> SettingsWindowPositionY = new CharacterState<int>(140);
+
         [Summary("Think to yourself when portal use success/fail")]
         public readonly Setting<bool> PortalThink = new Setting<bool>(false);
 
@@ -87,16 +93,16 @@ namespace UtilityBelt.Tools {
         public readonly Setting<int> PCapBufferDepth = new Setting<int>(5000);
 
         [Summary("Plugin generic messages")]
-        public readonly PluginMessageDisplay GenericMessageDisplay = new PluginMessageDisplay(true, 5);
+        public readonly PluginMessageDisplay GenericMessageDisplay = new PluginMessageDisplay(true, ChatMessageType.System);
 
         [Summary("Plugin debug messages")]
-        public readonly PluginMessageDisplay DebugMessageDisplay = new PluginMessageDisplay(true, 14);
+        public readonly PluginMessageDisplay DebugMessageDisplay = new PluginMessageDisplay(true, ChatMessageType.Abuse);
 
         [Summary("Plugin expression messages")]
-        public readonly PluginMessageDisplay ExpressionMessageDisplay = new PluginMessageDisplay(true, 5);
+        public readonly PluginMessageDisplay ExpressionMessageDisplay = new PluginMessageDisplay(true, ChatMessageType.System);
 
         [Summary("Plugin error messages")]
-        public readonly PluginMessageDisplay ErrorMessageDisplay = new PluginMessageDisplay(true, 15);
+        public readonly PluginMessageDisplay ErrorMessageDisplay = new PluginMessageDisplay(true, ChatMessageType.Help);
         #endregion
 
         #region Commands
@@ -159,11 +165,11 @@ namespace UtilityBelt.Tools {
                 if (!optionRe.IsMatch(args.Trim())) return;
 
                 var match = optionRe.Match(args.Trim());
-                string name = match.Groups["option"].Value;
+                string name = match.Groups["option"].Value.ToLower();
                 string newValue = match.Groups["value"].Value;
                 OptionResult option;
-                if (name.StartsWith("Global."))
-                    option = UBLoader.FilterCore.Settings.Get(name.Replace("Global.",""));
+                if (name.StartsWith("global."))
+                    option = UBLoader.FilterCore.Settings.Get(name);
                 else
                     option = UB.Settings.Get(name);
 
@@ -175,9 +181,9 @@ namespace UtilityBelt.Tools {
                 if (args.ToLower().Trim().StartsWith("toggle ")) {
                     try {
                         option.Setting.SetValue(!(bool)option.Setting.GetValue());
-                        if (!UB.Plugin.Debug) Logger.WriteToChat(name + " = " + option.Setting.DisplayValue());
+                        if (!UB.Plugin.Debug) Logger.WriteToChat(option.Setting.FullDisplayValue());
                     }
-                    catch (Exception ex) { Logger.Error($"Unable to toggle setting {name}: {ex.Message}"); }
+                    catch (Exception ex) { Logger.Error($"Unable to toggle setting {option.Setting.FullName}: {ex.Message}"); }
                     return;
                 }
 
@@ -210,16 +216,16 @@ namespace UtilityBelt.Tools {
                                 return;
                         }
                     }
-                    Logger.WriteToChat(name + " = " + option.Setting.DisplayValue(true));
+                    Logger.WriteToChat(option.Setting.FullDisplayValue());
                 }
                 else if (string.IsNullOrEmpty(newValue)) {
-                    Logger.WriteToChat(name + " = " + option.Setting.DisplayValue(true));
+                    Logger.WriteToChat(option.Setting.FullDisplayValue());
                 }
                 else {
                     try {
                         option.Setting.SetValue(newValue);
                         if (!UB.Plugin.Debug)
-                            Logger.WriteToChat(name + " = " + option.Setting.DisplayValue(true));
+                            Logger.WriteToChat(option.Setting.FullDisplayValue());
                     }
                     catch (Exception ex) { Logger.LogException(ex); }
                 }
@@ -233,11 +239,11 @@ namespace UtilityBelt.Tools {
             var globalSettings = UBLoader.FilterCore.Settings.GetAll();
 
             foreach (var setting in globalSettings) {
-                results += $"Global.{setting.GetName()} = {UBLoader.FilterCore.Settings.DisplayValue(setting.GetName(), true)}";
+                results += $"{setting.FullName} ({setting.SettingType}) = {setting.DisplayValue(true)}\n";
             }
 
             foreach (var setting in settings) {
-                results += $"{setting.GetName()} = {UB.Settings.DisplayValue(setting.GetName(), true)}\n";
+                results += $"{setting.FullName} ({setting.SettingType}) = {setting.DisplayValue(true)}\n";
             }
             return results;
         }
@@ -878,9 +884,9 @@ namespace UtilityBelt.Tools {
                 LogError($"Requested frameRate was not valid ({frameRate}). Must be betwen 0-500");
                 return;
             }
-            UBLoader.FilterCore.FrameRate.Value = frameRate;
+            UBLoader.FilterCore.Global.FrameRate.Value = frameRate;
             if (!Debug)
-                Logger.WriteToChat($"[Global] FrameRate = {UBLoader.FilterCore.FrameRate}");
+                Logger.WriteToChat(UBLoader.FilterCore.Global.FrameRate.FullDisplayValue());
         }
         #endregion
         #region /ub bgframelimit <frameRate>

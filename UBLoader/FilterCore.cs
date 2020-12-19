@@ -50,17 +50,20 @@ namespace UBLoader {
         }
 
         #region Global Settings
-        [Summary("Plugin storage directory path")]
-        public static Setting<string> PluginStorageDirectory = new Setting<string>(System.IO.Path.Combine(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins"), PluginName));
+        public class GlobalSettings : ISetting {
+            [Summary("Plugin storage directory path")]
+            public Setting<string> PluginStorageDirectory = new Setting<string>(System.IO.Path.Combine(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins"), PluginName));
 
-        [Summary("Database storage file path")]
-        public static Setting<string> DatabaseFile = new Setting<string>(System.IO.Path.Combine(PluginStorageDirectory, "utilitybelt.db"));
+            [Summary("Database storage file path")]
+            public Setting<string> DatabaseFile = new Setting<string>(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins"), PluginName), "utilitybelt.db"));
 
-        [Summary("Enable plugin hot reloading when utilitybelt.dll changes")]
-        public static Setting<bool> HotReload = new Setting<bool>(false);
+            [Summary("Enable plugin hot reloading when utilitybelt.dll changes")]
+            public Setting<bool> HotReload = new Setting<bool>(false);
 
-        [Summary("Global frame rate limit. Set to 0 to disable.")]
-        public static Setting<int> FrameRate = new Setting<int>(0);
+            [Summary("Global frame rate limit. Set to 0 to disable.")]
+            public Setting<int> FrameRate = new Setting<int>(0);
+        }
+        public static GlobalSettings Global = new GlobalSettings();
         #endregion Global Settings
 
         public FilterCore() {
@@ -79,20 +82,20 @@ namespace UBLoader {
             try {
                 Settings = new Settings(this, System.IO.Path.Combine(PluginAssemblyDirectory, "utilitybelt.settings.json"));
                 Settings.Load();
-                FrameRate.Changed += FrameRate_Changed;
+                Global.FrameRate.Changed += FrameRate_Changed;
                 LoadAssemblyConfig();
                 UBHelper.Core.GameStateChanged += Core_GameStateChanged;
 
-                UBHelper.Core.FilterStartup(PluginAssemblyPath, PluginStorageDirectory);
+                UBHelper.Core.FilterStartup(PluginAssemblyPath, Global.PluginStorageDirectory);
 
-                if (!FrameRate.IsDefault)
-                    UBHelper.SimpleFrameLimiter.globalMax = FrameRate;
+                if (!Global.FrameRate.IsDefault)
+                    UBHelper.SimpleFrameLimiter.globalMax = Global.FrameRate;
             }
             catch (Exception ex) { LogException(ex); }
         }
 
         private void FrameRate_Changed(object sender, SettingChangedEventArgs e) {
-            UBHelper.SimpleFrameLimiter.globalMax = FrameRate;
+            UBHelper.SimpleFrameLimiter.globalMax = Global.FrameRate;
         }
 
         private void Core_GameStateChanged(UBHelper.GameState previous, UBHelper.GameState new_state) {
@@ -125,17 +128,17 @@ namespace UBLoader {
                 config = System.Configuration.ConfigurationManager.OpenExeConfiguration(PluginAssemblyPath);
                 var keys = config.AppSettings.Settings.AllKeys;
                 if (keys.Contains("PluginDirectory")) {
-                    PluginStorageDirectory.Value = config.AppSettings.Settings["PluginDirectory"].Value;
+                    Global.PluginStorageDirectory.Value = config.AppSettings.Settings["PluginDirectory"].Value;
                 }
                 if (keys.Contains("DatabaseFile")) {
-                    DatabaseFile.Value = config.AppSettings.Settings["DatabaseFile"].Value;
+                    Global.DatabaseFile.Value = config.AppSettings.Settings["DatabaseFile"].Value;
                 }
                 if (keys.Contains("HotReload")) {
-                    HotReload.Value = config.AppSettings.Settings["HotReload"].Value == "true";
+                    Global.HotReload.Value = config.AppSettings.Settings["HotReload"].Value == "true";
                 }
                 if (keys.Contains("FrameRate")) {
                     int.TryParse(config.AppSettings.Settings["FrameRate"].Value, out int frameRate);
-                    FrameRate.Value = frameRate;
+                    Global.FrameRate.Value = frameRate;
                 }
 
                 System.IO.File.Delete(DllConfigPath);
@@ -161,7 +164,7 @@ namespace UBLoader {
 
         private void PluginWatcher_Changed(object sender, FileSystemEventArgs e) {
             try {
-                if (!HotReload)
+                if (!Global.HotReload)
                     return;
                 if (needsReload == false) {
                     Core.RenderFrame += Core_RenderFrame;
@@ -174,7 +177,7 @@ namespace UBLoader {
 
         internal void LoadPluginAssembly() {
             try {
-                if (HotReload && PluginWatcher == null) {
+                if (Global.HotReload && PluginWatcher == null) {
                     PluginWatcher = new FileSystemWatcher();
                     PluginWatcher.Path = PluginAssemblyDirectory;
                     PluginWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
@@ -193,8 +196,8 @@ namespace UBLoader {
                 PluginInstance = Activator.CreateInstance(PluginType);
                 startupMethod.Invoke(PluginInstance, new object[] {
                     PluginAssemblyPath,
-                    PluginStorageDirectory.Value,
-                    DatabaseFile.Value,
+                    Global.PluginStorageDirectory.Value,
+                    Global.DatabaseFile.Value,
                     Host,
                     Core
                 });
@@ -224,7 +227,7 @@ namespace UBLoader {
             try {
                 if (Settings.NeedsSettingsSave)
                     Settings.SaveSettings();
-                FrameRate.Changed -= FrameRate_Changed;
+                Global.FrameRate.Changed -= FrameRate_Changed;
                 Settings.Dispose();
                 UBHelper.Core.GameStateChanged -= Core_GameStateChanged;
                 UnloadPluginAssembly();
@@ -234,12 +237,12 @@ namespace UBLoader {
         }
 
         public static void LogException(Exception ex) {
-            Lib.File.TryWrite(System.IO.Path.Combine(PluginStorageDirectory, "exceptions.txt"), $"== {DateTime.Now} ==================================================\r\n{ex.ToString()}\r\n============================================================================\r\n\r\n", true);
+            Lib.File.TryWrite(System.IO.Path.Combine(Global.PluginStorageDirectory, "exceptions.txt"), $"== {DateTime.Now} ==================================================\r\n{ex.ToString()}\r\n============================================================================\r\n\r\n", true);
 
         }
 
         public static void LogError(string ex) {
-            Lib.File.TryWrite(System.IO.Path.Combine(PluginStorageDirectory, "exceptions.txt"), $"== {DateTime.Now} {ex}\r\n", true);
+            Lib.File.TryWrite(System.IO.Path.Combine(Global.PluginStorageDirectory, "exceptions.txt"), $"== {DateTime.Now} {ex}\r\n", true);
         }
 
 

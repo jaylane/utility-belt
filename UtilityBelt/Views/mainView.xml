@@ -20,7 +20,9 @@
         <control progid="DecalControls.PushButton" name="VideoPatchFocusEnabled" left="368" top="8" width="22" height="24" text="F"/>
         <control progid="DecalControls.PushButton" name="VitalSharingEnabled" left="280" top="40" width="110" height="24" text="Vital Sharing"/>
         <control progid="DecalControls.PushButton" name="DerethTimeEnabled" left="280" top="72" width="110" height="24" text="Dereth Time"/>
-        <control progid="DecalControls.PushButton" name="Debug" left="280" top="184" width="110" height="24" text="  Debug Mode"/>
+        
+        <control progid="DecalControls.PushButton" name="Debug" left="280" top="152" width="110" height="24" text="  Debug Mode"/>
+        <control progid="DecalControls.PushButton" name="Settings" left="280" top="184" width="110" height="24" text="  Settings"/>
       </control>
     </page>
     <page label="AutoTinker">
@@ -165,17 +167,6 @@
         </control>
         <control progid="DecalControls.PushButton" name="QuestListRefresh" left="8" top="205" width="110" height="20" text="Refresh"/>
         <control progid="DecalControls.StaticText" name="QuestListRefreshLoading" left="8" top="205" width="110" height="20" justify="Center" text="Please Wait..."/>
-      </control>
-    </page>
-    <page label="Settings">
-      <control progid="DecalControls.FixedLayout" clipped="">
-        <control progid="DecalControls.List" name="SettingsList" left="0" top="0" width="400" height="152">
-          <column progid="DecalControls.TextColumn" fixedwidth="280" name="SettingKey" />
-          <column progid="DecalControls.TextColumn" name="SettingValue" />
-          <column progid="DecalControls.TextColumn" fixedwidth="3" name="_padding" />
-        </control>
-        <control name="SettingsForm" progid="DecalControls.FixedLayout" clipped="" left="0" top="152" width="400" height="72">
-        </control>
       </control>
     </page>
   </control>
