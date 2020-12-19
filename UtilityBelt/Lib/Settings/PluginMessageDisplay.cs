@@ -12,9 +12,9 @@ namespace UtilityBelt.Lib.Settings {
         public readonly Setting<bool> Enabled = new Setting<bool>();
 
         [Summary("Color")]
-        public readonly Setting<short> Color = new Setting<short>();
+        public readonly Setting<Constants.ChatMessageType> Color = new Setting<Constants.ChatMessageType>();
 
-        public PluginMessageDisplay(bool show, short color) : base() {
+        public PluginMessageDisplay(bool show, Constants.ChatMessageType color) : base() {
             Enabled.Value = show;
             Color.Value = color;
         }

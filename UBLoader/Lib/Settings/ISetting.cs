@@ -6,16 +6,25 @@ using System.Reflection;
 using System.Text;
 
 namespace UBLoader.Lib.Settings {
+    public enum SettingType {
+        Unknown,
+        Global,
+        Profile,
+        State
+    };
+
     public abstract class ISetting {
         public event EventHandler<SettingChangedEventArgs> Changed;
 
         public string FullName { get; protected set; } = "";
         public string Name => FullName.Split('.').Last();
         public bool IsContainer { get => typeof(ISetting).IsAssignableFrom(GetValue().GetType()); }
-        public bool IsCharacterState { get; protected set; } = false;
+        public bool IsDefault { get => GetValue().Equals(GetDefaultValue()); }
         public ISetting Parent { get; internal set; } = null;
         public Settings Settings { get; internal set; } = null;
         public FieldInfo FieldInfo { get; internal set; } = null;
+        public string Summary { get; internal set; } = "";
+        public SettingType SettingType { get; internal set; }
 
         public bool HasParent { get => Parent != null; }
         public IEnumerable<FieldInfo> Children { get; private set; }
@@ -77,8 +86,12 @@ namespace UBLoader.Lib.Settings {
             throw new NotImplementedException();
         }
 
-        public string DisplayValue(bool expandLists=false) {
-            return Settings.DisplayValue(FullName, expandLists);
+        public string DisplayValue(bool expandLists = false, bool useDefault = false) {
+            return Settings.DisplayValue(FullName, expandLists, useDefault);
+        }
+
+        public string FullDisplayValue() {
+            return $"{FullName} ({SettingType}) = {DisplayValue(true)}";
         }
     }
 }

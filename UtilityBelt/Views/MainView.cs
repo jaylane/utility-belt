@@ -20,16 +20,11 @@ namespace UtilityBelt.Views {
     public class MainView : BaseView {
         private Timer timer;
 
-        private HudList SettingsList;
-        private HudFixedLayout SettingEditLayout;
-        private int selectedIndex = -1;
-        private SettingsForm currentForm = null;
-        private HudStaticText SummaryText = null;
-        private HudFixedLayout FormLayout = null;
         private HudButton CheckForUpdate;
         internal HudButton ExportPCap;
         private ACImage icon;
-        private const int descriptionHeight = 40;
+        private SettingsView settingsView = null;
+        private HudButton SettingsButton;
 
         private readonly Dictionary<string, string> buttons = new Dictionary<string, string>() {
                     { "AutoVendorEnable", "AutoVendor.Enabled" },
@@ -62,9 +57,9 @@ namespace UtilityBelt.Views {
                 timer = new Timer(2000);
 
                 timer.Elapsed += (s, e) => {
-                    timer.Stop();
                     UB.Plugin.WindowPositionX.Value = view.Location.X;
                     UB.Plugin.WindowPositionY.Value = view.Location.Y;
+                    timer.Stop();
                 };
 
                 view.Moved += (s, e) => {
@@ -75,16 +70,13 @@ namespace UtilityBelt.Views {
                 UB.Plugin.WindowPositionX.Changed += WindowPosition_Changed;
                 UB.Plugin.WindowPositionY.Changed += WindowPosition_Changed;
 
-                SettingsList = (HudList)view["SettingsList"];
-                SettingEditLayout = (HudFixedLayout)view["SettingsForm"];
                 CheckForUpdate = (HudButton)view["CheckForUpdate"];
                 ExportPCap = (HudButton)view["ExportPCap"];
+                SettingsButton = (HudButton)view["Settings"];
 
-                SettingsList.Click += SettingsList_Click;
                 CheckForUpdate.Hit += CheckForUpdate_Hit;
                 ExportPCap.Hit += ExportPCap_Hit;
-                UB.Settings.Changed += Settings_Changed;
-                UBLoader.FilterCore.Settings.Changed += FilterSettings_Changed;
+                SettingsButton.Hit += SettingsButton_Hit;
                 UB.Plugin.PCap.Changed += PCap_Changed;
 
                 foreach (var kv in buttons) {
@@ -108,7 +100,7 @@ namespace UtilityBelt.Views {
                         try {
                             setting.Setting.SetValue(!(bool)setting.Setting.GetValue());
                             if (!UB.Plugin.Debug) {
-                                Logger.WriteToChat($"{kv.Value} = {setting.Setting.DisplayValue()}");
+                                Logger.WriteToChat(setting.Setting.FullDisplayValue());
                             }
                         }
                         catch (Exception ex) { Logger.LogException(ex); }
@@ -117,9 +109,19 @@ namespace UtilityBelt.Views {
 
                 ExportPCap.Visible = UB.Plugin.PCap;
 
-                PopulateSettings();
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void SettingsButton_Hit(object sender, EventArgs e) {
+            if (settingsView == null) {
+                settingsView = new SettingsView(UB);
+                settingsView.Init();
+                settingsView.view.VisibleChanged += (s, ee) => {
+                    settingsView.view.ShowInBar = settingsView.view.Visible;
+                };
+            }
+            settingsView.view.Visible = !settingsView.view.Visible;
         }
 
         private void PCap_Changed(object sender, SettingChangedEventArgs e) {
@@ -127,23 +129,8 @@ namespace UtilityBelt.Views {
         }
 
         private void WindowPosition_Changed(object sender, SettingChangedEventArgs e) {
-            view.Location = new Point(UB.Plugin.WindowPositionX, UB.Plugin.WindowPositionY);
-        }
-
-        private void Settings_Changed(object sender, EventArgs e) {
-            UpdateSettingsList(((ISetting)sender).GetName(), (ISetting)sender);
-        }
-
-        private void FilterSettings_Changed(object sender, EventArgs e) {
-            UpdateSettingsList("Global." + ((ISetting)sender).GetName(), (ISetting)sender);
-        }
-
-        private void UpdateSettingsList(string name, ISetting sender) {
-            for (var i = 0; i < SettingsList.RowCount; i++) {
-                if (((HudStaticText)SettingsList[i][0]).Text == name) {
-                    ((HudStaticText)SettingsList[i][1]).Text = ((ISetting)sender).DisplayValue();
-                }
-            }
+            if (!timer.Enabled)
+                view.Location = new Point(UB.Plugin.WindowPositionX, UB.Plugin.WindowPositionY);
         }
 
         private void CheckForUpdate_Hit(object sender, EventArgs e) {
@@ -180,95 +167,11 @@ namespace UtilityBelt.Views {
             }
         }
 
-        private void SettingsList_Click(object sender, int rowIndex, int colIndex) {
-            try {
-                var row = ((HudList.HudListRowAccessor)SettingsList[rowIndex]);
-                var prop = GetSettingPropFromText(((HudStaticText)row[0]).Text);
-
-                if (selectedIndex >= 0 && SettingsList.RowCount > selectedIndex) {
-                    ((HudStaticText)((HudList.HudListRowAccessor)SettingsList[selectedIndex])[0]).TextColor = view.Theme.GetColor("ListText");
-                }
-
-                ((HudStaticText)row[0]).TextColor = Color.Red;
-                selectedIndex = rowIndex;
-
-                DrawSetting(prop.Setting);
-
-                if (colIndex == 1 && prop.Setting.GetValue().GetType() == typeof(bool)) {
-                    prop.Setting.SetValue(!(bool)prop.Setting.GetValue());
-                    DrawSetting(prop.Setting);
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
         private OptionResult GetSettingPropFromText(string setting) {
             if (setting.StartsWith("Global."))
-                return UBLoader.FilterCore.Settings.Get(setting.Substring(7));
+                return UBLoader.FilterCore.Settings.Get(setting);
             else
                 return UB.Settings.Get(setting);
-        }
-
-        private void DrawSetting(ISetting setting) {
-            if (currentForm != null) {
-                currentForm.Dispose();
-                currentForm = null;
-            }
-            if (SummaryText == null) {
-                SummaryText = new HudStaticText();
-
-                SettingEditLayout.AddControl(SummaryText, new Rectangle(5, 5, 390, descriptionHeight));
-            }
-            if (FormLayout == null) {
-                FormLayout = new HudFixedLayout();
-                SettingEditLayout.AddControl(FormLayout, new Rectangle(5, descriptionHeight, 390, 25));
-            }
-
-            SummaryText.TextAlignment = WriteTextFormats.WordBreak;
-
-            var summaryAttr = setting.FieldInfo.GetCustomAttributes(typeof(SummaryAttribute), true);
-            if (summaryAttr.Length == 1) {
-                SummaryText.Text = ((SummaryAttribute)summaryAttr[0]).Summary;
-            }
-            else {
-                SummaryText.Text = setting.FieldInfo.Name;
-            }
-
-            var type = setting.GetValue().GetType().ToString().Replace("System.","");
-            if (setting.GetValue() is ObservableCollection<string>) {
-                type = "List";
-            }
-            else if (setting.GetValue() is ObservableDictionary<string, string>) {
-                type = "Dictionary";
-            }
-            currentForm = new SettingsForm(setting, FormLayout, setting.GetValue().GetType());
-            SummaryText.Text += " (" + type + ")";
-
-            currentForm.Changed += (s, e) => {
-                setting.SetValue(currentForm.Value);
-            };
-        }
-
-        private void PopulateSettings(bool clear = false) {
-            var settings = UB.Settings.GetAll();
-            var globalSettings = UBLoader.FilterCore.Settings.GetAll();
-
-            if (clear)
-                SettingsList.ClearRows();
-
-            foreach (var setting in globalSettings) {
-                var row = SettingsList.AddRow();
-                ((HudStaticText)row[0]).Text = $"Global.{setting.GetName()}";
-                ((HudStaticText)row[1]).Text = setting.DisplayValue();
-                ((HudStaticText)row[1]).TextAlignment = WriteTextFormats.Right;
-            }
-
-            foreach (var setting in settings) {
-                var row = SettingsList.AddRow();
-                ((HudStaticText)row[0]).Text = setting.GetName();
-                ((HudStaticText)row[1]).Text = setting.DisplayValue();
-                ((HudStaticText)row[1]).TextAlignment = WriteTextFormats.Right;
-            }
         }
 
         internal override ACImage GetIcon() {
@@ -277,13 +180,14 @@ namespace UtilityBelt.Views {
             icon = GetIcon("UtilityBelt.Resources.icons.utilitybelt.png");
             return icon;
         }
-        ~MainView() {
+
+        new public void Dispose() {
+            base.Dispose();
             if (icon != null) icon.Dispose();
             UB.Plugin.PCap.Changed -= PCap_Changed;
             UB.Plugin.WindowPositionX.Changed -= WindowPosition_Changed;
             UB.Plugin.WindowPositionY.Changed -= WindowPosition_Changed;
-            UB.Settings.Changed -= Settings_Changed;
-            UBLoader.FilterCore.Settings.Changed -= FilterSettings_Changed;
+            if (settingsView != null) settingsView.Dispose();
         }
     }
 }

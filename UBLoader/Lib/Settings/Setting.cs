@@ -8,7 +8,7 @@ namespace UBLoader.Lib.Settings {
     public class Setting<T> : ISetting {
         private bool hasDefault = false;
 
-        public bool IsDefault { get => Value.Equals(DefaultValue); }
+        new public bool IsDefault { get => HasChanges(p => true); }
 
         private T _value;
 
@@ -45,17 +45,13 @@ namespace UBLoader.Lib.Settings {
                     defaultCollection.Add(item);
 
                 collection.CollectionChanged += (s, e) => {
-                    FilterCore.LogError("ObservableCollection changed");
                     InvokeChange();
                 };
             }
             else if (Value is ObservableDictionary<string, string> dict) {
                 DefaultValue = (T)Convert.ChangeType(new ObservableDictionary<string, string>(), Value.GetType());
                 var defaultDict = DefaultValue as ObservableDictionary<string, string>;
-                foreach (var key in dict.Keys)
-                    defaultDict.Add(key, dict[key]);
                 dict.CollectionChanged += (s, e) => {
-                    FilterCore.LogError("ObservableDictionary changed");
                     InvokeChange();
                 };
             }

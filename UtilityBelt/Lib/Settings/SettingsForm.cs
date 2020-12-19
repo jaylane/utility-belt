@@ -233,14 +233,15 @@ namespace UtilityBelt.Lib.Settings {
             colorPickerPreview.Add(colorPickerRect, GetColorIcon((int)Value));
 
             var edit = new HudTextBox();
-            edit.Text = ((int)Setting.GetValue()).ToString("X8");
+            edit.Text = ((int)Value).ToString("X8");
             edit.Change += (s, e) => {
                 var type = Type;
 
                 if (int.TryParse(edit.Text, System.Globalization.NumberStyles.HexNumber, null, out int parsedInt)) {
                     colorPickerPreview.Clear();
-                    colorPickerPreview.Add(colorPickerRect, GetColorIcon((int)((ISetting)Value).GetValue()));
-                    ((ISetting)Value).SetValue(parsedInt);
+                    colorPickerPreview.Add(colorPickerRect, GetColorIcon((int)Value));
+                    Setting.SetValue(parsedInt);
+                    Value = parsedInt;
                     Changed?.Invoke(this, null);
                 }
                 else {
@@ -251,33 +252,37 @@ namespace UtilityBelt.Lib.Settings {
             var pickerButton = new HudButton();
             pickerButton.Text = "Color Picker";
             pickerButton.Hit += (sender, evt) => {
-                var originalColor = Color.FromArgb((int)((ISetting)Value).GetValue());
+                var originalColor = Color.FromArgb((int)Value);
                 var picker = new ColorPicker(UtilityBeltPlugin.Instance.MainView, "Test", originalColor);
 
-                ((ISetting)Value).Settings.DisableSaving();
+                Setting.Settings.DisableSaving();
 
                 picker.RaiseColorPickerCancelEvent += (s, e) => {
                     // restore color
                     edit.Text = originalColor.ToArgb().ToString("X8");
-                    ((ISetting)Value).SetValue(originalColor.ToArgb());
+                    Setting.SetValue(originalColor.ToArgb());
+                    Value = originalColor.ToArgb();
                     Changed?.Invoke(this, null);
                     colorPickerPreview.Clear();
                     colorPickerPreview.Add(colorPickerRect, GetColorIcon(originalColor.ToArgb()));
-                    ((ISetting)Value).Settings.EnableSaving();
+                    Setting.Settings.EnableSaving();
                     picker.Dispose();
                 };
 
                 picker.RaiseColorPickerSaveEvent += (s, e) => {
-                    ((ISetting)Value).SetValue(originalColor.ToArgb());
-                    ((ISetting)Value).Settings.EnableSaving();
-                    ((ISetting)Value).SetValue(e.Color.ToArgb());
+                    Setting.SetValue(originalColor.ToArgb());
+                    Value = originalColor.ToArgb();
+                    Setting.Settings.EnableSaving();
+                    Setting.SetValue(e.Color.ToArgb());
+                    Value = e.Color.ToArgb();
                     Changed?.Invoke(this, null);
                     picker.Dispose();
                 };
 
                 picker.RaiseColorPickerChangeEvent += (s, e) => {
                     edit.Text = e.Color.ToArgb().ToString("X8");
-                    ((ISetting)Value).SetValue(e.Color.ToArgb());
+                    Setting.SetValue(e.Color.ToArgb());
+                    Value = e.Color.ToArgb();
                     Changed?.Invoke(this, null);
                     colorPickerPreview.Clear();
                     colorPickerPreview.Add(colorPickerRect, GetColorIcon(e.Color.ToArgb()));
@@ -286,11 +291,12 @@ namespace UtilityBelt.Lib.Settings {
                 picker.view.VisibleChanged += (s, e) => {
                     // restore color
                     edit.Text = originalColor.ToArgb().ToString("X8");
-                    ((ISetting)Value).SetValue(originalColor.ToArgb());
+                    Setting.SetValue(originalColor.ToArgb());
+                    Value = originalColor.ToArgb();
                     Changed?.Invoke(this, null);
                     colorPickerPreview.Clear();
                     colorPickerPreview.Add(colorPickerRect, GetColorIcon(originalColor.ToArgb()));
-                    ((ISetting)Value).Settings.EnableSaving();
+                    Setting.Settings.EnableSaving();
                     if (!picker.view.Visible) {
                         picker.Dispose();
                     }
@@ -348,7 +354,7 @@ namespace UtilityBelt.Lib.Settings {
             enabled.Checked = (bool)Value;
             enabled.Change += (s, e) => {
                 disabled.Checked = !enabled.Checked;
-                ((ISetting)Setting).SetValue(enabled.Checked);
+                Setting.SetValue(enabled.Checked);
                 Value = enabled.Checked;
                 Changed?.Invoke(this, null);
             };
@@ -356,7 +362,7 @@ namespace UtilityBelt.Lib.Settings {
             disabled.Checked = !(bool)Value;
             disabled.Change += (s, e) => {
                 enabled.Checked = !disabled.Checked;
-                ((ISetting)Setting).SetValue(!disabled.Checked);
+                Setting.SetValue(!disabled.Checked);
                 Value = enabled.Checked;
                 Changed?.Invoke(this, null);
             };

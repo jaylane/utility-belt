@@ -6,7 +6,7 @@ using System.Text;
 namespace UBLoader.Lib.Settings {
     public class CharacterState<T> : Setting<T> {
         public CharacterState(T initialValue) : base(initialValue) {
-            IsCharacterState = true;
+            SettingType = SettingType.State;
         }
     }
 }

@@ -279,12 +279,12 @@ namespace UtilityBelt {
 
         private void FilterSettings_Changed(object sender, SettingChangedEventArgs e) {
             if (UBLoader.FilterCore.Settings.ShouldSave || (UBLoader.FilterCore.Settings.IsLoaded && UBLoader.FilterCore.Settings.IsLoading))
-                Logger.Debug($"[Global] {e.FullName} = {e.Setting.DisplayValue(true)}");
+                Logger.Debug(e.Setting.FullDisplayValue());
         }
 
         private void Settings_Changed(object sender, SettingChangedEventArgs e) {
             if (Settings.ShouldSave || (Settings.IsLoaded && Settings.IsLoading))
-                Logger.Debug($"{e.FullName} = {e.Setting.DisplayValue(true)}");
+                Logger.Debug(e.Setting.FullDisplayValue());
         }
 
         /// <summary>
@@ -485,6 +485,7 @@ namespace UtilityBelt {
         }
 
         private static List<string> expressionExceptions = new List<string>();
+
         /// <summary>
         /// Runs a registered expression method
         /// </summary>
