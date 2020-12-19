@@ -19,7 +19,6 @@ namespace UtilityBelt.Tools {
     public class ChatLogRule {
         [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
         public IEnumerable<ChatMessageType> Types { get; set; }
-
         public string MessageFilter { get; set; }
 
         public override string ToString() {
@@ -96,8 +95,8 @@ Chat logger supports the following message types:
         [Summary("Save chat log to disk")]
         public readonly Setting<bool> SaveToFile = new Setting<bool>(false);
 
-        //[Summary("List of message types to log")]
-        public ObservableCollection<ChatLogRule> Rules { get; set; } = new ObservableCollection<ChatLogRule>();
+        [Summary("List of message types to log")]
+        public readonly Setting<ObservableCollection<ChatLogRule>> Rules = new Setting<ObservableCollection<ChatLogRule>>(new ObservableCollection<ChatLogRule>());
 
         #endregion
 
@@ -187,8 +186,14 @@ Chat logger supports the following message types:
                 SaveToFile.Changed += (s, e) => UpdateUI();
 
                 UpdateUI();
+
+                Rules.Value.CollectionChanged += Rules_CollectionChanged;
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void Rules_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) {
+            UpdateUI();
         }
 
         private void UIChatLogRuleList_Click(object sender, int row, int col) {
@@ -200,10 +205,10 @@ Chat logger supports the following message types:
                         UIChatLogRuleAddButton.Text = "Add Rule";
                     }
 
-                    Rules.RemoveAt(row);
+                    Rules.Value.RemoveAt(row);
                 }
                 else if (col == 1) {
-                    Logger.WriteToChat("[" + string.Join(", ", Rules[row].Types.Select(t => t.ToString()).ToArray()) + "]");
+                    Logger.WriteToChat("[" + string.Join(", ", Rules.Value[row].Types.Select(t => t.ToString()).ToArray()) + "]");
                 }
                 else if (col == 2) {
                     if (editingRow.HasValue)
@@ -211,12 +216,12 @@ Chat logger supports the following message types:
 
                     var tRow = UIChatLogRuleList[row];
                     editingRow = row;
-                    UIChatLogMessageFilter.Text = Rules[row].MessageFilter;
+                    UIChatLogMessageFilter.Text = Rules.Value[row].MessageFilter;
 
                     currentSelectedTypes.Clear();
                     for (var i = 0; i < UIChatLogTypeList.RowCount; ++i) {
                         var r = UIChatLogTypeList[i];
-                        if (Rules[row].Types.Contains(typeTable[i])) {
+                        if (Rules.Value[row].Types.Contains(typeTable[i])) {
                             currentSelectedTypes.Add(typeTable[i]);
                             ((HudCheckBox)r[0]).Checked = true;
                         }
@@ -261,14 +266,14 @@ Chat logger supports the following message types:
                     Types = currentSelectedTypes.ToArray()
                 };
                 if (editingRow.HasValue) {
-                    Rules[editingRow.Value] = newRule;
+                    Rules.Value[editingRow.Value] = newRule;
                     ((HudStaticText)UIChatLogRuleList[editingRow.Value][2]).TextColor = System.Drawing.Color.White;
                     editingRow = null;
                     UIChatLogRuleAddButton.Text = "Add Rule";
                 }
                 else {
                     LogDebug($"New rule added: {newRule}");
-                    Rules.Add(newRule);
+                    Rules.Value.Add(newRule);
                 }
 
                 UIChatLogMessageFilter.Text = "";
@@ -292,7 +297,7 @@ Chat logger supports the following message types:
             UIChatLogSaveToFile.Checked = SaveToFile;
 
             UIChatLogRuleList.ClearRows();
-            foreach (var rule in Rules) {
+            foreach (var rule in Rules.Value) {
                 var row = UIChatLogRuleList.AddRow();
                 ((HudPictureBox)row[0]).Image = 0x60011F8;
                 if (rule.Types.Count() == 1)
@@ -395,7 +400,7 @@ Chat logger supports the following message types:
                 if (Enum.IsDefined(typeof(ChatMessageType), (ChatMessageType)e.Color)) {
                     var type = (ChatMessageType)Enum.ToObject(typeof(ChatMessageType), e.Color);
                     var parentType = type.GetParent();
-                    if (Rules.Any(r => r.Types.Contains(parentType ?? type) && Regex.IsMatch(e.Text, r.MessageFilter))) {
+                    if (Rules.Value.Any(r => r.Types.Contains(parentType ?? type) && Regex.IsMatch(e.Text, r.MessageFilter))) {
                         chatLogList.Add(new ChatLog(type, e.Text.Trim()));
                     }
                 }
@@ -406,6 +411,7 @@ Chat logger supports the following message types:
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
+                    Rules.Value.CollectionChanged -= Rules_CollectionChanged;
                     UB.Core.ChatBoxMessage -= Core_ChatBoxMessage;
                     chatLogList.CollectionChanged -= ChatLogList_CollectionChanged;
                     filteredChatLogList.CollectionChanged -= FilteredChatLogList_CollectionChanged;

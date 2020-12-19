@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Hellosam.Net.Collections;
+using System.Collections.Specialized;
 
 namespace UBLoader.Lib.Settings {
     public class Setting<T> : ISetting {
@@ -38,12 +39,7 @@ namespace UBLoader.Lib.Settings {
             Value = initialValue;
             hasDefault = true;
 
-            if (Value is ObservableCollection<string> collection) {
-                DefaultValue = (T)Convert.ChangeType(new ObservableCollection<string>(), Value.GetType());
-                var defaultCollection = DefaultValue as ObservableCollection<string>;
-                foreach (var item in collection)
-                    defaultCollection.Add(item);
-
+            if (Value is INotifyCollectionChanged collection) {
                 collection.CollectionChanged += (s, e) => {
                     InvokeChange();
                 };
@@ -55,6 +51,18 @@ namespace UBLoader.Lib.Settings {
                     InvokeChange();
                 };
             }
+        }
+
+        private static bool IsInstanceOfGenericType(Type genericType, object instance) {
+            Type type = instance.GetType();
+            while (type != null) {
+                if (type.IsGenericType &&
+                    type.GetGenericTypeDefinition() == genericType) {
+                    return true;
+                }
+                type = type.BaseType;
+            }
+            return false;
         }
 
         public override object GetDefaultValue() {

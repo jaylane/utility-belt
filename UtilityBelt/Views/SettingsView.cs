@@ -87,7 +87,7 @@ namespace UtilityBelt.Views {
             private IEnumerable<KeyValueTreeView.TreeItem> GetTreeViewItems(ISetting parentSetting=null, KeyValueTreeView.TreeItem parentTreeItem=null) {
                 List<KeyValueTreeView.TreeItem> items = new List<KeyValueTreeView.TreeItem>();
 
-                var settings = parentSetting == null ? Children : parentSetting.GetChildren().Select(f => (ISetting)f.GetValue(parentSetting));
+                var settings = parentSetting == null ? Children : parentSetting.GetChildren();
 
                 foreach (var setting in settings) {
                     var node = new KeyValueTreeView.TreeItem(setting.Name, setting.IsContainer ? "" : setting.DisplayValue(), parentTreeItem, setting.FullName + " " + setting.Summary);
@@ -214,8 +214,7 @@ namespace UtilityBelt.Views {
             foreach (var tool in UB.GetToolInfos()) {
                 var toolInstance = (ToolBase)tool.GetValue(UB);
                 if (toolInstance.HasChildren()) {
-                    var settings = toolInstance.GetChildren().Select(f => f.GetValue(toolInstance) as ISetting);
-                    SettingCategories.Add(tool.Name, new SettingCategory(view, this, settings, tool.Name));
+                    SettingCategories.Add(tool.Name, new SettingCategory(view, this, toolInstance.GetChildren(), tool.Name));
                 }
             }
         }

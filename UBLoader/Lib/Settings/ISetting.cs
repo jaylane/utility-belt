@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Collections.ObjectModel;
+using Newtonsoft.Json;
 
 namespace UBLoader.Lib.Settings {
     public enum SettingType {
@@ -27,7 +29,7 @@ namespace UBLoader.Lib.Settings {
         public SettingType SettingType { get; internal set; }
 
         public bool HasParent { get => Parent != null; }
-        public IEnumerable<FieldInfo> Children { get; private set; }
+        public IEnumerable<ISetting> Children { get; private set; }
 
         internal void InvokeChange() {
             var eventArgs = new SettingChangedEventArgs(Name, FullName, this);
@@ -52,25 +54,30 @@ namespace UBLoader.Lib.Settings {
         public bool HasChanges(Func<ISetting, bool> shouldCheck) {
             if (GetChildren().Count() > 0) {
                 foreach (var child in GetChildren()) {
-                    if (((ISetting)child.GetValue(GetValue())).HasChanges(shouldCheck))
+                    if (child.HasChanges(shouldCheck))
                         return true;
                 }
                 return false;
             }
             else if (!shouldCheck(this))
                 return false;
-            else
+            else {
+                if (GetValue() is System.Collections.IList list) {
+                    return JsonConvert.SerializeObject(GetValue()).Equals(JsonConvert.SerializeObject(GetDefaultValue()));
+                }
                 return GetDefaultValue() == null ? false : !GetDefaultValue().Equals(GetValue());
+            }
         }
 
         public bool HasChildren() {
             return GetChildren().Count() > 0;
         }
 
-        public IEnumerable<FieldInfo> GetChildren() {
+        public IEnumerable<ISetting> GetChildren() {
             if (Children == null)
                 Children = GetValue().GetType().GetFields(Settings.BindingFlags)
-                   .Where(f => typeof(ISetting).IsAssignableFrom(f.FieldType));
+                   .Where(f => typeof(ISetting).IsAssignableFrom(f.FieldType))
+                   .Select(f => (ISetting)f.GetValue(GetValue()));
             return Children;
         }
 
@@ -87,7 +94,53 @@ namespace UBLoader.Lib.Settings {
         }
 
         public string DisplayValue(bool expandLists = false, bool useDefault = false) {
-            return Settings.DisplayValue(FullName, expandLists, useDefault);
+            var value = useDefault ? GetDefaultValue() : GetValue();
+
+            if (value.GetType().IsEnum) {
+                var supportsFlagsAttributes = FieldInfo.GetCustomAttributes(typeof(SupportsFlagsAttribute), true);
+
+                if (supportsFlagsAttributes.Length > 0) {
+                    return "0x" + ((uint)value).ToString("X8");
+                }
+                else {
+                    return GetValue().ToString();
+                }
+            }
+            else if (value is System.Collections.IList) {
+                if (expandLists) {
+                    var results = new List<string>();
+
+                    foreach (var item in (System.Collections.IEnumerable)(value)) {
+                        results.Add(item.ToString());
+                    }
+
+                    return $"[{string.Join(",", results.ToArray())}]";
+                }
+                else {
+                    return "[List]";
+                }
+            }
+            else if (value is Hellosam.Net.Collections.IDict) {
+                if (expandLists) {
+                    var results = new List<string>();
+                    var dict = value as Hellosam.Net.Collections.ObservableDictionary<string, string>;
+
+                    foreach (var dk in dict.Keys) {
+                        results.Add($"{dk}: {dict[dk]}");
+                    }
+
+                    return $"{{{string.Join(",", results.ToArray())}}}";
+                }
+                else {
+                    return "{Dictionary}";
+                }
+            }
+            else if (value.GetType() == typeof(int) && FieldInfo.Name.Contains("Color")) {
+                return "0x" + ((int)value).ToString("X8");
+            }
+            else {
+                return value.ToString();
+            }
         }
 
         public string FullDisplayValue() {
