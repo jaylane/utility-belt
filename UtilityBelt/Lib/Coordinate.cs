@@ -13,7 +13,7 @@ namespace UtilityBelt.Lib {
 
         public uint LandBlock { get => Geometry.GetLandblockFromCoordinates(EW, NS); }
 
-        public static Regex CoordinateRegex = new Regex(@"(?<NSval>\d+.?\d*)\s*(?<NSchr>[ns]),?\s*(?<EWval>\d+.?\d*)(?<EWchr>[ew])", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        public static Regex CoordinateRegex = new Regex(@"(?<NSval>\d+.?\d*)\s*(?<NSchr>[ns]),?\s*(?<EWval>\d+.?\d*)(?<EWchr>[ew])(,?\s*(?<Zval>\-?\d+.?\d*)z)?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         public Coordinates() {
 
@@ -34,6 +34,8 @@ namespace UtilityBelt.Lib {
                 coords.NS *= m.Groups["NSchr"].Value.ToLower().Equals("n") ? 1 : -1;
                 coords.EW = double.Parse(m.Groups["EWval"].Value, (IFormatProvider)CultureInfo.InvariantCulture.NumberFormat);
                 coords.EW *= m.Groups["EWchr"].Value.ToLower().Equals("e") ? 1 : -1;
+                if (!string.IsNullOrEmpty(m.Groups["Zval"].Value))
+                    coords.Z = double.Parse(m.Groups["Zval"].Value, (IFormatProvider)CultureInfo.InvariantCulture.NumberFormat);
             }
 
             return coords;
@@ -52,7 +54,7 @@ namespace UtilityBelt.Lib {
         }
 
         public override string ToString() {
-            return $"{Math.Abs(NS).ToString("F2")}{(NS >= 0 ? "N" : "S")}, {Math.Abs(EW).ToString("F2")}{(EW >= 0 ? "E" : "W")} (Z {Z.ToString("F2")})";
+            return $"{Math.Abs(NS).ToString("F2")}{(NS >= 0 ? "N" : "S")}, {Math.Abs(EW).ToString("F2")}{(EW >= 0 ? "E" : "W")}, {Z.ToString("F2")}Z";
         }
     }
 }
