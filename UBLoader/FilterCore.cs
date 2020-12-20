@@ -24,7 +24,7 @@ namespace UBLoader {
 
         private bool needsReload = false;
         private DateTime lastFileChange = DateTime.UtcNow;
-        private bool hasLoaded = false;
+        private static bool hasLoaded = false;
 
         public static string PluginName { get { return "UtilityBelt"; } }
         public static string PluginAssemblyNamespace { get { return "UtilityBelt.UtilityBeltPlugin"; } }
@@ -243,6 +243,10 @@ namespace UBLoader {
 
         public static void LogError(string ex) {
             Lib.File.TryWrite(System.IO.Path.Combine(Global.PluginStorageDirectory, "exceptions.txt"), $"== {DateTime.Now} {ex}\r\n", true);
+            try {
+                if (hasLoaded) CoreManager.Current.Actions.AddChatText($"[UB] {ex}", 15);
+            }
+            catch { }
         }
 
 

@@ -13,6 +13,12 @@ namespace UBLoader.Lib.Settings {
         public T Value {
             get { return _value; }
             set {
+                var validationError = ValidateFunction == null ? null : ValidateFunction(value);
+                if (!string.IsNullOrEmpty(validationError)) {
+                    FilterCore.LogError($"Unable to set {FullName} to {value}: {validationError}");
+                    return;
+                }
+
                 var original = _value;
                 _value = value;
                 if (!hasDefault) {
@@ -26,14 +32,16 @@ namespace UBLoader.Lib.Settings {
         }
 
         public T DefaultValue { get; private set; }
+        public Func<T, string> ValidateFunction { get; }
 
         public Setting() {
 
         }
 
-        public Setting(T initialValue) {
+        public Setting(T initialValue, Func<T, string> validateFunc=null) {
             DefaultValue = initialValue;
             Value = initialValue;
+            ValidateFunction = validateFunc;
             hasDefault = true;
 
             if (Value is INotifyCollectionChanged collection) {

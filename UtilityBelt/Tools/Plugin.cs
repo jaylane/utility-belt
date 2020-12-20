@@ -90,7 +90,11 @@ namespace UtilityBelt.Tools {
         public readonly Setting<bool> PCap = new Setting<bool>(false);
 
         [Summary("PCap rolling buffer depth")]
-        public readonly Setting<int> PCapBufferDepth = new Setting<int>(5000);
+        public readonly Setting<int> PCapBufferDepth = new Setting<int>(5000, (value) => {
+            if (value < 200 || value > 524287)
+                return "Must be between 200-524287.";
+            return null;
+        });
 
         [Summary("Plugin generic messages")]
         public readonly PluginMessageDisplay GenericMessageDisplay = new PluginMessageDisplay(true, ChatMessageType.System);
@@ -1179,14 +1183,6 @@ namespace UtilityBelt.Tools {
         }
 
         private void PCapBufferDepth_Changed(object sender, SettingChangedEventArgs e) {
-            if (PCapBufferDepth < 200) {
-                PCapBufferDepth.Value = 200;
-                return;
-            }
-            else if (PCapBufferDepth > 524287) {
-                PCapBufferDepth.Value = 524287;
-                return;
-            }
             if (PCap)
                 UBHelper.PCap.Enable(PCapBufferDepth);
         }
