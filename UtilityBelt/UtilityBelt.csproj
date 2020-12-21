@@ -209,6 +209,7 @@
     <Compile Include="Lib\Logger.cs" />
     <Compile Include="Tools\PrepClick.cs" />
     <Compile Include="Tools\Professors.cs" />
+    <Compile Include="Tools\Profiles.cs" />
     <Compile Include="UtilityBelt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tools\Assessor.cs" />
@@ -231,6 +232,7 @@
     <Compile Include="Lib\Util.cs" />
     <Compile Include="Views\BaseView.cs" />
     <Compile Include="Views\ColorPicker.cs" />
+    <Compile Include="Views\ConfirmationDialog.cs" />
     <Compile Include="Views\DictionaryEditor.cs" />
     <Compile Include="Views\EnumFlagEditor.cs" />
     <Compile Include="Views\KeyValueTreeView.cs" />
@@ -240,6 +242,7 @@
     <Compile Include="Views\DungeonMapsView.cs" />
     <Compile Include="Views\MainView.cs" />
     <Compile Include="Views\SettingsView.cs" />
+    <Compile Include="Views\TextEditPopup.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\MainView.xml">
@@ -987,6 +990,12 @@
     <EmbeddedResource Include="Views\SettingsView.xml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\ConfirmationDialog.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\TextEditPopup.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

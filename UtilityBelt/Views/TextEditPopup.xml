@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<view icon="8123" title="Edit Text" width="237" height="110">
+		<control progid="DecalControls.FixedLayout" clipped="">
+			<control progid="DecalControls.StaticText" name="DialogLabel" left="8" top="8" width="216" height="16" text="Static Text"/>
+      <control progid="DecalControls.Edit" name="Textbox" left="8" top="26" width="216" height="16" text=""/>
+      <control progid="DecalControls.PushButton" name="OKButton" left="144" top="62" width="80" height="20" text="OK"/>
+      <control progid="DecalControls.PushButton" name="CancelButton" left="8" top="62" width="80" height="20" text="Cancel"/>
+		</control>
+
+</view>

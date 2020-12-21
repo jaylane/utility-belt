@@ -170,8 +170,10 @@ namespace UtilityBelt.Views {
         private OptionResult GetSettingPropFromText(string setting) {
             if (setting.StartsWith("Global."))
                 return UBLoader.FilterCore.Settings.Get(setting);
-            else
+            else if (UB.Settings.Exists(setting))
                 return UB.Settings.Get(setting);
+            else
+                return UB.State.Get(setting);
         }
 
         internal override ACImage GetIcon() {

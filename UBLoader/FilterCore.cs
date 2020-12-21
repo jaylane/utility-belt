@@ -225,8 +225,8 @@ namespace UBLoader {
         /// </summary>
         protected override void Shutdown() {
             try {
-                if (Settings.NeedsSettingsSave)
-                    Settings.SaveSettings();
+                if (Settings.NeedsSave)
+                    Settings.Save();
                 Global.FrameRate.Changed -= FrameRate_Changed;
                 Settings.Dispose();
                 UBHelper.Core.GameStateChanged -= Core_GameStateChanged;

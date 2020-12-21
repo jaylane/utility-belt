@@ -13,75 +13,70 @@ using System.Collections.ObjectModel;
 
 namespace UBLoader.Lib.Settings {
     public class Settings : IDisposable {
-        public bool ShouldSave = false;
+        public bool ShouldSave = true;
 
         public event EventHandler<SettingChangedEventArgs> Changed;
 
         private Dictionary<string, OptionResult> optionResultCache = new Dictionary<string, OptionResult>();
         private IEnumerable<FieldInfo> SettingFieldInfos;
         private FileSystemWatcher settingsFileWatcher = null;
-        private FileSystemWatcher stateFileWatcher = null;
         private TimerClass fileTimer = null;
-        private double lastStateChange = 0;
         private double lastSettingsChange = 0;
-        private Func<ISetting, bool> isSettingLambda;
-        private Func<ISetting, bool> isStateLambda;
-
         public static BindingFlags BindingFlags { get => BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static; }
+        private string _settingsPath;
 
         #region Public Properties
         public bool IsLoaded { get; set; } = false;
         public bool EventsEnabled { get; set; }
+        public string Name { get; }
         public object Parent { get; }
-        public string SettingsPath { get; }
-        public string DefaultSettingsPath { get; }
-        public string CharacterStatePath { get; }
+        public string InitialSettingsPath { get; }
+        public string SettingsPath {
+            get => _settingsPath;
+            set {
+                _settingsPath = value;
+                if (IsLoaded)
+                    Load();
+            }
+        }
+        public string DefaultSettingsPath { get; private set; }
+        public Func<ISetting, bool> ShouldSerializeCheck { get; private set; }
         public bool IsLoading { get; private set; }
-        public bool NeedsSettingsSave { get; private set; }
-        public bool NeedsSettingsLoad { get; private set; }
-        public bool NeedsStateLoad { get; private set; }
-        public bool NeedsStateSave { get; private set; }
+        public bool NeedsSave { get; private set; }
+        public bool NeedsLoad { get; private set; }
         #endregion
 
 
-        public Settings(object parent, string settingsPath, string defaultSettingsPath=null, string characterStatePath=null) {
-            isSettingLambda = s => s.SettingType != SettingType.State;
-            isStateLambda = s => s.SettingType == SettingType.State;
-
+        public Settings(object parent, string settingsPath, Func<ISetting, bool> serializeTest=null, string defaultSettingsPath=null, string name="") {
+            Name = name;
             Parent = parent;
+            InitialSettingsPath = settingsPath;
             SettingsPath = settingsPath;
             DefaultSettingsPath = defaultSettingsPath;
-            CharacterStatePath = characterStatePath;
+            ShouldSerializeCheck = serializeTest;
             Changed += Settings_Changed;
         }
 
         #region Event Handlers
         private void FileTimer_Timeout(Decal.Interop.Input.Timer Source) {
             try {
-                if (NeedsSettingsSave && UBHelper.Core.Uptime - lastSettingsChange > 1)
-                    SaveSettings();
-                if (NeedsStateSave && UBHelper.Core.Uptime - lastStateChange > 1)
-                    SaveState();
+                if (NeedsSave && UBHelper.Core.Uptime - lastSettingsChange > 1)
+                    Save();
 
-                if (!NeedsSettingsSave && !NeedsStateSave) {
+                if (!NeedsSave)
                     fileTimer.Stop();
-                }
             }
             catch (Exception ex) { FilterCore.LogException(ex); }
         }
 
         private void Settings_Changed(object sender, SettingChangedEventArgs e) {
-            if (ShouldSave) {
-                if (sender is ISetting && ((ISetting)sender).SettingType == SettingType.State) {
-                    NeedsStateSave = true;
-                    lastStateChange = UBHelper.Core.Uptime;
-                }
-                else {
-                    NeedsSettingsSave = true;
+            if (ShouldSave && IsLoaded) {
+                if (ShouldSerializeCheck == null || ShouldSerializeCheck(e.Setting)) {
+                    NeedsSave = true;
                     lastSettingsChange = UBHelper.Core.Uptime;
+                    if (!fileTimer.Running)
+                        fileTimer.Start(1000);
                 }
-                if (!fileTimer.Running)
-                    fileTimer.Start(1000);
             }
         }
         #endregion Event Handlers
@@ -92,16 +87,19 @@ namespace UBLoader.Lib.Settings {
             var setting = (ISetting)field.GetValue(parent);
             IEnumerable<FieldInfo> childFields;
 
-            setting.SetName(name);
-            setting.Settings = this;
-            setting.FieldInfo = field;
-
             if (setting.SettingType == SettingType.Unknown) {
                 if (parent is ISetting && ((ISetting)parent).SettingType == SettingType.Global)
                     setting.SettingType = SettingType.Global;
                 else
                     setting.SettingType = Parent.GetType() == typeof(UBLoader.FilterCore) ? SettingType.Global : SettingType.Profile;
             }
+
+            if (setting.Settings == null && (ShouldSerializeCheck == null || ShouldSerializeCheck(setting))) {
+                setting.Settings = this;
+            }
+
+            setting.SetName(name);
+            setting.FieldInfo = field;
 
             var summary = field.GetCustomAttributes(typeof(SummaryAttribute), false).FirstOrDefault();
             if (summary != null)
@@ -118,7 +116,7 @@ namespace UBLoader.Lib.Settings {
                                 .Where(f => typeof(ISetting).IsAssignableFrom(f.FieldType));
 
             if (childFields.Count() == 0) {
-                if (!setting.IsContainer)
+                if (!setting.IsContainer && (ShouldSerializeCheck == null || ShouldSerializeCheck(setting)))
                     optionResultCache.Add(name.ToLower(), new OptionResult(setting, field, parent));
             }
             else {
@@ -147,8 +145,12 @@ namespace UBLoader.Lib.Settings {
             return results;
         }
 
+        public bool Exists(string key) {
+            return optionResultCache.ContainsKey(key.ToLower());
+        }
+
         public OptionResult Get(string key) {
-            if (optionResultCache.ContainsKey(key.ToLower()))
+            if (Exists(key.ToLower()))
                 return optionResultCache[key.ToLower()];
             else
                 return null;
@@ -169,7 +171,7 @@ namespace UBLoader.Lib.Settings {
             if (!string.IsNullOrEmpty(DefaultSettingsPath) && System.IO.File.Exists(DefaultSettingsPath)) {
                 try {
                     var token = JObject.Parse(System.IO.File.ReadAllText(DefaultSettingsPath));
-                    var settings = Deserialize(token, Parent, "", isSettingLambda);
+                    var settings = Deserialize(token, Parent, "");
                     return settings;
                 }
                 catch (Exception ex) {
@@ -194,51 +196,34 @@ namespace UBLoader.Lib.Settings {
                 }
 
                 IsLoading = true;
-                DisableSaving();
                 LoadDefaults();
                 LoadSettings();
-                LoadState();
             }
             finally {
                 IsLoaded = true;
                 IsLoading = false;
                 EventsEnabled = true;
-                EnableSaving();
             }
         }
 
-        private void LoadState() {
-            Load(CharacterStatePath, isStateLambda, ref stateFileWatcher);
-            NeedsStateLoad = false;
-        }
-
         private void LoadSettings() {
-            Load(SettingsPath, isSettingLambda, ref settingsFileWatcher);
-            NeedsSettingsLoad = false;
-        }
-
-        private void Load(string path, Func<ISetting, bool> shouldDeserialize) {
-            var temp = new FileSystemWatcher();
-            Load(path, shouldDeserialize, ref temp);
-            temp.Dispose();
-        }
-
-        private void Load(string path, Func<ISetting, bool> shouldDeserialize, ref FileSystemWatcher watcher) {
             try {
                 List<string> deserializedSettings = new List<string>();
 
-                if (!IsLoaded && !string.IsNullOrEmpty(path)) {
-                    watcher = new FileSystemWatcher();
-                    watcher.Path = Path.GetDirectoryName(path);
-                    watcher.NotifyFilter = NotifyFilters.LastWrite;
-                    watcher.Filter = Path.GetFileName(path);
-                    watcher.Changed += (s, e) => {
+                if (settingsFileWatcher != null && (settingsFileWatcher.Path != Path.GetDirectoryName(SettingsPath) || settingsFileWatcher.Filter != Path.GetFileName(SettingsPath))) {
+                    settingsFileWatcher.Dispose();
+                    settingsFileWatcher = null;
+                }
+
+                if (settingsFileWatcher == null && !string.IsNullOrEmpty(SettingsPath)) {
+                    settingsFileWatcher = new FileSystemWatcher();
+                    settingsFileWatcher.Path = Path.GetDirectoryName(SettingsPath);
+                    settingsFileWatcher.NotifyFilter = NotifyFilters.LastWrite;
+                    settingsFileWatcher.Filter = Path.GetFileName(SettingsPath);
+                    settingsFileWatcher.Changed += (s, e) => {
                         try {
                             DisableSaving();
-                            if (path == CharacterStatePath)
-                                LoadState();
-                            else
-                                LoadSettings();
+                            LoadSettings();
                         }
                         catch (Exception ex) {
                             FilterCore.LogException(ex);
@@ -247,48 +232,46 @@ namespace UBLoader.Lib.Settings {
                             EnableSaving();
                         }
                     };
-                    watcher.EnableRaisingEvents = true;
+                    settingsFileWatcher.EnableRaisingEvents = true;
                 }
 
-                if (System.IO.File.Exists(path)) {
-                    var settings = Deserialize(JObject.Parse(File.ReadAllText(path)), Parent, "", shouldDeserialize);
+                if (System.IO.File.Exists(SettingsPath)) {
+                    var settings = Deserialize(JObject.Parse(File.ReadAllText(SettingsPath)), Parent, "");
                     deserializedSettings.AddRange(settings);
+                }
 
-                    if (IsLoaded) {
-                        // on reload, ensure settings no longer in the json are reset to default
-                        foreach (var kv in optionResultCache) {
-                            if (!deserializedSettings.Contains(kv.Value.Setting.FullName) && !kv.Value.Setting.IsContainer) {
-                                kv.Value.Setting.SetValue(kv.Value.Setting.GetDefaultValue());
-                            }
+                if (IsLoaded) {
+                    // on reload, ensure settings no longer in the json are reset to default
+                    foreach (var kv in optionResultCache) {
+                        if (!deserializedSettings.Contains(kv.Value.Setting.FullName) && !kv.Value.Setting.IsContainer) {
+                            kv.Value.Setting.SetValue(kv.Value.Setting.GetDefaultValue());
                         }
                     }
                 }
+
+                NeedsLoad = false;
             }
             catch (Exception ex) {
-                FilterCore.LogError($"Unable to load settings from: {path}");
+                FilterCore.LogError($"Unable to load settings from: {SettingsPath}");
                 FilterCore.LogException(ex);
             }
         }
 
-        public void SaveState() {
+        public void Save() {
             try {
-                stateFileWatcher.EnableRaisingEvents = false;
-                Save(CharacterStatePath, isStateLambda);
-                NeedsStateSave = false;
-            }
-            catch (Exception ex) {
-                FilterCore.LogException(ex);
-            }
-            finally {
-                stateFileWatcher.EnableRaisingEvents = true;
-            }
-        }
+                if (!ShouldSave || IsLoading || string.IsNullOrEmpty(SettingsPath))
+                    return;
 
-        public void SaveSettings() {
-            try {
                 settingsFileWatcher.EnableRaisingEvents = false;
-                Save(SettingsPath, isSettingLambda);
-                NeedsSettingsSave = false;
+
+                var jObj = new JObject();
+                IEnumerable<FieldInfo> settings = GetSettingFieldsFromParent();
+                foreach (var setting in settings) {
+                    Serialize(jObj, Parent, (ISetting)setting.GetValue(Parent));
+                }
+                var json = jObj.ToString();
+                File.TryWrite(SettingsPath, json, false);
+                NeedsSave = false;
             }
             catch (Exception ex) {
                 FilterCore.LogException(ex);
@@ -297,28 +280,10 @@ namespace UBLoader.Lib.Settings {
                 settingsFileWatcher.EnableRaisingEvents = true;
             }
         }
-
-        private void Save(string path, Func<ISetting, bool> shouldSerialize) {
-            try {
-                if (!ShouldSave || string.IsNullOrEmpty(path))
-                    return;
-
-                var jObj = new JObject();
-                IEnumerable<FieldInfo> settings = GetSettingFieldsFromParent();
-                foreach (var setting in settings) {
-                    Serialize(jObj, Parent, (ISetting)setting.GetValue(Parent), shouldSerialize);
-                }
-                var json = jObj.ToString();
-                File.TryWrite(path, json, false);
-            }
-            catch (Exception ex) {
-                FilterCore.LogException(ex);
-            }
-        }
         #endregion  Saving / Loading
 
         #region Serialization
-        private List<string> Deserialize(JToken jToken, object setting, string path, Func<ISetting, bool> shouldDeserialize) {
+        private List<string> Deserialize(JToken jToken, object setting, string path) {
             var deserializedSettings = new List<string>();
             if (jToken.Type == JTokenType.Object) {
                 if (setting is ISetting && !((ISetting)setting).IsContainer) {
@@ -333,7 +298,7 @@ namespace UBLoader.Lib.Settings {
                         var field = setting.GetType().GetField(kv.Key, BindingFlags);
                         if (field != null && typeof(ISetting).IsAssignableFrom(field.FieldType)) {
                             var newHistory = $"{(string.IsNullOrEmpty(path) ? "" : path + ".")}{field.Name}";
-                            var settings = Deserialize(kv.Value, ((ISetting)field.GetValue(setting)), newHistory, shouldDeserialize);
+                            var settings = Deserialize(kv.Value, ((ISetting)field.GetValue(setting)), newHistory);
                             deserializedSettings.AddRange(settings);
                         }
                     }
@@ -345,6 +310,7 @@ namespace UBLoader.Lib.Settings {
                 if (collection != null) {
                     collection.Clear();
                     Type typeParameter = value.GetType().GetGenericArguments().Single();
+                    EventsEnabled = false;
                     foreach (var item in (JArray)jToken) {
                         if (typeParameter.GetConstructor(new Type[0]) != null) {
                             object newInstance = Activator.CreateInstance(typeParameter);
@@ -362,9 +328,11 @@ namespace UBLoader.Lib.Settings {
                                 collection.Add(item.ToObject<string>());
                         }
                     }
+                    EventsEnabled = true;
+                    ((ISetting)setting).InvokeChange();
                 }
             }
-            else if (shouldDeserialize != null && shouldDeserialize((ISetting)setting)) {
+            else if (ShouldSerializeCheck == null || ShouldSerializeCheck((ISetting)setting)) {
                 deserializedSettings.Add(((ISetting)setting).FullName);
                 ((ISetting)setting).SetValue(jToken);
             }
@@ -372,19 +340,19 @@ namespace UBLoader.Lib.Settings {
             return deserializedSettings;
         }
 
-        private bool Serialize(JObject jObj, object parent, ISetting setting, Func<ISetting, bool> serializeCheck) {
-            if (!setting.HasChanges(serializeCheck))
+        private bool Serialize(JObject jObj, object parent, ISetting setting) {
+            if (!setting.HasChanges(ShouldSerializeCheck))
                 return false;
 
             if (setting.HasChildren()) {
                 var children = setting.GetChildren();
                 var cObj = new JObject();
                 foreach (var child in children) {
-                    Serialize(cObj, setting.GetValue(), child, serializeCheck);
+                    Serialize(cObj, setting.GetValue(), child);
                 }
                 jObj.Add(setting.Name, cObj);
             }
-            else if (serializeCheck == null || serializeCheck(setting)) {
+            else if (ShouldSerializeCheck == null || ShouldSerializeCheck(setting)) {
                 if (setting.GetValue() is IList) {
                     var collection = setting.GetValue() as IList;
                     var jArray = new JArray();
@@ -417,7 +385,6 @@ namespace UBLoader.Lib.Settings {
 
         public void Dispose() {
             if (settingsFileWatcher != null) settingsFileWatcher.Dispose();
-            if (stateFileWatcher != null) stateFileWatcher.Dispose();
             Changed -= Settings_Changed;
             if (fileTimer.Running)
                 fileTimer.Stop();
