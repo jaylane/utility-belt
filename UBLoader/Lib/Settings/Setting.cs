@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Hellosam.Net.Collections;
 using System.Collections.Specialized;
+using Newtonsoft.Json;
 
 namespace UBLoader.Lib.Settings {
     public class Setting<T> : ISetting {
@@ -39,10 +40,20 @@ namespace UBLoader.Lib.Settings {
         }
 
         public Setting(T initialValue, Func<T, string> validateFunc=null) {
-            DefaultValue = initialValue;
             Value = initialValue;
             ValidateFunction = validateFunc;
             hasDefault = true;
+
+            if (Value.GetType().IsGenericType) {
+                DefaultValue = (T)Activator.CreateInstance(Value.GetType());
+                if (Value is System.Collections.IList valueList) {
+                    foreach (var item in valueList)
+                        ((System.Collections.IList)DefaultValue).Add(item);
+                }
+            }
+            else {
+                DefaultValue = initialValue;
+            }
 
             if (Value is INotifyCollectionChanged collection) {
                 collection.CollectionChanged += (s, e) => {

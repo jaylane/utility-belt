@@ -9,7 +9,7 @@
         <control progid="DecalControls.PushButton" name="AutoTradeTestMode" left="96" top="40" width="22" height="24" text="T"/>
         <control progid="DecalControls.PushButton" name="ArrowEnabled" left="8" top="72" width="110" height="24" text="Arrow"/>
         <control progid="DecalControls.PushButton" name="ExportPCap" left="8" top="184" width="110" height="24" text="Export PCAP"/>
-        
+
         <control progid="DecalControls.PushButton" name="DungeonMapsEnabled" left="144" top="8" width="110" height="24" text=" Dungeon Maps"/>
         <control progid="DecalControls.PushButton" name="LandscapeMapsEnabled" left="144" top="40" width="110" height="24" text="   Landscape Maps"/>
         <control progid="DecalControls.PushButton" name="VisualNavEnabled" left="144" top="72" width="110" height="24" text="   Visual Nav Lines"/>
@@ -20,9 +20,20 @@
         <control progid="DecalControls.PushButton" name="VideoPatchFocusEnabled" left="368" top="8" width="22" height="24" text="F"/>
         <control progid="DecalControls.PushButton" name="VitalSharingEnabled" left="280" top="40" width="110" height="24" text="Vital Sharing"/>
         <control progid="DecalControls.PushButton" name="DerethTimeEnabled" left="280" top="72" width="110" height="24" text="Dereth Time"/>
-        
+
         <control progid="DecalControls.PushButton" name="Debug" left="280" top="152" width="110" height="24" text="  Debug Mode"/>
         <control progid="DecalControls.PushButton" name="Settings" left="280" top="184" width="110" height="24" text="  Settings"/>
+      </control>
+    </page>
+    <page label="Profiles">
+      <control progid="DecalControls.FixedLayout" clipped="">
+        <control progid="DecalControls.StaticText" name="SettingsLabel" left="16" top="10" width="64" height="16" text="Settings:"/>
+        <control progid="DecalControls.Choice" name="SettingsProfileList" left="88" top="8" width="160" height="19"/>
+        <control progid="DecalControls.PushButton" name="SettingsProfileCopyTo" left="256" top="8" width="48" height="16" text="Copy To"/>
+        <control progid="DecalControls.PushButton" name="SettingsProfileReset" left="312" top="8" width="32" height="16" text="Reset"/>
+        <!-- <control progid="DecalControls.PushButton" name="SettingsImport" left="352" top="8" width="40" height="16" text="Import"/> -->
+
+        <control progid="DecalControls.StaticText" name="HintLabel" left="16" top="200" width="368" height="16" justify="Center" text="[character] profiles are specific to this character."/>
       </control>
     </page>
     <page label="AutoTinker">

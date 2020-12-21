@@ -174,8 +174,10 @@ namespace UtilityBelt.Tools {
                 OptionResult option;
                 if (name.StartsWith("global."))
                     option = UBLoader.FilterCore.Settings.Get(name);
-                else
+                else if (UB.Settings.Exists(name))
                     option = UB.Settings.Get(name);
+                else
+                    option = UB.State.Get(name);
 
                 if (option == null || option.Setting == null) {
                     Logger.Error("Invalid option: " + name);
@@ -240,6 +242,7 @@ namespace UtilityBelt.Tools {
         private string ListOptions(object obj, object parentObj, string history) {
             var results = "";
             var settings = UB.Settings.GetAll();
+            var state = UB.State.GetAll();
             var globalSettings = UBLoader.FilterCore.Settings.GetAll();
 
             foreach (var setting in globalSettings) {
@@ -247,6 +250,10 @@ namespace UtilityBelt.Tools {
             }
 
             foreach (var setting in settings) {
+                results += $"{setting.FullName} ({setting.SettingType}) = {setting.DisplayValue(true)}\n";
+            }
+
+            foreach (var setting in state) {
                 results += $"{setting.FullName} ({setting.SettingType}) = {setting.DisplayValue(true)}\n";
             }
             return results;

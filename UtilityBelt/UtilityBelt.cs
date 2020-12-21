@@ -125,6 +125,7 @@ namespace UtilityBelt {
         internal DungeonMapsView DungeonMapView;
         internal LandscapeMapsView LandscapeMapView;
         public Settings Settings;
+        public Settings State;
         internal Database Database;
         internal UBHudManager Huds;
 
@@ -152,6 +153,7 @@ namespace UtilityBelt {
         public LSD LSD;
         public Nametags Nametags;
         public Professors Professors;
+        public Profiles Profiles;
         public QuestTracker QuestTracker;
         public VisualNav VisualNav;
         public VTankControl VTank;
@@ -236,11 +238,6 @@ namespace UtilityBelt {
             Logger.Init();
             Huds = new UBHudManager();
 
-            var defaultSettingsPath = System.IO.Path.Combine(Util.AssemblyDirectory, "settings.default.json");
-            var settingsPath = System.IO.Path.Combine(Util.GetCharacterDirectory(), "settings.json");
-            var statePath = System.IO.Path.Combine(Util.GetCharacterDirectory(), "state.json");
-            Settings = new Settings(this, settingsPath, defaultSettingsPath, statePath);
-
             Database = new Database(DatabaseFile);
 
             MainView = new MainView(this);
@@ -251,8 +248,7 @@ namespace UtilityBelt {
             HotkeyWrapperManager.Startup("UB");
 
             LoadTools();
-            Settings.Load();
-
+            InitSettings();
             InitTools();
             InitCommands();
             InitHotkeys();
@@ -274,7 +270,24 @@ namespace UtilityBelt {
             }
 
             Settings.Changed += Settings_Changed;
+            State.Changed += State_Changed;
             UBLoader.FilterCore.Settings.Changed += FilterSettings_Changed;
+        }
+
+        private void InitSettings() {
+            var defaultSettingsPath = System.IO.Path.Combine(Util.AssemblyDirectory, "settings.default.json");
+            var statePath = System.IO.Path.Combine(Util.GetCharacterDirectory(), "state.json");
+
+            State = new Settings(this, statePath, p => p.SettingType == SettingType.State, null, "State");
+            State.Load();
+
+            Settings = new Settings(this, Profiles.SettingsProfilePath, p => p.SettingType == SettingType.Profile, defaultSettingsPath, "Settings");
+            Settings.Load();
+        }
+
+        private void State_Changed(object sender, SettingChangedEventArgs e) {
+            if (State.ShouldSave || (State.IsLoaded && State.IsLoading))
+                Logger.Debug(e.Setting.FullDisplayValue());
         }
 
         private void FilterSettings_Changed(object sender, SettingChangedEventArgs e) {
@@ -544,11 +557,12 @@ namespace UtilityBelt {
             try {
                 UBLoader.FilterCore.Settings.Changed -= FilterSettings_Changed;
                 Settings.Changed -= Settings_Changed;
+                State.Changed -= State_Changed;
 
-                if (Settings.NeedsSettingsSave)
-                    Settings.SaveSettings();
-                if (Settings.NeedsStateSave)
-                    Settings.SaveState();
+                if (Settings.NeedsSave)
+                    Settings.Save();
+                if (State.NeedsSave)
+                    State.Save();
 
                 if (Core != null)
                     Core.CommandLineText -= Core_CommandLineText;
@@ -573,6 +587,7 @@ namespace UtilityBelt {
                 PerfMonitor.Dispose();
                 UBLoader.Lib.File.FlushFiles();
                 Settings.Dispose();
+                State.Dispose();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

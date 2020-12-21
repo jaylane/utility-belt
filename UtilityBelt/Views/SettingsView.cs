@@ -219,13 +219,6 @@ namespace UtilityBelt.Views {
             }
         }
 
-        private OptionResult GetSettingPropFromText(string setting) {
-            if (setting.StartsWith("Global."))
-                return UBLoader.FilterCore.Settings.Get(setting.Substring(7));
-            else
-                return UB.Settings.Get(setting);
-        }
-
         public void ClearSettingsForm() {
             if (currentForm != null) {
                 currentForm.Dispose();

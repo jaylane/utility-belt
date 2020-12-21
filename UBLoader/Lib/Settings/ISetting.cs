@@ -59,11 +59,11 @@ namespace UBLoader.Lib.Settings {
                 }
                 return false;
             }
-            else if (!shouldCheck(this))
+            else if (shouldCheck != null && !shouldCheck(this))
                 return false;
             else {
                 if (GetValue() is System.Collections.IList list) {
-                    return JsonConvert.SerializeObject(GetValue()).Equals(JsonConvert.SerializeObject(GetDefaultValue()));
+                    return !JsonConvert.SerializeObject(GetValue()).Equals(JsonConvert.SerializeObject(GetDefaultValue()));
                 }
                 return GetDefaultValue() == null ? false : !GetDefaultValue().Equals(GetValue());
             }
@@ -106,15 +106,13 @@ namespace UBLoader.Lib.Settings {
                     return GetValue().ToString();
                 }
             }
-            else if (value is System.Collections.IList) {
+            else if (value is System.Collections.IList valueList) {
                 if (expandLists) {
-                    var results = new List<string>();
+                    var results = new string[valueList.Count];
+                    for (var i = 0; i < valueList.Count; i++)
+                        results[i] = valueList[i].ToString();
 
-                    foreach (var item in (System.Collections.IEnumerable)(value)) {
-                        results.Add(item.ToString());
-                    }
-
-                    return $"[{string.Join(",", results.ToArray())}]";
+                    return $"[{string.Join(",", results)}]";
                 }
                 else {
                     return "[List]";
