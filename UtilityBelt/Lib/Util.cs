@@ -84,6 +84,10 @@ namespace UtilityBelt
             return path;
         }
 
+        public static string GetProfilesDirectory() {
+            return Path.Combine(GetPluginDirectory(), "profiles");
+        }
+
         internal static string GetResourcesDirectory() {
             return Path.Combine(AssemblyDirectory, "Resources");
         }

@@ -127,6 +127,7 @@ namespace UtilityBelt {
         public Settings Settings;
         public Settings State;
         public Settings ClientUISettings;
+        public Settings PlayerOptionsSettings;
         internal Database Database;
         internal UBHudManager Huds;
 
@@ -142,6 +143,7 @@ namespace UtilityBelt {
         public AutoVendor AutoVendor;
         public ChatLogger ChatLogger;
         public ChatNameClickHandler ChatNameClickHandler;
+        public Client Client;
         public Counter Counter;
         public DerethTime DerethTime;
         public DungeonMaps DungeonMaps;
@@ -153,8 +155,8 @@ namespace UtilityBelt {
         public LandscapeMaps LandscapeMaps;
         public LSD LSD;
         public Nametags Nametags;
+        public PlayerOptions PlayerOptions;
         public Professors Professors;
-        public Profiles Profiles;
         public QuestTracker QuestTracker;
         public VisualNav VisualNav;
         public VTankControl VTank;
@@ -282,11 +284,14 @@ namespace UtilityBelt {
             State = new Settings(this, statePath, p => p.SettingType == SettingType.State, null, "State");
             State.Load();
 
-            Settings = new Settings(this, Profiles.SettingsProfilePath, p => p.SettingType == SettingType.Profile, defaultSettingsPath, "Settings");
+            Settings = new Settings(this, Plugin.SettingsProfilePath, p => p.SettingType == SettingType.Profile, defaultSettingsPath, "Settings");
             Settings.Load();
 
-            ClientUISettings = new Settings(Profiles.ClientUI, Profiles.ClientUIProfilePath, p => p.SettingType == SettingType.ClientUI, null, "ClientUI");
+            ClientUISettings = new Settings(Client.ClientUI, Client.ClientUIProfilePath, p => p.SettingType == SettingType.ClientUI, null, "ClientUI");
             ClientUISettings.Load();
+
+            PlayerOptionsSettings = new Settings(PlayerOptions.PlayerOption, PlayerOptions.CharacterOptionsProfilePath, p => p.SettingType == SettingType.CharacterSettings, null, "PlayerOptions");
+            PlayerOptionsSettings.Load();
         }
 
         private void State_Changed(object sender, SettingChangedEventArgs e) {
@@ -569,6 +574,8 @@ namespace UtilityBelt {
                     State.Save();
                 if (ClientUISettings.NeedsSave)
                     ClientUISettings.Save();
+                if (PlayerOptionsSettings.NeedsSave)
+                    PlayerOptionsSettings.Save();
 
                 if (Core != null)
                     Core.CommandLineText -= Core_CommandLineText;
@@ -595,6 +602,7 @@ namespace UtilityBelt {
                 Settings.Dispose();
                 State.Dispose();
                 ClientUISettings.Dispose();
+                PlayerOptionsSettings.Dispose();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

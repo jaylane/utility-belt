@@ -19,6 +19,13 @@ using Hellosam.Net.Collections;
 namespace UtilityBelt.Views {
     public class MainView : BaseView {
         private Timer timer;
+        private FileSystemWatcher profilesWatcher;
+        private ConfirmationDialog confirmationPopup;
+        private TextEditPopup textEditPopup;
+
+        private HudCombo SettingsProfilesCombo;
+        private HudButton SettingsProfileCopyTo;
+        private HudButton SettingsProfileReset;
 
         private HudButton CheckForUpdate;
         internal HudButton ExportPCap;
@@ -73,11 +80,19 @@ namespace UtilityBelt.Views {
                 CheckForUpdate = (HudButton)view["CheckForUpdate"];
                 ExportPCap = (HudButton)view["ExportPCap"];
                 SettingsButton = (HudButton)view["Settings"];
+                SettingsProfilesCombo = (HudCombo)view["SettingsProfilesCombo"];
+                SettingsProfileCopyTo = (HudButton)view["SettingsProfileCopyTo"];
+                SettingsProfileReset = (HudButton)view["SettingsProfileReset"];
+
+                SettingsProfilesCombo.Change += SettingsProfilesCombo_Change;
+                SettingsProfileCopyTo.Hit += SettingsProfileCopyTo_Hit;
+                SettingsProfileReset.Hit += SettingsProfileReset_Hit;
 
                 CheckForUpdate.Hit += CheckForUpdate_Hit;
                 ExportPCap.Hit += ExportPCap_Hit;
                 SettingsButton.Hit += SettingsButton_Hit;
                 UB.Plugin.PCap.Changed += PCap_Changed;
+                UB.Plugin.SettingsProfile.Changed += SettingsProfile_Changed;
 
                 foreach (var kv in buttons) {
                     UpdateButton(kv);
@@ -108,9 +123,11 @@ namespace UtilityBelt.Views {
                 }
 
                 ExportPCap.Visible = UB.Plugin.PCap;
-
+                PopulateProfiles(Tools.Plugin.SettingsProfileExtension, SettingsProfilesCombo, UB.Plugin.SettingsProfile);
+                SetupFileWatcher();
             }
             catch (Exception ex) { Logger.LogException(ex); }
+
         }
 
         private void SettingsButton_Hit(object sender, EventArgs e) {
@@ -126,6 +143,11 @@ namespace UtilityBelt.Views {
 
         private void PCap_Changed(object sender, SettingChangedEventArgs e) {
             ExportPCap.Visible = UB.Plugin.PCap;
+        }
+
+        private void SettingsProfile_Changed(object sender, SettingChangedEventArgs e) {
+            UB.Settings.SettingsPath = UB.Plugin.SettingsProfilePath;
+            PopulateProfiles(Tools.Plugin.SettingsProfileExtension, SettingsProfilesCombo, UB.Plugin.SettingsProfile);
         }
 
         private void WindowPosition_Changed(object sender, SettingChangedEventArgs e) {
@@ -176,6 +198,107 @@ namespace UtilityBelt.Views {
                 return UB.State.Get(setting);
         }
 
+        internal void PopulateProfiles(string profileExtension, HudCombo profilesCombo, string selected) {
+            profilesCombo.Clear();
+            profilesCombo.AddItem("[character]", "[character]");
+            profilesCombo.Current = 0;
+            string[] profiles = Directory.GetFiles(Util.GetProfilesDirectory(), $"*.{profileExtension}");
+            List<string> foundProfileNames = new List<string>();
+            foreach (var profile in profiles) {
+                var name = Path.GetFileName(profile).Replace("." + profileExtension, "");
+                profilesCombo.AddItem(name, name);
+                if (name == selected)
+                    profilesCombo.Current = profilesCombo.Count - 1;
+                foundProfileNames.Add(name);
+            }
+            if (selected != "[character]" && !foundProfileNames.Contains(selected)) {
+                profilesCombo.AddItem(selected, selected);
+                profilesCombo.Current = profilesCombo.Count - 1;
+            }
+        }
+
+        private void SetupFileWatcher() {
+            profilesWatcher = new FileSystemWatcher();
+            profilesWatcher.Path = Util.GetProfilesDirectory();
+            profilesWatcher.Filter = $"*.json";
+
+            profilesWatcher.Created += ProfilesWatcher_Changed;
+            profilesWatcher.Renamed += ProfilesWatcher_Changed;
+            profilesWatcher.Deleted += ProfilesWatcher_Changed;
+
+            profilesWatcher.EnableRaisingEvents = true;
+        }
+
+        private void ProfilesWatcher_Changed(object sender, FileSystemEventArgs e) {
+            PopulateProfiles(Tools.Plugin.SettingsProfileExtension, SettingsProfilesCombo, UB.Plugin.SettingsProfile);
+            PopulateProfiles(Tools.Client.ClientUIProfileExtension, UB.Client.ClientUIProfilesCombo, UB.Client.UIProfile);
+        }
+
+        private void SettingsProfileReset_Hit(object sender, EventArgs e) {
+            ResetProfile(SettingType.Profile, UB.Settings, UB.Plugin.SettingsProfile);
+        }
+
+
+        private void SettingsProfileCopyTo_Hit(object sender, EventArgs e) {
+            CopyProfile(UB.Plugin.SettingsProfile, UB.Plugin.SettingsProfilePath, (v) => {
+                return Path.Combine(Util.GetProfilesDirectory(), $"{v}.{Tools.Plugin.SettingsProfileExtension}");
+            });
+        }
+
+        private void SettingsProfilesCombo_Change(object sender, EventArgs e) {
+            UB.Plugin.SettingsProfile.Value = ((HudStaticText)SettingsProfilesCombo[SettingsProfilesCombo.Current]).Text;
+        }
+
+        internal void CopyProfile(ISetting profileSetting, string profilePath, Func<string, string> calcNewProfilePath) {
+            if (textEditPopup != null)
+                textEditPopup.Dispose();
+
+            textEditPopup = new TextEditPopup(UB.MainView.view, "", $"Copy profile '{profileSetting.GetValue()}' to:");
+            textEditPopup.ClickedOK += (s, te) => {
+                if (string.IsNullOrEmpty(textEditPopup.Value)) {
+                    Logger.Error($"Profile name must not be empty");
+                    return;
+                }
+
+                var newProfilePath = calcNewProfilePath(textEditPopup.Value);
+                if (File.Exists(newProfilePath)) {
+                    Logger.Error($"Profile already exists: {newProfilePath}");
+                }
+                else if (!File.Exists(profilePath)) {
+                    Logger.Error($"Existing profile does not exist: {profilePath}");
+                }
+                else {
+                    Logger.WriteToChat($"Copying profile '{profileSetting.GetValue()}' to new profile: {textEditPopup.Value}");
+                    File.Copy(profilePath, newProfilePath);
+                    profileSetting.SetValue(textEditPopup.Value);
+                }
+            };
+        }
+
+        internal void ResetProfile(SettingType settingType, Settings settings, string profileName) {
+            if (confirmationPopup != null)
+                confirmationPopup.Dispose();
+
+            confirmationPopup = new ConfirmationDialog(UB.MainView.view, "Are you sure you want to clear this profile and set it to entirely default values?");
+            confirmationPopup.ClickedOK += (s, ce) => {
+                foreach (var setting in settings.GetAll()) {
+                    if (setting.SettingType == settingType)
+                        setting.SetValue(setting.GetDefaultValue());
+                }
+                Logger.WriteToChat($"Reset profile to defaults: {profileName}");
+            };
+        }
+
+        internal void ImportProfile(Func<bool> ok) {
+            if (confirmationPopup != null)
+                confirmationPopup.Dispose();
+
+            confirmationPopup = new ConfirmationDialog(UB.MainView.view, "Are you sure you want to clear this profile and import fresh values?");
+            confirmationPopup.ClickedOK += (s, ce) => {
+                ok();
+            };
+        }
+
         internal override ACImage GetIcon() {
             if (icon != null)
                 return icon;
@@ -190,6 +313,9 @@ namespace UtilityBelt.Views {
             UB.Plugin.WindowPositionX.Changed -= WindowPosition_Changed;
             UB.Plugin.WindowPositionY.Changed -= WindowPosition_Changed;
             if (settingsView != null) settingsView.Dispose();
+            if (profilesWatcher != null) profilesWatcher.Dispose();
+            if (textEditPopup != null) textEditPopup.Dispose();
+            if (confirmationPopup != null) confirmationPopup.Dispose();
         }
     }
 }

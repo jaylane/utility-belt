@@ -285,12 +285,13 @@
             Provides helper methods for the current player
             </summary>
         </member>
-        <member name="M:UBHelper.Player.SetOption(UBHelper.Player.PlayerOption,System.Boolean)">
+        <member name="M:UBHelper.Player.SetOption(UBHelper.Player.PlayerOption,System.Boolean,System.Boolean)">
             <summary>
             Sets a player option
             </summary>
             <param name="playerOption">PlayerOption to set</param>
             <param name="value">new value</param>
+            <param name="saveToServer">save option to server</param>
         </member>
         <member name="M:UBHelper.Player.GetOption(UBHelper.Player.PlayerOption)">
             <summary>
@@ -298,6 +299,11 @@
             </summary>
             <param name="playerOption">PlayerOption to get</param>
             <returns>current value</returns>
+        </member>
+        <member name="M:UBHelper.Player.SaveOptions">
+            <summary>
+            Save the options to the server
+            </summary>
         </member>
         <member name="T:UBHelper.ConfirmationRequest">
             <summary>
