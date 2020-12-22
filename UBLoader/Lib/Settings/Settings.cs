@@ -88,8 +88,8 @@ namespace UBLoader.Lib.Settings {
             IEnumerable<FieldInfo> childFields;
 
             if (setting.SettingType == SettingType.Unknown) {
-                if (parent is ISetting && ((ISetting)parent).SettingType == SettingType.Global)
-                    setting.SettingType = SettingType.Global;
+                if (parent is ISetting && ((ISetting)parent).SettingType != SettingType.Unknown)
+                    setting.SettingType = ((ISetting)parent).SettingType;
                 else
                     setting.SettingType = Parent.GetType() == typeof(UBLoader.FilterCore) ? SettingType.Global : SettingType.Profile;
             }

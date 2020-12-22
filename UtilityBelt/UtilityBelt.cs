@@ -126,6 +126,7 @@ namespace UtilityBelt {
         internal LandscapeMapsView LandscapeMapView;
         public Settings Settings;
         public Settings State;
+        public Settings ClientUISettings;
         internal Database Database;
         internal UBHudManager Huds;
 
@@ -283,6 +284,9 @@ namespace UtilityBelt {
 
             Settings = new Settings(this, Profiles.SettingsProfilePath, p => p.SettingType == SettingType.Profile, defaultSettingsPath, "Settings");
             Settings.Load();
+
+            ClientUISettings = new Settings(Profiles.ClientUI, Profiles.ClientUIProfilePath, p => p.SettingType == SettingType.ClientUI, null, "ClientUI");
+            ClientUISettings.Load();
         }
 
         private void State_Changed(object sender, SettingChangedEventArgs e) {
@@ -563,6 +567,8 @@ namespace UtilityBelt {
                     Settings.Save();
                 if (State.NeedsSave)
                     State.Save();
+                if (ClientUISettings.NeedsSave)
+                    ClientUISettings.Save();
 
                 if (Core != null)
                     Core.CommandLineText -= Core_CommandLineText;
@@ -588,6 +594,7 @@ namespace UtilityBelt {
                 UBLoader.Lib.File.FlushFiles();
                 Settings.Dispose();
                 State.Dispose();
+                ClientUISettings.Dispose();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

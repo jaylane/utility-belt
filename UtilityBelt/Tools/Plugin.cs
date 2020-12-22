@@ -846,6 +846,45 @@ namespace UtilityBelt.Tools {
             return;
         }
         #endregion
+        #region /ub getui
+        [Summary("Returns the client window positions, encoded as a base64 string")]
+        [Usage("/ub getui")]
+        [CommandPattern("getui", @"^$")]
+        public void DoGetUI(string _, Match _2) {
+            uint[] positions = new uint[32];
+            int pos = 0;
+            foreach (int i in Enum.GetValues(typeof(UBHelper.UIElement))) {
+                System.Drawing.Rectangle t = UBHelper.Core.GetElementPosition((UBHelper.UIElement)i);
+                //Logger.WriteToChat($"Elem {(UBHelper.UIElement)i}: {pos}={(t.X << 16) + t.Y:X8},{pos + 1}={(t.Width << 16) + t.Height:X8}");
+                positions[pos] = ((uint)t.X << 16) + (uint)t.Y;
+                positions[pos+1] = ((uint)t.Width << 16) + (uint)t.Height;
+                pos += 2;
+            }
+
+            byte[] barr = new byte[128];
+            Buffer.BlockCopy(positions, 0, barr, 0, 128);
+            string output = System.Convert.ToBase64String(barr);
+            Logger.WriteToChat($"UI:{output}");
+        }
+        #endregion
+        #region /ub setui <value>
+        [Summary("Sets the client window positions, based on a base64 string")]
+        [Usage("/ub setui UI:<string from getui>")]
+        [Example("/ub setui UI:UI:AAAAAMkBzgKLAA0BbgDCAZEAAABoAPoA8wANAWgAwwFVAQ0BaADCAWwAmQGTAjYBAACwAToAoABSAQAAeADPAgAAygKhAjYBxgEAADoB0AKcAsoCZAA2AQAAAAAeAJYAkAFfABkAKgNxAQAAWgDOAhoAJgKMAHgAAACXABoAzAE=", "Sets the UI to a pretty standard 1024x768 layout")]
+        [CommandPattern("setui", @"^UI:(?<ui>[A-Za-z0-9\+/=]{172,172})$", true)]
+        public void DoSetUI(string _, Match args) {
+            string input = args.Groups["ui"].Value;
+            byte[] barr = System.Convert.FromBase64String(input);
+            uint[] positions = new uint[32];
+            Buffer.BlockCopy(barr, 0, positions, 0, 128);
+            int pos = 0;
+            foreach (int i in Enum.GetValues(typeof(UBHelper.UIElement))) {
+                //Logger.WriteToChat($"Elem {(UBHelper.UIElement)i}: X:{positions[pos]>>16} Y:{positions[pos]&0xFFFF} Width:{positions[pos+1]>>16} Height:{positions[pos+1]&0xFFFF}");
+                UBHelper.Core.MoveElement((UBHelper.UIElement)i, new System.Drawing.Rectangle((int)(positions[pos] >> 16), (int)(positions[pos] & 0xFFFF), (int)(positions[pos + 1] >> 16), (int)(positions[pos + 1] & 0xFFFF)));
+                pos += 2;
+            }
+        }
+        #endregion
         #region /ub vitae
         [Summary("Thinks to yourself with your current vitae percentage")]
         [Usage("/ub vitae")]

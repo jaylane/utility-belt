@@ -12,7 +12,11 @@ namespace UBLoader.Lib.Settings {
         Unknown,
         Global,
         Profile,
-        State
+        State,
+
+        ClientUI,
+        SpellBars,
+        CharacterSettings
     };
 
     public abstract class ISetting {
@@ -26,7 +30,7 @@ namespace UBLoader.Lib.Settings {
         public Settings Settings { get; internal set; } = null;
         public FieldInfo FieldInfo { get; internal set; } = null;
         public string Summary { get; internal set; } = "";
-        public SettingType SettingType { get; internal set; }
+        public SettingType SettingType { get; set; }
 
         public bool HasParent { get => Parent != null; }
         public IEnumerable<ISetting> Children { get; private set; }

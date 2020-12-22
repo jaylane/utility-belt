@@ -27,11 +27,17 @@
     </page>
     <page label="Profiles">
       <control progid="DecalControls.FixedLayout" clipped="">
-        <control progid="DecalControls.StaticText" name="SettingsLabel" left="16" top="10" width="64" height="16" text="Settings:"/>
-        <control progid="DecalControls.Choice" name="SettingsProfileList" left="88" top="8" width="160" height="19"/>
+        <control progid="DecalControls.StaticText" name="SettingsLabel" left="16" top="8" width="64" height="16" text="Settings:"/>
+        <control progid="DecalControls.Choice" name="SettingsProfilesCombo" left="88" top="8" width="160" height="19"/>
         <control progid="DecalControls.PushButton" name="SettingsProfileCopyTo" left="256" top="8" width="48" height="16" text="Copy To"/>
         <control progid="DecalControls.PushButton" name="SettingsProfileReset" left="312" top="8" width="32" height="16" text="Reset"/>
         <!-- <control progid="DecalControls.PushButton" name="SettingsImport" left="352" top="8" width="40" height="16" text="Import"/> -->
+        
+        <control progid="DecalControls.StaticText" name="ClientUILabel" left="16" top="36" width="64" height="16" text="Client UI:"/>
+        <control progid="DecalControls.Choice" name="ClientUIProfilesCombo" left="88" top="36" width="160" height="19"/>
+        <control progid="DecalControls.PushButton" name="ClientUIProfileCopyTo" left="256" top="36" width="48" height="16" text="Copy To"/>
+        <control progid="DecalControls.PushButton" name="ClientUIProfileReset" left="312" top="36" width="32" height="16" text="Reset"/>
+        <control progid="DecalControls.PushButton" name="ClientUIProfileImport" left="352" top="36" width="40" height="16" text="Import"/>
 
         <control progid="DecalControls.StaticText" name="HintLabel" left="16" top="200" width="368" height="16" justify="Center" text="[character] profiles are specific to this character."/>
       </control>
