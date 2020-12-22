@@ -150,6 +150,7 @@
     <Compile Include="Lib\Models\WeenieAttribute.cs" />
     <Compile Include="Lib\Models\WeenieSpawn.cs" />
     <Compile Include="Lib\PerfMonitor.cs" />
+    <Compile Include="Lib\Settings\ClientUIProfile.cs" />
     <Compile Include="Lib\Settings\PluginMessageDisplay.cs" />
     <Compile Include="Lib\Spells.cs" />
     <Compile Include="Lib\TextureCache.cs" />
