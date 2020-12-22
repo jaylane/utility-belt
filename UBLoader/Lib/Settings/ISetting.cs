@@ -24,7 +24,7 @@ namespace UBLoader.Lib.Settings {
 
         public string FullName { get; protected set; } = "";
         public string Name => FullName.Split('.').Last();
-        public bool IsContainer { get => typeof(ISetting).IsAssignableFrom(GetValue().GetType()); }
+        public bool IsContainer { get => GetValue() != null && typeof(ISetting).IsAssignableFrom(GetValue().GetType()); }
         public bool IsDefault { get => !HasChanges(p => true); }
         public ISetting Parent { get; internal set; } = null;
         public Settings Settings { get; internal set; } = null;
@@ -56,7 +56,14 @@ namespace UBLoader.Lib.Settings {
         }
 
         public bool HasChanges(Func<ISetting, bool> shouldCheck) {
-            if (GetChildren().Count() > 0) {
+            if (GetValue() == null)
+                return false;
+            else if (Nullable.GetUnderlyingType(GetValue().GetType()) == typeof(bool)) {
+                FilterCore.LogError($"GET UNDER");
+                var vBool = (bool?)GetValue();
+                return vBool.HasValue;
+            }
+            else if (GetChildren().Count() > 0) {
                 foreach (var child in GetChildren()) {
                     if (child.HasChanges(shouldCheck))
                         return true;
@@ -65,12 +72,14 @@ namespace UBLoader.Lib.Settings {
             }
             else if (shouldCheck != null && !shouldCheck(this))
                 return false;
-            else {
+            else if (!(GetValue() is ISetting)) {
                 if (GetValue() is System.Collections.IList list) {
                     return !JsonConvert.SerializeObject(GetValue()).Equals(JsonConvert.SerializeObject(GetDefaultValue()));
                 }
-                return GetDefaultValue() == null ? false : !GetDefaultValue().Equals(GetValue());
+                return GetDefaultValue() == null ? GetDefaultValue() != GetValue() : !GetDefaultValue().Equals(GetValue());
             }
+
+            return false;
         }
 
         public bool HasChildren() {
@@ -78,6 +87,8 @@ namespace UBLoader.Lib.Settings {
         }
 
         public IEnumerable<ISetting> GetChildren() {
+            if (GetValue() == null)
+                return new List<ISetting>();
             if (Children == null)
                 Children = GetValue().GetType().GetFields(Settings.BindingFlags)
                    .Where(f => typeof(ISetting).IsAssignableFrom(f.FieldType))
@@ -100,7 +111,9 @@ namespace UBLoader.Lib.Settings {
         public string DisplayValue(bool expandLists = false, bool useDefault = false) {
             var value = useDefault ? GetDefaultValue() : GetValue();
 
-            if (value.GetType().IsEnum) {
+            if (value == null)
+                return "null";
+            else if (value.GetType().IsEnum) {
                 var supportsFlagsAttributes = FieldInfo.GetCustomAttributes(typeof(SupportsFlagsAttribute), true);
 
                 if (supportsFlagsAttributes.Length > 0) {

@@ -44,7 +44,7 @@ namespace UBLoader.Lib.Settings {
             ValidateFunction = validateFunc;
             hasDefault = true;
 
-            if (Value.GetType().IsGenericType) {
+            if (Value != null && Value.GetType().IsGenericType) {
                 DefaultValue = (T)Activator.CreateInstance(Value.GetType());
                 if (Value is System.Collections.IList valueList) {
                     foreach (var item in valueList)
@@ -55,12 +55,12 @@ namespace UBLoader.Lib.Settings {
                 DefaultValue = initialValue;
             }
 
-            if (Value is INotifyCollectionChanged collection) {
+            if (Value != null && Value is INotifyCollectionChanged collection) {
                 collection.CollectionChanged += (s, e) => {
                     InvokeChange();
                 };
             }
-            else if (Value is ObservableDictionary<string, string> dict) {
+            else if (Value != null && Value is ObservableDictionary<string, string> dict) {
                 DefaultValue = (T)Convert.ChangeType(new ObservableDictionary<string, string>(), Value.GetType());
                 var defaultDict = DefaultValue as ObservableDictionary<string, string>;
                 dict.CollectionChanged += (s, e) => {
@@ -98,8 +98,13 @@ namespace UBLoader.Lib.Settings {
             else if (Value is ObservableDictionary<string, string>) {
                 throw new NotImplementedException();
             }
-            else if (!typeof(ISetting).IsAssignableFrom(newValue.GetType())) {
-                Value = (T)Convert.ChangeType(newValue, Value.GetType());
+            else {
+                try {
+                    Value = (T)Convert.ChangeType(newValue, typeof(T));
+                }
+                catch {
+                    Value = (T)newValue;
+                }
             }
         }
 

@@ -150,7 +150,6 @@
     <Compile Include="Lib\Models\WeenieAttribute.cs" />
     <Compile Include="Lib\Models\WeenieSpawn.cs" />
     <Compile Include="Lib\PerfMonitor.cs" />
-    <Compile Include="Lib\Settings\ClientUIProfile.cs" />
     <Compile Include="Lib\Settings\PluginMessageDisplay.cs" />
     <Compile Include="Lib\Spells.cs" />
     <Compile Include="Lib\TextureCache.cs" />
@@ -165,6 +164,8 @@
     <Compile Include="Lib\VCS_Connector.cs" />
     <Compile Include="Lib\VHS_Connector.cs" />
     <Compile Include="Tools\Arrow.cs" />
+    <Compile Include="Tools\PlayerOptions.cs" />
+    <Compile Include="Tools\Client.cs" />
     <Compile Include="Tools\DerethTime.cs" />
     <Compile Include="Tools\DungeonMaps.cs" />
     <Compile Include="Tools\FellowshipManager.cs" />
@@ -210,7 +211,6 @@
     <Compile Include="Lib\Logger.cs" />
     <Compile Include="Tools\PrepClick.cs" />
     <Compile Include="Tools\Professors.cs" />
-    <Compile Include="Tools\Profiles.cs" />
     <Compile Include="UtilityBelt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tools\Assessor.cs" />
