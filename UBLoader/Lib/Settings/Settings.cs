@@ -34,6 +34,8 @@ namespace UBLoader.Lib.Settings {
         public string SettingsPath {
             get => _settingsPath;
             set {
+                if (NeedsSave)
+                    Save();
                 _settingsPath = value;
                 if (IsLoaded)
                     Load();
