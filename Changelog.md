@@ -13,6 +13,8 @@
 - Add client ui profiles, for managing shared client ui window positions.
 - Add `/ub (get|set)ui` to get/set the client ui window positions as a string
 - Add profile support for player options
+- Add list support to expressions, see expression documentation
+- Add shortcut for getting expression variables ie `$myVariable`, see expression documentation
 
 ## 0.1.8 (2020-11-30) [UtilityBeltInstaller-0.1.8.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/3914a8775e8d4643d4c967761ff9b9d2/UtilityBeltInstaller-0.1.8.exe)
 - Add expression `isrefreshingquests[]`
