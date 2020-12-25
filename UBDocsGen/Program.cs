@@ -50,16 +50,19 @@ namespace UBDocsGen {
         public string Name { get; }
         public Type Type { get; }
         public string Description { get; }
+        public object DefaultValue { get; }
+
         public string FriendlyType {
             get {
-                return Type.ToString().ToLower().Split('.').Last().Split('+').Last().Replace("double", "number");
+                return UtilityBelt.Lib.Expressions.ExpressionVisitor.GetFriendlyType(Type);
             }
         }
 
-        public ExpressionParameterInfo(string name, Type type, string description) {
+        public ExpressionParameterInfo(string name, Type type, string description, object defaultValue) {
             Name = name;
             Type = type;
             Description = description;
+            DefaultValue = defaultValue;
         }
     }
 
@@ -68,7 +71,7 @@ namespace UBDocsGen {
         public string Description { get; }
         public string FriendlyType {
             get {
-                return Type.ToString().ToLower().Split('.').Last().Split('+').Last().Replace("double", "number");
+                return UtilityBelt.Lib.Expressions.ExpressionVisitor.GetFriendlyType(Type);
             }
         }
 
@@ -271,7 +274,8 @@ namespace UBDocsGen {
                 var name = ((ExpressionParameterAttribute)attr).Name;
                 var type = ((ExpressionParameterAttribute)attr).Type;
                 var description = ((ExpressionParameterAttribute)attr).Description;
-                parameters.Add(new ExpressionParameterInfo(name, type, description));
+                var defaultValue = ((ExpressionParameterAttribute)attr).DefaultValue;
+                parameters.Add(new ExpressionParameterInfo(name, type, description, defaultValue));
             }
 
             return parameters;
@@ -591,7 +595,7 @@ All settings take immediate effect on the plugin, and will save to your [charact
         private static void WriteExpressionMethod(StringWriter stringWriter, ExpressionInfo method) {
             var parameters = new List<string>();
             foreach (var p in method.Parameters) {
-                parameters.Add($"<span style=\"color:#27436F\">{p.FriendlyType} {p.Name}</span>");
+                parameters.Add($"<span style=\"color:#27436F\">{p.FriendlyType} {p.Name}{(p.DefaultValue != null ? $"={p.DefaultValue}" : "")}</span>");
             }
 
             stringWriter.WriteLine($"#### {HttpUtility.HtmlEncode(method.MethodName)}[{string.Join(", ", parameters.ToArray())}]");
@@ -605,7 +609,7 @@ All settings take immediate effect on the plugin, and will save to your [charact
 
                 var i = 0;
                 foreach (var p in method.Parameters) {
-                    stringWriter.WriteLine($"> * Param #{i++}: {p.Name} ({p.FriendlyType}) - {p.Description}");
+                    stringWriter.WriteLine($"> * Param #{i++}: {p.Name} ({p.FriendlyType}) {(p.DefaultValue != null ? $"(Default: {p.DefaultValue})" : "")} - {p.Description}");
                 }
             }
 
@@ -619,7 +623,7 @@ All settings take immediate effect on the plugin, and will save to your [charact
                 stringWriter.WriteLine("> ");
 
                 foreach (var example in method.Examples) {
-                    stringWriter.WriteLine($"> * ```{example.Key}``` - {example.Value}");
+                    stringWriter.WriteLine($"> * &nbsp;```{example.Key}``` - {example.Value}");
                 }
             }
 

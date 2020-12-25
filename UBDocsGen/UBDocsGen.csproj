@@ -41,6 +41,9 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Antlr4.Runtime">
+      <HintPath>..\packages\Antlr4.Runtime.4.6.6\lib\net35-client\Antlr4.Runtime.dll</HintPath>
+    </Reference>
     <Reference Include="Decal.Adapter">
       <HintPath>C:\Program Files (x86)\Decal 3.0\Decal.Adapter.dll</HintPath>
     </Reference>

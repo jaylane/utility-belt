@@ -8,7 +8,14 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 namespace UtilityBelt.Lib.Expressions {
-    class ExpressionVisitor : MetaExpressionsBaseVisitor<object> {
+    public class ExpressionVisitor : MetaExpressionsBaseVisitor<object> {
+        public class ExpressionState {
+            public Dictionary<string, object> PersistentVariables = new Dictionary<string, object>();
+            public Dictionary<string, object> GlobalVariables = new Dictionary<string, object>();
+        }
+
+        public ExpressionState State = new ExpressionState();
+
         /// <summary>
         /// Generic Visitor, this gets called on everything and will convert types to meta expression compatible types
         /// </summary>
@@ -24,6 +31,29 @@ namespace UtilityBelt.Lib.Expressions {
                 return (double)0;
             }
 
+            v = FixTypes(v);
+
+            return v;
+        }
+
+        public static string GetFriendlyType(Type type) {
+            if (type == typeof(string))
+                return "string";
+            if (type == typeof(bool))
+                return "number";
+            if (type == typeof(float))
+                return "number";
+            if (type == typeof(int))
+                return "number";
+            if (type == typeof(double))
+                return "number";
+            if (type == typeof(ParamArrayAttribute))
+                return "...items";
+
+            return type.ToString().Split('.').Last().Replace("Expression","");
+        }
+
+        private object FixTypes(object v) {
             if (v == null)
                 return (double)0;
 
@@ -117,21 +147,57 @@ namespace UtilityBelt.Lib.Expressions {
                 arguments.Add(val);
             }
 
-            var key = $"{methodName}:{arguments.Count}";
+            if (UtilityBeltPlugin.Instance.RegisteredExpressions.ContainsKey(methodName)) {
+                var expressionMethod = UtilityBeltPlugin.Instance.RegisteredExpressions[methodName];
+                var argTypes = expressionMethod.ArgumentTypes;
+                var parameters = expressionMethod.Method.GetParameters();
 
-            // TODO: argument type checking?
+                var isParamsKeyword = argTypes.Length > 0 && argTypes.Last() == typeof(ParamArrayAttribute);
+                var hasDefaults = parameters.Length > 0 && parameters.Last().IsOptional;
 
-            if (UtilityBeltPlugin.Instance.RegisteredExpressions.ContainsKey(key)) {
-                var v = UtilityBeltPlugin.Instance.RunExpressionMethod(UtilityBeltPlugin.Instance.RegisteredExpressions[key], arguments.ToArray());
+                for (var i=0; i < parameters.Length; i++) {
+                    // dependency injection
+                    if (parameters[i].ParameterType == typeof(ExpressionState)) {
+                        arguments.Insert(i, State);
+                        continue;
+                    }
 
-                if (v.GetType() == typeof(bool)) {
-                    return ((bool)v == true) ? 1 : 0;
+                    // object type means allow anything
+                    if (argTypes[i] == typeof(object))
+                        continue;
+
+                    // ParamArrayAttribute means params keyword for this argument
+                    if (argTypes[i] == typeof(ParamArrayAttribute)) {
+                        var paramArgs = arguments.Skip(i).ToArray();
+                        arguments = arguments.Take(i).ToList();
+                        arguments.Add(paramArgs);
+                        break;
+                    }
+
+                    // default param and it wasn't passed
+                    if (parameters[i].IsOptional && i > arguments.Count - 1) {
+                        arguments.Add(parameters[i].DefaultValue);
+                        continue;
+                    }
+
+                    if (i < arguments.Count - 1 && arguments[i].GetType() != argTypes[i]) {
+                        throw new Exception($"{expressionMethod.Signature} expects argument #{i + 1}/{argTypes.Length} to be a {GetFriendlyType(argTypes[i])} but a {GetFriendlyType(arguments[i].GetType())} was passed instead. Passed value: {arguments[i].ToString()}");
+                    }
                 }
 
-                return v;
+                if (arguments.Count == 0 && isParamsKeyword) {
+                    arguments = new List<object>(new object[] { null });
+                }
+
+                if (arguments.Count != parameters.Length && !isParamsKeyword) {
+                    throw new Exception($"{expressionMethod.Signature} expects {argTypes.Length} arguments. {arguments.Count} arguments were passed.");
+                }
+                var v = UtilityBeltPlugin.Instance.RunExpressionMethod(expressionMethod, arguments.ToArray());
+
+                return FixTypes(v);
             }
             else {
-                throw new Exception($"Unknown expression method: {key}");
+                throw new Exception($"Unknown expression method: {methodName}");
             }
         }
 
@@ -220,9 +286,9 @@ namespace UtilityBelt.Lib.Expressions {
             double right = (double)Visit(context.expression(1));
             double result = 0;
 
-            if (context.ASTERISK() != null)
+            if (context.MULTIPLY() != null)
                 result = left * right;
-            if (context.SLASH() != null)
+            if (context.DIVIDE() != null)
                 result = left / right;
 
             return result;
@@ -287,6 +353,26 @@ namespace UtilityBelt.Lib.Expressions {
             var matchstr = Visit(context.expression(1)).ToString();
             var re = new Regex(matchstr, RegexOptions.IgnoreCase);
             return re.IsMatch(inputstr);
+        }
+
+        /// <summary>
+        /// Shortcut for getting variables
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public override object VisitGetvarAtomExp([NotNull] MetaExpressionsParser.GetvarAtomExpContext context) {
+            var varname = Visit(context.expression());
+            if (varname.GetType() != typeof(string))
+                throw new Exception($"Variable identifiers must be of type string. Passed: [{GetFriendlyType(varname.GetType())}] {varname.ToString()}");
+
+            if (context.MEMORYVAR() != null)
+                return UtilityBeltPlugin.Instance.VTank.Getvar(varname.ToString());
+            else if (context.PERSISTENTVAR() != null)
+                return UtilityBeltPlugin.Instance.VTank.Getpvar(varname.ToString(), State);
+            else if (context.GLOBALVAR() != null)
+                return UtilityBeltPlugin.Instance.VTank.Getgvar(varname.ToString(), State);
+            else
+                return null;
         }
         #endregion
 

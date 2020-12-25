@@ -135,12 +135,14 @@ namespace UtilityBelt.Lib {
         public Type Type { get; }
         public string Name { get; }
         public string Description { get; }
+        public object DefaultValue { get; }
 
-        public ExpressionParameterAttribute(int index, Type type, string name, string description) {
+        public ExpressionParameterAttribute(int index, Type type, string name, string description, object defaultValue=null) {
             Index = index;
             Type = type;
             Name = name;
             Description = description;
+            DefaultValue = defaultValue;
         }
     }
 

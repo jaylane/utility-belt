@@ -492,17 +492,16 @@ namespace UtilityBelt.Tools {
         [CommandPattern("mexec", @"^(?<Expression>.*)?$")]
         public void EvaluateExpression(string command, Match args) {
             var watch = new System.Diagnostics.Stopwatch();
-            watch.Start();
             try {
                 var input = args.Groups["Expression"].Value;
                 Logger.WriteToChat($"Evaluating expression: \"{input}\"", Logger.LogMessageType.Expression, true, false);
+                watch.Start();
                 var res = UB.VTank.EvaluateExpression(input);
                 watch.Stop();
-                Logger.WriteToChat($"Result: [{res.GetType().ToString().Split('.').Last().ToLower()}] {res} ({Math.Round(watch.ElapsedTicks / 10000.0, 3)}ms)", Logger.LogMessageType.Expression);
+                Logger.WriteToChat($"Result: [{ExpressionVisitor.GetFriendlyType(res.GetType())}] {res} ({Math.Round(watch.ElapsedTicks / 10000.0, 3)}ms)", Logger.LogMessageType.Expression);
             }
             catch (Exception ex) {
                 Logger.LogException(ex);
-                LogError(ex.ToString());
             }
         }
         #endregion
@@ -707,7 +706,6 @@ namespace UtilityBelt.Tools {
             Util.Think($"My vitae is {UB.Core.CharacterFilter.Vitae}%");
         }
         #endregion
-
         #region /ub swearallegiance[p] <name|id|selected>
         /// <summary>
         /// Temporary Home. TODO: Finish Allegiance.cs
@@ -753,9 +751,6 @@ namespace UtilityBelt.Tools {
             Logger.Error($"Could not find {(charName == null ? "closest player" : $"player {charName}")} Command:{command}");
         }
         #endregion
-
-
-
         #endregion
 
         #region Expressions
@@ -771,7 +766,7 @@ namespace UtilityBelt.Tools {
         #region wobjectfindnearestbytemplatetype[int templatetype]
         [ExpressionMethod("wobjectfindnearestbytemplatetype")]
         [ExpressionParameter(0, typeof(double), "templatetype", "templatetype to filter by")]
-        [ExpressionReturn(typeof(Wobject), "Returns a worldobject")]
+        [ExpressionReturn(typeof(ExpressionWorldObject), "Returns a worldobject")]
         [Summary("Attempted to find the nearest landscape world object with the specified template type")]
         [Example("wobjectfindnearestbytemplatetype[42137]", "Returns a worldobject with templaye type 42137 (level 10 ice tachi warden)")]
         public object Wobjectfindnearestbytemplatetype(double templateType) {
@@ -792,29 +787,29 @@ namespace UtilityBelt.Tools {
             wos.Dispose();
 
             if (closest != null)
-                return new Wobject(closest.Id);
+                return new ExpressionWorldObject(closest.Id);
 
             return 0;
         }
         #endregion //wobjectfindnearestbytemplatetype[int templatetype]
         #region wobjectgetintprop[wobject obj, int property]
         [ExpressionMethod("wobjectgetintprop")]
-        [ExpressionParameter(0, typeof(Wobject), "obj", "World object to get intproperty of")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to get intproperty of")]
         [ExpressionParameter(1, typeof(double), "property", "IntProperty to return")]
         [ExpressionReturn(typeof(double), "Returns an int property value")]
         [Summary("Returns an int property from a specific world object, or 0 if it's undefined")]
         [Example("wobjectgetintprop[wobjectgetselection[],218103808]", "Returns the template type of the currently selected object")]
-        public object Wobjectgetintprop(Wobject wobject, double property) {
+        public object Wobjectgetintprop(ExpressionWorldObject wobject, double property) {
             return wobject.Wo.Values((LongValueKey)Convert.ToInt32(property), 0);
         }
         #endregion //wobjectgetintprop[wobject obj, int property]
         #region wobjectgetheadingto[wobject obj]
         [ExpressionMethod("getheadingto")]
-        [ExpressionParameter(0, typeof(Wobject), "obj", "World object to calculate heading towards")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to calculate heading towards")]
         [ExpressionReturn(typeof(double), "Returns the heading in degrees from your player to the target object")]
         [Summary("Calculates the heading in degrees (0-360 clockwise, 0 is north) from your player to the target object")]
         [Example("getheadingto[wobjectgetselection[]]", "Returns the heading in degrees from your player to the target object")]
-        public object Getheadingto(Wobject wobject) {
+        public object Getheadingto(ExpressionWorldObject wobject) {
             var me = PhysicsObject.GetPosition(UB.Core.CharacterFilter.Id);
             var target = PhysicsObject.GetPosition(wobject.Wo.Id);
 
@@ -823,11 +818,11 @@ namespace UtilityBelt.Tools {
         #endregion //wobjectgetheadingto[wobject obj]
         #region getheading[wobject obj]
         [ExpressionMethod("getheading")]
-        [ExpressionParameter(0, typeof(Wobject), "obj", "World object to get the heading of")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to get the heading of")]
         [ExpressionReturn(typeof(double), "Returns the heading in degrees that the target object is facing")]
         [Summary("Returns the heading in degrees (0-360 clockwise, 0 is north) the target object is facing")]
         [Example("getheading[wobjectgetselection[]]", "Returns the heading in degrees that your current selection is facing")]
-        public object Wobjectgetheadingto(Wobject wobject) {
+        public object Wobjectgetheadingto(ExpressionWorldObject wobject) {
             var rot = PhysicsObject.GetRot(wobject.Wo.Id);
             var heading = Geometry.QuaternionToHeading(rot);
 
@@ -939,6 +934,152 @@ namespace UtilityBelt.Tools {
         }
         #endregion //tanh[number d]
         #endregion Math
+        #region List Expressions
+        #region listcreate[...items]
+        [ExpressionMethod("listcreate")]
+        [ExpressionReturn(typeof(ExpressionList), "Creates and returns a new list")]
+        [ExpressionParameter(0, typeof(ParamArrayAttribute), "items", "items to isntantiate the list with")]
+        [Summary("Creates a new list object.  The list is empty by default.")]
+        [Example("listcreate[]", "Returns a new empty list")]
+        [Example("listcreate[1,2,3]", "Returns a new list with 3 items: 1,2,3")]
+        [Example("setvar[myList,listcreate[]]", "Creates a new list and stores it in `myList` variable")]
+        public object ListCreate(params object[] items) {
+            var list = new ExpressionList();
+            if (items != null && items.Length > 0) {
+                foreach(var item in items)
+                    list.Items.Add(item);
+            }
+            return list;
+        }
+        #endregion //listcreate[...items]
+        #region listadd[list list, object item]
+        [ExpressionMethod("listadd")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to add the item to")]
+        [ExpressionParameter(1, typeof(object), "item", "Item to add to list, can be any type. Lists cannot contain references to themselves.")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns the list object")]
+        [Summary("Adds an item to the end of a list")]
+        [Example("listadd[getvar[myList],`some value`]", "Adds `some value` string to the list stored in `myList` variable")]
+        public object ListAdd(ExpressionList list, object item) {
+            list.Items.Add(item);
+            return list;
+        }
+        #endregion //listadd[list list, object item]
+        #region listremove[list list, object item]
+        [ExpressionMethod("listremove")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to remove the item from")]
+        [ExpressionParameter(1, typeof(object), "item", "Item to remove from the list.")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns the list object")]
+        [Summary("Removes the first occurance of an item from the list")]
+        [Example("listremove[getvar[myList],`some value`]", "Removes the first occurance of `some value` string from the list stored in `myList` variable")]
+        public object ListRemove(ExpressionList list, object item) {
+            list.Items.Remove(item);
+            return list;
+        }
+        #endregion //listremove[list list, object item]
+        #region listremoveat[list list, number index]
+        [ExpressionMethod("listremoveat")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to remove the item from")]
+        [ExpressionParameter(1, typeof(double), "index", "Index to remove from the list.")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns the list object")]
+        [Summary("Removes the specified index from the list")]
+        [Example("listremove[getvar[myList]1]", "Removes the second item from the list stored in `myList` variable")]
+        public object ListRemoveAt(ExpressionList list, double index) {
+            if (index > list.Items.Count - 1) {
+                throw new Exception($"Attempted to remove item at index {index} of list, but list only has {list.Items.Count} items");
+            }
+            list.Items.RemoveAt((int)index);
+            return list;
+        }
+        #endregion //listremoveat[list list, number index]
+        #region listegetitem[list list, number index]
+        [ExpressionMethod("listegetitem")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to retrieve the item from")]
+        [ExpressionParameter(1, typeof(double), "index", "Index to retrieve from the list. Lists are zero based, so the first item is at index 0")]
+        [ExpressionReturn(typeof(object), "Returns the item at the specified list index")]
+        [Summary("Retrieves the item at the specified list index. Lists are zero based, so the first item in the list is at index 0. If the index does not exist, it throws an error")]
+        [Example("listegetitem[getvar[myList],0]", "Retrieves the first item from the list stored in `myList` variable")]
+        public object ListeGetItem(ExpressionList list, double index) {
+            if (index > list.Items.Count - 1) {
+                throw new Exception($"Attempted to get item {index} of list, but list only has {list.Items.Count} items");
+            }
+            return list.Items[(int)index];
+        }
+        #endregion //listegetitem[list list, number index]
+        #region listcontains[list list, object item]
+        [ExpressionMethod("listcontains")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to check")]
+        [ExpressionParameter(1, typeof(object), "item", "The item to check if the list contains")]
+        [ExpressionReturn(typeof(double), "Returns 1 if found, 0 otherwise")]
+        [Summary("Checks if the specified item is contained in the list")]
+        [Example("listcontains[getvar[myList],`some value`]", "Checks if the list stored in `myList` variable contains the string `some value`")]
+        public object ListContains(ExpressionList list, object item) {
+            return (double)(list.Items.Contains(item) ? 1 : 0);
+        }
+        #endregion //listremove[list list, object item]
+        #region listindexof[list list, object item]
+        [ExpressionMethod("listindexof")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to check")]
+        [ExpressionParameter(1, typeof(object), "item", "The item to check if the list contains")]
+        [ExpressionReturn(typeof(double), "Returns the index of the first occurence of the specified item, or -1 if not found")]
+        [Summary("Finds the index of the first occurance of an item in a list")]
+        [Example("listindexof[getvar[myList],`some value`]", "Returns the index of the first occurence of the string `some value`")]
+        public object ListIndexOf(ExpressionList list, object item) {
+            return (double)list.Items.IndexOf(item);
+        }
+        #endregion //listindexof[list list, object item]
+        #region listcopy[list list]
+        [ExpressionMethod("listcopy")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to copy")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a copy of the specified list")]
+        [Summary("Creates a copy of a list")]
+        [Example("setvar[myListTwo,listcopy[getvar[myList]]", "Copies the list stored in myList variable to a variable called myListTwo")]
+        public object ListCopy(ExpressionList list) {
+            var newList = new ExpressionList();
+            if (list.Items.Count > 0)
+                foreach (var item in list.Items)
+                    newList.Items.Add(item);
+            return newList;
+        }
+        #endregion //listcopy[list]
+        #region listpop[list list, number? index]
+        [ExpressionMethod("listpop")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to pop the item from")]
+        [ExpressionParameter(1, typeof(double), "index", "Optional index to remove, if not provided, uses the index of the last item in the array", -1)]
+        [ExpressionReturn(typeof(object), "Returns the value removed from the array")]
+        [Summary("Removes the value at the specified index of the array and returns the item. If no index is passed, it uses the index of the last item in the array")]
+        [Example("listpop[getvar[myList]]", "Removes and returns the last item in the list stored in myList variable")]
+        [Example("listpop[getvar[myList],0]", "Removes and returns the first item in the list stored in myList variable")]
+        public object ListPop(ExpressionList list, double index=-1) {
+            if (index > list.Items.Count - 1) {
+                throw new Exception($"Attempted to pop item at index {index} of list, but list only has {list.Items.Count} items");
+            }
+            var item = index == -1 ? list.Items.Last() : list.Items[(int)index];
+            list.Items.RemoveAt((int)(index == -1 ? list.Items.Count-1 : index));
+            return item;
+        }
+        #endregion //listpop[list, number? index]
+        #region listcount[list list]
+        [ExpressionMethod("listcount")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to count the items in")]
+        [ExpressionReturn(typeof(double), "Returns a count of how many items are contained in the list")]
+        [Summary("Counts the number of items contained in a list")]
+        [Example("listcount[getvar[myList]]", "Returns the number of items stored in the list stored in `myList` variable")]
+        public object ListCount(ExpressionList list) {
+            return (double)list.Items.Count;
+        }
+        #endregion //listcount[list]
+        #region listclear[list list]
+        [ExpressionMethod("listclear")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to clear")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns the list")]
+        [Summary("Clears all items from the specified list")]
+        [Example("listclear[getvar[myList]]", "Removes all items from the list stored in the variable `myList`")]
+        public object ListClear(ExpressionList list) {
+            list.Items.Clear();
+            return list;
+        }
+        #endregion //lsitclear[list]
+        #endregion //List Expresions
         #endregion //Expressions
 
         public Plugin(UtilityBeltPlugin ub, string name) : base(ub, name) {

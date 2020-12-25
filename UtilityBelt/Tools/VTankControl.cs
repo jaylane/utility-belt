@@ -16,6 +16,7 @@ using UtilityBelt.Lib.Settings;
 using UtilityBelt.Lib.VTNav;
 using UBLoader.Lib.Settings;
 using Hellosam.Net.Collections;
+using Newtonsoft.Json;
 
 namespace UtilityBelt.Tools {
     [Name("VTank")]
@@ -23,42 +24,6 @@ namespace UtilityBelt.Tools {
         internal Dictionary<string, object> ExpressionVariables = new Dictionary<string, object>();
         internal Dictionary<string, object> PersistentExpressionVariableCache = new Dictionary<string, object>();
         private Random rnd = new Random();
-
-        public class Stopwatch {
-            public System.Diagnostics.Stopwatch Watch { get; }
-
-            public Stopwatch() {
-                Watch = new System.Diagnostics.Stopwatch();
-            }
-
-            public void Start() {
-                Watch.Start();
-            }
-
-            public void Stop() {
-                Watch.Stop();
-            }
-
-            public double Elapsed() {
-                return (double)(Watch.ElapsedMilliseconds / 1000.0);
-            }
-
-            public override string ToString() {
-                return "[STOPWATCH]";
-            }
-        }
-
-        public class Wobject {
-            public WorldObject Wo { get; set; }
-
-            public Wobject(int id) {
-                Wo = UtilityBeltPlugin.Instance.Core.WorldFilter[id];
-            }
-
-            public override string ToString() {
-                return $"{Wo.Id:X8}: {Wo.Name}, {Wo.ObjectClass}";
-            }
-        }
 
         #region Config
         [Summary("VitalSharing")]
@@ -77,6 +42,7 @@ namespace UtilityBelt.Tools {
         #endregion
 
         #region Commands
+        #region /ub translateroute
         [Summary("Translates a VTank nav route from one landblock to another. Add force flag to overwrite the output nav. **NOTE**: This will translate **ALL** points, even if some are in a dungeon and some are not, it doesn't care.")]
         [Usage("/ub translateroute <startLandblock> <routeToLoad> <endLandblock> <routeToSaveAs> [force]")]
         [Example("/ub translateroute 0x00640371 eo-east.nav 0x002B0371 eo-main.nav", "Translates eo-east.nav to landblock 0x002B0371(eo main) and saves it as eo-main.nav if the file doesn't exist")]
@@ -136,6 +102,7 @@ namespace UtilityBelt.Tools {
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
+        #endregion //ub translateroute
 
         #region /ub listvars
         [Summary("Prints out all defined variables")]
@@ -145,7 +112,7 @@ namespace UtilityBelt.Tools {
         public void ListVars(string _, Match _1) {
             var results = "Defined variables:\n";
             foreach (var kv in ExpressionVariables) {
-                results += $"{kv.Key} ({GetFriendlyType(kv.Value)}) = {kv.Value}\n";
+                results += $"{kv.Key} ({ExpressionVisitor.GetFriendlyType(kv.Value.GetType())}) = {kv.Value}\n";
             }
 
             Logger.WriteToChat(results);
@@ -165,7 +132,8 @@ namespace UtilityBelt.Tools {
             );
             var results = "Defined persistent variables:\n";
             foreach (var v in pvars) {
-                results += $"{v.Name} ({GetFriendlyType(v.Value)}) = {v.Value}\n";
+                var obj = DeserializeExpressionValue(v.Value, string.IsNullOrEmpty(v.Type) ? null : Type.GetType(v.Type));
+                results += $"{v.Name} ({ExpressionVisitor.GetFriendlyType(obj.GetType())}) = {obj.ToString()}\n";
             }
 
             Logger.WriteToChat(results);
@@ -182,7 +150,8 @@ namespace UtilityBelt.Tools {
             );
             var results = "Defined global variables:\n";
             foreach (var v in pvars) {
-                results += $"{v.Name} ({GetFriendlyType(v.Value)}) = {v.Value}\n";
+                var obj = DeserializeExpressionValue(v.Value, string.IsNullOrEmpty(v.Type) ? null : Type.GetType(v.Type));
+                results += $"{v.Name} ({ExpressionVisitor.GetFriendlyType(obj.GetType())}) = {obj.ToString()}\n";
             }
 
             Logger.WriteToChat(results);
@@ -300,10 +269,16 @@ namespace UtilityBelt.Tools {
         [ExpressionReturn(typeof(double), "Returns the value of a variable, or 0 if undefined")]
         [Summary("Returns the value stored in a variable")]
         [Example("getpvar[myvar]", "Returns the value stored in `myvar` variable")]
-        public object Getpvar(string varname) {
+        public object Getpvar(string varname, ExpressionVisitor.ExpressionState state) {
+            // ensure we return the same instance of the variable if it has already been used
+            if (state.PersistentVariables.ContainsKey(varname))
+                return state.PersistentVariables[varname];
+
             if (PersistentExpressionVariableCache.ContainsKey(varname)) {
+                state.PersistentVariables.Add(varname, PersistentExpressionVariableCache[varname]);
                 return PersistentExpressionVariableCache[varname];
             }
+
             var variable = UB.Database.PersistentVariables.FindOne(
                 LiteDB.Query.And(
                     LiteDB.Query.EQ("Name", varname),
@@ -314,8 +289,16 @@ namespace UtilityBelt.Tools {
                 )
             );
 
-            var val = variable == null ? "0" : EvaluateExpression(variable.Value);
-            PersistentExpressionVariableCache.Add(varname, variable == null ? null : val);
+            object val = null;
+            if (variable != null && !string.IsNullOrEmpty(variable.Type)) {
+                var t = Type.GetType(variable.Type);
+                val = variable == null ? "0" : DeserializeExpressionValue(variable.Value, t);
+            }
+            else if (variable != null) {
+                val = DeserializeExpressionValue(variable.Value);
+            }
+            PersistentExpressionVariableCache.Add(varname, val);
+            state.PersistentVariables.Add(varname, val);
 
             return val;
         }
@@ -328,8 +311,8 @@ namespace UtilityBelt.Tools {
         [Summary("Stores a value in a persistent variable that is available ever after relogging.  Persistent variables are not shared between characters.")]
         [Example("setpvar[myvar,1]", "Stores the number value `1` inside of `myvar` variable")]
         public object Setpvar(string varname, object value) {
-            string expressionValue = "";
-            if (!SerializeExpressionValue(value, ref expressionValue))
+            string serializedValue = "";
+            if (!SerializeExpressionValue(value, ref serializedValue))
                 return 0;
 
             var variable = UB.Database.PersistentVariables.FindOne(
@@ -347,11 +330,13 @@ namespace UtilityBelt.Tools {
                     Server = UB.Core.CharacterFilter.Server,
                     Character = UB.Core.CharacterFilter.Name,
                     Name = varname,
-                    Value = expressionValue
+                    Value = serializedValue,
+                    Type = value.GetType().ToString()
                 });
             }
             else {
-                variable.Value = expressionValue;
+                variable.Value = serializedValue;
+                variable.Type = value.GetType().ToString();
                 UB.Database.PersistentVariables.Update(variable);
             }
 
@@ -360,24 +345,7 @@ namespace UtilityBelt.Tools {
             else
                 PersistentExpressionVariableCache[varname] = value;
 
-            return EvaluateExpression(expressionValue);
-        }
-
-        private bool SerializeExpressionValue(object value, ref string expressionValue) {
-            var type = value.GetType();
-
-            if (type == typeof(Boolean))
-                expressionValue = ((Boolean)value) ? "1" : "0";
-            else if (type == typeof(string))
-                expressionValue = "`" + (string)value + "`";
-            else if (type == typeof(double))
-                expressionValue = ((double)value).ToString();
-            else {
-                Logger.Error("Global/Persistent variables can currently only store strings/numbers");
-                return false;
-            }
-
-            return true;
+            return value;
         }
         #endregion //setpvar[string varname, object value]
         #region touchpvar[string varname]
@@ -453,21 +421,36 @@ namespace UtilityBelt.Tools {
             return variable != null;
         }
         #endregion //testgvar[string varname]
+
+        public Dictionary<string, object> GlobalVariables = new Dictionary<string, object>();
+
         #region getgvar[string varname]
         [ExpressionMethod("getgvar")]
         [ExpressionParameter(0, typeof(string), "varname", "Variable name to get")]
         [ExpressionReturn(typeof(double), "Returns the value of a variable, or 0 if undefined")]
         [Summary("Returns the value stored in a variable")]
         [Example("getgvar[myvar]", "Returns the value stored in `myvar` global variable")]
-        public object Getgvar(string varname) {
+        public object Getgvar(string varname, ExpressionVisitor.ExpressionState state) {
+            // ensure we return the same instance of the variable if it has already been used
+            if (state.GlobalVariables.ContainsKey(varname))
+                return state.GlobalVariables[varname];
+
             var variable = UB.Database.GlobalVariables.FindOne(
                 LiteDB.Query.And(
                     LiteDB.Query.EQ("Name", varname),
                     LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server)
                 )
             );
+            object val = null;
+            if (variable != null && !string.IsNullOrEmpty(variable.Type)) {
+                var t = Type.GetType(variable.Type);
+                val = variable == null ? "0" : DeserializeExpressionValue(variable.Value, t);
+            }
+            else if (variable != null) {
+                val = DeserializeExpressionValue(variable.Value);
+            }
 
-            var val = variable == null ? "0" : EvaluateExpression(variable.Value);
+            state.GlobalVariables.Add(varname, val);
 
             return val;
         }
@@ -480,8 +463,8 @@ namespace UtilityBelt.Tools {
         [Summary("Stores a value in a global variable. This variable is shared between all characters on the same server.")]
         [Example("setgvar[myvar,1]", "Stores the number value `1` inside of `myvar` variable")]
         public object Setgvar(string varname, object value) {
-            string expressionValue = "";
-            if (!SerializeExpressionValue(value, ref expressionValue))
+            string serializedValue = "";
+            if (!SerializeExpressionValue(value, ref serializedValue))
                 return 0;
 
             var variable = UB.Database.GlobalVariables.FindOne(
@@ -495,15 +478,17 @@ namespace UtilityBelt.Tools {
                 UB.Database.GlobalVariables.Insert(new Lib.Models.GlobalVariable() {
                     Server = UB.Core.CharacterFilter.Server,
                     Name = varname,
-                    Value = expressionValue
+                    Value = serializedValue,
+                    Type = value.GetType().ToString()
                 });
             }
             else {
-                variable.Value = expressionValue;
+                variable.Value = serializedValue;
+                variable.Type = value.GetType().ToString();
                 UB.Database.GlobalVariables.Update(variable);
             }
 
-            return EvaluateExpression(expressionValue);
+            return value;
         }
         #endregion //setgvar[string varname, object value]
         #region touchgvar[string varname]
@@ -578,7 +563,7 @@ namespace UtilityBelt.Tools {
             return 0;
         }
         #endregion //chatboxpaste[string message]
-        #region echo[string message, int color]
+        #region echo[string message, number color]
         [ExpressionMethod("echo")]
         [ExpressionParameter(0, typeof(string), "message", "Message to echo")]
         [ExpressionParameter(1, typeof(double), "color", "Message color")]
@@ -765,52 +750,52 @@ namespace UtilityBelt.Tools {
         #endregion //getplayerlandcell[]
         #region getplayercoordinates[]
         [ExpressionMethod("getplayercoordinates")]
-        [ExpressionReturn(typeof(Coordinates), "Returns your character's global coordinates object")]
+        [ExpressionReturn(typeof(ExpressionCoordinates), "Returns your character's global coordinates object")]
         [Summary("Gets the a coordinates object representing your characters current global position")]
         [Example("getplayercoordinates[]", "Returns your character's current position as coordinates object")]
         public object Getplayercoordinates() {
-            return Wobjectgetphysicscoordinates((Wobject)Wobjectgetplayer());
+            return ExpressionWorldObjectgetphysicscoordinates((ExpressionWorldObject)ExpressionWorldObjectgetplayer());
         }
         #endregion //getplayercoordinates[]
         #endregion //Character
         #region Coordinates
         #region coordinategetns[coordinates obj]
         [ExpressionMethod("coordinategetns")]
-        [ExpressionParameter(0, typeof(Coordinates), "obj", "coordinates object to get the NS position of")]
+        [ExpressionParameter(0, typeof(ExpressionCoordinates), "obj", "coordinates object to get the NS position of")]
         [ExpressionReturn(typeof(double), "Returns the NS position of a coordinates object as a number")]
         [Summary("Gets the NS position of a coordinates object as a number")]
         [Example("coordinategetns[getplayercoordinates[]]", "Returns your character's current NS position")]
-        public object Coordinategetns(Coordinates coords) {
+        public object Coordinategetns(ExpressionCoordinates coords) {
             return coords.NS;
         }
         #endregion //coordinategetns[coordinates obj]
         #region coordinategetwe[coordinates obj]
         [ExpressionMethod("coordinategetwe")]
-        [ExpressionParameter(0, typeof(Coordinates), "obj", "coordinates object to get the EW position of")]
+        [ExpressionParameter(0, typeof(ExpressionCoordinates), "obj", "coordinates object to get the EW position of")]
         [ExpressionReturn(typeof(double), "Returns the EW position of a coordinates object as a number")]
         [Summary("Gets the EW position of a coordinates object as a number")]
         [Example("coordinategetwe[getplayercoordinates[]]", "Returns your character's current EW position")]
-        public object Coordinategetew(Coordinates coords) {
+        public object Coordinategetew(ExpressionCoordinates coords) {
             return coords.EW;
         }
         #endregion //coordinategetwe[coordinates obj]
         #region coordinategetz[coordinates obj]
         [ExpressionMethod("coordinategetz")]
-        [ExpressionParameter(0, typeof(Coordinates), "obj", "coordinates object to get the Z position of")]
+        [ExpressionParameter(0, typeof(ExpressionCoordinates), "obj", "coordinates object to get the Z position of")]
         [ExpressionReturn(typeof(double), "Returns the Z position of a coordinates object as a number")]
         [Summary("Gets the Z position of a coordinates object as a number")]
         [Example("coordinategetz[getplayercoordinates[]]", "Returns your character's current Z position")]
-        public object Coordinategetz(Coordinates coords) {
+        public object Coordinategetz(ExpressionCoordinates coords) {
             return coords.Z;
         }
         #endregion //coordinategetz[coordinates obj]
         #region coordinatetostring[coordinates obj]
         [ExpressionMethod("coordinatetostring")]
-        [ExpressionParameter(0, typeof(Coordinates), "obj", "coordinates object to convert to a string")]
+        [ExpressionParameter(0, typeof(ExpressionCoordinates), "obj", "coordinates object to convert to a string")]
         [ExpressionReturn(typeof(double), "Returns a string representation of a coordinates object, like `1.2N, 34.5E`")]
         [Summary("Converts a coordinates object to a string representation")]
         [Example("coordinatetostring[getplayercoordinates[]]", "Returns your character's current coordinates as a string, eg `1.2N, 34.5E`")]
-        public object Coordinatetostring(Coordinates coords) {
+        public object Coordinatetostring(ExpressionCoordinates coords) {
             return coords.ToString();
         }
         #endregion //coordinatetostring[coordinates obj]
@@ -821,43 +806,44 @@ namespace UtilityBelt.Tools {
         [Summary("Converts a coordinate string like `1.2N, 3.4E` to a coordinates object")]
         [Example("coordinateparse[`1.2N, 3.4E`]", "Returns a coordinates object representing `1.2N, 3.4E`")]
         public object Coordinateparse(string coordsToParse) {
-            return Coordinates.FromString(coordsToParse);
+            var coords = Coordinates.FromString(coordsToParse);
+            return new ExpressionCoordinates(coords.EW, coords.NS, coords.Z);
         }
         #endregion //coordinateparse[string coordstring]
         #region coordinatedistancewithz[coordinates obj1, coordinates obj2]
         [ExpressionMethod("coordinatedistancewithz")]
-        [ExpressionParameter(0, typeof(Coordinates), "obj1", "first coordinates object")]
-        [ExpressionParameter(1, typeof(Coordinates), "obj2", "second coordinates object")]
+        [ExpressionParameter(0, typeof(ExpressionCoordinates), "obj1", "first coordinates object")]
+        [ExpressionParameter(1, typeof(ExpressionCoordinates), "obj2", "second coordinates object")]
         [ExpressionReturn(typeof(double), "Returns the 3d distance in meters between obj1 and obj2")]
         [Summary("Gets the 3d distance in meters between two coordinates objects")]
         [Example("coordinatedistancewithz[coordinateparse[`1.2N, 3.4E`], coordinateparse[`5.6N, 7.8E`]]", "Returns the 3d distance between `1.2N, 3.4E` and `5.6N, 7.8E`")]
-        public object Coordinatedistancewithz(Coordinates obj1, Coordinates obj2) {
-            return obj1.DistanceTo(obj2);
+        public object Coordinatedistancewithz(ExpressionCoordinates obj1, ExpressionCoordinates obj2) {
+            return obj1.Coordinates.DistanceTo(obj2.Coordinates);
         }
         #endregion //coordinatedistancewithz[coordinates obj1, coordinates obj2]
         #region coordinatedistanceflat[coordinates obj1, coordinates obj2]
         [ExpressionMethod("coordinatedistanceflat")]
-        [ExpressionParameter(0, typeof(Coordinates), "obj1", "first coordinates object")]
-        [ExpressionParameter(1, typeof(Coordinates), "obj2", "second coordinates object")]
+        [ExpressionParameter(0, typeof(ExpressionCoordinates), "obj1", "first coordinates object")]
+        [ExpressionParameter(1, typeof(ExpressionCoordinates), "obj2", "second coordinates object")]
         [ExpressionReturn(typeof(double), "Returns the 2d distance in meters between obj1 and obj2 (ignoring Z)")]
         [Summary("Gets the 2d distance in meters between two coordinates objects (ignoring Z)")]
         [Example("coordinatedistancewithz[coordinateparse[`1.2N, 3.4E`], coordinateparse[`5.6N, 7.8E`]]", "Returns the 2d distance between `1.2N, 3.4E` and `5.6N, 7.8E` (ignoring Z)")]
-        public object Coordinatedistanceflat(Coordinates obj1, Coordinates obj2) {
-            return obj1.DistanceToFlat(obj2);
+        public object Coordinatedistanceflat(ExpressionCoordinates obj1, ExpressionCoordinates obj2) {
+            return obj1.Coordinates.DistanceToFlat(obj2.Coordinates);
         }
         #endregion //coordinatedistanceflat[coordinates obj1, coordinates obj2]
         #endregion //Coordinates
         #region WorldObjects
         #region wobjectgetphysicscoordinates[worldobject wo]
         [ExpressionMethod("wobjectgetphysicscoordinates")]
-        [ExpressionParameter(0, typeof(Wobject), "wo", "world object to get coordinates of")]
-        [ExpressionReturn(typeof(Coordinates), "Returns a coordinates object representing the passed wobject")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "wo", "world object to get coordinates of")]
+        [ExpressionReturn(typeof(ExpressionCoordinates), "Returns a coordinates object representing the passed wobject")]
         [Summary("Gets a coordinates object representing a world objects current position")]
         [Example("wobjectgetphysicscoordinates[wobjectgetplayer[]]", "Returns a coordinates object representing the current player's position")]
-        public object Wobjectgetphysicscoordinates(Wobject wo) {
+        public object ExpressionWorldObjectgetphysicscoordinates(ExpressionWorldObject wo) {
             var pos = PhysicsObject.GetPosition(wo.Wo.Id);
             var landcell = PhysicsObject.GetLandcell(wo.Wo.Id);
-            return new Coordinates() {
+            return new ExpressionCoordinates() {
                 NS = Geometry.LandblockToNS((uint)landcell, pos.Y),
                 EW = Geometry.LandblockToEW((uint)landcell, pos.X),
                 Z = pos.Z
@@ -866,78 +852,78 @@ namespace UtilityBelt.Tools {
         #endregion //wobjectgetphysicscoordinates[worldobject wo]
         #region wobjectgetname[worldobject wo]
         [ExpressionMethod("wobjectgetname")]
-        [ExpressionParameter(0, typeof(Wobject), "wo", "world object to get the name of")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "wo", "world object to get the name of")]
         [ExpressionReturn(typeof(string), "Returns a string of wobject's name")]
         [Summary("Gets the name string of a wobject")]
         [Example("wobjectgetname[wobjectgetplayer[]]", "Returns a coordinates object representing the current player's position")]
-        public object Wobjectgetname(Wobject wo) {
+        public object ExpressionWorldObjectgetname(ExpressionWorldObject wo) {
             return Util.GetObjectName(wo.Wo.Id);
         }
         #endregion //wobjectgetname[worldobject wo]
         #region wobjectgetid[worldobject wo]
         [ExpressionMethod("wobjectgetid")]
-        [ExpressionParameter(0, typeof(Wobject), "wo", "world object to get the id of")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "wo", "world object to get the id of")]
         [ExpressionReturn(typeof(double), "Returns the id of the passed wobject")]
         [Summary("Gets the id of a wobject")]
         [Example("wobjectgetid[wobjectgetplayer[]]", "Returns the id of the current player")]
-        public object Wobjectgetid(Wobject wo) {
+        public object ExpressionWorldObjectgetid(ExpressionWorldObject wo) {
             return (double)wo.Wo.Id;
         }
         #endregion //wobjectgetid[worldobject wo]
         #region wobjectgetobjectclass[worldobject wo]
         [ExpressionMethod("wobjectgetobjectclass")]
-        [ExpressionParameter(0, typeof(Wobject), "wo", "world object to get the objectclass of")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "wo", "world object to get the objectclass of")]
         [ExpressionReturn(typeof(double), "Returns a number representing the passed wobjects objectclass")]
         [Summary("Gets the objectclass as a number from a wobject")]
         [Example("wobjectgetobjectclass[wobjectgetplayer[]]", "Returns 24 (Player ObjectClass)")]
-        public object Wobjectgetobjectclass(Wobject wo) {
+        public object ExpressionWorldObjectgetobjectclass(ExpressionWorldObject wo) {
             return Convert.ToDouble(wo.Wo.ObjectClass);
         }
         #endregion //wobjectgetobjectclass[worldobject wo]
         #region wobjectgettemplatetype[worldobject wo]
         [ExpressionMethod("wobjectgettemplatetype")]
-        [ExpressionParameter(0, typeof(Wobject), "wo", "world object to get the template type of")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "wo", "world object to get the template type of")]
         [ExpressionReturn(typeof(double), "Returns a number representing the passed wobjects template type")]
         [Summary("Gets the template type as a number from a wobject")]
         [Example("wobjectgettemplatetype[wobjectgetplayer[]]", "Returns 1 (Player template type)")]
-        public object Wobjectgettemplatetype(Wobject wo) {
+        public object ExpressionWorldObjectgettemplatetype(ExpressionWorldObject wo) {
             return Convert.ToDouble(wo.Wo.Type);
         }
         #endregion //wobjectgettemplatetype[worldobject wo]
         #region wobjectgetisdooropen[worldobject wo]
         [ExpressionMethod("wobjectgetisdooropen")]
-        [ExpressionParameter(0, typeof(Wobject), "wo", "door world object to check")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "wo", "door world object to check")]
         [ExpressionReturn(typeof(double), "Returns 1 if the wo door is open, 0 otherwise")]
         [Summary("Checks if a door wobject is open")]
         [Example("wobjectgetisdooropen[wobjectfindnearestdoor[]]", "Returns 1 if the door is open, 0 otherwise")]
-        public object Wobjectgetisdooropen(Wobject wo) {
+        public object ExpressionWorldObjectgetisdooropen(ExpressionWorldObject wo) {
             return UBHelper.InventoryManager.IsDoorOpen(wo.Wo.Id);
         }
         #endregion //wobjectgetisdooropen[worldobject wo]
         #region wobjectfindnearestmonster[]
         [ExpressionMethod("wobjectfindnearestmonster")]
-        [ExpressionReturn(typeof(Wobject), "Returns a worldobject representing the nearest monster")]
+        [ExpressionReturn(typeof(ExpressionWorldObject), "Returns a worldobject representing the nearest monster")]
         [Summary("Gets a worldobject representing the nearest monster, or 0 if none was found")]
         [Example("wobjectfindnearestmonster[]", "Returns a worldobject representing the nearest monster")]
-        public object Wobjectfindnearestmonster() {
+        public object ExpressionWorldObjectfindnearestmonster() {
             WorldObject closest = Util.FindClosestByObjectClass(ObjectClass.Monster);
 
             if (closest != null)
-                return new Wobject(closest.Id);
+                return new ExpressionWorldObject(closest.Id);
 
             return 0;
         }
         #endregion //wobjectfindnearestmonster[]
         #region wobjectfindnearestdoor[]
         [ExpressionMethod("wobjectfindnearestdoor")]
-        [ExpressionReturn(typeof(Wobject), "Returns a worldobject representing the nearest door")]
+        [ExpressionReturn(typeof(ExpressionWorldObject), "Returns a worldobject representing the nearest door")]
         [Summary("Gets a worldobject representing the nearest door, or 0 if none was found")]
         [Example("wobjectfindnearestdoor[]", "Returns a worldobject representing the nearest door")]
-        public object Wobjectfindnearestdoor() {
+        public object ExpressionWorldObjectfindnearestdoor() {
             WorldObject closest = Util.FindClosestByObjectClass(ObjectClass.Door);
 
             if (closest != null)
-                return new Wobject(closest.Id);
+                return new ExpressionWorldObject(closest.Id);
 
             return 0;
         }
@@ -945,10 +931,10 @@ namespace UtilityBelt.Tools {
         #region wobjectfindnearestbyobjectclass[int objectclass]
         [ExpressionMethod("wobjectfindnearestbyobjectclass")]
         [ExpressionParameter(0, typeof(double), "objectclass", "objectclass to filter by")]
-        [ExpressionReturn(typeof(Wobject), "Returns a worldobject representing the nearest matching objectclass")]
+        [ExpressionReturn(typeof(ExpressionWorldObject), "Returns a worldobject representing the nearest matching objectclass")]
         [Summary("Gets a worldobject representing the nearest object matching objectclass, or 0 if none was found")]
         [Example("wobjectfindnearestbyobjectclass[24]", "Returns a worldobject of the nearest matching objectclass")]
-        public object Wobjectfindnearestbyobjectclass(double objectClass) {
+        public object ExpressionWorldObjectfindnearestbyobjectclass(double objectClass) {
             WorldObject closest = null;
             var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetByObjectClass((ObjectClass)Convert.ToInt32(objectClass));
             var closestDistance = float.MaxValue;
@@ -963,7 +949,7 @@ namespace UtilityBelt.Tools {
             wos.Dispose();
 
             if (closest != null)
-                return new Wobject(closest.Id);
+                return new ExpressionWorldObject(closest.Id);
 
             return 0;
         }
@@ -971,15 +957,15 @@ namespace UtilityBelt.Tools {
         #region wobjectfindininventorybytemplatetype[int objectclass]
         [ExpressionMethod("wobjectfindininventorybytemplatetype")]
         [ExpressionParameter(0, typeof(double), "templatetype", "templatetype to filter by")]
-        [ExpressionReturn(typeof(Wobject), "Returns a worldobject")]
+        [ExpressionReturn(typeof(ExpressionWorldObject), "Returns a worldobject")]
         [Summary("Gets a worldobject representing the first inventory item matching template type, or 0 if none was found")]
         [Example("wobjectfindininventorybytemplatetype[9060]", "Returns a worldobject of the first inventory item that is a Titan Mana Charge (template type 9060)")]
-        public object Wobjectfindininventorybytemplatetype(double templateType) {
+        public object ExpressionWorldObjectfindininventorybytemplatetype(double templateType) {
             var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetInventory();
             var typeInt = Convert.ToInt32(templateType);
             foreach (var wo in wos) {
                 if (wo.Type == typeInt) {
-                    var r = new Wobject(wo.Id);
+                    var r = new ExpressionWorldObject(wo.Id);
                     wos.Dispose();
                     return r;
                 }
@@ -992,16 +978,16 @@ namespace UtilityBelt.Tools {
         #region wobjectfindininventorybyname[string name]
         [ExpressionMethod("wobjectfindininventorybyname")]
         [ExpressionParameter(0, typeof(string), "name", "exact name to filter by")]
-        [ExpressionReturn(typeof(Wobject), "Returns a worldobject")]
+        [ExpressionReturn(typeof(ExpressionWorldObject), "Returns a worldobject")]
         [Summary("Gets a worldobject representing the first inventory item matching an exact name, or 0 if none was found")]
         [Example("wobjectfindininventorybyname[Massive Mana Charge]", "Returns a worldobject of the first inventory item that is named `Massive Mana Charge`")]
-        public object Wobjectfindininventorybyname(string name) {
+        public object ExpressionWorldObjectfindininventorybyname(string name) {
             List<int> weenies = new List<int>();
             UBHelper.InventoryManager.GetInventory(ref weenies, UBHelper.InventoryManager.GetInventoryType.Everything, Weenie.INVENTORY_LOC.ALL_LOC);
 
             foreach (var id in weenies) {
                 if (Util.GetObjectName(id) == name) {
-                    return new Wobject(id);
+                    return new ExpressionWorldObject(id);
                 }
             }
             return 0;
@@ -1010,17 +996,17 @@ namespace UtilityBelt.Tools {
         #region wobjectfindininventorybynamerx[string namerx]
         [ExpressionMethod("wobjectfindininventorybynamerx")]
         [ExpressionParameter(0, typeof(string), "namerx", "name regex to filter by")]
-        [ExpressionReturn(typeof(Wobject), "Returns a worldobject")]
+        [ExpressionReturn(typeof(ExpressionWorldObject), "Returns a worldobject")]
         [Summary("Gets a worldobject representing the first inventory item matching name regex, or 0 if none was found")]
         [Example("wobjectfindininventorybynamerx[`Massive.*`]", "Returns a worldobject of the first inventory item that matches regex `Massive.*`")]
-        public object Wobjectfindininventorybynamerx(string namerx) {
+        public object ExpressionWorldObjectfindininventorybynamerx(string namerx) {
             var re = new Regex(namerx);
             List<int> weenies = new List<int>();
             UBHelper.InventoryManager.GetInventory(ref weenies, UBHelper.InventoryManager.GetInventoryType.Everything, Weenie.INVENTORY_LOC.ALL_LOC);
 
             foreach (var id in weenies) {
                 if (re.IsMatch(Util.GetObjectName(id))) {
-                    return new Wobject(id);
+                    return new ExpressionWorldObject(id);
                 }
             }
 
@@ -1029,32 +1015,32 @@ namespace UtilityBelt.Tools {
         #endregion //wobjectfindininventorybynamerx[string name]
         #region wobjectgetselection[]
         [ExpressionMethod("wobjectgetselection")]
-        [ExpressionReturn(typeof(Wobject), "Returns a worldobject representing the currently selected object, or 0 if none")]
+        [ExpressionReturn(typeof(ExpressionWorldObject), "Returns a worldobject representing the currently selected object, or 0 if none")]
         [Summary("Gets a worldobject representing the currently selected object")]
         [Example("wobjectgetselection[]", "Returns a worldobject representing the currently selected object")]
-        public object Wobjectgetselection() {
+        public object ExpressionWorldObjectgetselection() {
             if (UtilityBeltPlugin.Instance.Core.Actions.IsValidObject(UtilityBeltPlugin.Instance.Core.Actions.CurrentSelection))
-                return new Wobject(UtilityBeltPlugin.Instance.Core.Actions.CurrentSelection);
+                return new ExpressionWorldObject(UtilityBeltPlugin.Instance.Core.Actions.CurrentSelection);
             return false;
         }
         #endregion //wobjectgetselection[]
         #region wobjectgetplayer[]
         [ExpressionMethod("wobjectgetplayer")]
-        [ExpressionReturn(typeof(Wobject), "Returns a worldobject representing the current player")]
+        [ExpressionReturn(typeof(ExpressionWorldObject), "Returns a worldobject representing the current player")]
         [Summary("Gets a worldobject representing the current player")]
         [Example("wobjectgetplayer[]", "Returns a worldobject representing the current player")]
-        public object Wobjectgetplayer() {
-            return new Wobject(UtilityBeltPlugin.Instance.Core.CharacterFilter.Id);
+        public object ExpressionWorldObjectgetplayer() {
+            return new ExpressionWorldObject(UtilityBeltPlugin.Instance.Core.CharacterFilter.Id);
         }
         #endregion //wobjectgetplayer[worldobject wo]
         #region wobjectfindnearestbynameandobjectclass[int objectclass, string namerx]
         [ExpressionMethod("wobjectfindnearestbynameandobjectclass")]
         [ExpressionParameter(0, typeof(string), "objectclass", "objectclass to filter by")]
         [ExpressionParameter(1, typeof(string), "namerx", "name regex to filter by")]
-        [ExpressionReturn(typeof(Wobject), "Returns a worldobject")]
+        [ExpressionReturn(typeof(ExpressionWorldObject), "Returns a worldobject")]
         [Summary("Gets a worldobject representing the first object matching objectclass and name regex, or 0 if none was found")]
         [Example("wobjectfindnearestbynameandobjectclass[24,`Crash.*`]", "Returns a worldobject of the first object found matching objectlass 24 (player) and name regex `Crash.*`")]
-        public object Wobjectfindnearestbynameandobjectclass(double objectClass, string namerx) {
+        public object ExpressionWorldObjectfindnearestbynameandobjectclass(double objectClass, string namerx) {
             var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetByObjectClass((ObjectClass)Convert.ToInt32(objectClass));
             var re = new Regex(namerx);
             var closestDistance = float.MaxValue;
@@ -1071,7 +1057,7 @@ namespace UtilityBelt.Tools {
             wos.Dispose();
 
             if (closest != null)
-                return new Wobject(closest.Id);
+                return new ExpressionWorldObject(closest.Id);
 
             return 0;
         }
@@ -1079,15 +1065,15 @@ namespace UtilityBelt.Tools {
         #region wobjectfindbyid[int id]
         [ExpressionMethod("wobjectfindbyid")]
         [ExpressionParameter(0, typeof(double), "id", "object id to find")]
-        [ExpressionReturn(typeof(Wobject), "Returns a worldobject")]
+        [ExpressionReturn(typeof(ExpressionWorldObject), "Returns a worldobject")]
         [Summary("Gets a worldobject representing the object with the passed id")]
         [Example("wobjectfindbyid[123412]", "Returns a worldobject of the object with id 123412")]
-        public object Wobjectfindbyid(double id) {
+        public object ExpressionWorldObjectfindbyid(double id) {
             var idInt = Convert.ToInt32(id);
             if (UB.Core.Actions.IsValidObject(idInt)) {
                 var wo = UB.Core.WorldFilter[idInt];
                 if (wo != null)
-                    return new Wobject(wo.Id);
+                    return new ExpressionWorldObject(wo.Id);
             }
 
             return 0;
@@ -1095,47 +1081,47 @@ namespace UtilityBelt.Tools {
         #endregion //wobjectfindbyid[int id]
         #region wobjectgetopencontainer[]
         [ExpressionMethod("wobjectgetopencontainer")]
-        [ExpressionReturn(typeof(Wobject), "Returns a worldobject representing the currently opened container")]
+        [ExpressionReturn(typeof(ExpressionWorldObject), "Returns a worldobject representing the currently opened container")]
         [Summary("Gets a worldobject representing the currentlty opened container, or 0 if none")]
         [Example("wobjectgetopencontainer[]", "Returns a worldobject representing the currently opened container")]
-        public object Wobjectgetopencontainer() {
+        public object ExpressionWorldObjectgetopencontainer() {
             if (UB.Core.Actions.OpenedContainer == 0)
                 return 0;
-            return new Wobject(UB.Core.Actions.OpenedContainer);
+            return new ExpressionWorldObject(UB.Core.Actions.OpenedContainer);
         }
         #endregion //wobjectgetopencontainer[]
         #endregion //WorldObjects
         #region Actions
         #region actiontryselect[wobject obj]
         [ExpressionMethod("actiontryselect")]
-        [ExpressionParameter(0, typeof(Wobject), "obj", "wobject to select")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "wobject to select")]
         [ExpressionReturn(typeof(double), "Returns 0")]
         [Summary("Attempts to select a worldobject")]
         [Example("actiontryselect[wobjectgetplayer[]]", "Attempts to select the current player")]
-        public object Actiontryselect(Wobject obj) {
+        public object Actiontryselect(ExpressionWorldObject obj) {
             UtilityBeltPlugin.Instance.Core.Actions.SelectItem(obj.Wo.Id);
             return 0;
         }
         #endregion //actiontryselect[wobject obj]
         #region actiontryuseitem[wobject obj]
         [ExpressionMethod("actiontryuseitem")]
-        [ExpressionParameter(0, typeof(Wobject), "obj", "wobject to try to use")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "wobject to try to use")]
         [ExpressionReturn(typeof(double), "Returns 0")]
         [Summary("Attempts to use a worldobject")]
         [Example("actiontryuseitem[wobjectgetplayer[]]", "Attempts to use the current player (opens backpack)")]
-        public object Actiontryuseitem(Wobject obj) {
+        public object Actiontryuseitem(ExpressionWorldObject obj) {
             UtilityBeltPlugin.Instance.Core.Actions.UseItem(obj.Wo.Id, 0);
             return 0;
         }
         #endregion //actiontryuseitem[wobject obj]
         #region actiontryapplyitem[wobject useObj, wobject onObj]
         [ExpressionMethod("actiontryapplyitem")]
-        [ExpressionParameter(0, typeof(Wobject), "useObj", "wobject to use first")]
-        [ExpressionParameter(0, typeof(Wobject), "onObj", "wobject to be used on")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "useObj", "wobject to use first")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "onObj", "wobject to be used on")]
         [ExpressionReturn(typeof(double), "Returns 0 if failed, and 1 if it *could* succeed")]
         [Summary("Attempts to use a worldobject on another worldobject")]
         [Example("actiontryapplyitem[wobjectfindininventorybynamerx[`.* Healing Kit`],wobjectwobjectgetplayer[]]", "Attempts to use any healing kit in your inventory, on yourself")]
-        public object Actiontryapplyitem(Wobject useObj, Wobject onObj) {
+        public object Actiontryapplyitem(ExpressionWorldObject useObj, ExpressionWorldObject onObj) {
             if (UtilityBeltPlugin.Instance.Core.Actions.BusyState != 0)
                 return 0;
             UtilityBeltPlugin.Instance.Core.Actions.ApplyItem(useObj.Wo.Id, onObj.Wo.Id);
@@ -1144,12 +1130,12 @@ namespace UtilityBelt.Tools {
         #endregion //actiontryapplyitem[wobject useObj, wobject onObj]
         #region actiontrygiveitem[wobject item, wobject destination]
         [ExpressionMethod("actiontrygiveitem")]
-        [ExpressionParameter(0, typeof(Wobject), "give", "wobject to give")]
-        [ExpressionParameter(0, typeof(Wobject), "destination", "wobject to be given to")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "give", "wobject to give")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "destination", "wobject to be given to")]
         [ExpressionReturn(typeof(double), "Returns 0 if failed, and 1 if it *could* succeed")]
         [Summary("Attempts to give a worldobject to another worlobject, like an npc")]
         [Example("actiontrygiveitem[wobjectfindininventorybynamerx[`.* Healing Kit`],wobjectgetselection[]]", "Attempts to to give any healing kit in your inventory to the currently selected object")]
-        public object Actiontrygiveitem(Wobject give, Wobject destination) {
+        public object Actiontrygiveitem(ExpressionWorldObject give, ExpressionWorldObject destination) {
             if (UtilityBeltPlugin.Instance.Core.Actions.BusyState != 0)
                 return 0;
             UtilityBeltPlugin.Instance.Core.Actions.GiveItem(give.Wo.Id, destination.Wo.Id);
@@ -1191,11 +1177,11 @@ namespace UtilityBelt.Tools {
         #region actiontrycastbyidontarget[int spellId, wobject target]
         [ExpressionMethod("actiontrycastbyidontarget")]
         [ExpressionParameter(0, typeof(double), "spellId", "spellId to cast")]
-        [ExpressionParameter(0, typeof(Wobject), "target", "target to cast on")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "target", "target to cast on")]
         [ExpressionReturn(typeof(double), "Returns 1 if the attempt has begun, 0 if the attempt has not yet been made, or 2 if the attempt is impossible")]
         [Summary("Attempts to cast a spell by id on a worldobject. Checks spell requirements as if it were a vtank 'hunting' spell. If the character is not in magic mode, one step is taken towards equipping any wand")]
         [Example("actiontrycastbyidontarget[1,wobjectgetselection[]]", "Attempts to cast Strength Other, on your currently selected target")]
-        public object Actiontrycastbyidontarget(double spellId, Wobject target) {
+        public object Actiontrycastbyidontarget(double spellId, ExpressionWorldObject target) {
             var id = Convert.ToInt32(spellId);
             if (!Spells.HasSkillHunt(id))
                 return 2;
@@ -1437,49 +1423,49 @@ namespace UtilityBelt.Tools {
         }
         #endregion //chr[string character]
         #endregion //Misc
-        #region Stopwatch
+        #region ExpressionStopwatch
         #region stopwatchcreate[]
         [ExpressionMethod("stopwatchcreate")]
-        [ExpressionReturn(typeof(Stopwatch), "Returns a stopwatch object")]
+        [ExpressionReturn(typeof(ExpressionStopwatch), "Returns a stopwatch object")]
         [Summary("Creates a new stopwatch object.  The stopwatch object is stopped by default.")]
         [Example("stopwatchcreate[]", "returns a new stopwatch")]
-        public object Stopwatchcreate() {
-            return new Stopwatch();
+        public object ExpressionStopwatchcreate() {
+            return new ExpressionStopwatch();
         }
         #endregion //stopwatchcreate[]
         #region stopwatchstart[stopwatch watch]
         [ExpressionMethod("stopwatchstart")]
-        [ExpressionParameter(0, typeof(Stopwatch), "watch", "stopwatch to start")]
-        [ExpressionReturn(typeof(Stopwatch), "Returns a stopwatch object")]
+        [ExpressionParameter(0, typeof(ExpressionStopwatch), "watch", "stopwatch to start")]
+        [ExpressionReturn(typeof(ExpressionStopwatch), "Returns a stopwatch object")]
         [Summary("Starts a stopwatch if not already started")]
         [Example("stopwatchstart[stopwatchcreate[]]", "starts a new stopwatch")]
-        public object Stopwatchstart(Stopwatch watch) {
+        public object ExpressionStopwatchstart(ExpressionStopwatch watch) {
             watch.Start();
             return watch;
         }
         #endregion //stopwatchstart[stopwatch watch]
         #region stopwatchstop[stopwatch watch]
         [ExpressionMethod("stopwatchstop")]
-        [ExpressionParameter(0, typeof(Stopwatch), "watch", "stopwatch to stop")]
-        [ExpressionReturn(typeof(Stopwatch), "Returns a stopwatch object")]
+        [ExpressionParameter(0, typeof(ExpressionStopwatch), "watch", "stopwatch to stop")]
+        [ExpressionReturn(typeof(ExpressionStopwatch), "Returns a stopwatch object")]
         [Summary("Stops a stopwatch if not already stopped")]
         [Example("stopwatchstop[stopwatchcreate[]]", "stops a new stopwatch")]
-        public object Stopwatchstop(Stopwatch watch) {
+        public object ExpressionStopwatchstop(ExpressionStopwatch watch) {
             watch.Stop();
             return watch;
         }
         #endregion //stopwatchstart[stopwatch watch]
         #region stopwatchelapsedseconds[stopwatch watch]
         [ExpressionMethod("stopwatchelapsedseconds")]
-        [ExpressionParameter(0, typeof(Stopwatch), "watch", "stopwatch to check")]
-        [ExpressionReturn(typeof(Stopwatch), "Returns a int elapsed seconds")]
+        [ExpressionParameter(0, typeof(ExpressionStopwatch), "watch", "stopwatch to check")]
+        [ExpressionReturn(typeof(ExpressionStopwatch), "Returns a int elapsed seconds")]
         [Summary("Gets the amount of seconds a stopwatch has been running for")]
         [Example("stopwatchelapsedseconds[stopwatchcreate[]]", "Returns the amount of a seconds a new stopwatch has been running for (0 obv)")]
-        public object Stopwatchelapsedseconds(Stopwatch watch) {
+        public object ExpressionStopwatchelapsedseconds(ExpressionStopwatch watch) {
             return watch.Elapsed();
         }
         #endregion //stopwatchelapsedseconds[stopwatch watch]
-        #endregion //Stopwatch
+        #endregion //ExpressionStopwatch
         #endregion //Expressions
 
         private bool isFixingPortalLoops = false;
@@ -1507,21 +1493,6 @@ namespace UtilityBelt.Tools {
             }
         }
 
-        private string GetFriendlyType(object value) {
-            if (value.GetType() == typeof(string))
-                return "string";
-            if (value.GetType() == typeof(bool))
-                return "number";
-            if (value.GetType() == typeof(float))
-                return "number";
-            if (value.GetType() == typeof(int))
-                return "number";
-            if (value.GetType() == typeof(double))
-                return "number";
-
-            return value.GetType().ToString();
-        }
-
         class ExpressionErrorListener : DefaultErrorStrategy {
             public override void ReportError(Parser recognizer, RecognitionException e) {
                 throw new Exception($"Expression Error: {e.Message} @ char position {e.OffendingToken.Column}");
@@ -1538,14 +1509,29 @@ namespace UtilityBelt.Tools {
                 MetaExpressionsParser.ParseContext parseContext = expressionParser.parse();
                 ExpressionVisitor visitor = new ExpressionVisitor();
 
-                return visitor.Visit(parseContext);
+                var result = visitor.Visit(parseContext);
+
+                // check for any modifications to global/persistent variables that were accessed,
+                // and save them to the database
+                foreach (var kv in visitor.State.GlobalVariables) {
+                    if (kv.Value is ExpressionObjectBase obj && obj.HasChanges)
+                        Setgvar(kv.Key, kv.Value);
+                }
+
+                foreach (var kv in visitor.State.PersistentVariables) {
+                    if (kv.Value is ExpressionObjectBase obj && obj.HasChanges)
+                        Setpvar(kv.Key, kv.Value);
+                }
+
+                return result;
             }
             catch (Exception ex) {
                 if (!silent && expressionExceptions.Contains(ex.ToString()))
                     return null;
                 expressionExceptions.Add(ex.ToString());
 
-                Logger.Error($"Error in expression: {expression}\n{(UB.Plugin.Debug ? ex.ToString() : ex.Message)}");
+                var message = UB.Plugin.Debug ? ex.ToString() : (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+                Logger.Error($"Error in expression: {expression}\n  {message}");
                 throw ex;
             }
         }
@@ -1563,9 +1549,26 @@ namespace UtilityBelt.Tools {
         #endregion
 
         #region Helpers
+        private object DeserializeExpressionValue(string value, Type type = null) {
+            if (type != null)
+                return ExpressionObjectBase.DeserializeRecord(value, type);
+            else
+                return EvaluateExpression(value);
+            //return JsonConvert.DeserializeObject(value, ExpressionObjectBase.SerializerSettings);
+        }
+
+        private bool SerializeExpressionValue(object value, ref string expressionValue) {
+            if (value is ExpressionObjectBase obj && !obj.IsSerializable)
+                throw new Exception($"There is currently no support for serializing {ExpressionVisitor.GetFriendlyType(value.GetType())} types");
+            expressionValue = ExpressionObjectBase.SerializeRecord(value);
+
+            return true;
+        }
+
         private WorldObject GetCharacter() {
             return UtilityBeltPlugin.Instance.Core.WorldFilter[UtilityBeltPlugin.Instance.Core.CharacterFilter.Id];
         }
+
         private bool TryEquipAnyWand() {
             //TODO: implement this fully in ub
             FieldInfo fieldInfo = uTank2.PluginCore.PC.GetType().GetField("dz", BindingFlags.NonPublic | BindingFlags.Static);
