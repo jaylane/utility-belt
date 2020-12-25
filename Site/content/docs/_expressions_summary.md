@@ -1,4 +1,3 @@
-
 ### Summary
 UtilityBelt includes functionality to override the built-in expression language runner inside of VTank.  This enables new meta expression functions and language features to be added while still running metas inside of VTank.
 
@@ -62,7 +61,7 @@ You can set a memory variable using the `setvar` expression.  It expects two arg
 Persistent and global variables have their own methods/syntax for getting and setting. Persistent variables use `setpvar` to set, `getpvar` to read, and supports the alternate syntax `%` for getting variables (`%myPersistentVariable` returns the persistent variable named `myPersistentVariable`).  Global variables use `setgvar` to set, `getgvar` to read, and supports the alternate syntax `&` for getting variables (`&myGlobalVariable` returns the global variable named `myGlobalVariable`)
 
 ### Expression Examples
-* `coordinatedistancewithz[getplayercoordinates[], wobjectgetselection[]]`
+* `coordinatedistancewithz[getplayercoordinates[], wobjectgetphysicscoordinates[wobjectgetselection[]]]`
 	* Gets the distance from your player to the currently selected object
 * `setvar[myList,createlist[1,2,3]]; listadd[$myList,4]`
 	* Saves a newly created list with the values `1,2,3` as a memory variable called `myList`. Then adds the value `4` to that same list using the `$` getvar syntax.
