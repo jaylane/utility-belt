@@ -3,31 +3,35 @@ grammar MetaExpressions;
 parse               : (expression | (expression ';')+) EOF;
 
 expression          : '(' expression ')'                                                          #parenthesisExp
-                    | expression (ASTERISK|SLASH) expression                                      #mulDivExp
+                    | expression (MULTIPLY | DIVIDE) expression                                   #mulDivExp
                     | expression MODULO expression                                                #moduloExp
-                    | expression (PLUS|MINUS) expression                                          #addSubExp
+                    | expression (PLUS | MINUS) expression                                        #addSubExp
                     | <assoc=right> expression POW expression                                     #powerExp
-					| expression REGEXOP expression				    					          #regexExp
-					| expression (GT | LT | GTEQTO | LTEQTO | EQTO | NEQTO) expression            #comparisonExp
-					| expression (AND | OR) expression                                            #booleanComparisonExp
-					| ID expressionList ']'                                                       #functionCall
-					| BOOL       								                                  #boolAtomExp
+                    | expression REGEXOP expression                                               #regexExp
+                    | expression (GT | LT | GTEQTO | LTEQTO | EQTO | NEQTO) expression            #comparisonExp
+                    | expression (AND | OR) expression                                            #booleanComparisonExp
+                    | ID expressionList ']'                                                       #functionCall
+                    | (MEMORYVAR | PERSISTENTVAR | GLOBALVAR) expression                          #getvarAtomExp
+                    | BOOL                                                                        #boolAtomExp
                     | NUMBER                                                                      #numericAtomExp
                     | STRING                                                                      #stringAtomExp
                     ;
 
 expressionList      : (expression (',' expression)*)? ;
                    
+MEMORYVAR           : '$' ;
+PERSISTENTVAR       : '%' ;
+GLOBALVAR           : '&' ;
 
-ASTERISK            : '*' ;
-SLASH               : '/' ;
+MULTIPLY            : '*' ;
+DIVIDE              : '/' ;
 BSLASH              : '\\' ;
 MODULO              : '%' ;
 POW                 : '^' ;
 PLUS                : '+' ;
 MINUS               : '-' ;
 AND                 : '&&' ;
-OR					: '||' ;
+OR                  : '||' ;
 GT                  : '>' ;
 LT                  : '<' ;
 GTEQTO              : '>=' ;

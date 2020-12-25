@@ -8,6 +8,7 @@ using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using static UtilityBelt.Tools.VTankControl;
 using UBLoader.Lib.Settings;
+using UtilityBelt.Lib.Expressions;
 
 namespace UtilityBelt.Tools {
     [Name("HealthTracker")]
@@ -26,7 +27,7 @@ namespace UtilityBelt.Tools {
         [ExpressionReturn(typeof(double), "Returns a value from 0-1 representing the objects current health percentage.  If the objects health is not currently being tracked this will return -1")]
         [Summary("Gets the specified mob/player wobject current health percentage.  Note: You must have the wobject selected in order to receive health updates")]
         [Example("wobjectgethealth[wobjectgetselection[]]", "Returns the health of the currently selected mob/player")]
-        public object wobjectgethealth(Wobject wobject) {
+        public object wobjectgethealth(ExpressionWorldObject wobject) {
             if (TrackedObjects.TryGetValue(wobject.Wo.Id, out double health))
                 return health;
 

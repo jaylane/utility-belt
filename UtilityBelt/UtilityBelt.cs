@@ -12,6 +12,7 @@ using UtilityBelt.Lib.Settings;
 using UtilityBelt.Tools;
 using UtilityBelt.Views;
 using UBLoader.Lib.Settings;
+using UtilityBelt.Lib.Expressions;
 
 namespace UtilityBelt {
 
@@ -65,6 +66,7 @@ namespace UtilityBelt {
         public string Usage { get; }
         public Dictionary<string, string> Examples = new Dictionary<string, string>();
         public string Summary { get; }
+        public string Signature { get => $"{Name}[{string.Join(", ", ArgumentTypes.Select(t => ExpressionVisitor.GetFriendlyType(t)).ToArray())}]"; }
 
         public ExpressionMethod(FieldInfo fieldInfo, MethodInfo method) {
             FieldInfo = fieldInfo;
@@ -476,30 +478,19 @@ namespace UtilityBelt {
 
                     foreach (var attr in expressionMethodAttrs) {
                         var name = ((ExpressionMethodAttribute)attr).Name;
-                        var key = $"{name}";
-
-
-                        var expressionParameterAttrs = method.GetCustomAttributes(typeof(ExpressionParameterAttribute), true);
-                        var argCount = 0;
-                        foreach (var expressionParameterAttr in expressionParameterAttrs) {
-                            argCount++;
-                            //key += $":{((ExpressionParameterAttribute)expressionParameterAttr).Type.ToString().Split('.').Last().ToLower()}";
-                        }
-
-                        key += $":{argCount}";
 
                         try {
-                            if (RegisteredExpressions.ContainsKey(key)) {
-                                Logger.Error($"Unable to register expression {key} from {toolInfo.FieldType} because it was already registered by {RegisteredExpressions[name].FieldInfo.DeclaringType}.");
+                            if (RegisteredExpressions.ContainsKey(name)) {
+                                Logger.Error($"Unable to register expression {name} from {toolInfo.FieldType} because it was already registered by {RegisteredExpressions[name].FieldInfo.DeclaringType}.");
                                 continue;
                             }
 
-                            RegisteredExpressions.Add(key, new ExpressionMethod(toolInfo, method));
+                            RegisteredExpressions.Add(name, new ExpressionMethod(toolInfo, method));
                         }
                         catch (Exception ex) {
                             Logger.LogException(ex);
                             Logger.Error(ex.ToString());
-                            Logger.Error($"Unable to register expression: {key} from {toolInfo.FieldType}");
+                            Logger.Error($"Unable to register expression: {name} from {toolInfo.FieldType}");
                         }
                     }
                 }
