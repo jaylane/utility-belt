@@ -1,4 +1,4 @@
-﻿using Antlr4.Runtime;
+using Antlr4.Runtime;
 using Decal.Adapter.Wrappers;
 using System;
 using System.Collections.Generic;
@@ -1035,7 +1035,7 @@ namespace UtilityBelt.Tools {
         #endregion //wobjectgetplayer[worldobject wo]
         #region wobjectfindnearestbynameandobjectclass[int objectclass, string namerx]
         [ExpressionMethod("wobjectfindnearestbynameandobjectclass")]
-        [ExpressionParameter(0, typeof(string), "objectclass", "objectclass to filter by")]
+        [ExpressionParameter(0, typeof(double), "objectclass", "objectclass to filter by")]
         [ExpressionParameter(1, typeof(string), "namerx", "name regex to filter by")]
         [ExpressionReturn(typeof(ExpressionWorldObject), "Returns a worldobject")]
         [Summary("Gets a worldobject representing the first object matching objectclass and name regex, or 0 if none was found")]
