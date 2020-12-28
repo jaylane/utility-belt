@@ -111,6 +111,15 @@ namespace UtilityBelt.Lib.Expressions {
         }
 
         /// <summary>
+        /// Handle hexidecimal atoms
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public override object VisitHexNumberAtomExp([NotNull] MetaExpressionsParser.HexNumberAtomExpContext context) {
+            return (double)Convert.ToInt32(context.HEXNUMBER().GetText(), 16);
+        }
+
+        /// <summary>
         /// Handle string atoms, this includes removing quotes or escaped characters
         /// </summary>
         /// <param name="context"></param>

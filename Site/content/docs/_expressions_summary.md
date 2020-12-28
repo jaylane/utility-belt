@@ -12,7 +12,7 @@ The expression language offers functionality to control and read game client sta
 
 ### Data Types
 * **Number** - Numbers are stored internally as doubles. They have a precision of 15-16 digits and can store a range from +-5.0 x 10<sup>-324</sup>  to +-1.7 x 10<sup>308</sup>
-	* There is currently an issue with defining negative numbers.  Instead of using `-123` you must use `(0-123)` as a workaround
+	* Numbers can also be defined in hexadecimal format, ie `0xff`
 * **String** - A string of characters, can be any length.
 	* Strings containing anything other than letters and spaces need to be escaped with backslashes escaping individual characters, or backticks surrounding the entire string. Examples:
 		* `123 test` should be escaped as `\1\2\3 test` or `` `123 test` ``
