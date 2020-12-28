@@ -224,16 +224,18 @@ namespace UtilityBelt.Lib.Expressions {
         /// <param name="context"></param>
         /// <returns></returns>
         public override object VisitBooleanComparisonExp(MetaExpressionsParser.BooleanComparisonExpContext context) {
-            object left = Visit(context.expression(0));
-            object right = Visit(context.expression(1));
 
             if (context.AND() != null) {
+                object left = Visit(context.expression(0));
                 if (!IsTruthy(left)) return false;
+                object right = Visit(context.expression(1));
                 if (!IsTruthy(right)) return false;
                 return true;
             }
             if (context.OR() != null) {
+                object left = Visit(context.expression(0));
                 if (IsTruthy(left)) return true;
+                object right = Visit(context.expression(1));
                 if (IsTruthy(right)) return true;
                 return false;
             }
