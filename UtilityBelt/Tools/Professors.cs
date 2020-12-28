@@ -111,7 +111,7 @@ namespace UtilityBelt.Tools {
 
         private void ConfirmationRequest_ConfirmationRequestEvent(object sender, UBHelper.ConfirmationRequest.ConfirmationRequestEventArgs e) {
             try {
-                if (e.Confirm == 7 && e.Text.StartsWith("I can teach you")) {
+                if (e.Confirm == UBHelper.ConfirmationType.YESNO && e.Text.StartsWith("I can teach you")) {
                     e.ClickYes = true;
                 }
             }

@@ -82,30 +82,7 @@ namespace UtilityBelt.Tools {
         private void UBHelper_ConfirmationRequest(object sender, UBHelper.ConfirmationRequest.ConfirmationRequestEventArgs e) {
             try {
                 if (secondsToWatch != 0) {
-                    switch (e.Confirm) {
-                        case 1:
-                            WriteToChat("SwearAllegiance");
-                            break;
-                        case 2:
-                            WriteToChat("AlterSkill");
-                            break;
-                        case 3:
-                            WriteToChat("AlterAttribute");
-                            break;
-                        case 4:
-                            WriteToChat("Fellowship");
-                            break;
-                        case 5:
-                            WriteToChat("Augmentation");
-                            break;
-                        case 6:
-                            WriteToChat("YesNo");
-                            break;
-                        default:
-                            WriteToChat("Found a message box, but not sure what to do...");
-                            LogDebug("Message type: " + e.Confirm.ToString());
-                            break;
-                    }
+                    WriteToChat($"{e.Confirm}");
                     if (clickSelection == "yes") {
                         WriteToChat("Click Yes on " + e.Text.ToString());
                         e.ClickYes = true;

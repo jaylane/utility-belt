@@ -216,7 +216,7 @@ namespace UtilityBelt.Lib.Tinker {
 
         private void UBHelper_ConfirmationRequest(object sender, UBHelper.ConfirmationRequest.ConfirmationRequestEventArgs e) {
             try {
-                if (e.Confirm == 5) {
+                if (e.Confirm == UBHelper.ConfirmationType.CRAFT_INTERACTION) {
                     Logger.WriteToChat($"AutoTinker: Clicking Yes on {e.Text}");
                     e.ClickYes = true;
                     UBHelper.ConfirmationRequest.ConfirmationRequestEvent -= UBHelper_ConfirmationRequest;
