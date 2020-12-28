@@ -603,20 +603,10 @@ namespace UtilityBelt.Tools {
         [ExpressionParameter(0, typeof(double), "property", "QuadProperty to return")]
         [ExpressionReturn(typeof(double), "Returns a quad property from your character")]
         [Summary("Returns a quad property from your character, or 0 if it's undefined")]
-        [Example("getcharquadprop[25]", "Returns your character's TotalExperience")]
+        [Example("getcharquadprop[1]", "Returns your character's TotalExperience")]
         public object Getcharquadprop(double property) {
-            switch (property) {
-                case 1:
-                    return (double)UtilityBeltPlugin.Instance.Core.CharacterFilter.TotalXP;
-                case 2:
-                    return (double)UtilityBeltPlugin.Instance.Core.CharacterFilter.UnassignedXP;
-                case 6:
-                    // TODO:
-                    Logger.Error($"getcharquadprop[6] (LuminancePointsCurrent) is currently unsupported and will always return 0");
-                    return 0;
-            }
-
-            return 0;
+            long? propVal = UBHelper.Player.InqInt64((int)property);
+            return propVal.HasValue ? (double)propVal.Value : 0;
         }
         #endregion //getcharquadprop[int property]
         #region getcharboolprop[int property]
