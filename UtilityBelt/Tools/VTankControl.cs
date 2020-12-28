@@ -1485,7 +1485,10 @@ namespace UtilityBelt.Tools {
 
         class ExpressionErrorListener : DefaultErrorStrategy {
             public override void ReportError(Parser recognizer, RecognitionException e) {
-                throw new Exception($"Expression Error: {e.Message} @ char position {e.OffendingToken.Column}");
+                var error = e.GetType() == typeof(Antlr4.Runtime.NoViableAltException) ? "Syntax Error" : e.Message;
+                var ex = new Exception($"{error}: Offending character: '{e.OffendingToken.Text}' @ position {e.OffendingToken.Column}");
+                ex.Source = e.OffendingToken.Column.ToString();
+                throw ex;
             }
         }
 
@@ -1521,6 +1524,8 @@ namespace UtilityBelt.Tools {
                 expressionExceptions.Add(ex.ToString());
 
                 var message = UB.Plugin.Debug ? ex.ToString() : (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+                //expression = expression.Insert(int.Parse(ex.Source, NumberStyles.Integer), "<Tell:IIDString:{Util.GetChatId()}:errorpos>errorpos</Tell>");
+                //UB.Core.Actions.AddChatTextRaw(expression, 1);
                 Logger.Error($"Error in expression: {expression}\n  {message}");
                 throw ex;
             }
