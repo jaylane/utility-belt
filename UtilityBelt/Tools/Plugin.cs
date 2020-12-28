@@ -991,20 +991,20 @@ namespace UtilityBelt.Tools {
             return list;
         }
         #endregion //listremoveat[list list, number index]
-        #region listegetitem[list list, number index]
-        [ExpressionMethod("listegetitem")]
+        #region listgetitem[list list, number index]
+        [ExpressionMethod("listgetitem")]
         [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to retrieve the item from")]
         [ExpressionParameter(1, typeof(double), "index", "Index to retrieve from the list. Lists are zero based, so the first item is at index 0")]
         [ExpressionReturn(typeof(object), "Returns the item at the specified list index")]
         [Summary("Retrieves the item at the specified list index. Lists are zero based, so the first item in the list is at index 0. If the index does not exist, it throws an error")]
-        [Example("listegetitem[getvar[myList],0]", "Retrieves the first item from the list stored in `myList` variable")]
-        public object ListeGetItem(ExpressionList list, double index) {
+        [Example("listgetitem[getvar[myList],0]", "Retrieves the first item from the list stored in `myList` variable")]
+        public object ListGetItem(ExpressionList list, double index) {
             if (index > list.Items.Count - 1) {
-                throw new Exception($"Attempted to get item {index} of list, but list only has {list.Items.Count} items");
+                throw new Exception($"Attempted to get item at index {index} of list, but list only has {list.Items.Count} items");
             }
             return list.Items[(int)index];
         }
-        #endregion //listegetitem[list list, number index]
+        #endregion //listgetitem[list list, number index]
         #region listcontains[list list, object item]
         [ExpressionMethod("listcontains")]
         [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to check")]
@@ -1021,7 +1021,7 @@ namespace UtilityBelt.Tools {
         [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to check")]
         [ExpressionParameter(1, typeof(object), "item", "The item to check if the list contains")]
         [ExpressionReturn(typeof(double), "Returns the index of the first occurence of the specified item, or -1 if not found")]
-        [Summary("Finds the index of the first occurance of an item in a list")]
+        [Summary("Finds the index of the first occurance of an item in a list. Indexes are zero based.")]
         [Example("listindexof[getvar[myList],`some value`]", "Returns the index of the first occurence of the string `some value`")]
         public object ListIndexOf(ExpressionList list, object item) {
             return (double)list.Items.IndexOf(item);
@@ -1046,7 +1046,7 @@ namespace UtilityBelt.Tools {
         [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to pop the item from")]
         [ExpressionParameter(1, typeof(double), "index", "Optional index to remove, if not provided, uses the index of the last item in the array", -1)]
         [ExpressionReturn(typeof(object), "Returns the value removed from the array")]
-        [Summary("Removes the value at the specified index of the array and returns the item. If no index is passed, it uses the index of the last item in the array")]
+        [Summary("Removes the value at the specified index of the array and returns the item. If no index is passed, it uses the index of the last item in the array. Indexes are zero based.")]
         [Example("listpop[getvar[myList]]", "Removes and returns the last item in the list stored in myList variable")]
         [Example("listpop[getvar[myList],0]", "Removes and returns the first item in the list stored in myList variable")]
         public object ListPop(ExpressionList list, double index=-1) {
