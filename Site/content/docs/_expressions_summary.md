@@ -58,7 +58,7 @@ Memory variables are good for quickly storing the value of something to be used 
 
 You can set a memory variable using the `setvar` expression.  It expects two arguments, the first being a string of the name to store the variable under, and the second being the value to store.  For example `setvar[myVariable,123]` would store the number value `123` as a variable named `myVariable`.  All data types can be stored in a memory variable.  To read the value stored in a variable, you use the expression `getvar`. It expects one argument: a string of the variable name. For example to retrieve the memory variable we stored above we can use `getvar[myVariable]`, this will return the stored number `123`.  There is an alternate (shorter) syntax for getting a memory variable, `$`.  For example to get the same value stored above, you could use the alternate syntax: `$myVariable`.
 
-Persistent and global variables have their own methods/syntax for getting and setting. Persistent variables use `setpvar` to set, `getpvar` to read, and supports the alternate syntax `%` for getting variables (`%myPersistentVariable` returns the persistent variable named `myPersistentVariable`).  Global variables use `setgvar` to set, `getgvar` to read, and supports the alternate syntax `&` for getting variables (`&myGlobalVariable` returns the global variable named `myGlobalVariable`)
+Persistent and global variables have their own methods/syntax for getting and setting. Persistent variables use `setpvar` to set, `getpvar` to read, and supports the alternate syntax `@` for getting variables (`@myPersistentVariable` returns the persistent variable named `myPersistentVariable`).  Global variables use `setgvar` to set, `getgvar` to read, and supports the alternate syntax `&` for getting variables (`&myGlobalVariable` returns the global variable named `myGlobalVariable`)
 
 ### Expression Examples
 * `coordinatedistancewithz[getplayercoordinates[], wobjectgetphysicscoordinates[wobjectgetselection[]]]`
@@ -70,6 +70,6 @@ Persistent and global variables have their own methods/syntax for getting and se
 ### Notes
 * Although there are keywords for true/false, internally they represent number 1/0.
 * Methods that return `WorldObject` types will return `0` if no matching objects were found.  This will throw an error when passing the results to another expression that expects a `WorldObject`. It is recommended to use the `getobjectinternaltype` expression to check the resulting type before usage.
-* The alternative get variable syntax (`$`, `%`, and `&`) supports expressions where the variable identifier is. For example you can do the following to get a variable named `Sunnuj`, assuming that is your current character name: `$wobjectgetname[wobjectgetplayer[]]`.  It is equivalent to writing `getvar[wobjectgetname[wobjectgetplayer[]]]`.
+* The alternative get variable syntax (`$`, `@`, and `&`) supports expressions where the variable identifier is. For example you can do the following to get a variable named `Sunnuj`, assuming that is your current character name: `$wobjectgetname[wobjectgetplayer[]]`.  It is equivalent to writing `getvar[wobjectgetname[wobjectgetplayer[]]]`.
 
 ### Expressions
