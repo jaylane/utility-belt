@@ -312,7 +312,10 @@ The Rend All button will automatically do the following:
                         granite++;
                     }
                 }
+                Logger.WriteToChat($"{(new Weenie(item.Id)).GetName()}: Final max damage: {finalMaxDamage:N2}, {granite} granite, {iron} iron");
             }
+            else
+                Logger.Error($"tinkcalc only currently works with melee weapons");
         }
 
         public void AutoImbueSalvageCombo_Change(object sender, EventArgs e) {
