@@ -1,8 +1,10 @@
 grammar MetaExpressions;
 
-parse               : (expression | (expression ';')+) EOF;
+parse               : (expression (';' expression)* ';'?) EOF;
 
 expression          : '(' expression ')'                                                          #parenthesisExp
+                    | (MEMORYVAR | PERSISTENTVAR | GLOBALVAR) expression                          #getvarAtomExp
+                    | STRING expressionList                                                           #functionCall
                     | expression (MULTIPLY | DIVIDE) expression                                   #mulDivExp
                     | expression MODULO expression                                                #moduloExp
                     | expression (PLUS | MINUS) expression                                        #addSubExp
@@ -10,48 +12,40 @@ expression          : '(' expression ')'                                        
                     | expression REGEXOP expression                                               #regexExp
                     | expression (GT | LT | GTEQTO | LTEQTO | EQTO | NEQTO) expression            #comparisonExp
                     | expression (AND | OR) expression                                            #booleanComparisonExp
-                    | ID expressionList ']'                                                       #functionCall
-                    | (MEMORYVAR | PERSISTENTVAR | GLOBALVAR) expression                          #getvarAtomExp
                     | BOOL                                                                        #boolAtomExp
-                    | NUMBER                                                                      #numericAtomExp
                     | STRING                                                                      #stringAtomExp
+                    | (MINUS)? NUMBER                                                             #numericAtomExp
                     ;
 
-expressionList      : (expression (',' expression)*)? ;
-                   
+expressionList      : '[' (expression (',' expression)*)? ']' ;
+
 MEMORYVAR           : '$' ;
 PERSISTENTVAR       : '%' ;
 GLOBALVAR           : '&' ;
 
 MULTIPLY            : '*' ;
 DIVIDE              : '/' ;
-BSLASH              : '\\' ;
 MODULO              : '%' ;
 POW                 : '^' ;
 PLUS                : '+' ;
 MINUS               : '-' ;
+
 AND                 : '&&' ;
 OR                  : '||' ;
+
 GT                  : '>' ;
 LT                  : '<' ;
 GTEQTO              : '>=' ;
 LTEQTO              : '<=' ;
 EQTO                : '==' ;
 NEQTO               : '!=' ;
-REGEXOP             : '#' ;
 
-ID                  : [a-zA-Z_] [a-zA-Z0-9_]+ '[' ;
-BOOL                : (T R U E | F A L S E) ;
+REGEXOP             : '#' ;
+BSLASH              : '\\' ;
+
+BOOL                : ([tT][rR][uU][eE] | [fF][aA][lL][sS][eE]) ;
 NUMBER              : (DIGIT* '.'? DIGIT+);
-STRING              : ( [`] ~[`]* [`] | ([a-zA-Z_'"] | BSLASH .) (']'? '-'? [0-9]? ([a-zA-Z_'" ] | ']'? '-'? [0-9]? BSLASH .))* ) ;
+STRING              : ( ('`' (BSLASH '`' | ~[`])* '`') | (([a-zA-Z_'"] | BSLASH .)+ ([a-zA-Z0-9_'" ]+ | BSLASH .)*) ) ;
 WHITESPACE          : [ \t\r\n]+ -> skip;
 
 fragment DIGIT      : [0-9] ;
-fragment T          : 'T'|'t' ;
-fragment R          : 'R'|'r' ;
-fragment U          : 'U'|'u' ;
-fragment E          : 'E'|'e' ;
-fragment F          : 'F'|'f' ;
-fragment A          : 'A'|'a' ;
-fragment L          : 'L'|'l' ;
-fragment S          : 'S'|'s' ;

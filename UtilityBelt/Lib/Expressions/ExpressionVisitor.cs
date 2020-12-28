@@ -36,6 +36,11 @@ namespace UtilityBelt.Lib.Expressions {
             return v;
         }
 
+        /// <summary>
+        /// Returns a friendly version of the type, used for displaying to the user
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static string GetFriendlyType(Type type) {
             if (type == typeof(string))
                 return "string";
@@ -97,7 +102,12 @@ namespace UtilityBelt.Lib.Expressions {
         /// <param name="context"></param>
         /// <returns></returns>
         public override object VisitNumericAtomExp(MetaExpressionsParser.NumericAtomExpContext context) {
-            return double.Parse(context.NUMBER().GetText(), System.Globalization.CultureInfo.InvariantCulture);
+            var parsed = double.Parse(context.NUMBER().GetText(), System.Globalization.CultureInfo.InvariantCulture);
+
+            if (context.MINUS() != null)
+                parsed *= -1;
+
+            return parsed;
         }
 
         /// <summary>
@@ -109,7 +119,7 @@ namespace UtilityBelt.Lib.Expressions {
         public override object VisitStringAtomExp(MetaExpressionsParser.StringAtomExpContext context) {
             var str = context.GetText();
             if (str.StartsWith("`"))
-                return str.Trim('`');
+                return str.Trim('`').Replace("\\`","`");
             else
                 return Regex.Replace(str, @"\\(.)", "$1");
         }
@@ -137,9 +147,8 @@ namespace UtilityBelt.Lib.Expressions {
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-
         public override object VisitFunctionCall([NotNull] MetaExpressionsParser.FunctionCallContext context) {
-            var methodName = context.ID().GetText().Replace("[", "");
+            var methodName = context.STRING().GetText();//.Replace("[", "");
             var arguments = new List<object>();
 
             for (var i = 0; i < context.expressionList().expression().Length; i++) {
@@ -224,7 +233,6 @@ namespace UtilityBelt.Lib.Expressions {
         /// <param name="context"></param>
         /// <returns></returns>
         public override object VisitBooleanComparisonExp(MetaExpressionsParser.BooleanComparisonExpContext context) {
-
             if (context.AND() != null) {
                 object left = Visit(context.expression(0));
                 if (!IsTruthy(left)) return false;
@@ -322,12 +330,11 @@ namespace UtilityBelt.Lib.Expressions {
                 if (left.GetType() == typeof(string))
                     return (string)left + right.ToString();
             }
-
-            if (context.MINUS() != null && left.GetType() == typeof(double)) {
+            else if (context.MINUS() != null && left.GetType() == typeof(double) && right.GetType() == typeof(double)) {
                 return (double)left - (double)right;
             }
 
-            return null;
+            throw new Exception($"Unable to {(context.PLUS() != null ? "add" : "subtract")} type {GetFriendlyType(left.GetType())} {(context.PLUS() != null ? "to" : "from")} type {GetFriendlyType(right.GetType())}");
         }
 
         /// <summary>
@@ -364,8 +371,6 @@ namespace UtilityBelt.Lib.Expressions {
         /// <returns></returns>
         public override object VisitGetvarAtomExp([NotNull] MetaExpressionsParser.GetvarAtomExpContext context) {
             var varname = Visit(context.expression());
-            if (varname.GetType() != typeof(string))
-                throw new Exception($"Variable identifiers must be of type string. Passed: [{GetFriendlyType(varname.GetType())}] {varname.ToString()}");
 
             if (context.MEMORYVAR() != null)
                 return UtilityBeltPlugin.Instance.VTank.Getvar(varname.ToString());

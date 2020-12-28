@@ -18,7 +18,9 @@
 - Fix `/ub tinkcalc` not showing output
 - Fix `getcharquadprop[]` luminance properties
 - Add friendlier error messages for expressions
-- Add && and || expression operators now short-circuit (incompatible with vtank boolean operators)
+- Add `&&` and `||` expression operators now short-circuit (incompatible with vtank boolean operators)
+- Fix a number of expression parse issues
+- Fix `-` character must now be escaped in expression strings
 
 ## 0.1.8 (2020-11-30) [UtilityBeltInstaller-0.1.8.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/3914a8775e8d4643d4c967761ff9b9d2/UtilityBeltInstaller-0.1.8.exe)
 - Add expression `isrefreshingquests[]`
