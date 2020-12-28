@@ -148,7 +148,7 @@ namespace UtilityBelt.Lib.Expressions {
         /// <param name="context"></param>
         /// <returns></returns>
         public override object VisitFunctionCall([NotNull] MetaExpressionsParser.FunctionCallContext context) {
-            var methodName = context.STRING().GetText();//.Replace("[", "");
+            var methodName = context.STRING().GetText();
             var arguments = new List<object>();
 
             for (var i = 0; i < context.expressionList().expression().Length; i++) {
@@ -233,14 +233,14 @@ namespace UtilityBelt.Lib.Expressions {
         /// <param name="context"></param>
         /// <returns></returns>
         public override object VisitBooleanComparisonExp(MetaExpressionsParser.BooleanComparisonExpContext context) {
-            if (context.AND() != null) {
+            if (context.op.Text == "&&") {
                 object left = Visit(context.expression(0));
                 if (!IsTruthy(left)) return false;
                 object right = Visit(context.expression(1));
                 if (!IsTruthy(right)) return false;
                 return true;
             }
-            if (context.OR() != null) {
+            if (context.op.Text == "||") {
                 object left = Visit(context.expression(0));
                 if (IsTruthy(left)) return true;
                 object right = Visit(context.expression(1));
@@ -260,12 +260,12 @@ namespace UtilityBelt.Lib.Expressions {
             object left = Visit(context.expression(0));
             object right = Visit(context.expression(1));
 
-            if (context.EQTO() != null) {
+            if (context.op.Text == "==") {
                 if (left.GetType() == typeof(string))
                     return left.ToString().ToLower().Equals(right.ToString().ToLower());
                 return left.Equals(right);
             }
-            if (context.NEQTO() != null) {
+            if (context.op.Text == "!=") {
                 if (left.GetType() == typeof(string))
                     return !left.ToString().ToLower().Equals(right.ToString().ToLower());
                 return !left.Equals(right);
@@ -274,13 +274,13 @@ namespace UtilityBelt.Lib.Expressions {
             if (left.GetType() != typeof(double) || right.GetType() != typeof(double))
                 throw new Exception("Invalid comparison of non number types");
 
-            if (context.LT() != null)
+            if (context.op.Text == "<")
                 return (double)left < (double)right;
-            if (context.GT() != null)
+            if (context.op.Text == ">")
                 return (double)left > (double)right;
-            if (context.LTEQTO() != null)
+            if (context.op.Text == "<=")
                 return (double)left <= (double)right;
-            if (context.GTEQTO() != null)
+            if (context.op.Text == ">=")
                 return (double)left >= (double)right;
 
             return false;
@@ -296,23 +296,19 @@ namespace UtilityBelt.Lib.Expressions {
             double right = (double)Visit(context.expression(1));
             double result = 0;
 
-            if (context.MULTIPLY() != null)
-                result = left * right;
-            if (context.DIVIDE() != null)
-                result = left / right;
+            switch (context.op.Text) {
+                case "*":
+                    result = left * right;
+                    break;
+                case "/":
+                    result = left / right;
+                    break;
+                case "%":
+                    result = left % right;
+                    break;
+            }
 
             return result;
-        }
-
-        /// <summary>
-        /// Handle modulo operator
-        /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        public override object VisitModuloExp(MetaExpressionsParser.ModuloExpContext context) {
-            double left = (double)Visit(context.expression(0));
-            double right = (double)Visit(context.expression(1));
-            return left % right;
         }
 
         /// <summary>
@@ -324,17 +320,17 @@ namespace UtilityBelt.Lib.Expressions {
             object left = (object)Visit(context.expression(0));
             object right = (object)Visit(context.expression(1));
 
-            if (context.PLUS() != null) {
+            if (context.op.Text == "+") {
                 if (left.GetType() == typeof(double))
                     return (double)left + (double)right;
                 if (left.GetType() == typeof(string))
                     return (string)left + right.ToString();
             }
-            else if (context.MINUS() != null && left.GetType() == typeof(double) && right.GetType() == typeof(double)) {
+            else if (context.op.Text == "-" && left.GetType() == typeof(double) && right.GetType() == typeof(double)) {
                 return (double)left - (double)right;
             }
 
-            throw new Exception($"Unable to {(context.PLUS() != null ? "add" : "subtract")} type {GetFriendlyType(left.GetType())} {(context.PLUS() != null ? "to" : "from")} type {GetFriendlyType(right.GetType())}");
+            throw new Exception($"Unable to {(context.op.Text == "+" ? "add" : "subtract")} type {GetFriendlyType(left.GetType())} {(context.op.Text == "+" ? "to" : "from")} type {GetFriendlyType(right.GetType())}");
         }
 
         /// <summary>
@@ -372,11 +368,11 @@ namespace UtilityBelt.Lib.Expressions {
         public override object VisitGetvarAtomExp([NotNull] MetaExpressionsParser.GetvarAtomExpContext context) {
             var varname = Visit(context.expression());
 
-            if (context.MEMORYVAR() != null)
+            if (context.id.Text == "$")
                 return UtilityBeltPlugin.Instance.VTank.Getvar(varname.ToString());
-            else if (context.PERSISTENTVAR() != null)
+            else if (context.id.Text == "@")
                 return UtilityBeltPlugin.Instance.VTank.Getpvar(varname.ToString(), State);
-            else if (context.GLOBALVAR() != null)
+            else if (context.id.Text == "&")
                 return UtilityBeltPlugin.Instance.VTank.Getgvar(varname.ToString(), State);
             else
                 return null;
