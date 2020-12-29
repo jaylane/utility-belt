@@ -310,25 +310,38 @@ namespace UtilityBelt.Tools {
         private void Hud_OnClose(object sender, EventArgs e) {
             Enabled.Value = false;
         }
+
+        private void Hud_OnReMake(object sender, EventArgs e) {
+            CreateTextures();
+        }
         #endregion // Event Handlers
 
         #region Hud Rendering
         internal void CreateHud() {
             try {
-                if (daynightIcon == null)
-                    daynightIcon = TextureCache.TextureFromBitmapResource("UtilityBelt.Resources.icons.daynight.png");
-
-                if (pointerIcon == null)
-                    pointerIcon = TextureCache.TextureFromBitmapResource("UtilityBelt.Resources.icons.arrow.png");
+                CreateTextures();
 
                 if (hud == null) {
                     hud = UB.Huds.CreateHud(HudX, HudY, ShowLabel ? 150 : 32, 32);
                     hud.OnRender += Hud_OnRender;
                     hud.OnMove += Hud_OnMove;
                     hud.OnClose += Hud_OnClose;
+                    hud.OnReMake += Hud_OnReMake;
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void CreateTextures() {
+            if (daynightIcon != null)
+                daynightIcon.Dispose();
+
+            daynightIcon = TextureCache.TextureFromBitmapResource("UtilityBelt.Resources.icons.daynight.png");
+
+            if (pointerIcon != null)
+                pointerIcon.Dispose();
+
+            pointerIcon = TextureCache.TextureFromBitmapResource("UtilityBelt.Resources.icons.arrow.png");
         }
 
         public void ClearHud() {
@@ -337,6 +350,7 @@ namespace UtilityBelt.Tools {
             hud.OnRender -= Hud_OnRender;
             hud.OnMove -= Hud_OnMove;
             hud.OnClose -= Hud_OnClose;
+            hud.OnReMake -= Hud_OnReMake;
             hud.Dispose();
             hud = null;
         }

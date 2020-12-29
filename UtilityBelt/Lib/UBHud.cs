@@ -30,6 +30,7 @@ namespace UtilityBelt.Lib {
         public event EventHandler<EventArgs> OnResize;
         public event EventHandler<EventArgs> OnRender;
         public event EventHandler<EventArgs> OnClose;
+        public event EventHandler<EventArgs> OnReMake;
 
 
         /// <summary>
@@ -61,6 +62,19 @@ namespace UtilityBelt.Lib {
             Y = y;
             Hud.Location = new Point(X, Y);
             OnMove?.Invoke(this, EventArgs.Empty);
+            Render();
+        }
+
+        public void ReMake() {
+            if (Hud != null) {
+                Hud.Enabled = false;
+                Hud.Dispose();
+                Hud = null;
+            }
+
+            Hud = new DxHud(new Point(X, Y), new Size(Width, Height), 0);
+            Hud.Enabled = true;
+            OnReMake?.Invoke(this, EventArgs.Empty);
         }
 
         public void Resize(int width, int height) {
