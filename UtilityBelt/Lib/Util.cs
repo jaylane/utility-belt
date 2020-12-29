@@ -95,6 +95,7 @@ namespace UtilityBelt
         public static void CreateDataDirectories() {
             System.IO.Directory.CreateDirectory(GetPluginDirectory());
             System.IO.Directory.CreateDirectory(GetCharacterDirectory());
+            System.IO.Directory.CreateDirectory(GetProfilesDirectory());
         }
 
         public static void WriteToDebugLog(string message) {
