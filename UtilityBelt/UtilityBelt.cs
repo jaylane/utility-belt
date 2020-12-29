@@ -556,20 +556,26 @@ namespace UtilityBelt {
         public void Shutdown() {
             try {
                 UBLoader.FilterCore.Settings.Changed -= FilterSettings_Changed;
-                Settings.Changed -= Settings_Changed;
-                State.Changed -= State_Changed;
+                if (Settings != null) {
+                    Settings.Changed -= Settings_Changed;
+                    if (Settings.NeedsSave)
+                        Settings.Save();
+                }
+                if (State != null) {
+                    State.Changed -= State_Changed;
+                    if (State.NeedsSave)
+                        State.Save();
+                }
 
-                if (Settings.NeedsSave)
-                    Settings.Save();
-                if (State.NeedsSave)
-                    State.Save();
-                if (ClientUISettings.NeedsSave)
+                if (ClientUISettings != null && ClientUISettings.NeedsSave)
                     ClientUISettings.Save();
-                if (PlayerOptionsSettings.NeedsSave)
+                if (PlayerOptionsSettings != null && PlayerOptionsSettings.NeedsSave)
                     PlayerOptionsSettings.Save();
 
-                if (Core != null)
+                if (Core != null) {
                     Core.CommandLineText -= Core_CommandLineText;
+                    Core.CharacterFilter.Login -= CharacterFilter_Login;
+                }
                 HotkeyWrapperManager.Shutdown();
                 foreach (var tool in LoadedTools) {
                     try {
@@ -578,22 +584,18 @@ namespace UtilityBelt {
                     catch (Exception ex) { Logger.LogException(ex); }
                 }
 
-                if (MainView != null)
-                    MainView.Dispose();
-                if (DungeonMapView != null)
-                    DungeonMapView.Dispose();
-                if (LandscapeMapView != null)
-                    LandscapeMapView.Dispose();
-                if (ItemGiverView != null)
-                    ItemGiverView.Dispose();
+                MainView?.Dispose();
+                DungeonMapView?.Dispose();
+                LandscapeMapView?.Dispose();
+                ItemGiverView?.Dispose();
 
                 Lib.ActionQueue.Dispose();
-                PerfMonitor.Dispose();
+                PerfMonitor?.Dispose();
                 UBLoader.Lib.File.FlushFiles();
-                Settings.Dispose();
-                State.Dispose();
-                ClientUISettings.Dispose();
-                PlayerOptionsSettings.Dispose();
+                Settings?.Dispose();
+                State?.Dispose();
+                ClientUISettings?.Dispose();
+                PlayerOptionsSettings?.Dispose();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
