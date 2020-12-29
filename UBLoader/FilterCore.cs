@@ -99,24 +99,27 @@ namespace UBLoader {
         }
 
         private void Core_GameStateChanged(UBHelper.GameState previous, UBHelper.GameState new_state) {
-            switch (new_state) {
-                case UBHelper.GameState.Character_Select_Screen:
-                    VersionWatermark.Display(Host, $"{PluginName} v{FileVersionInfo.GetVersionInfo(PluginAssemblyPath).ProductVersion}");
-                    UnloadPluginAssembly();
-                    break;
-                case UBHelper.GameState.Creating_Character:
-                    VersionWatermark.Destroy();
-                    break;
-                case UBHelper.GameState.Entering_Game:
-                    VersionWatermark.Destroy();
-                    PluginsReady = true;
-                    LoadPluginAssembly();
-                    break;
-                case UBHelper.GameState.Logging_Out:
-                    PluginsReady = false;
-                    UnloadPluginAssembly();
-                    break;
+            try {
+                switch (new_state) {
+                    case UBHelper.GameState.Character_Select_Screen:
+                        VersionWatermark.Display(Host, $"{PluginName} v{FileVersionInfo.GetVersionInfo(PluginAssemblyPath).ProductVersion}");
+                        UnloadPluginAssembly();
+                        break;
+                    case UBHelper.GameState.Creating_Character:
+                        VersionWatermark.Destroy();
+                        break;
+                    case UBHelper.GameState.Entering_Game:
+                        VersionWatermark.Destroy();
+                        PluginsReady = true;
+                        LoadPluginAssembly();
+                        break;
+                    case UBHelper.GameState.Logging_Out:
+                        PluginsReady = false;
+                        UnloadPluginAssembly();
+                        break;
+                }
             }
+            catch(Exception e) { LogException(e); }
         }
 
         private void LoadAssemblyConfig() {
