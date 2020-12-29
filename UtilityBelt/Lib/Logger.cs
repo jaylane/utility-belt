@@ -109,24 +109,23 @@ namespace UtilityBelt {
         }
 
         private static void PruneLogDirectory(string logDirectory) {
-            try {
-                string[] files = Directory.GetFiles(logDirectory, "*.txt", SearchOption.TopDirectoryOnly);
+            if (!Directory.Exists(logDirectory))
+                return;
+            string[] files = Directory.GetFiles(logDirectory, "*.txt", SearchOption.TopDirectoryOnly);
 
-                var logFileRe = new Regex(@"^\w+\.(?<date>\d+\-\d+\-\d+)\.txt$");
+            var logFileRe = new Regex(@"^\w+\.(?<date>\d+\-\d+\-\d+)\.txt$");
 
-                foreach (var file in files) {
-                    var fName = file.Split('\\').Last();
-                    var match = logFileRe.Match(fName);
-                    if (match.Success) {
-                        DateTime.TryParse(match.Groups["date"].ToString(), out DateTime logDate);
+            foreach (var file in files) {
+                var fName = file.Split('\\').Last();
+                var match = logFileRe.Match(fName);
+                if (match.Success) {
+                    DateTime.TryParse(match.Groups["date"].ToString(), out DateTime logDate);
 
-                        if (logDate != null && (DateTime.Now - logDate).TotalDays > MAX_LOG_AGE) {
-                            File.Delete(file);
-                        }
+                    if (logDate != null && (DateTime.Now - logDate).TotalDays > MAX_LOG_AGE) {
+                        File.Delete(file);
                     }
                 }
             }
-            catch (Exception ex) { Logger.LogException(ex); }
         }
         private static string exceptionsLog => Path.Combine(Util.GetPluginDirectory(), "exceptions.txt");
         private static void TruncateLogFiles() {

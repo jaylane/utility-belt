@@ -25,8 +25,10 @@ namespace UBLoader {
                 Marshal.ReleaseComObject(hud);
                 hud = null;
             }
-            render.DeviceLost -= render_DeviceLost;
-            render = null;
+            if (render != null) {
+                render.DeviceLost -= render_DeviceLost;
+                render = null;
+            }
         }
 
         private static void render_DeviceLost() {

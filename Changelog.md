@@ -22,6 +22,7 @@
 - Fix a number of expression parse issues
 - Fix `-` character must now be escaped in expression strings
 - Add hexadecimal number format support to expressions, ie `0xff`
+- Fix issue where plugin was not loading after creating a new character
 
 ## 0.1.8 (2020-11-30) [UtilityBeltInstaller-0.1.8.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/3914a8775e8d4643d4c967761ff9b9d2/UtilityBeltInstaller-0.1.8.exe)
 - Add expression `isrefreshingquests[]`
