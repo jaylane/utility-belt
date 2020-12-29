@@ -50,6 +50,13 @@ namespace UtilityBelt.Lib {
                 return;
 
             CoreManager.Current.WindowMessage += Core_WindowMessage;
+            CoreManager.Current.RegionChange3D += Current_RegionChange3D;
+            isHandlingEvents = true;
+        }
+
+        private void Current_RegionChange3D(object sender, RegionChange3DEventArgs e) {
+            foreach (var hud in Huds)
+                hud.ReMake();
         }
 
         private void Core_WindowMessage(object sender, WindowMessageEventArgs e) {
@@ -129,6 +136,7 @@ namespace UtilityBelt.Lib {
         public void Dispose() {
             if (isHandlingEvents) {
                 CoreManager.Current.WindowMessage -= Core_WindowMessage;
+                CoreManager.Current.RegionChange3D -= Current_RegionChange3D;
                 isHandlingEvents = false;
             }
 

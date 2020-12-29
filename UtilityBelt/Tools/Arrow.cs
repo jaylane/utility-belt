@@ -113,15 +113,7 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
 
         private void TryEnable() {
             if (Enabled) {
-                if (arrowTexture == null)
-                    arrowTexture = TextureCache.TextureFromBitmapResource("UtilityBelt.Resources.icons.arrow.png");
-                if (arrowMapTexture == null) {
-                    arrowMapTexture = new DxTexture(new Size(arrowTexture.Width, arrowTexture.Height));
-                    arrowMapTexture.BeginRender();
-                    arrowMapTexture.Fill(new Rectangle(0, 0, arrowMapTexture.Width, arrowMapTexture.Height), Color.Transparent);
-                    arrowMapTexture.DrawTextureRotated(arrowTexture, new Rectangle(0, 0, arrowTexture.Width, arrowTexture.Height), new Point(arrowMapTexture.Width/2, arrowMapTexture.Height/2), Color.White.ToArgb(), (float)Math.PI);
-                    arrowMapTexture.EndRender();
-                }
+                CreateTextures();
                 CreateHud();
                 if (drawTimer == null) {
                     drawTimer = new TimerClass();
@@ -141,6 +133,22 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
                 RemoveMapMarker();
                 ClearHud();
             }
+        }
+
+        private void CreateTextures() {
+            if (arrowTexture != null)
+                arrowTexture.Dispose();
+
+            arrowTexture = TextureCache.TextureFromBitmapResource("UtilityBelt.Resources.icons.arrow.png");
+
+            if (arrowMapTexture != null)
+                arrowMapTexture.Dispose();
+
+            arrowMapTexture = new DxTexture(new Size(arrowTexture.Width, arrowTexture.Height));
+            arrowMapTexture.BeginRender();
+            arrowMapTexture.Fill(new Rectangle(0, 0, arrowMapTexture.Width, arrowMapTexture.Height), Color.Transparent);
+            arrowMapTexture.DrawTextureRotated(arrowTexture, new Rectangle(0, 0, arrowTexture.Width, arrowTexture.Height), new Point(arrowMapTexture.Width / 2, arrowMapTexture.Height / 2), Color.White.ToArgb(), (float)Math.PI);
+            arrowMapTexture.EndRender();
         }
 
         #region event handlers
@@ -211,6 +219,10 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
         private void Hud_OnMove(object sender, EventArgs e) {
             HudX.Value = hud.X;
             HudY.Value = hud.Y;
+        }
+
+        private void Hud_OnReMake(object sender, EventArgs e) {
+            CreateTextures();
         }
         #endregion
 
@@ -300,6 +312,7 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
                 hud.OnMove += Hud_OnMove;
                 hud.OnClose += Hud_OnClose;
                 hud.OnRender += Hud_OnRender;
+                hud.OnReMake += Hud_OnReMake;
                 hud.Render();
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -311,6 +324,7 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
             hud.OnMove -= Hud_OnMove;
             hud.OnClose -= Hud_OnClose;
             hud.OnRender -= Hud_OnRender;
+            hud.OnReMake -= Hud_OnReMake;
             hud.Dispose();
             hud = null;
         }
