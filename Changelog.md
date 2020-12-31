@@ -1,4 +1,4 @@
-## 0.1.9 (TBD)
+## 0.2.0 (TBD)
 - Fix issue where calling get[gp]var expression would set an invalid value to the cache, causing test[gp]var to have incorrect results
 - Add Landscape Maps marker for current Arrow target
 - Fix getitemcountininventorybyname and getitemcountininventorybynamerx expressions now count containers and equipped items

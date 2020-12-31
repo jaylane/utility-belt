@@ -99,9 +99,6 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
         [Summary("Show debug information while drawing maps")]
         public readonly Setting<bool> Debug = new Setting<bool>(false);
 
-        [Summary("Dungeon name header")]
-        public readonly ColorToggleOption DungeonName = new ColorToggleOption(true, -1);
-
         [Summary("Draw dungeon maps even when map window is closed")]
         public readonly Setting<bool> DrawWhenClosed = new Setting<bool>(true);
 
@@ -158,6 +155,9 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                 "VisualNavLines",
                 "VisualNavStickyPoint"
             };
+
+            [Summary("Dungeon name header")]
+            public readonly ColorToggleOption DungeonName = new ColorToggleOption(true, -1);
 
             [Summary("Walls")]
             public readonly ColorToggleOption Walls = new ColorToggleOption(true, -16777089);
@@ -590,8 +590,8 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                             hud.Texture.Fill(new Rectangle(0, 0, hud.Texture.Width, hud.Texture.Height), Color.Transparent);
                             try {
                                 hud.Texture.BeginText(fontFace, 10f, 150, false, 1, (int)byte.MaxValue);
-                                if (DungeonName.Enabled) {
-                                    hud.Texture.WriteText(UB.Core.Actions.Landcell.ToString("X8"), Color.FromArgb(DungeonName.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
+                                if (Display.DungeonName.Enabled) {
+                                    hud.Texture.WriteText(UB.Core.Actions.Landcell.ToString("X8"), Color.FromArgb(Display.DungeonName.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
                                 }
                             }
                             finally {
@@ -1016,11 +1016,11 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
 
                 try {
                     hud.Texture.BeginText(fontFace, 10f, 150, false, 1, (int)byte.MaxValue);
-                    if (DungeonName.Enabled) {
+                    if (Display.DungeonName.Enabled) {
                         var name = dungeon.Name + $" (Z:{(int)(Math.Floor((drawZ + 3) / 6))})";
                         if (Debug)
                             name += $" {UB.Core.Actions.Landcell:X8}";
-                        hud.Texture.WriteText(name, Color.FromArgb(DungeonName.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
+                        hud.Texture.WriteText(name, Color.FromArgb(Display.DungeonName.Color), VirindiViewService.WriteTextFormats.Center, new Rectangle(0, 0, hud.Texture.Width, 20));
                     }
                     if (Debug) {
                         var sobjCount = 0;
