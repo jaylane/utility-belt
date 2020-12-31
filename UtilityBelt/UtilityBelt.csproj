@@ -89,9 +89,11 @@
     </Reference>
     <Reference Include="protobuf-net">
       <HintPath>..\UBLoader\Deps\protobuf-net.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="ProtobufSerializer">
       <HintPath>..\UBLoader\Deps\ProtobufSerializer.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
