@@ -79,19 +79,29 @@
     <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <Private>False</Private>
     </Reference>
+    <Reference Include="NetworkCommsDotNet, Version=3.0.0.0, Culture=neutral, PublicKeyToken=f58108eb6480f6ec, processorArchitecture=MSIL">
+      <HintPath>..\packages\NetworkCommsDotNet.3.0.3\lib\NetworkCommsDotNet.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\UBLoader\Deps\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="SharedMemory, Version=2.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>.\..\packages\SharedMemory.2.1.1\lib\net35\SharedMemory.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="protobuf-net">
+      <HintPath>..\UBLoader\Deps\protobuf-net.dll</HintPath>
+    </Reference>
+    <Reference Include="ProtobufSerializer">
+      <HintPath>..\UBLoader\Deps\ProtobufSerializer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.Linq" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Threading, Version=1.0.2856.102, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\TaskParallelLibrary.1.0.2856.0\lib\Net35\System.Threading.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="UBHelper">
@@ -154,6 +164,11 @@
     <Compile Include="Lib\Models\Weenie.cs" />
     <Compile Include="Lib\Models\WeenieAttribute.cs" />
     <Compile Include="Lib\Models\WeenieSpawn.cs" />
+    <Compile Include="Lib\Networking\Messages\CastAttemptMessage.cs" />
+    <Compile Include="Lib\Networking\Messages\CastSuccessMessage.cs" />
+    <Compile Include="Lib\Networking\Messages\CommandBroadcastMessage.cs" />
+    <Compile Include="Lib\Networking\Messages\LoginMessage.cs" />
+    <Compile Include="Lib\Networking\Messages\PlayerUpdateMessage.cs" />
     <Compile Include="Lib\PerfMonitor.cs" />
     <Compile Include="Lib\Settings\PluginMessageDisplay.cs" />
     <Compile Include="Lib\Spells.cs" />
@@ -169,6 +184,7 @@
     <Compile Include="Lib\VCS_Connector.cs" />
     <Compile Include="Lib\VHS_Connector.cs" />
     <Compile Include="Tools\Arrow.cs" />
+    <Compile Include="Tools\Networking.cs" />
     <Compile Include="Tools\PlayerOptions.cs" />
     <Compile Include="Tools\Client.cs" />
     <Compile Include="Tools\DerethTime.cs" />
@@ -198,7 +214,6 @@
     <Compile Include="Lib\Quests\QuestFlag.cs" />
     <Compile Include="Lib\Quests\QuestFlagType.cs" />
     <Compile Include="Lib\Settings\SettingsForm.cs" />
-    <Compile Include="Lib\UBPlayerUpdate.cs" />
     <Compile Include="Lib\UpdateChecker.cs" />
     <Compile Include="Lib\VendorCache\BuyItem.cs" />
     <Compile Include="Lib\VendorCache\VendorCache.cs" />
@@ -1003,6 +1018,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Views\TextEditPopup.xml" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

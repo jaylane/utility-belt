@@ -157,6 +157,7 @@ namespace UtilityBelt {
         public LandscapeMaps LandscapeMaps;
         public LSD LSD;
         public Nametags Nametags;
+        public Networking Networking;
         public PlayerOptions PlayerOptions;
         public Professors Professors;
         public QuestTracker QuestTracker;

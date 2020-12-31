@@ -92,22 +92,25 @@
     <Compile Include="Lib\Settings\SettingChangedEventArgs.cs" />
     <Compile Include="Lib\Settings\Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Lib\VersionWatermark.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Lib\VersionWatermark.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Deps\Newtonsoft.Json.dll" />
-    <None Include="Deps\SharedMemory.dll" />
     <Content Include="Deps\0Harmony.dll" />
     <Content Include="Deps\Antlr4.Runtime.dll" />
     <Content Include="Deps\LiteDB.dll" />
+    <Content Include="Deps\NetworkCommsDotNet.dll" />
+    <Content Include="Deps\protobuf-net.dll" />
+    <Content Include="Deps\ProtobufSerializer.dll" />
+    <Content Include="Deps\System.Threading.dll" />
     <Content Include="Deps\UBHelper.dll" />
   </ItemGroup>
   <ItemGroup>

@@ -89,7 +89,11 @@ namespace UtilityBelt.Lib {
             return true;
         }
 
-        private static int GetEffectiveSkillForSpell(Spell spell) {
+        public static int GetEffectiveSkillForSpell(int spellId) {
+            return GetEffectiveSkillForSpell(SpellTable.GetById(spellId));
+        }
+
+        public static int GetEffectiveSkillForSpell(Spell spell) {
             var buffedSkill = 0;
             var cf = UtilityBeltPlugin.Instance.Core.CharacterFilter;
 
@@ -117,6 +121,10 @@ namespace UtilityBelt.Lib {
                 buffedSkill += 10;
 
             return buffedSkill;
+        }
+
+        internal static int GetSpellDuration(int spellId) {
+            return (int)SpellTable.GetById(spellId).Duration;
         }
     }
 }

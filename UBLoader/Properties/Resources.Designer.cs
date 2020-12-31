@@ -83,6 +83,16 @@ namespace UBLoader.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] NetworkCommsDotNet {
+            get {
+                object obj = ResourceManager.GetObject("NetworkCommsDotNet", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] Newtonsoft_Json {
             get {
                 object obj = ResourceManager.GetObject("Newtonsoft_Json", resourceCulture);
@@ -93,9 +103,29 @@ namespace UBLoader.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] SharedMemory {
+        internal static byte[] protobuf_net {
             get {
-                object obj = ResourceManager.GetObject("SharedMemory", resourceCulture);
+                object obj = ResourceManager.GetObject("protobuf_net", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] ProtobufSerializer {
+            get {
+                object obj = ResourceManager.GetObject("ProtobufSerializer", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] System_Threading {
+            get {
+                object obj = ResourceManager.GetObject("System_Threading", resourceCulture);
                 return ((byte[])(obj));
             }
         }
