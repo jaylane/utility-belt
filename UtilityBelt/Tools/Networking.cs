@@ -23,14 +23,12 @@ namespace UtilityBelt.Tools {
         public event EventHandler OnPlayerUpdateMessage;
         public event EventHandler OnCastAttemptMessage;
         public event EventHandler OnCastSuccessMessage;
-        public event EventHandler OnCommandBroadcastMessage;
 
         private ConcurrentQueue<Action> GameThreadActionQueue = new ConcurrentQueue<Action>();
         private ConcurrentQueue<Action> SendQueue = new ConcurrentQueue<Action>();
         private TCPConnection connection;
         private double lastConnectionAttempt;
         private double connectionRetryTimeout = 0;
-        private double lastSpam = 0;
 
         private class ClientInfo {
             private static int __id = 0;
@@ -71,7 +69,7 @@ namespace UtilityBelt.Tools {
         [Usage("/ub bc [millisecondDelay] <command>")]
         [Example("/ub bc 5000 /say hello", "Runs \"/say hello\" on every client, with a 5000ms delay between each")]
         [Example("/ub bc /say hello", "Runs \"/say hello\" on every client, with no delay")]
-        [CommandPattern("bc", @"^(?<delay>\d+) ?(?<command>.*)$")]
+        [CommandPattern("bc", @"^(?<delay>\d*) ?(?<command>.*)$")]
         public void DoBroadcast(string _, Match args) {
             var command = args.Groups["command"].Value;
             int delay = 0;
