@@ -1,4 +1,4 @@
-## 0.2.0 (TBD)
+## 0.2.0 (2020-12-31) [UtilityBeltInstaller-0.2.0.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/61bc3860576e115c1b8b1b02cc93f526/UtilityBeltInstaller-0.2.0.exe)
 - Fix issue where calling get[gp]var expression would set an invalid value to the cache, causing test[gp]var to have incorrect results
 - Add Landscape Maps marker for current Arrow target
 - Fix getitemcountininventorybyname and getitemcountininventorybynamerx expressions now count containers and equipped items
