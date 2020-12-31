@@ -196,7 +196,9 @@ namespace UBLoader {
                     UnloadPluginAssembly();
                 }
 
-                CurrentAssembly = Assembly.Load(System.IO.File.ReadAllBytes(PluginAssemblyPath));
+                var assemblyPath = System.IO.File.ReadAllBytes(PluginAssemblyPath);
+                var pdbPath = System.IO.File.ReadAllBytes(PluginAssemblyPath.Replace(".dll", ".pdb"));
+                CurrentAssembly = Assembly.Load(assemblyPath, pdbPath);
                 PluginType = CurrentAssembly.GetType(PluginAssemblyNamespace);
                 MethodInfo startupMethod = PluginType.GetMethod("Startup");
                 PluginInstance = Activator.CreateInstance(PluginType);
