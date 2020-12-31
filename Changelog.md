@@ -25,7 +25,9 @@
 - Fix issue where plugin was not loading after creating a new character
 - Fix issue where plugin could load multiple times if another character was already in world
 - Fix issue where huds would stop rendering after a resolution change
-- Fix ability to tinker untinkerable items in AutoTinker
+- Fix AutoTinker no longer tries to tinker untinkerable items
+- Add Networking - Now spellcast attempts / success are shared with vtank (vuln/imp overlapping)
+- Add `/ub bc [msDelayBetweenClients] <command>` for broadcasting commands to all open clients
 
 ## 0.1.8 (2020-11-30) [UtilityBeltInstaller-0.1.8.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/3914a8775e8d4643d4c967761ff9b9d2/UtilityBeltInstaller-0.1.8.exe)
 - Add expression `isrefreshingquests[]`

@@ -309,9 +309,7 @@ namespace UtilityBelt.Tools {
         [Example("/ub delay 5000 /say hello", "Runs \"/say hello\" after a 3000ms delay (3 seconds)")]
         [CommandPattern("delay", @"^ *(?<params>\d+ .+) *$")]
         public void DoDelay(string _, Match args) {
-            UB_delay(args.Groups["params"].Value);
-        }
-        private void UB_delay(string theRest) {
+            var theRest = args.Groups["params"].Value;
             string[] rest = theRest.Split(' ');
             if (string.IsNullOrEmpty(theRest)
                 || rest.Length < 2
@@ -321,9 +319,10 @@ namespace UtilityBelt.Tools {
                 Logger.Error("Usage: /ub delay <milliseconds> <command>");
                 return;
             }
-
             var command = string.Join(" ", rest.Skip(1).ToArray());
-
+            AddDelayedCommand(command, delay);
+        }
+        public void AddDelayedCommand(string command, double delay) {
             Logger.Debug($"Scheduling command `{command}` with delay of {delay}ms");
 
             DelayedCommand delayed = new DelayedCommand(command, delay);

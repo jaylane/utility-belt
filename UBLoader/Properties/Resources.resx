@@ -127,10 +127,19 @@
   <data name="Newtonsoft_Json" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\deps\newtonsoft.json.dll;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="SharedMemory" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\deps\sharedmemory.dll;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="UBHelper" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\deps\ubhelper.dll;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="ProtobufSerializer" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\deps\protobufserializer.dll;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="protobuf_net" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\deps\protobuf-net.dll;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="NetworkCommsDotNet" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\deps\networkcommsdotnet.dll;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="System_Threading" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\deps\system.threading.dll;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

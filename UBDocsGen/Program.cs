@@ -197,16 +197,21 @@ namespace UBDocsGen {
                 var nameAttrs = toolProp.FieldType.GetCustomAttributes(typeof(NameAttribute), true);
 
                 if (nameAttrs.Length == 1) {
-                    var name = ((NameAttribute)nameAttrs[0]).Name;
-                    var summary = GetSummary(toolProp);
-                    var description = GetFullDescription(toolProp);
-                    var commands = GetCommands(toolProp);
-                    var settings = GetSettings(toolProp.GetValue(UB), toolProp.Name);
-                    var expressions = GetExpressions(toolProp);
+                    try {
+                        var name = ((NameAttribute)nameAttrs[0]).Name;
+                        var summary = GetSummary(toolProp);
+                        var description = GetFullDescription(toolProp);
+                        var commands = GetCommands(toolProp);
+                        var settings = GetSettings(toolProp.GetValue(UB), toolProp.Name);
+                        var expressions = GetExpressions(toolProp);
 
-                    var info = new ToolInfo(name, summary, description, commands, settings, expressions);
+                        var info = new ToolInfo(name, summary, description, commands, settings, expressions);
 
-                    AvailableTools.Add(name, info);
+                        AvailableTools.Add(name, info);
+                    }
+                    catch (Exception ex) {
+                        LogException(ex);
+                    }
                 }
             }
         }
