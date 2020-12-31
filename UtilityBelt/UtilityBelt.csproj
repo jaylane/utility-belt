@@ -4,8 +4,8 @@
   <Import Project="..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.props" Condition="Exists('..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.props')" />
   <PropertyGroup>
     <Major>0</Major>
-    <Minor>1</Minor>
-    <Build>9</Build>
+    <Minor>2</Minor>
+    <Build>0</Build>
     <Revision>0</Revision>
     <Branch>master</Branch>
   </PropertyGroup>
