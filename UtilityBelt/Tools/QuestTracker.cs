@@ -188,14 +188,19 @@ namespace UtilityBelt.Tools {
 
             UIQuestsListFilter.Change += (s, e) => { DrawQuestLists(); };
 
-            UIQuestListRefresh.Hit += (s, e) => { GetMyQuestsList(1); };
+            UIQuestListRefresh.Hit += (s, e) => {
+                UITimedQuestList.ClearRows();
+                UIKillTaskQuestList.ClearRows();
+                UIOnceQuestList.ClearRows();
+                GetMyQuestsList(1);
+            };
 
             UITimedQuestList.Click += (s, r, c) => { HandleRowClicked(UITimedQuestList, r, c); };
             UIKillTaskQuestList.Click += (s, r, c) => { HandleRowClicked(UIKillTaskQuestList, r, c); };
             UIOnceQuestList.Click += (s, r, c) => { HandleRowClicked(UIOnceQuestList, r, c); };
 
             UB.MainView.view.VisibleChanged += MainView_VisibleChanged;
-            //questRedrawTimer.Tick += QuestRedrawTimer_Tick;
+            questRedrawTimer.Tick += QuestRedrawTimer_Tick;
             questRedrawTimer.Interval = 1000;
 
             UB.Core.CommandLineText += Core_CommandLineText;
