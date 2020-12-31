@@ -569,6 +569,7 @@ The Rend All button will automatically do the following:
                 tinkerJobManager.Stop();
                 isRunning = false;
                 isPopulating = false;
+                isSelecting = false;
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -738,22 +739,30 @@ The Rend All button will automatically do the following:
                     tinkerJobManager.ScanInventory();
 
                     storedTargetItem = CoreManager.Current.WorldFilter[CoreManager.Current.Actions.CurrentSelection];
-                    scanItem.Add(storedTargetItem.Id);
-
-                    new Assessor.Job(UB.Assessor, ref scanItem, (_) => { }, () => {
+                    Logger.Debug("Selected item " + Util.GetObjectName(storedTargetItem.Id) + storedTargetItem.Id.ToString());
+                    if (!tinkerJobManager.CanBeTinkered(storedTargetItem)) {
+                        Logger.WriteToChat("Item cannot be tinkered");
                         isSelecting = false;
-                        storedTargetItem = CoreManager.Current.WorldFilter[CoreManager.Current.Actions.CurrentSelection];
-                        if (tinkerJobManager.CanBeTinkered(storedTargetItem)) {
-                            UpdateNameLabel(storedTargetItem.Id);
-                            usableSalvageOnItem = tinkerJobManager.GetUsableSalvage(storedTargetItem.Id);
-                            FilterSalvageCombo(usableSalvageOnItem);
-                            usableSalvageOnItem = usableSalvageOnItem.Distinct().ToList();
+                        Stop();
+                        return;
+                    }
+                    else {
+                        scanItem.Add(storedTargetItem.Id);
+                        new Assessor.Job(UB.Assessor, ref scanItem, (_) => { }, () => {
+                            isSelecting = false;
+                            storedTargetItem = CoreManager.Current.WorldFilter[CoreManager.Current.Actions.CurrentSelection];
+                            if (tinkerJobManager.CanBeTinkered(storedTargetItem)) {
+                                UpdateNameLabel(storedTargetItem.Id);
+                                usableSalvageOnItem = tinkerJobManager.GetUsableSalvage(storedTargetItem.Id);
+                                FilterSalvageCombo(usableSalvageOnItem);
+                                usableSalvageOnItem = usableSalvageOnItem.Distinct().ToList();
 
-                            tinkerJobManager.CreatePossibleMaterialList(usableSalvageOnItem, false);
-                            //tinkerJobManager.WritePossibleMaterialList();
-                            scanItem.Clear();
-                        }
-                    });
+                                tinkerJobManager.CreatePossibleMaterialList(usableSalvageOnItem, false);
+                                //tinkerJobManager.WritePossibleMaterialList();
+                                scanItem.Clear();
+                            }
+                        });
+                    }
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
