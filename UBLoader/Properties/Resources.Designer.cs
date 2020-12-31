@@ -123,16 +123,6 @@ namespace UBLoader.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] System_Threading {
-            get {
-                object obj = ResourceManager.GetObject("System_Threading", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
         internal static byte[] UBHelper {
             get {
                 object obj = ResourceManager.GetObject("UBHelper", resourceCulture);
