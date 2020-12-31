@@ -500,7 +500,7 @@ namespace UtilityBelt.Tools {
                 Logger.WriteToChat($"Result: [{ExpressionVisitor.GetFriendlyType(res.GetType())}] {res} ({Math.Round(watch.ElapsedTicks / 10000.0, 3)}ms)", Logger.LogMessageType.Expression);
             }
             catch (Exception ex) {
-                Logger.LogException(ex);
+                Logger.LogException(ex, false);
             }
         }
         #endregion

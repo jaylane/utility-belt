@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Exceptionless;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -18,6 +19,16 @@ namespace UtilityBelt {
             Expression = 2,
             Debug = 3,
             Error = 4
+        }
+
+        public class ExceptionlessUserData {
+            public string WorldName { get; set; }
+            public string UBVersion { get; set; }
+
+            public ExceptionlessUserData() {
+                WorldName = UBHelper.Core.WorldName;
+                UBVersion = Util.GetVersion(true);
+            }
         }
 
         public static void Init() {
@@ -145,10 +156,21 @@ namespace UtilityBelt {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        public static void LogException(Exception ex) {
+        public static void LogException(Exception ex, bool logToMothership=true) {
             if (exceptionCount > MAX_LOG_EXCEPTION) return;
             exceptionCount++;
+
             UBLoader.Lib.File.TryWrite(exceptionsLog, $"== {DateTime.Now} ==================================================\r\n{ex.ToString()}\r\n============================================================================\r\n\r\n", true);
+
+            try {
+                if (logToMothership && UBLoader.FilterCore.Global.UploadExceptions) {
+                    ex.ToExceptionless(false)
+                        .SetUserName(UBLoader.FilterCore.GetAnonymousUserId())
+                        .AddObject(new ExceptionlessUserData())
+                        .Submit();
+                }
+            }
+            catch { }
         }
         public static void LogException(string ex) {
             UBLoader.Lib.File.TryWrite(exceptionsLog, $"== {DateTime.Now} {ex}\r\n", true);

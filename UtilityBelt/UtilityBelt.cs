@@ -189,6 +189,10 @@ namespace UtilityBelt {
         /// <param name="serverName">Name of the server currently logged in to</param>
         public void Startup(string assemblyLocation, string storagePath, string databaseFile, NetServiceHost host, CoreManager core) {
 			try {
+                if (UBLoader.FilterCore.Global.UploadExceptions) {
+                    Exceptionless.ExceptionlessClient.Current.Configuration.IncludePrivateInformation = false;
+                    Exceptionless.ExceptionlessClient.Current.Startup();
+                }
                 Core = core;
                 Host = host;
                 DatabaseFile = databaseFile;

@@ -5,7 +5,6 @@ using System.Text;
 using UtilityBelt.Lib;
 using System.ComponentModel;
 using System.Windows.Forms;
-using System.Threading;
 using UBLoader.Lib.Settings;
 using NetworkCommsDotNet;
 using System.Collections.Concurrent;
@@ -14,6 +13,7 @@ using NetworkCommsDotNet.Connections;
 using UtilityBelt.Lib.Networking.Messages;
 using NetworkCommsDotNet.DPSBase;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace UtilityBelt.Tools {
     [Name("Networking")]
