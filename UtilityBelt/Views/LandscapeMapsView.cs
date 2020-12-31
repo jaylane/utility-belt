@@ -38,11 +38,11 @@ namespace UtilityBelt.Views {
                 timer = new Timer(2000);
 
                 timer.Elapsed += (s, e) => {
-                    timer.Stop();
                     UB.LandscapeMaps.MapWindowX.Value = view.Location.X;
                     UB.LandscapeMaps.MapWindowY.Value = view.Location.Y;
                     UB.LandscapeMaps.MapWindowWidth.Value = view.Width;
                     UB.LandscapeMaps.MapWindowHeight.Value = view.Height;
+                    timer.Stop();
                 };
 
                 view.Moved += (s, e) => {
@@ -72,6 +72,8 @@ namespace UtilityBelt.Views {
         }
 
         private void MapWindow_Changed(object sender, UBLoader.Lib.Settings.SettingChangedEventArgs e) {
+            if (timer.Enabled)
+                return;
             view.Location = new Point(UB.LandscapeMaps.MapWindowX, UB.LandscapeMaps.MapWindowY);
             view.Width = UB.LandscapeMaps.MapWindowWidth;
             view.Height = UB.LandscapeMaps.MapWindowHeight;

@@ -39,11 +39,11 @@ namespace UtilityBelt.Views {
                 timer = new Timer(2000);
 
                 timer.Elapsed += (s, e) => {
-                    timer.Stop();
                     UB.DungeonMaps.MapWindowX.Value = view.Location.X;
                     UB.DungeonMaps.MapWindowY.Value = view.Location.Y;
                     UB.DungeonMaps.MapWindowWidth.Value = view.Width;
                     UB.DungeonMaps.MapWindowHeight.Value = view.Height;
+                    timer.Stop();
                 };
 
                 view.Moved += (s, e) => {
@@ -82,6 +82,8 @@ namespace UtilityBelt.Views {
         }
 
         private void MapWindow_Changed(object sender, SettingChangedEventArgs e) {
+            if (timer.Enabled)
+                return;
             view.Location = new Point(UB.DungeonMaps.MapWindowX, UB.DungeonMaps.MapWindowY);
             view.Width = UB.DungeonMaps.MapWindowWidth;
             view.Height = UB.DungeonMaps.MapWindowHeight;
