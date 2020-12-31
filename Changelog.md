@@ -28,6 +28,7 @@
 - Fix AutoTinker no longer tries to tinker untinkerable items
 - Add Networking - Now spellcast attempts / success are shared with vtank (vuln/imp overlapping)
 - Add `/ub bc [msDelayBetweenClients] <command>` for broadcasting commands to all open clients
+- Add Exceptions are now uploaded to the mothership by defualt, set `Global.UploadExceptions` to false to disable (pls dont, i want to fix bugs)
 
 ## 0.1.8 (2020-11-30) [UtilityBeltInstaller-0.1.8.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/3914a8775e8d4643d4c967761ff9b9d2/UtilityBeltInstaller-0.1.8.exe)
 - Add expression `isrefreshingquests[]`
