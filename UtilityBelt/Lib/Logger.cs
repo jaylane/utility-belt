@@ -163,7 +163,7 @@ namespace UtilityBelt {
             UBLoader.Lib.File.TryWrite(exceptionsLog, $"== {DateTime.Now} ==================================================\r\n{ex.ToString()}\r\n============================================================================\r\n\r\n", true);
 
             try {
-                if (logToMothership && UBLoader.FilterCore.Global.UploadExceptions) {
+                if (logToMothership && UBLoader.FilterCore.Global.UploadExceptions && !UBLoader.FilterCore.IsDevelopmentVersion()) {
                     ex.ToExceptionless(false)
                         .SetUserName(UBLoader.FilterCore.GetAnonymousUserId())
                         .AddObject(new ExceptionlessUserData())
