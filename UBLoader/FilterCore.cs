@@ -13,6 +13,7 @@ using System.Diagnostics;
 using UBLoader.Lib.Settings;
 using Exceptionless;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace UBLoader {
     [FriendlyName("UtilityBelt")]
@@ -93,6 +94,7 @@ namespace UBLoader {
                 if (Global.UploadExceptions) {
                     Exceptionless.ExceptionlessClient.Current.Configuration.IncludePrivateInformation = false;
                     Exceptionless.ExceptionlessClient.Current.Startup();
+                    Exceptionless.ExceptionlessClient.Current.UnhandledExceptionReporting += Current_UnhandledExceptionReporting;
                 }
 
                 Global.FrameRate.Changed += FrameRate_Changed;
@@ -105,6 +107,12 @@ namespace UBLoader {
                     UBHelper.SimpleFrameLimiter.globalMax = Global.FrameRate;
             }
             catch (Exception ex) { LogException(ex); }
+        }
+
+        private void Current_UnhandledExceptionReporting(object sender, UnhandledExceptionReportingEventArgs e) {
+            e.Cancel = true;
+            e.ShouldShowUI = false;
+            LogException(e.Exception);
         }
 
         private void FrameRate_Changed(object sender, SettingChangedEventArgs e) {
@@ -268,10 +276,22 @@ namespace UBLoader {
             return $"{world}:{character}";
         }
 
+        public static bool IsDevelopmentVersion() {
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetAssembly(typeof(FilterCore));
+
+            if (assembly != null) {
+                var location = System.IO.Path.Combine(PluginAssemblyDirectory, "UBLoader.dll");
+                var productVersion = FileVersionInfo.GetVersionInfo(location).ProductVersion;
+                return !(new Regex(@"^\d+\.\d+.\d+\.(release|master)")).IsMatch(productVersion);
+            }
+
+            return false;
+        }
+
         public static void LogException(Exception ex) {
             Lib.File.TryWrite(System.IO.Path.Combine(Global.PluginStorageDirectory, "exceptions.txt"), $"== {DateTime.Now} ==================================================\r\n{ex.ToString()}\r\n============================================================================\r\n\r\n", true);
 
-            if (Global.UploadExceptions) {
+            if (Global.UploadExceptions && !IsDevelopmentVersion()) {
                 try {
                     ex.ToExceptionless(false)
                         .SetUserName(GetAnonymousUserId())
