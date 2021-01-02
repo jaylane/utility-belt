@@ -1,4 +1,4 @@
-## 0.2.1 (TBD)
+## 0.2.1 (2021-01-02) [UtilityBeltInstaller-0.2.1.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/8552636461a1e2d1ec0c8c140cc7c9dd/UtilityBeltInstaller-0.2.1.exe)
 - Disabled character options profiles -- too buggy
 
 ## 0.2.0 (2020-12-31) [UtilityBeltInstaller-0.2.0.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/61bc3860576e115c1b8b1b02cc93f526/UtilityBeltInstaller-0.2.0.exe)
