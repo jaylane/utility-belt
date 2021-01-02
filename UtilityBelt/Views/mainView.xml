@@ -37,13 +37,13 @@
         <control progid="DecalControls.PushButton" name="ClientUIProfileCopyTo" left="256" top="36" width="48" height="16" text="Copy To"/>
         <control progid="DecalControls.PushButton" name="ClientUIProfileReset" left="312" top="36" width="32" height="16" text="Reset"/>
         <control progid="DecalControls.PushButton" name="ClientUIProfileImport" left="352" top="36" width="40" height="16" text="Import"/>
-        
+        <!--
         <control progid="DecalControls.StaticText" name="CharacterOptionsLabel" left="4" top="64" width="84" height="16" text="Char Options:"/>
         <control progid="DecalControls.Choice" name="CharacterOptionsProfilesCombo" left="108" top="64" width="140" height="19"/>
         <control progid="DecalControls.PushButton" name="CharacterOptionsProfileCopyTo" left="256" top="64" width="48" height="16" text="Copy To"/>
         <control progid="DecalControls.PushButton" name="CharacterOptionsProfileReset" left="312" top="64" width="32" height="16" text="Reset"/>
         <control progid="DecalControls.PushButton" name="CharacterOptionsProfileImport" left="352" top="64" width="40" height="16" text="Import"/>
-
+        -->
         <control progid="DecalControls.StaticText" name="HintLabel" left="16" top="200" width="368" height="16" justify="Center" text="[character] profiles are specific to this character."/>
       </control>
     </page>
