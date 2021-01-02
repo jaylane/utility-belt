@@ -279,6 +279,7 @@ namespace UtilityBelt.Tools {
 
         public override void Init() {
             base.Init();
+            /*
             CharacterOptionsProfilesCombo = (HudCombo)UB.MainView.view["CharacterOptionsProfilesCombo"];
             CharacterOptionsProfileCopyTo = (HudButton)UB.MainView.view["CharacterOptionsProfileCopyTo"];
             CharacterOptionsProfileReset = (HudButton)UB.MainView.view["CharacterOptionsProfileReset"];
@@ -294,6 +295,7 @@ namespace UtilityBelt.Tools {
 
             UB.MainView.PopulateProfiles(CharacterOptionsProfileExtension, CharacterOptionsProfilesCombo, Profile);
             RestoreOptions();
+            */
         }
 
         private void PlayerOptionsSettings_Changed(object sender, SettingChangedEventArgs e) {
@@ -315,7 +317,7 @@ namespace UtilityBelt.Tools {
                 if (setting.IsDefault)
                     return;
                 var t = (UBHelper.Player.PlayerOption)Enum.Parse(typeof(UBHelper.Player.PlayerOption), setting.Name);
-                UBHelper.Player.SetOption(t, (bool)setting.GetValue(), false);
+                //UBHelper.Player.SetOption(t, (bool)setting.GetValue(), false);
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -366,11 +368,13 @@ namespace UtilityBelt.Tools {
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
+                    /*
                     CharacterOptionsProfilesCombo.Change -= CharacterOptionsProfilesCombo_Change;
                     CharacterOptionsProfileCopyTo.Hit -= CharacterOptionsProfileCopyTo_Hit;
                     CharacterOptionsProfileReset.Hit -= CharacterOptionsProfileReset_Hit;
                     Profile.Changed -= SelectedCharacterOptionsProfile_Changed;
                     UB.PlayerOptionsSettings.Changed -= PlayerOptionsSettings_Changed;
+                    */
                 }
                 disposedValue = true;
             }

@@ -1,5 +1,5 @@
 ## 0.2.1 (TBD)
-- Changes go here
+- Disabled character options profiles -- too buggy
 
 ## 0.2.0 (2020-12-31) [UtilityBeltInstaller-0.2.0.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/61bc3860576e115c1b8b1b02cc93f526/UtilityBeltInstaller-0.2.0.exe)
 - Fix issue where calling get[gp]var expression would set an invalid value to the cache, causing test[gp]var to have incorrect results
