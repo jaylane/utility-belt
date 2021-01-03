@@ -338,6 +338,10 @@ namespace UtilityBelt.Lib.Expressions {
             else if (context.op.Text == "-" && left.GetType() == typeof(double) && right.GetType() == typeof(double)) {
                 return (double)left - (double)right;
             }
+            // this is a dirty hack to fix dashes in strings, which vtank supports
+            else if (context.op.Text == "-" && left.GetType() == typeof(string) && right.GetType() == typeof(string)) {
+                return context.GetText();
+            }
 
             throw new Exception($"Unable to {(context.op.Text == "+" ? "add" : "subtract")} type {GetFriendlyType(left.GetType())} {(context.op.Text == "+" ? "to" : "from")} type {GetFriendlyType(right.GetType())}");
         }
