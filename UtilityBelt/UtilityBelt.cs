@@ -532,8 +532,9 @@ namespace UtilityBelt {
 
             // toggle boolean settings
             foreach (var toolInfo in toolInfos) {
-                foreach (var prop in toolInfo.FieldType.GetProperties()) {
-                    var hotkeyAttrs = prop.GetCustomAttributes(typeof(HotkeyAttribute), true);
+                var tool = toolInfo.GetValue(this);
+                foreach (var field in toolInfo.FieldType.GetFields()) {
+                    var hotkeyAttrs = field.GetCustomAttributes(typeof(HotkeyAttribute), true);
 
                     foreach (var attr in hotkeyAttrs) {
                         var title = ((HotkeyAttribute)attr).Title;
@@ -541,8 +542,10 @@ namespace UtilityBelt {
                         try {
                             delHotkeyAction del = () => {
                                 try {
-                                    prop.SetValue(toolInfo.GetValue(this), !(bool)prop.GetValue(toolInfo.GetValue(this), null), null);
-                                    Logger.WriteToChat($"Toggle Hotkey Pressed: {toolInfo.Name}.{prop.Name} = {prop.GetValue(toolInfo.GetValue(this), null)}");
+                                    var setting = ((ISetting)field.GetValue(tool));
+                                    setting.SetValue(!(bool)setting.GetValue());
+                                    if (!Plugin.Debug)
+                                        Logger.WriteToChat($"Toggle Hotkey Pressed: {toolInfo.Name}.{field.Name} = {field.GetValue(tool)}");
                                 }
                                 catch (Exception ex) {
                                     Logger.LogException(ex);
