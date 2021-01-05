@@ -102,17 +102,12 @@ namespace UBLoader.Lib.Settings {
 
             setting.SetName(name);
             setting.FieldInfo = field;
+            if (parent is ISetting psetting)
+                setting.Parent = psetting;
 
             var summary = field.GetCustomAttributes(typeof(SummaryAttribute), false).FirstOrDefault();
             if (summary != null)
                 setting.Summary = ((SummaryAttribute)summary).Summary;
-
-            if (typeof(ISetting).IsAssignableFrom(parent.GetType())) {
-                setting.Parent = (ISetting)parent;
-                setting.Changed += (s, e) => {
-                    ((ISetting)parent).InvokeChange((ISetting)parent, e);
-                };
-            }
 
             childFields = setting.GetType().GetFields(BindingFlags)
                                 .Where(f => typeof(ISetting).IsAssignableFrom(f.FieldType));

@@ -44,6 +44,8 @@ namespace UBLoader.Lib.Settings {
             if (Settings != null && Settings.EventsEnabled) {
                 Changed?.Invoke(s, e);
                 Settings.InvokeChange(s, e);
+                if (HasParent)
+                    Parent.InvokeChange(Parent, e);
             }
         }
 
