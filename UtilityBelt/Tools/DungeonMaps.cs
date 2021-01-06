@@ -800,7 +800,14 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                         foreach (var wo in landscape) {
                             if (!CoreManager.Current.Actions.IsValidObject(wo.Id)) continue;
                             if (trackedObjects.ContainsKey(wo.Id)) continue;
-                            if ((PhysicsObject.GetLandcell(wo.Id) & 0xFFFF0000) == currentLandblock) {
+                            int wolc = 0;
+                            try {
+                                wolc = PhysicsObject.GetLandcell(wo.Id);
+                            }
+                            catch { }
+                            if (wolc == 0)
+                                continue;
+                            if ((wolc & 0xFFFF0000) == currentLandblock) {
                                 trackedObjects.Add(wo.Id, new TrackedObject(wo.Id));
                             }
                         }
@@ -927,7 +934,12 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                     isRunning = false;
                 }
 
-                if (UB.Core.Actions.Landcell == 0) return;
+                int landcell = 0;
+                try {
+                    landcell = UB.Core.Actions.Landcell;
+                }
+                catch { }
+                if (landcell == 0) return;
 
                 UB.VisualNav.NavChanged += VisualNav_NavChanged;
                 UB.VisualNav.NavUpdated += VisualNav_NavUpdated;
@@ -951,7 +963,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
         private void RenderHud() {
             if (hud == null || hud.Texture == null || hud.Texture.IsDisposed || mapTexture == null || mapTexture.IsDisposed) return;
 
-            if (UB.DungeonMapView.view.Visible && UIMapNotebook.CurrentTab != 0) {
+            if (UB.DungeonMapView?.view == null || (UB.DungeonMapView.view.Visible && UIMapNotebook.CurrentTab != 0)) {
                 hud.Enabled = false;
                 return;
             }

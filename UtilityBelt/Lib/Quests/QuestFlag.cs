@@ -117,7 +117,10 @@ namespace UtilityBelt.Lib.Quests {
             QuestFlag otherQuestFlag = obj as QuestFlag;
 
             if (otherQuestFlag != null) {
-                if (otherQuestFlag.IsReady() && !IsReady()) {
+                if (ReferenceEquals(obj, this)) {
+                    return 0;
+                }
+                else if (otherQuestFlag.IsReady() && !IsReady()) {
                     return -1;
                 }
                 else if (IsReady() && !otherQuestFlag.IsReady()) {
