@@ -82,13 +82,19 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
 
         private void Networking_OnCastAttemptMessage(object sender, EventArgs e) {
             if (sender is CastAttemptMessage message) {
-                UBHelper.vTank.Instance?.LogCastAttempt(message.SpellId, message.Target, message.Skill);
+                try {
+                    UBHelper.vTank.Instance?.LogCastAttempt(message.SpellId, message.Target, message.Skill);
+                }
+                catch { }
             }
         }
 
         private void Networking_OnCastSuccessMessage(object sender, EventArgs e) {
             if (sender is CastSuccessMessage message) {
-                UBHelper.vTank.Instance?.LogSpellCast(message.Target, message.SpellId, message.Duration);
+                try {
+                    UBHelper.vTank.Instance?.LogSpellCast(message.Target, message.SpellId, message.Duration);
+                }
+                catch { }
             }
         }
 
@@ -157,7 +163,10 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
                     maxMana = update.MaxMana,
                     maxStam = update.MaxStam
                 };
-                UBHelper.vTank.Instance.HelperPlayerUpdate(helperUpdate);
+                try {
+                    UBHelper.vTank.Instance.HelperPlayerUpdate(helperUpdate);
+                }
+                catch { }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

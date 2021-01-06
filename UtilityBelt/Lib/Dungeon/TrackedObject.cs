@@ -110,12 +110,19 @@ namespace UtilityBelt.Lib.Dungeon {
                     Name += $"(L:{diff})";
             }
 
+            if (lb.Links == null || lb.Weenies == null)
+                return;
+
             // links (currently only showing links with doors)
             var links = lb.Links.Where(l => l.Source == spawn.Id || l.Target == spawn.Id);
             var indicator = -1;
             foreach (var link in links) {
                 var source = lb.Weenies.Find(w => w.Id == link.Source);
                 var target = lb.Weenies.Find(w => w.Id == link.Target);
+
+                if (source == null || target == null)
+                    continue;
+
                 if (source.Weenie.GetObjectClass() != ObjectClass.Door && target.Weenie.GetObjectClass() != ObjectClass.Door)
                     continue;
 
@@ -146,6 +153,11 @@ namespace UtilityBelt.Lib.Dungeon {
             }
 
             var p = CoreManager.Current.Actions.Underlying.GetPhysicsObjectPtr(Id);
+            if (p == 0) {
+                Remove();
+                return true;
+            }
+
             var newPosition = new Vector3(*(float*)(p + 0x84), *(float*)(p + 0x88), *(float*)(p + 0x8C));
 
             if (Util.GetDistance(Position, newPosition) > UPDATE_DISTANCE) {
@@ -184,8 +196,9 @@ namespace UtilityBelt.Lib.Dungeon {
 
             if (!disposedValue) {
                 if (disposing) {
-                    foreach (var kv in TrackedObject.ByZLayer) {
-                        kv.Value.Remove(this);
+                    var kvs = TrackedObject.ByZLayer.Values;
+                    foreach (var kv in kvs) {
+                        kv.Remove(this);
                     }
                 }
                 disposedValue = true;

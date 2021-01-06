@@ -196,6 +196,17 @@ namespace UtilityBelt.Tools {
         private void Core_RegionChange3D(object sender, RegionChange3DEventArgs e) {
             if (hud != null && UB.LandscapeMapView.view.Visible)
                 needsNewHud = true;
+
+            mapTexture.Dispose();
+            mapTexture = null;
+            playerArrowTexture.Dispose();
+            playerArrowTexture = null;
+            markerCache.Clear();
+            addedMarkerIcons = false;
+            markerData = null;
+            _CoordsfontCache.Clear();
+            LoadResources();
+            AddDefaultMarkers();
         }
 
         private void HudView_FocusChanged(object sender, EventArgs e) {
@@ -240,9 +251,6 @@ namespace UtilityBelt.Tools {
                 lastPlayerHudX = currentPlayerHudPos.X;
 
                 if (isFollowingCharacter) {
-                    var newMousePos = HudToCoordinates(lastMouseX, lastMouseY);
-                    var xo = CoordinatesToHud(ew, ns).X;
-                    var yo = CoordinatesToHud(ew, ns).Y;
                     CenterMapOn(ew, ns);
                 }
 

@@ -27,6 +27,10 @@ namespace UtilityBelt.Lib.Maps.Markers {
         public override bool Draw(DxTexture texture, int x, int y, double zoom, bool highlight) {
             if (!base.Draw(texture, x, y, zoom, highlight))
                 return false;
+            if (Texture == null || Texture.IsDisposed) {
+                Dispose();
+                return false;
+            }
 
             var iconRect = new Rectangle(x - (IconSize / 2), y - (IconSize / 2), IconSize, IconSize);
 
