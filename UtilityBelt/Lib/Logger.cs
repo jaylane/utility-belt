@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 namespace UtilityBelt {
     public static class Logger {
         private const int MAX_LOG_SIZE = 1024 * 1024 * 20; // 20mb
-        private const int MAX_LOG_AGE = 14; // in days
+        private const int MAX_LOG_AGE = 7; // in days
         private const int MAX_LOG_EXCEPTION = 50;
         private static uint exceptionCount = 0;
 
@@ -138,7 +138,7 @@ namespace UtilityBelt {
                 }
             }
         }
-        private static string exceptionsLog => Path.Combine(Util.GetPluginDirectory(), "exceptions.txt");
+        private static string exceptionsLog => Path.Combine(UBLoader.FilterCore.Global.LogDirectory, "exceptions.txt");
         private static void TruncateLogFiles() {
             TruncateLogFile(exceptionsLog);
         }

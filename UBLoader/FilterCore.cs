@@ -60,6 +60,9 @@ namespace UBLoader {
             [Summary("Database storage file path")]
             public Setting<string> DatabaseFile = new Setting<string>(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins"), PluginName), "utilitybelt.db"));
 
+            [Summary("Log directory")]
+            public Setting<string> LogDirectory = new Setting<string>(System.IO.Path.Combine(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins"), PluginName));
+
             [Summary("Enable plugin hot reloading when utilitybelt.dll changes")]
             public Setting<bool> HotReload = new Setting<bool>(false);
 
@@ -289,7 +292,7 @@ namespace UBLoader {
         }
 
         public static void LogException(Exception ex) {
-            Lib.File.TryWrite(System.IO.Path.Combine(Global.PluginStorageDirectory, "exceptions.txt"), $"== {DateTime.Now} ==================================================\r\n{ex.ToString()}\r\n============================================================================\r\n\r\n", true);
+            Lib.File.TryWrite(System.IO.Path.Combine(Global.LogDirectory, "exceptions.txt"), $"== {DateTime.Now} ==================================================\r\n{ex.ToString()}\r\n============================================================================\r\n\r\n", true);
 
             if (Global.UploadExceptions && !IsDevelopmentVersion()) {
                 try {
@@ -302,7 +305,7 @@ namespace UBLoader {
         }
 
         public static void LogError(string ex) {
-            Lib.File.TryWrite(System.IO.Path.Combine(Global.PluginStorageDirectory, "exceptions.txt"), $"== {DateTime.Now} {ex}\r\n", true);
+            Lib.File.TryWrite(System.IO.Path.Combine(Global.LogDirectory, "exceptions.txt"), $"== {DateTime.Now} {ex}\r\n", true);
             try {
                 if (hasLoaded) CoreManager.Current.Actions.AddChatText($"[UB] {ex}", 15);
             }

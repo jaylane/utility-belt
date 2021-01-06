@@ -30,6 +30,9 @@ namespace UBLoader.Lib {
         /// <param name="writeTries">do not supply- used internally.</param>
         public static void TryWrite(string fileName, string data, bool append = true, int writeTries = 0) {
             try {
+                if (!Directory.Exists(Path.GetDirectoryName(fileName)))
+                    Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+
                 using (FileStream fs = new FileStream(fileName,
                                           append ? FileMode.Append : FileMode.OpenOrCreate,
                                           FileAccess.Write,
