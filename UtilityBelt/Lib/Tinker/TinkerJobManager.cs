@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Decal.Adapter;
 using Decal.Adapter.Wrappers;
 using UtilityBelt.Lib.Salvage;
@@ -33,6 +33,13 @@ namespace UtilityBelt.Lib.Tinker {
             if (wo.Values(LongValueKey.NumberTimesTinkered, 0) >= 10)
                 return false;
 
+            if (wo.ObjectClass.Equals(ObjectClass.Clothing)
+                && (!ValidClothTinkeringEquipableSlots.Contains(wo.Values(LongValueKey.EquipableSlots, 0))
+                || wo.Values(LongValueKey.ArmorLevel, 0) == 0)
+                ) {
+                return false;
+            }
+
             return true;
         }
 
@@ -43,6 +50,12 @@ namespace UtilityBelt.Lib.Tinker {
             ObjectClass.MeleeWeapon,
             ObjectClass.MissileWeapon,
             ObjectClass.WandStaffOrb
+        };
+
+        private static List<int> ValidClothTinkeringEquipableSlots = new List<int>() {
+            1, //Head
+            32, //Hands
+            256, //Feed
         };
 
         public Dictionary<string,int> BuildDefaultImbueList() {
@@ -570,6 +583,7 @@ namespace UtilityBelt.Lib.Tinker {
                     //Logger.WriteToChat("Wand");
                     break;
                 case ObjectClass.Armor:
+                case ObjectClass.Clothing:
                     filteredSalvageList.Add("Steel");
                     filteredSalvageList.Add("Moonstone");
                     filteredSalvageList.Add("Linen");

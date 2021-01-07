@@ -493,7 +493,7 @@ The Rend All button will automatically do the following:
                         wo.ObjectClass == ObjectClass.Salvage) {
                         FullSalvageDict.Add(wo.Id, wo.Values(DoubleValueKey.SalvageWorkmanship));
                     }
-                    if (CanBeTinkered(wo) && !TinkerableItemDict.ContainsKey(wo.Id)) {
+                    if (tinkerJobManager.CanBeTinkered(wo) && !TinkerableItemDict.ContainsKey(wo.Id)) {
                         TinkerableItemDict.Add(wo.Id, wo.Values(DoubleValueKey.SalvageWorkmanship));
                         itemsToId.Add(wo.Id);
                     }
@@ -859,7 +859,7 @@ The Rend All button will automatically do the following:
         private int GetTargetItem() {
             foreach (var tinkerableItemID in TinkerableItemDict.OrderBy(i => i.Value)) {
                 WorldObject tinkerableItem = CoreManager.Current.WorldFilter[tinkerableItemID.Key];
-                if (CanBeTinkered(tinkerableItem)) {
+                if (tinkerJobManager.CanBeTinkered(tinkerableItem)) {
                     Logger.WriteToChat(Util.GetObjectName(tinkerableItemID.Key).ToString());
                     return tinkerableItemID.Key;
                 }
@@ -868,29 +868,6 @@ The Rend All button will automatically do the following:
                 }
             }
             return 0;
-        }
-
-
-        private static List<ObjectClass> ValidTinkeringObjectClasses = new List<ObjectClass>() {
-            ObjectClass.Armor,
-            ObjectClass.Clothing,
-            ObjectClass.Jewelry,
-            ObjectClass.MeleeWeapon,
-            ObjectClass.MissileWeapon,
-            ObjectClass.WandStaffOrb
-        };
-        
-        private bool CanBeTinkered(WorldObject wo) {
-            if (!ValidTinkeringObjectClasses.Contains(wo.ObjectClass))
-                return false;
-
-            if (wo.Values(DoubleValueKey.SalvageWorkmanship, 0) <= 0)
-                return false;
-
-            if (wo.Values(LongValueKey.NumberTimesTinkered, 0) >= 10)
-                return false;
-
-            return true;
         }
 
         private void FilterSalvageCombo(List<string> salvageArray) {
