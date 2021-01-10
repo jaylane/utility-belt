@@ -17,6 +17,8 @@ using UtilityBelt.Lib.VTNav;
 using UBLoader.Lib.Settings;
 using Hellosam.Net.Collections;
 using Newtonsoft.Json;
+using VirindiViewService.Controls;
+using System.Collections;
 
 namespace UtilityBelt.Tools {
     [Name("VTank")]
@@ -1138,7 +1140,7 @@ namespace UtilityBelt.Tools {
         [Summary("Attempts to take one step towards equipping any wand from the current profile's items list")]
         [Example("actiontryequipanywand[]", "Attempts to equip any wand")]
         public object Actiontryequipanywand() {
-            return TryEquipAnyWand();
+            return UBHelper.vTank.TryEquipAnyWand();
         }
         #endregion //actiontryequipanywand[]
         #region actiontrycastbyid[int spellId]
@@ -1149,9 +1151,9 @@ namespace UtilityBelt.Tools {
         [Example("actiontrycastbyid[2931]", "Attempts to cast Recall Aphus Lassel")]
         public object Actiontrycastbyid(double spellId) {
             var id = Convert.ToInt32(spellId);
-            if (!Spells.HasSkillHunt(id))
+            if (!Spells.IsKnown(id) || !Spells.HasSkillHunt(id))
                 return 2;
-            if (!TryEquipAnyWand())
+            if (!UBHelper.vTank.TryEquipAnyWand())
                 return 0;
 
             // this uses vtanks spell casting system so that peace while idle registers the action properly
@@ -1175,7 +1177,7 @@ namespace UtilityBelt.Tools {
             var id = Convert.ToInt32(spellId);
             if (!Spells.HasSkillHunt(id))
                 return 2;
-            if (!TryEquipAnyWand())
+            if (!UBHelper.vTank.TryEquipAnyWand())
                 return 0;
 
             // this uses vtanks spell casting system so that peace while idle registers the action properly
@@ -1456,6 +1458,56 @@ namespace UtilityBelt.Tools {
         }
         #endregion //stopwatchelapsedseconds[stopwatch watch]
         #endregion //ExpressionStopwatch
+        #region VVS UI
+        #region uigetcontrol[string windowName, string controlName]
+        [ExpressionMethod("uigetcontrol")]
+        [ExpressionParameter(0, typeof(string), "windowName", "Name of the window the control belongs to")]
+        [ExpressionParameter(0, typeof(string), "controlName", "Name of the control to get")]
+        [ExpressionReturn(typeof(ExpressionUIControl), "Returns a UIControl, or 0 if not found")]
+        [Summary("Gets a reference to the named control in the named window")]
+        [Example("uigetcontrol[myWindow, myControl]", "Gets a reference to the control `myControl` in the view `myWindow`")]
+        public object uigetcontrol(string windowName, string controlName) {
+            if (!UBHelper.vTank.UIControlExists(windowName, controlName, out string error)) {
+                Logger.Error($"uigetcontrol: {error}");
+                return 0;
+            }
+
+            return new ExpressionUIControl(windowName, controlName);
+        }
+        #endregion //uigetcontrol[string windowName, string controlName]
+        #region uisetlabel[UIControl control, string label]
+        [ExpressionMethod("uisetlabel")]
+        [ExpressionParameter(0, typeof(ExpressionUIControl), "control", "UIControl of the control to change")]
+        [ExpressionParameter(0, typeof(string), "label", "The new label text for the control")]
+        [ExpressionReturn(typeof(double), "Returns 1 on success, 0 on failure")]
+        [Summary("Changes the label text for the given UIControl. Currently only supports buttons.")]
+        [Example("uisetlabel[uigetcontrol[myWindow, myControl], new label]", "Changes the control `myControl` label in the view `myWindow` to `new label`")]
+        public object uisetlabel(ExpressionUIControl control, string text) {
+            if (!UBHelper.vTank.UISetLabel(control.WindowName, control.ControlName, text, out string error)) {
+                Logger.Error($"uisetlabel: {error}");
+                return 0;
+            }
+
+            return 1;
+        }
+        #endregion //uisetlabel[UIControl control, string label]
+        #region uisetvisible[UIControl control, number visible]
+        [ExpressionMethod("uisetvisible")]
+        [ExpressionParameter(0, typeof(ExpressionUIControl), "control", "UIControl of the control to change")]
+        [ExpressionParameter(0, typeof(double), "visible", "pass 1 to make the control visible, 0 to make it hidden")]
+        [ExpressionReturn(typeof(double), "Returns 1 on success, 0 on failure")]
+        [Summary("Changes the visibility for the given UIControl. Currently only supports buttons.")]
+        [Example("uisetvisible[uigetcontrol[myWindow, myControl], 0]", "Changes the control `myControl` visibility in the view `myWindow` to hidden")]
+        public object uisetvisible(ExpressionUIControl control, double visible) {
+            if (!UBHelper.vTank.UISetVisible(control.WindowName, control.ControlName, visible >= 1, out string error)) {
+                Logger.Error($"uisetvisible: {error}");
+                return 0;
+            }
+
+            return 1;
+        }
+        #endregion //uisetvisible[UIControl control, number visible]
+        #endregion //VVS UI
         #endregion //Expressions
 
         private bool isFixingPortalLoops = false;
@@ -1562,16 +1614,6 @@ namespace UtilityBelt.Tools {
 
         private WorldObject GetCharacter() {
             return UtilityBeltPlugin.Instance.Core.WorldFilter[UtilityBeltPlugin.Instance.Core.CharacterFilter.Id];
-        }
-
-        private bool TryEquipAnyWand() {
-            //TODO: implement this fully in ub
-            FieldInfo fieldInfo = uTank2.PluginCore.PC.GetType().GetField("dz", BindingFlags.NonPublic | BindingFlags.Static);
-            var dz = fieldInfo.GetValue(uTank2.PluginCore.PC);
-            FieldInfo ofieldInfo = dz.GetType().GetField("o", BindingFlags.Public | BindingFlags.Instance);
-            var o = ofieldInfo.GetValue(dz);
-            var method = o.GetType().GetMethod("a", BindingFlags.Public | BindingFlags.Instance, null, CallingConventions.Standard, new Type[] { typeof(CombatState), typeof(int), typeof(bool) }, null);
-            return (bool)method.Invoke(o, new object[] { CombatState.Magic, 0, true });
         }
         #endregion
 

@@ -4,6 +4,7 @@
 - Fix misc exceptions
 - Add `Global.LogDirectory` setting for chaning where log files are stored
 - Fixed autotinkering cloth armor with AL
+- Add missing vtank meta view expressions: `uigetcontrol`, `uisetlabel`, `uisetvisible`
 
 ## 0.2.1 (2021-01-02) [UtilityBeltInstaller-0.2.1.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/8552636461a1e2d1ec0c8c140cc7c9dd/UtilityBeltInstaller-0.2.1.exe)
 - Disabled character options profiles -- too buggy
