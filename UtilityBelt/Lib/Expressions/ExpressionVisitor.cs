@@ -198,7 +198,7 @@ namespace UtilityBelt.Lib.Expressions {
                         continue;
                     }
 
-                    if (i < arguments.Count - 1 && arguments[i].GetType() != argTypes[i]) {
+                    if (i < arguments.Count && arguments[i].GetType() != argTypes[i]) {
                         throw new Exception($"{expressionMethod.Signature} expects argument #{i + 1}/{argTypes.Length} to be a {GetFriendlyType(argTypes[i])} but a {GetFriendlyType(arguments[i].GetType())} was passed instead. Passed value: {arguments[i].ToString()}");
                     }
                 }
