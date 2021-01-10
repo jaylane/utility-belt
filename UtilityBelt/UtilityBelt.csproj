@@ -146,6 +146,7 @@
     <Compile Include="Lib\Expressions\ExpressionList.cs" />
     <Compile Include="Lib\Expressions\ExpressionObjectBase.cs" />
     <Compile Include="Lib\Expressions\ExpressionStopwatch.cs" />
+    <Compile Include="Lib\Expressions\ExpressionUIControl.cs" />
     <Compile Include="Lib\Expressions\ExpressionVisitor.cs" />
     <Compile Include="Lib\Expressions\ExpressionWorldObject.cs" />
     <Compile Include="Lib\HotkeyWrapper.cs" />
