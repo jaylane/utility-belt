@@ -51,6 +51,7 @@ Provides a command-line interface to inventory management.
         private Stopwatch giveTimer;
         private Assessor.Job assessor = null;
         private static FileSystemWatcher profilesWatcher = null;
+        private bool subscribedToReloadLootRenderFrame;
 
         public event EventHandler Started;
         public event EventHandler Finished;
@@ -513,11 +514,11 @@ Provides a command-line interface to inventory management.
             Directory.CreateDirectory(profilePath);
 
             UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
-
+            WatchLootProfile.Changed += WatchLootProfile_Changed;
             IGRunning = false;
 
             if (UB.Core.CharacterFilter.LoginStatus != 0) {
-                WatchLootProfile_Changed(WatchLootProfile);
+                TryStartLootProfileWatch();
             }
             else {
                 UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
@@ -527,25 +528,27 @@ Provides a command-line interface to inventory management.
         private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
             try {
                 UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
-                WatchLootProfile_Changed(WatchLootProfile);
+                TryStartLootProfileWatch();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
         #region Loot Profile Watcher
-        private bool PC_LootProfileChanged_Registered = false;
+        private void WatchLootProfile_Changed(object sender, SettingChangedEventArgs e) {
+            TryStartLootProfileWatch();
+        }
+
         // Handle settings changes while running
-        public void WatchLootProfile_Changed(bool enabled) {
+        public void TryStartLootProfileWatch() {
             if (UB.Core.CharacterFilter.LoginStatus == 0)
                 return;
 
-            if (profilesWatcher != null)
+            if (profilesWatcher != null) {
                 profilesWatcher.Dispose();
-            if (enabled) {
-                if (!PC_LootProfileChanged_Registered) {
-                    uTank2.PluginCore.PC.LootProfileChanged += PC_LootProfileChanged;
-                    PC_LootProfileChanged_Registered = true;
-                }
+                uTank2.PluginCore.PC.LootProfileChanged -= PC_LootProfileChanged;
+            }
+
+            if (WatchLootProfile) {
                 string profilePath = Util.GetVTankProfilesDirectory();
                 if (!Directory.Exists(profilePath)) {
                     LogError($"WatchLootProfile_Changed(true) Error: {profilePath} does not exist!");
@@ -562,11 +565,7 @@ Provides a command-line interface to inventory management.
                     EnableRaisingEvents = true
                 };
                 profilesWatcher.Changed += LootProfile_Changed;
-            } else {
-                if (PC_LootProfileChanged_Registered) {
-                    uTank2.PluginCore.PC.LootProfileChanged -= PC_LootProfileChanged;
-                    PC_LootProfileChanged_Registered = false;
-                }
+                uTank2.PluginCore.PC.LootProfileChanged += PC_LootProfileChanged;
             }
         }
 
@@ -574,14 +573,17 @@ Provides a command-line interface to inventory management.
             try {
                 string loadedProfile = UBHelper.vTank.Instance?.GetLootProfile();
                 if (!string.IsNullOrEmpty(loadedProfile))
-                    WatchLootProfile_Changed(WatchLootProfile);
+                    TryStartLootProfileWatch();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void LootProfile_Changed(object sender, FileSystemEventArgs e) {
-            UB.Core.RenderFrame += Core_RenderFrame_ReloadProfile;
             reloadLootProfileTS = DateTime.UtcNow;
+            if (subscribedToReloadLootRenderFrame)
+                return;
+            subscribedToReloadLootRenderFrame = true;
+            UB.Core.RenderFrame += Core_RenderFrame_ReloadProfile;
         }
         private void Core_RenderFrame_ReloadProfile(object sender, EventArgs e) {
             try {
@@ -590,6 +592,7 @@ Provides a command-line interface to inventory management.
                         LogDebug($"/vt loot load {profilesWatcher.Filter}");
                         Util.Decal_DispatchOnChatCommand($"/vt loot load {profilesWatcher.Filter}");
                         UB.Core.RenderFrame -= Core_RenderFrame_ReloadProfile;
+                        subscribedToReloadLootRenderFrame = false;
                     }
                 }
             }
@@ -706,10 +709,9 @@ Provides a command-line interface to inventory management.
         protected override void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
-                    if (UB.Core != null) {
-                        if (UB.Core.WorldFilter != null) {
-                            UB.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
-                        }
+                    WatchLootProfile.Changed -= WatchLootProfile_Changed;
+                    if (UB.Core != null && UB.Core.WorldFilter != null) {
+                        UB.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
                     }
                     if (profilesWatcher != null) {
                         profilesWatcher.Dispose();
