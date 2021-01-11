@@ -20,9 +20,6 @@ For portals, it will show the destination.
     public class Nametags : ToolBase {
         private static Dictionary<int, BitcoinMiner> tags = new Dictionary<int, BitcoinMiner>();
         internal static List<int> destructionQueue = new List<int>();
-        internal static Dictionary<ObjectClass, int> colors = new Dictionary<ObjectClass, int>(){{ObjectClass.Player,-16711681},{ObjectClass.Portal,-16711936},{ObjectClass.Npc,-256},{ObjectClass.Vendor,-65281},{ObjectClass.Monster,-65536}};
-        internal static Dictionary<ObjectClass, bool> enabled_types = new Dictionary<ObjectClass, bool>(){{ObjectClass.Player,true},{ObjectClass.Portal,true},{ObjectClass.Npc,true},{ObjectClass.Vendor,true},{ObjectClass.Monster,true}};
-        internal static float maxRange = 35f;
         internal static bool enabled = false;
         private static DateTime evaluate_tags_time = DateTime.MinValue;
 
@@ -35,19 +32,19 @@ For portals, it will show the destination.
         public readonly Setting<float> MaxRange = new Setting<float>(35f);
 
         [Summary("Player Nametag")]
-        public readonly ColorToggleOption Player = new ColorToggleOption(true, -16711681);
+        public readonly NametagDisplay Player = new NametagDisplay(true, -16711681, 0.15f, -16711681, 0.1f);
 
         [Summary("Portal Nametag")]
-        public readonly ColorToggleOption Portal = new ColorToggleOption(true, -16711936);
+        public readonly NametagDisplay Portal = new NametagDisplay(true, -16711936, 0.15f, -16711936, 0.1f);
 
         [Summary("Npc Nametag")]
-        public readonly ColorToggleOption Npc = new ColorToggleOption(true, -256);
+        public readonly NametagDisplay Npc = new NametagDisplay(true, -256, 0.15f, -256, 0.1f);
 
         [Summary("Vendor Nametag")]
-        public readonly ColorToggleOption Vendor = new ColorToggleOption(true, -65281);
+        public readonly NametagDisplay Vendor = new NametagDisplay(true, -65281, 0.15f, -65281, 0.1f);
 
         [Summary("Monster Nametag")]
-        public readonly ColorToggleOption Monster = new ColorToggleOption(true, -65536);
+        public readonly NametagDisplay Monster = new NametagDisplay(true, -65536, 0.15f, -65536, 0.1f);
         #endregion
 
         public Nametags(UtilityBeltPlugin ub, string name) : base(ub, name) {
@@ -56,13 +53,8 @@ For portals, it will show the destination.
 
         public override void Init() {
             base.Init();
-            Enabled.Changed += Nametags_PropertyChanged;
-            MaxRange.Changed += Nametags_PropertyChanged;
-            Player.Changed += Nametags_DisplayPropertyChanged;
-            Portal.Changed += Nametags_DisplayPropertyChanged;
-            Npc.Changed += Nametags_DisplayPropertyChanged;
-            Vendor.Changed += Nametags_DisplayPropertyChanged;
-            Monster.Changed += Nametags_DisplayPropertyChanged;
+            Changed += Nametags_PropertyChanged;
+            
             if (Enabled) Enable();
         }
 
@@ -128,46 +120,12 @@ For portals, it will show the destination.
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
-                    Enabled.Changed -= Nametags_PropertyChanged;
-                    MaxRange.Changed -= Nametags_PropertyChanged;
-
-                    Player.Changed -= Nametags_DisplayPropertyChanged;
-                    Portal.Changed -= Nametags_DisplayPropertyChanged;
-                    Npc.Changed -= Nametags_DisplayPropertyChanged;
-                    Vendor.Changed -= Nametags_DisplayPropertyChanged;
-                    Monster.Changed -= Nametags_DisplayPropertyChanged;
+                    Changed -= Nametags_PropertyChanged;
                     Disable();
                     base.Dispose(disposing);
                 }
                 disposedValue = true;
             }
-        }
-        private void Nametags_DisplayPropertyChanged(object sender, SettingChangedEventArgs e) {
-            var parts = e.FullName.Split('.');
-            var displayProperty = parts[parts.Length - 2];
-            switch (displayProperty) {
-                case "Player":
-                    enabled_types[ObjectClass.Player] = Player.Enabled;
-                    colors[ObjectClass.Player] = Player.Color;
-                    break;
-                case "Portal":
-                    enabled_types[ObjectClass.Portal] = Portal.Enabled;
-                    colors[ObjectClass.Portal] = Portal.Color;
-                    break;
-                case "Npc":
-                    enabled_types[ObjectClass.Npc] = Npc.Enabled;
-                    colors[ObjectClass.Npc] = Npc.Color;
-                    break;
-                case "Vendor":
-                    enabled_types[ObjectClass.Vendor] = Vendor.Enabled;
-                    colors[ObjectClass.Vendor] = Vendor.Color;
-                    break;
-                case "Monster":
-                    enabled_types[ObjectClass.Monster] = Monster.Enabled;
-                    colors[ObjectClass.Monster] = Monster.Color;
-                    break;
-            }
-            evaluate_tags_time = DateTime.UtcNow + TimeSpan.FromMilliseconds(250);
         }
         private void Nametags_PropertyChanged(object sender, SettingChangedEventArgs e) {
             switch (e.PropertyName) {
@@ -175,22 +133,24 @@ For portals, it will show the destination.
                     if (Enabled) Enable();
                     else Disable();
                     return;
-                case "MaxRange":
-                    maxRange = MaxRange;
-                    return;
             }
             evaluate_tags_time = DateTime.UtcNow + TimeSpan.FromMilliseconds(250);
         }
-        private static void AddTag(WorldObject wo) {
+        private void AddTag(WorldObject wo) {
             if (wo.Id == CoreManager.Current.CharacterFilter.Id) return;
             if (tags.ContainsKey(wo.Id)) return;
-            if (enabled_types.ContainsKey(wo.ObjectClass) && enabled_types[wo.ObjectClass]) tags.Add(wo.Id, new BitcoinMiner(wo));
+
+            var setting = Settings.GetSetting($"Nametags.{wo.ObjectClass}.Enabled");
+            if (setting != null && (bool)setting.GetValue()) tags.Add(wo.Id, new BitcoinMiner(wo));
         }
-        private static void EvaluateTags() {
+        private void EvaluateTags() {
             foreach (KeyValuePair<int, BitcoinMiner> i in tags) {
-                if (enabled_types.ContainsKey(i.Value.oc) && enabled_types[i.Value.oc]) {
-                    i.Value.tag.Color = colors[i.Value.oc];
-                    i.Value.ticker.Color = colors[i.Value.oc];
+                NametagDisplay tagSettings = (NametagDisplay)Settings.GetSetting($"Nametags.{i.Value.oc}");
+                if (tagSettings != null && tagSettings.Enabled) {
+                    i.Value.tag.Color = tagSettings.TagColor;
+                    i.Value.tag.Scale(tagSettings.TagSize);
+                    i.Value.ticker.Color = tagSettings.TickerColor;
+                    i.Value.ticker.Scale(tagSettings.TickerSize);
                     continue;
                 }
                 i.Value.Dispose();
@@ -207,13 +167,13 @@ For portals, it will show the destination.
                 }
             }
         }
-        private static void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
+        private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
             try {
                 AddTag(e.New);
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
-        private static void Core_RenderFrame(object sender, EventArgs e) {
+        private void Core_RenderFrame(object sender, EventArgs e) {
             try {
                 foreach (KeyValuePair<int, BitcoinMiner> i in tags) i.Value.UpdateData();
                 if (destructionQueue.Count > 0) {
@@ -248,6 +208,7 @@ For portals, it will show the destination.
         private int assessCount = 0;
         public BitcoinMiner(WorldObject wo) {
             //Util.WriteToChat($"BitcoinMiner(0x{id:X8}) got here");
+            NametagDisplay display = (NametagDisplay)UtilityBeltPlugin.Instance.Settings.GetSetting($"Nametags.{wo.ObjectClass}");
             id = wo.Id;
             oc = wo.ObjectClass;
             float lugianOffset = 0f;
@@ -255,12 +216,13 @@ For portals, it will show the destination.
             if (oc == ObjectClass.Player && heritage > 5 && heritage < 10) lugianOffset = 0.20f;
             tag = CoreManager.Current.D3DService.MarkObjectWith3DText(id, wo.Name, "Arial", 0);
             ticker = CoreManager.Current.D3DService.MarkObjectWith3DText(id, "Loading...", "Arial", 0);
-            tag.Color = ticker.Color = Nametags.colors[oc];
-            tag.Scale(0.15f);
+            tag.Color = display.TagColor;
+            tag.Scale(display.TagSize);
             tag.Anchor(id, lugianOffset + 1.22f, 0f, 0f, 0f);
             tag.OrientToCamera(false);
             tag.Visible = ticker.Visible = false;
-            ticker.Scale(0.1f);
+            ticker.Color = display.TickerColor;
+            ticker.Scale(display.TickerSize);
             ticker.Anchor(id, lugianOffset + 1.17f, 0f, 0f, 0f);
             ticker.OrientToCamera(false);
             UpdateData();
@@ -277,7 +239,7 @@ For portals, it will show the destination.
             int physics = CoreManager.Current.Actions.Underlying.GetPhysicsObjectPtr(id);
             if (physics == 0) return;
             bool outOfRange = true;
-            try { outOfRange = *(float*)(physics + 0x20) > Nametags.maxRange; } catch { }
+            try { outOfRange = *(float*)(physics + 0x20) > UtilityBeltPlugin.Instance.Nametags.MaxRange; } catch { }
             if (needsProcess && !outOfRange) {
                 switch (oc) {
                     case ObjectClass.Player:

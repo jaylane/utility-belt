@@ -18,6 +18,7 @@ namespace UBLoader.Lib.Settings {
         public event EventHandler<SettingChangedEventArgs> Changed;
 
         private Dictionary<string, OptionResult> optionResultCache = new Dictionary<string, OptionResult>();
+        private Dictionary<string, ISetting> settingLookupCache = new Dictionary<string, ISetting>();
         private IEnumerable<FieldInfo> SettingFieldInfos;
         private FileSystemWatcher settingsFileWatcher = null;
         private TimerClass fileTimer = null;
@@ -112,6 +113,8 @@ namespace UBLoader.Lib.Settings {
             childFields = setting.GetType().GetFields(BindingFlags)
                                 .Where(f => typeof(ISetting).IsAssignableFrom(f.FieldType));
 
+            settingLookupCache.Add(name.ToLower(), setting);
+
             if (childFields.Count() == 0) {
                 if (!setting.IsContainer && (ShouldSerializeCheck == null || ShouldSerializeCheck(setting)))
                     optionResultCache.Add(name.ToLower(), new OptionResult(setting, field, parent));
@@ -149,6 +152,13 @@ namespace UBLoader.Lib.Settings {
         public OptionResult Get(string key) {
             if (Exists(key.ToLower()))
                 return optionResultCache[key.ToLower()];
+            else
+                return null;
+        }
+
+        public ISetting GetSetting(string key) {
+            if (settingLookupCache.ContainsKey(key.ToLower()))
+                return settingLookupCache[key.ToLower()];
             else
                 return null;
         }
