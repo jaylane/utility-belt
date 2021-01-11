@@ -23,7 +23,7 @@ namespace UtilityBelt.Lib.Settings {
         }
 
         new public string ToString() {
-            return $"Enabled:{Enabled} Color:{Color} DefaultColor:{Color}";
+            return $"Enabled:{Enabled} Color:{Color}";
         }
 
         public bool Equals(ColorToggleOption obj) {
