@@ -34,6 +34,9 @@ For portals, it will show the destination.
         [Summary("Player Nametag")]
         public readonly NametagDisplay Player = new NametagDisplay(true, -16711681, 0.15f, -16711681, 0.1f);
 
+        [Summary("Allegiance Player Nametag")]
+        public readonly NametagDisplay AllegiancePlayer = new NametagDisplay(true, -16711936, 0.15f, -16711936, 0.1f);
+
         [Summary("Portal Nametag")]
         public readonly NametagDisplay Portal = new NametagDisplay(true, -16711936, 0.15f, -16711936, 0.1f);
 
@@ -147,10 +150,7 @@ For portals, it will show the destination.
             foreach (KeyValuePair<int, BitcoinMiner> i in tags) {
                 NametagDisplay tagSettings = (NametagDisplay)Settings.GetSetting($"Nametags.{i.Value.oc}");
                 if (tagSettings != null && tagSettings.Enabled) {
-                    i.Value.tag.Color = tagSettings.TagColor;
-                    i.Value.tag.Scale(tagSettings.TagSize);
-                    i.Value.ticker.Color = tagSettings.TickerColor;
-                    i.Value.ticker.Scale(tagSettings.TickerSize);
+                    i.Value.UpdateDisplay();
                     continue;
                 }
                 i.Value.Dispose();
@@ -159,11 +159,8 @@ For portals, it will show the destination.
         private static void WorldFilter_ChangeObject(object sender, ChangeObjectEventArgs e) {
             if (e.Change == WorldChangeType.IdentReceived) {
                 if (tags.ContainsKey(e.Changed.Id)) {
-                    var heritage = e.Changed.Values(LongValueKey.Heritage, -1);
-                    if (e.Changed.ObjectClass == ObjectClass.Player && heritage > 5 && heritage < 10) {
-                        tags[e.Changed.Id].tag.Anchor(e.Changed.Id, 0.20f + 1.22f, 0f, 0f, 0f);
-                        tags[e.Changed.Id].ticker.Anchor(e.Changed.Id, 0.20f + 1.17f, 0f, 0f, 0f);
-                    }
+                    tags[e.Changed.Id].heritage = e.Changed.Values(LongValueKey.Heritage, -1);
+                    tags[e.Changed.Id].UpdateDisplay();
                 }
             }
         }
@@ -194,6 +191,8 @@ For portals, it will show the destination.
     internal class BitcoinMiner {
         private readonly int id;
         internal readonly ObjectClass oc;
+        internal string tagType = "";
+        internal int heritage;
         private int lastLevel = int.MaxValue;
         private int lastMonarchId = int.MaxValue;
         private DateTime lastThunk = DateTime.MinValue;
@@ -208,24 +207,35 @@ For portals, it will show the destination.
         private int assessCount = 0;
         public BitcoinMiner(WorldObject wo) {
             //Util.WriteToChat($"BitcoinMiner(0x{id:X8}) got here");
-            NametagDisplay display = (NametagDisplay)UtilityBeltPlugin.Instance.Settings.GetSetting($"Nametags.{wo.ObjectClass}");
             id = wo.Id;
             oc = wo.ObjectClass;
-            float lugianOffset = 0f;
-            var heritage = wo.Values(LongValueKey.Heritage, -1);
-            if (oc == ObjectClass.Player && heritage > 5 && heritage < 10) lugianOffset = 0.20f;
+            tagType = oc.ToString();
+            heritage = wo.Values(LongValueKey.Heritage, -1);
             tag = CoreManager.Current.D3DService.MarkObjectWith3DText(id, wo.Name, "Arial", 0);
             ticker = CoreManager.Current.D3DService.MarkObjectWith3DText(id, "Loading...", "Arial", 0);
-            tag.Color = display.TagColor;
-            tag.Scale(display.TagSize);
-            tag.Anchor(id, lugianOffset + 1.22f, 0f, 0f, 0f);
             tag.OrientToCamera(false);
             tag.Visible = ticker.Visible = false;
+            ticker.OrientToCamera(false);
+            UpdateDisplay();
+            UpdateData();
+        }
+
+        public void UpdateDisplay() {
+            NametagDisplay display = (NametagDisplay)UtilityBeltPlugin.Instance.Settings.GetSetting($"Nametags.{tagType}");
+            float height = 1.1f;
+
+            if (heritage == 8) // lugian
+                height += 0.21f;
+            else if (heritage > 5 && heritage < 10) // other non-humans
+                height += 0.1f;
+
             ticker.Color = display.TickerColor;
             ticker.Scale(display.TickerSize);
-            ticker.Anchor(id, lugianOffset + 1.17f, 0f, 0f, 0f);
-            ticker.OrientToCamera(false);
-            UpdateData();
+            ticker.Anchor(id, height, 0f, 0f, 0f);
+
+            tag.Color = display.TagColor;
+            tag.Scale(display.TagSize);
+            tag.Anchor(id, height + (showTicker ? ticker.ScaleY/2 : 0), 0f, 0f, 0f);
         }
 
         public unsafe void UpdateData() {
@@ -255,7 +265,9 @@ For portals, it will show the destination.
                                 if (monarch == 0) {
                                     showTicker = false;
                                 } else {
-                                    showTicker = true;
+                                    if (monarch == CoreManager.Current.WorldFilter[CoreManager.Current.CharacterFilter.Id].Values(LongValueKey.Monarch, 0))
+                                        tagType = "AllegiancePlayer";
+                                        showTicker = true;
                                     if (monarch == id) {
                                         ticker.SetText(D3DTextType.Text3D, $"<{wo.Name}>", "Arial", 0);
                                     } else {
@@ -283,6 +295,7 @@ For portals, it will show the destination.
                         needsProcess = false;
                         break;
                 }
+                UpdateDisplay();
             }
             if (outOfRange) {
                 if (tagVisible) tagVisible = tag.Visible = false;
