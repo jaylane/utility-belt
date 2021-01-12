@@ -157,11 +157,9 @@ For portals, it will show the destination.
             }
         }
         private static void WorldFilter_ChangeObject(object sender, ChangeObjectEventArgs e) {
-            if (e.Change == WorldChangeType.IdentReceived) {
-                if (tags.ContainsKey(e.Changed.Id)) {
-                    tags[e.Changed.Id].heritage = e.Changed.Values(LongValueKey.Heritage, -1);
-                    tags[e.Changed.Id].UpdateDisplay();
-                }
+            if (e.Change == WorldChangeType.IdentReceived && tags.ContainsKey(e.Changed.Id)) {
+                tags[e.Changed.Id].heritage = e.Changed.Values(LongValueKey.Heritage, -1);
+                tags[e.Changed.Id].UpdateData(true);
             }
         }
         private void WorldFilter_CreateObject(object sender, CreateObjectEventArgs e) {
@@ -238,7 +236,7 @@ For portals, it will show the destination.
             tag.Anchor(id, height + (showTicker ? ticker.ScaleY/2 : 0), 0f, 0f, 0f);
         }
 
-        public unsafe void UpdateData() {
+        public unsafe void UpdateData(bool force=false) {
             if (DateTime.UtcNow - lastThunk < TimeSpan.FromSeconds(1)) return;
             lastThunk = DateTime.UtcNow;
             WorldObject wo = CoreManager.Current.WorldFilter[id];
@@ -250,7 +248,7 @@ For portals, it will show the destination.
             if (physics == 0) return;
             bool outOfRange = true;
             try { outOfRange = *(float*)(physics + 0x20) > UtilityBeltPlugin.Instance.Nametags.MaxRange; } catch { }
-            if (needsProcess && !outOfRange) {
+            if (force || (needsProcess && !outOfRange)) {
                 switch (oc) {
                     case ObjectClass.Player:
                         if (wo.Values(LongValueKey.CreatureLevel, -1) > 0) {
@@ -265,9 +263,10 @@ For portals, it will show the destination.
                                 if (monarch == 0) {
                                     showTicker = false;
                                 } else {
-                                    if (monarch == CoreManager.Current.WorldFilter[CoreManager.Current.CharacterFilter.Id].Values(LongValueKey.Monarch, 0))
+                                    if (sharesAllegiance(monarch)) {
                                         tagType = "AllegiancePlayer";
                                         showTicker = true;
+                                    }
                                     if (monarch == id) {
                                         ticker.SetText(D3DTextType.Text3D, $"<{wo.Name}>", "Arial", 0);
                                     } else {
@@ -275,6 +274,7 @@ For portals, it will show the destination.
                                     }
                                 }
                             }
+                            needsProcess = false;
                         } else TryAssess(physics, wo);
                         break;
                     case ObjectClass.Portal:
@@ -305,6 +305,12 @@ For portals, it will show the destination.
                 if (!tickerVisible && showTicker) tickerVisible = ticker.Visible = true;
             }
         }
+
+        private bool sharesAllegiance(int monarch) {
+            var myMonarch = CoreManager.Current.WorldFilter[CoreManager.Current.CharacterFilter.Id].Values(LongValueKey.Monarch, 0);
+            return monarch == myMonarch || id == myMonarch;
+        }
+
         public unsafe void TryAssess(int physics, WorldObject wo) {
             if (assessCount > 10) {
                 Logger.Debug($"Failed to assess {wo.Name} too many times!");
