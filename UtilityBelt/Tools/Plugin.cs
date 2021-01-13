@@ -762,6 +762,15 @@ namespace UtilityBelt.Tools {
             return UB.Core.CharacterFilter.Vitae;
         }
         #endregion //vitae[]
+        #region getworldname[]
+        [ExpressionMethod("getworldname")]
+        [ExpressionReturn(typeof(string), "Returns the name of the current world/server")]
+        [Summary("Gets the name of the currently connected world/server")]
+        [Example("getworldname[]", "Returns the name of the current world/server")]
+        public object Getworldname() {
+            return UBHelper.Core.WorldName;
+        }
+        #endregion //getworldname[]
         #region wobjectfindnearestbytemplatetype[int templatetype]
         [ExpressionMethod("wobjectfindnearestbytemplatetype")]
         [ExpressionParameter(0, typeof(double), "templatetype", "templatetype to filter by")]
