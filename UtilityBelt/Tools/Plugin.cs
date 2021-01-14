@@ -489,13 +489,16 @@ namespace UtilityBelt.Tools {
         [Usage("/ub mexec <expression>")]
         [Example("/ub mexec <expression>", "Evaluates expression")]
         [CommandPattern("mexec", @"^(?<Expression>.*)?$")]
-        public void EvaluateExpression(string command, Match args) {
-            var watch = new System.Diagnostics.Stopwatch();
+        public void EvaluateExpressionCommand(string command, Match args) {
+            EvaluateExpression(args.Groups["Expression"].Value);
+        }
+
+        public void EvaluateExpression(string expression) {
             try {
-                var input = args.Groups["Expression"].Value;
-                Logger.WriteToChat($"Evaluating expression: \"{input}\"", Logger.LogMessageType.Expression, true, false);
+                var watch = new System.Diagnostics.Stopwatch();
+                Logger.WriteToChat($"Evaluating expression: \"{expression}\"", Logger.LogMessageType.Expression, true, false);
                 watch.Start();
-                var res = UB.VTank.EvaluateExpression(input);
+                var res = UB.VTank.EvaluateExpression(expression);
                 watch.Stop();
                 Logger.WriteToChat($"Result: [{ExpressionVisitor.GetFriendlyType(res.GetType())}] {res} ({Math.Round(watch.ElapsedTicks / 10000.0, 3)}ms)", Logger.LogMessageType.Expression);
             }

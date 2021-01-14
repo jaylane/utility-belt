@@ -125,6 +125,9 @@ namespace UtilityBelt.Views {
                 ExportPCap.Visible = UB.Plugin.PCap;
                 PopulateProfiles(Tools.Plugin.SettingsProfileExtension, SettingsProfilesCombo, UB.Plugin.SettingsProfile);
                 SetupFileWatcher();
+
+                view.Visible = true;
+
             }
             catch (Exception ex) { Logger.LogException(ex); }
 

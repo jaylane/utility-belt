@@ -1,0 +1,9 @@
+﻿<?xml version="1.0"?>
+<view icon="8123" title="Long String Editor" width="800" height="80">
+  <control progid="DecalControls.FixedLayout" clipped="">
+    <control progid="DecalControls.Edit" name="Text" left="0" top="8" width="9999" height="16" text=""/>
+
+    <control progid="DecalControls.PushButton" name="Cancel" left="8" top="30" width="110" height="20" text="Cancel"/>
+    <control progid="DecalControls.PushButton" name="Save" left="120" top="30" width="110" height="20" text="Save"/>
+  </control>
+</view>

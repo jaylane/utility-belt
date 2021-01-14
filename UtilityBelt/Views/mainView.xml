@@ -37,6 +37,11 @@
         <control progid="DecalControls.PushButton" name="ClientUIProfileCopyTo" left="256" top="36" width="48" height="16" text="Copy To"/>
         <control progid="DecalControls.PushButton" name="ClientUIProfileReset" left="312" top="36" width="32" height="16" text="Reset"/>
         <control progid="DecalControls.PushButton" name="ClientUIProfileImport" left="352" top="36" width="40" height="16" text="Import"/>
+        
+        <control progid="DecalControls.StaticText" name="AliasesLabel" left="4" top="64" width="84" height="16" text="Aliases:"/>
+        <control progid="DecalControls.Choice" name="AliasesProfilesCombo" left="108" top="64" width="140" height="19"/>
+        <control progid="DecalControls.PushButton" name="AliasesProfileCopyTo" left="256" top="64" width="48" height="16" text="Copy To"/>
+        <control progid="DecalControls.PushButton" name="AliasesProfileReset" left="312" top="64" width="32" height="16" text="Reset"/>
         <!--
         <control progid="DecalControls.StaticText" name="CharacterOptionsLabel" left="4" top="64" width="84" height="16" text="Char Options:"/>
         <control progid="DecalControls.Choice" name="CharacterOptionsProfilesCombo" left="108" top="64" width="140" height="19"/>
@@ -45,6 +50,31 @@
         <control progid="DecalControls.PushButton" name="CharacterOptionsProfileImport" left="352" top="64" width="40" height="16" text="Import"/>
         -->
         <control progid="DecalControls.StaticText" name="HintLabel" left="16" top="200" width="368" height="16" justify="Center" text="[character] profiles are specific to this character."/>
+      </control>
+    </page>
+    <page label="Aliases">
+      <control progid="DecalControls.FixedLayout" clipped="">
+        <control progid="DecalControls.StaticText" name="AliasesListAliasTextLabel" left="4" top="4" width="60" height="16" text="Alias"/>
+        <control progid="DecalControls.StaticText" name="AliasesListActionTextLabel" left="150" top="4" width="60" height="16" text="Action"/>
+				<control progid="DecalControls.List" name="AliasesList" left="0" top="20" width="400" height="110">
+          <column progid="DecalControls.TextColumn" name="AliasesListAliasText" fixedwidth="140" />
+          <column progid="DecalControls.TextColumn" name="AliasesListActionText" />
+          <column progid="DecalControls.IconColumn" name="AliasesListRemoveIcon" fixedwidth="20" />
+				</control>
+        
+        <control progid="DecalControls.StaticText" name="AliasesAliasLabel" left="4" top="136" width="64" height="16" text="AliasRegex:"/>
+        <control progid="DecalControls.Edit" name="AliasAlias" left="64" top="136" width="315" height="16" text=""/>
+        <control progid="DecalControls.PushButton" name="AliasAliasPreview" left="384" top="136" width="12" height="16" text="E"/>
+
+        <control progid="DecalControls.StaticText" name="AliasesAliasLabel" left="4" top="160" width="64" height="16" text="Action:"/>
+        <control progid="DecalControls.Choice" name="AliasActionType" left="64" top="160" width="140" height="16"/>
+        <control progid="DecalControls.Checkbox" name="AliasEat" left="214" top="160" width="200" height="16" text="Eat matching non-plugin cmds" checked="true"/>
+
+        <control progid="DecalControls.FixedLayout" clipped="" name="AliasesActionFormLayout" left="4" top="184" width="392" height="20">
+        </control>
+
+        <control progid="DecalControls.PushButton" name="AliasCancel" left="266" top="208" width="60" height="16" text="Cancel"/>
+        <control progid="DecalControls.PushButton" name="AliasUpdate" left="336" top="208" width="60" height="16" text="Add"/>
       </control>
     </page>
     <page label="AutoTinker">

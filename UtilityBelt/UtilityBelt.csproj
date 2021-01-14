@@ -135,6 +135,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Lib\ActionQueue.cs" />
+    <Compile Include="Lib\Actions\ChatCommandAction.cs" />
+    <Compile Include="Lib\Actions\ChatExpressionAction.cs" />
+    <Compile Include="Lib\Actions\ExpressionAction.cs" />
     <Compile Include="Lib\Attributes.cs" />
     <Compile Include="Lib\Constants\WeenieType.cs" />
     <Compile Include="Lib\Coordinate.cs" />
@@ -184,10 +187,12 @@
     <Compile Include="Lib\Tinker\TinkerJobManager.cs" />
     <Compile Include="Lib\ToolBase.cs" />
     <Compile Include="Lib\Database.cs" />
+    <Compile Include="Lib\Actions\BaseAction.cs" />
     <Compile Include="Lib\UBHud.cs" />
     <Compile Include="Lib\UBHudManager.cs" />
     <Compile Include="Lib\VCS_Connector.cs" />
     <Compile Include="Lib\VHS_Connector.cs" />
+    <Compile Include="Tools\Aliases.cs" />
     <Compile Include="Tools\Arrow.cs" />
     <Compile Include="Tools\Networking.cs" />
     <Compile Include="Tools\PlayerOptions.cs" />
@@ -266,6 +271,7 @@
     <Compile Include="Views\LandscapeMapsView.cs" />
     <Compile Include="Views\ListEditor.cs" />
     <Compile Include="Views\DungeonMapsView.cs" />
+    <Compile Include="Views\LongStringEditor.cs" />
     <Compile Include="Views\MainView.cs" />
     <Compile Include="Views\SettingsView.cs" />
     <Compile Include="Views\TextEditPopup.cs" />
@@ -1023,7 +1029,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Views\TextEditPopup.xml" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Views\LongStringEditor.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

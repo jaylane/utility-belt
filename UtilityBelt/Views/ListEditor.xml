@@ -1,14 +1,13 @@
 ﻿<?xml version="1.0"?>
-<view icon="8123" title="List Editor" width="330" height="240">
+<view icon="8123" title="List Editor" width="350" height="240">
   <control progid="DecalControls.FixedLayout" clipped="">
-    <control progid="DecalControls.List" name="ChildList" left="0" top="0" width="330" height="152">
+    <control progid="DecalControls.List" name="ChildList" left="0" top="0" width="350" height="152">
       <column progid="DecalControls.TextColumn" fixedwidth="275" name="Value" />
       <column progid="DecalControls.IconColumn" fixedwidth="16" name="Delete" />
     </control>
-    <control name="SettingsForm" progid="DecalControls.FixedLayout" clipped="" left="0" top="152" width="400" height="72">
-
-      <control progid="DecalControls.PushButton" name="Cancel" left="8" top="40" width="110" height="20" text="Cancel"/>
-      <control progid="DecalControls.PushButton" name="AddOrUpdate" left="210" top="40" width="110" height="20" text="Add"/>
+    <control name="SettingsForm" progid="DecalControls.FixedLayout" clipped="" left="0" top="156" width="350" height="72">
+      <control progid="DecalControls.PushButton" name="Cancel" left="8" top="35" width="110" height="20" text="Cancel"/>
+      <control progid="DecalControls.PushButton" name="AddOrUpdate" left="240" top="35" width="110" height="20" text="Add"/>
     </control>
   </control>
 </view>
