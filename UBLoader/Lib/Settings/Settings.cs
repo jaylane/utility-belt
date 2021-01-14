@@ -25,6 +25,7 @@ namespace UBLoader.Lib.Settings {
         private double lastSettingsChange = 0;
         public static BindingFlags BindingFlags { get => BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static; }
         private string _settingsPath;
+        public JsonSerializerSettings SerializerSettings;
 
         #region Public Properties
         public bool IsLoaded { get; set; } = false;
@@ -58,6 +59,12 @@ namespace UBLoader.Lib.Settings {
             DefaultSettingsPath = defaultSettingsPath;
             ShouldSerializeCheck = serializeTest;
             Changed += Settings_Changed;
+
+            SerializerSettings = new JsonSerializerSettings() {
+                TypeNameHandling = TypeNameHandling.All,
+                TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
+                SerializationBinder = new SerializationBinder()
+            };
         }
 
         #region Event Handlers
@@ -321,7 +328,7 @@ namespace UBLoader.Lib.Settings {
                     foreach (var item in (JArray)jToken) {
                         if (typeParameter.GetConstructor(new Type[0]) != null) {
                             object newInstance = Activator.CreateInstance(typeParameter);
-                            JsonConvert.PopulateObject(item.ToString(), newInstance);
+                            JsonConvert.PopulateObject(item.ToString(), newInstance, SerializerSettings);
                             collection.Add(newInstance);
                         }
                         else {
@@ -333,6 +340,9 @@ namespace UBLoader.Lib.Settings {
                                 collection.Add(item.ToObject<bool>());
                             else if (item.Type == JTokenType.String)
                                 collection.Add(item.ToObject<string>());
+                            else {
+                                FilterCore.LogError($"Unknown Tpye: {item.Type}");
+                            }
                         }
                     }
                     EventsEnabled = true;
@@ -364,7 +374,9 @@ namespace UBLoader.Lib.Settings {
                     var collection = setting.GetValue() as IList;
                     var jArray = new JArray();
                     foreach (var item in collection) {
-                        jArray.Add(JToken.FromObject(item));
+                        // ugly... but not sure how else to get type definitions serialized
+                        var json = JsonConvert.SerializeObject(item, SerializerSettings);
+                        jArray.Add(JToken.Parse(json));
                     }
                     jObj.Add(setting.Name, jArray);
                 }
@@ -377,7 +389,9 @@ namespace UBLoader.Lib.Settings {
                     jObj.Add(setting.Name, dObj);
                 }
                 else {
-                    jObj.Add(setting.Name, JToken.FromObject(setting.GetValue()));
+                    // ugly... but not sure how else to get type definitions serialized
+                    var json = JsonConvert.SerializeObject(setting.GetValue(), SerializerSettings);
+                    jObj.Add(setting.Name, JToken.Parse(json));
                 }
             }
             return true;

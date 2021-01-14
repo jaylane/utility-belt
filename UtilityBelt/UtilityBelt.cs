@@ -137,6 +137,7 @@ namespace UtilityBelt {
 
         #region Tools
         public Plugin Plugin;
+        public Aliases Aliases;
         public Arrow Arrow;
         public Assessor Assessor;
         public AutoSalvage AutoSalvage;
@@ -306,6 +307,9 @@ namespace UtilityBelt {
 
             PlayerOptionsSettings = new Settings(PlayerOptions.PlayerOption, PlayerOptions.CharacterOptionsProfilePath, p => p.SettingType == SettingType.CharacterSettings, null, "PlayerOptions");
             PlayerOptionsSettings.Load();
+
+            AliasSettings = new Settings(Aliases, Aliases.AliasesProfilePath, p => p.SettingType == SettingType.Alias, null, "Aliases");
+            AliasSettings.Load();
         }
 
         private void State_Changed(object sender, SettingChangedEventArgs e) {
@@ -511,6 +515,8 @@ namespace UtilityBelt {
 
         private static List<string> expressionExceptions = new List<string>();
 
+        public Settings AliasSettings { get; private set; }
+
         /// <summary>
         /// Runs a registered expression method
         /// </summary>
@@ -586,6 +592,8 @@ namespace UtilityBelt {
                     ClientUISettings.Save();
                 if (PlayerOptionsSettings != null && PlayerOptionsSettings.NeedsSave)
                     PlayerOptionsSettings.Save();
+                if (AliasSettings != null && AliasSettings.NeedsSave)
+                    AliasSettings.Save();
 
                 if (Core != null) {
                     Core.CommandLineText -= Core_CommandLineText;

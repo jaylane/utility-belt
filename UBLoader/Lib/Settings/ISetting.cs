@@ -16,7 +16,8 @@ namespace UBLoader.Lib.Settings {
 
         ClientUI,
         SpellBars,
-        CharacterSettings
+        CharacterSettings,
+        Alias
     };
 
     public abstract class ISetting {

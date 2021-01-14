@@ -19,6 +19,9 @@ namespace UtilityBelt.Lib.Settings {
         public event EventHandler Changed;
 
         private List<HudControl> ChildViews = new List<HudControl>();
+        private static ACImage colorIcon;
+        private static Bitmap colorPreviewBitmap;
+        private LongStringEditor longStringEditor;
 
         public SettingsForm(ISetting setting, HudFixedLayout parentLayout, Type type=null, object value=null) {
             Setting = setting;
@@ -181,8 +184,22 @@ namespace UtilityBelt.Lib.Settings {
                 edit.Text = Value.ToString();
             };
 
+            var button = new HudButton();
+            button.Text = "E";
+            button.Hit += (s, e) => {
+                if (longStringEditor == null || longStringEditor.IsDisposed) {
+                    longStringEditor = new LongStringEditor(UtilityBeltPlugin.Instance.MainView.view, edit);
+                    longStringEditor.Saved += (s2, e2) => {
+                        Value = edit.Text;
+                        Changed?.Invoke(this, null);
+                    };
+                }
+            };
+
             childViews.Add(edit);
-            settingsForm.AddControl(edit, new Rectangle(0, 0, 350, 20));
+            childViews.Add(button);
+            settingsForm.AddControl(edit, new Rectangle(0, 0, 320, 20));
+            settingsForm.AddControl(button, new Rectangle(324, 0, 20, 20));
 
             return childViews;
         }
@@ -378,12 +395,11 @@ namespace UtilityBelt.Lib.Settings {
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
-        private static ACImage colorIcon;
-        private static Bitmap colorPreviewBitmap;
 
         protected virtual void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
+                    longStringEditor?.Dispose();
                     foreach (var view in ChildViews) {
                         try {
                             view.Visible = false;
