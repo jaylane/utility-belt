@@ -23,7 +23,7 @@ namespace UtilityBelt.Tools {
         #region Expressions
         #region wobjectgethealth[wobject obj]
         [ExpressionMethod("wobjectgethealth")]
-        [ExpressionParameter(0, typeof(double), "obj", "World object to get health of")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to get health of")]
         [ExpressionReturn(typeof(double), "Returns a value from 0-1 representing the objects current health percentage.  If the objects health is not currently being tracked this will return -1")]
         [Summary("Gets the specified mob/player wobject current health percentage.  Note: You must have the wobject selected in order to receive health updates")]
         [Example("wobjectgethealth[wobjectgetselection[]]", "Returns the health of the currently selected mob/player")]
