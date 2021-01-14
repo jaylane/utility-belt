@@ -5,6 +5,7 @@ using System.Linq;
 using Hellosam.Net.Collections;
 using System.Collections.Specialized;
 using Newtonsoft.Json;
+using System.Collections;
 
 namespace UBLoader.Lib.Settings {
     public class Setting<T> : ISetting {
@@ -22,13 +23,10 @@ namespace UBLoader.Lib.Settings {
 
                 var original = _value;
                 _value = value;
-                if (!hasDefault) {
-                    DefaultValue = _value;
-                    hasDefault = true;
-                }
-                if (!_value.Equals(original)) {
+                if (!hasDefault)
+                    AssignDefault();
+                if (!_value.Equals(original))
                     InvokeChange();
-                }
             }
         }
 
@@ -42,18 +40,7 @@ namespace UBLoader.Lib.Settings {
         public Setting(T initialValue, Func<T, string> validateFunc=null) {
             Value = initialValue;
             ValidateFunction = validateFunc;
-            hasDefault = true;
-
-            if (Value != null && Value.GetType().IsGenericType) {
-                DefaultValue = (T)Activator.CreateInstance(Value.GetType());
-                if (Value is System.Collections.IList valueList) {
-                    foreach (var item in valueList)
-                        ((System.Collections.IList)DefaultValue).Add(item);
-                }
-            }
-            else {
-                DefaultValue = initialValue;
-            }
+            AssignDefault();
 
             if (Value != null && Value is INotifyCollectionChanged collection) {
                 collection.CollectionChanged += (s, e) => {
@@ -69,16 +56,16 @@ namespace UBLoader.Lib.Settings {
             }
         }
 
-        private static bool IsInstanceOfGenericType(Type genericType, object instance) {
-            Type type = instance.GetType();
-            while (type != null) {
-                if (type.IsGenericType &&
-                    type.GetGenericTypeDefinition() == genericType) {
-                    return true;
-                }
-                type = type.BaseType;
+        public void AssignDefault(bool force=false) {
+            if (hasDefault && !force)
+                return;
+            if (Value != null && Value.GetType().IsGenericType) {
+                DefaultValue = (T)Activator.CreateInstance(Value.GetType());
             }
-            return false;
+            else {
+                DefaultValue = Value;
+            }
+            hasDefault = true;
         }
 
         public override object GetDefaultValue() {
@@ -91,8 +78,14 @@ namespace UBLoader.Lib.Settings {
 
         public override void SetValue(object newValue) {
             if (Value is ObservableCollection<string>) {
-                foreach (var v in (System.Collections.IEnumerable)newValue) {
+                foreach (var v in (IEnumerable)newValue) {
                     (Value as ObservableCollection<string>).Add(v.ToString());
+                }
+            }
+            else if (Value.GetType().IsGenericType && Value is IList collection) {
+                (Value as IList).Clear();
+                foreach (var v in (newValue as IList)) {
+                    (Value as IList).Add(v);
                 }
             }
             else if (Value is ObservableDictionary<string, string>) {

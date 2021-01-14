@@ -37,8 +37,10 @@ namespace UBLoader.Lib.Settings {
         public IEnumerable<ISetting> Children { get; private set; }
 
         internal void InvokeChange() {
-            var eventArgs = new SettingChangedEventArgs(Name, FullName, this);
-            InvokeChange(this, eventArgs);
+            if (Settings != null && Settings.EventsEnabled) {
+                var eventArgs = new SettingChangedEventArgs(Name, FullName, this);
+                InvokeChange(this, eventArgs);
+            }
         }
 
         internal void InvokeChange(ISetting s, SettingChangedEventArgs e) {
@@ -62,7 +64,6 @@ namespace UBLoader.Lib.Settings {
             if (GetValue() == null)
                 return false;
             else if (Nullable.GetUnderlyingType(GetValue().GetType()) == typeof(bool)) {
-                FilterCore.LogError($"GET UNDER");
                 var vBool = (bool?)GetValue();
                 return vBool.HasValue;
             }

@@ -619,6 +619,7 @@ namespace UtilityBelt {
                 State?.Dispose();
                 ClientUISettings?.Dispose();
                 PlayerOptionsSettings?.Dispose();
+                AliasSettings?.Dispose();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

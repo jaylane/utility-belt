@@ -27,6 +27,10 @@ namespace UtilityBelt.Views {
         private HudButton SettingsProfileCopyTo;
         private HudButton SettingsProfileReset;
 
+        private HudCombo AliasesProfilesCombo;
+        private HudButton AliasesProfileCopyTo;
+        private HudButton AliasesProfileReset;
+
         private HudButton CheckForUpdate;
         internal HudButton ExportPCap;
         private ACImage icon;
@@ -84,15 +88,24 @@ namespace UtilityBelt.Views {
                 SettingsProfileCopyTo = (HudButton)view["SettingsProfileCopyTo"];
                 SettingsProfileReset = (HudButton)view["SettingsProfileReset"];
 
+                AliasesProfilesCombo = (HudCombo)view["AliasesProfilesCombo"];
+                AliasesProfileCopyTo = (HudButton)view["AliasesProfileCopyTo"];
+                AliasesProfileReset = (HudButton)view["AliasesProfileReset"];
+
                 SettingsProfilesCombo.Change += SettingsProfilesCombo_Change;
                 SettingsProfileCopyTo.Hit += SettingsProfileCopyTo_Hit;
                 SettingsProfileReset.Hit += SettingsProfileReset_Hit;
+
+                AliasesProfilesCombo.Change += AliasesProfilesCombo_Change;
+                AliasesProfileCopyTo.Hit += AliasesProfileCopyTo_Hit;
+                AliasesProfileReset.Hit += AliasesProfileReset_Hit;
 
                 CheckForUpdate.Hit += CheckForUpdate_Hit;
                 ExportPCap.Hit += ExportPCap_Hit;
                 SettingsButton.Hit += SettingsButton_Hit;
                 UB.Plugin.PCap.Changed += PCap_Changed;
                 UB.Plugin.SettingsProfile.Changed += SettingsProfile_Changed;
+                UB.Aliases.Profile.Changed += AliasesProfile_Changed;
 
                 foreach (var kv in buttons) {
                     UpdateButton(kv);
@@ -124,6 +137,8 @@ namespace UtilityBelt.Views {
 
                 ExportPCap.Visible = UB.Plugin.PCap;
                 PopulateProfiles(Tools.Plugin.SettingsProfileExtension, SettingsProfilesCombo, UB.Plugin.SettingsProfile);
+                PopulateProfiles(Tools.Client.ClientUIProfileExtension, UB.Client.ClientUIProfilesCombo, UB.Client.UIProfile);
+                PopulateProfiles(Tools.Aliases.AliasesProfileExtension, AliasesProfilesCombo, UB.Aliases.Profile);
                 SetupFileWatcher();
 
                 view.Visible = true;
@@ -151,6 +166,11 @@ namespace UtilityBelt.Views {
         private void SettingsProfile_Changed(object sender, SettingChangedEventArgs e) {
             UB.Settings.SettingsPath = UB.Plugin.SettingsProfilePath;
             PopulateProfiles(Tools.Plugin.SettingsProfileExtension, SettingsProfilesCombo, UB.Plugin.SettingsProfile);
+        }
+
+        private void AliasesProfile_Changed(object sender, SettingChangedEventArgs e) {
+            UB.AliasSettings.SettingsPath = UB.Aliases.AliasesProfilePath;
+            PopulateProfiles(Tools.Aliases.AliasesProfileExtension, AliasesProfilesCombo, UB.Aliases.Profile);
         }
 
         private void WindowPosition_Changed(object sender, SettingChangedEventArgs e) {
@@ -235,6 +255,7 @@ namespace UtilityBelt.Views {
         private void ProfilesWatcher_Changed(object sender, FileSystemEventArgs e) {
             PopulateProfiles(Tools.Plugin.SettingsProfileExtension, SettingsProfilesCombo, UB.Plugin.SettingsProfile);
             PopulateProfiles(Tools.Client.ClientUIProfileExtension, UB.Client.ClientUIProfilesCombo, UB.Client.UIProfile);
+            PopulateProfiles(Tools.Aliases.AliasesProfileExtension, AliasesProfilesCombo, UB.Aliases.Profile);
         }
 
         private void SettingsProfileReset_Hit(object sender, EventArgs e) {
@@ -250,6 +271,20 @@ namespace UtilityBelt.Views {
 
         private void SettingsProfilesCombo_Change(object sender, EventArgs e) {
             UB.Plugin.SettingsProfile.Value = ((HudStaticText)SettingsProfilesCombo[SettingsProfilesCombo.Current]).Text;
+        }
+
+        private void AliasesProfileReset_Hit(object sender, EventArgs e) {
+            ResetProfile(SettingType.Alias, UB.AliasSettings, UB.Aliases.Profile);
+        }
+
+        private void AliasesProfileCopyTo_Hit(object sender, EventArgs e) {
+            CopyProfile(UB.Aliases.Profile, UB.Aliases.AliasesProfilePath, (v) => {
+                return Path.Combine(Util.GetProfilesDirectory(), $"{v}.{Tools.Aliases.AliasesProfileExtension}");
+            });
+        }
+
+        private void AliasesProfilesCombo_Change(object sender, EventArgs e) {
+            UB.Aliases.Profile.Value = ((HudStaticText)AliasesProfilesCombo[AliasesProfilesCombo.Current]).Text;
         }
 
         internal void CopyProfile(ISetting profileSetting, string profilePath, Func<string, string> calcNewProfilePath) {
