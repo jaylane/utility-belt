@@ -993,7 +993,7 @@ namespace UtilityBelt.Tools {
         [ExpressionParameter(1, typeof(double), "index", "Index to remove from the list.")]
         [ExpressionReturn(typeof(ExpressionList), "Returns the list object")]
         [Summary("Removes the specified index from the list")]
-        [Example("listremove[getvar[myList]1]", "Removes the second item from the list stored in `myList` variable")]
+        [Example("listremoveat[getvar[myList],1]", "Removes the second item from the list stored in `myList` variable")]
         public object ListRemoveAt(ExpressionList list, double index) {
             if (index > list.Items.Count - 1) {
                 throw new Exception($"Attempted to remove item at index {index} of list, but list only has {list.Items.Count} items");
