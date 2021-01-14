@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UtilityBelt.Lib;
@@ -50,9 +50,9 @@ namespace UtilityBelt.Tools {
     [Name("Aliases")]
     [Summary("Allows you to define aliases that run actions when text is typed into the chatbox that matches the specified regular expression.")]
     [FullDescription(@"
-Allows you to define aliases that run actions when text is typed into the chatbox that matches the specified regular expression. These function in similar to how VTank meta chat captures function.  You can capture expression variables by using named groups in your regular expression.
+Allows you to define aliases that run actions when text is typed into the chatbox that matches the specified regular expression. These function in similar fashion to how VTank meta chat captures function.  You can capture named groups in your regular expressions to expression variables. Captured regex groups will be set to expression variables named `capturegroup_<name>`, see examples below.
 
-Multiple aliases can match the same input text, so you can add an alias that runs multiple actions.
+Multiple aliases can match the same input text, so you can add an alias that runs multiple actions.  Aliases cannot override commands that are defined by plugins.
 
 ### Examples
 
