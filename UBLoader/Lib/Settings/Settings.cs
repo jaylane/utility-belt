@@ -36,6 +36,8 @@ namespace UBLoader.Lib.Settings {
         public string SettingsPath {
             get => _settingsPath;
             set {
+                if (_settingsPath == value)
+                    return;
                 if (NeedsSave)
                     Save();
                 _settingsPath = value;
@@ -80,7 +82,7 @@ namespace UBLoader.Lib.Settings {
         }
 
         private void Settings_Changed(object sender, SettingChangedEventArgs e) {
-            if (ShouldSave && IsLoaded) {
+            if (ShouldSave && IsLoaded && !IsLoading) {
                 if (ShouldSerializeCheck == null || ShouldSerializeCheck(e.Setting)) {
                     NeedsSave = true;
                     lastSettingsChange = UBHelper.Core.Uptime;
@@ -255,6 +257,7 @@ namespace UBLoader.Lib.Settings {
                 }
 
                 if (IsLoaded) {
+                    EventsEnabled = true;
                     // on reload, ensure settings no longer in the json are reset to default
                     foreach (var kv in optionResultCache) {
                         if (!deserializedSettings.Contains(kv.Value.Setting.FullName) && !kv.Value.Setting.IsContainer) {
@@ -275,7 +278,6 @@ namespace UBLoader.Lib.Settings {
             try {
                 if (!ShouldSave || IsLoading || string.IsNullOrEmpty(SettingsPath))
                     return;
-
                 settingsFileWatcher.EnableRaisingEvents = false;
 
                 var jObj = new JObject();
@@ -302,6 +304,7 @@ namespace UBLoader.Lib.Settings {
             if (jToken.Type == JTokenType.Object) {
                 if (setting is ISetting && !((ISetting)setting).IsContainer) {
                     var dict = ((ISetting)setting).GetValue() as ObservableDictionary<string, string>;
+                    deserializedSettings.Add(((ISetting)setting).FullName);
                     dict.Clear();
                     foreach (var kv in (JObject)jToken) {
                         dict.Add(kv.Key, kv.Value.ToString());
@@ -322,9 +325,10 @@ namespace UBLoader.Lib.Settings {
                 var value = ((ISetting)setting).GetValue();
                 var collection = value as IList;
                 if (collection != null) {
-                    collection.Clear();
                     Type typeParameter = value.GetType().GetGenericArguments().Single();
+                    var eventsEnabled = EventsEnabled;
                     EventsEnabled = false;
+                    collection.Clear();
                     foreach (var item in (JArray)jToken) {
                         if (typeParameter.GetConstructor(new Type[0]) != null) {
                             object newInstance = Activator.CreateInstance(typeParameter);
@@ -340,12 +344,10 @@ namespace UBLoader.Lib.Settings {
                                 collection.Add(item.ToObject<bool>());
                             else if (item.Type == JTokenType.String)
                                 collection.Add(item.ToObject<string>());
-                            else {
-                                FilterCore.LogError($"Unknown Tpye: {item.Type}");
-                            }
                         }
                     }
-                    EventsEnabled = true;
+                    EventsEnabled = eventsEnabled;
+                    deserializedSettings.Add(((ISetting)setting).FullName);
                     ((ISetting)setting).InvokeChange();
                 }
             }
