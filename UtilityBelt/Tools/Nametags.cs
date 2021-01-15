@@ -135,7 +135,7 @@ For portals, it will show the destination.
                 case "Enabled":
                     if (Enabled) Enable();
                     else Disable();
-                    return;
+                    break;
             }
             evaluate_tags_time = DateTime.UtcNow + TimeSpan.FromMilliseconds(250);
         }
@@ -214,17 +214,22 @@ For portals, it will show the destination.
             tag.OrientToCamera(false);
             tag.Visible = ticker.Visible = false;
             ticker.OrientToCamera(false);
-            UpdateDisplay();
             UpdateData();
+            UpdateDisplay();
         }
 
         public void UpdateDisplay() {
             NametagDisplay display = (NametagDisplay)UtilityBeltPlugin.Instance.Settings.GetSetting($"Nametags.{tagType}");
+            if (!display.Enabled) {
+                tag.Visible = ticker.Visible = false;
+                return;
+            }
+
             float height = 1.1f;
 
             if (heritage == 8) // lugian
                 height += 0.21f;
-            else if (heritage > 5 && heritage < 10) // other non-humans
+            else if (heritage > 5 && heritage < 10 && heritage != 7/*tumerok*/) // other non-humans
                 height += 0.1f;
 
             ticker.Color = display.TickerColor;
@@ -233,7 +238,7 @@ For portals, it will show the destination.
 
             tag.Color = display.TagColor;
             tag.Scale(display.TagSize);
-            tag.Anchor(id, height + (showTicker ? ticker.ScaleY/2 : 0), 0f, 0f, 0f);
+            tag.Anchor(id, height + (showTicker ? ticker.ScaleY / 2 : 0), 0f, 0f, 0f);
         }
 
         public unsafe void UpdateData(bool force=false) {
@@ -263,10 +268,9 @@ For portals, it will show the destination.
                                 if (monarch == 0) {
                                     showTicker = false;
                                 } else {
-                                    if (sharesAllegiance(monarch)) {
+                                    if (sharesAllegiance(monarch))
                                         tagType = "AllegiancePlayer";
-                                        showTicker = true;
-                                    }
+                                    showTicker = true;
                                     if (monarch == id) {
                                         ticker.SetText(D3DTextType.Text3D, $"<{wo.Name}>", "Arial", 0);
                                     } else {
