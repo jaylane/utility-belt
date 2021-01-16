@@ -94,6 +94,7 @@
     <Compile Include="Lib\ObservableDictionary.cs" />
     <Compile Include="Lib\Settings\Alias.cs" />
     <Compile Include="Lib\Settings\CharacterState.cs" />
+    <Compile Include="Lib\Settings\GameEvent.cs" />
     <Compile Include="Lib\Settings\ISetting.cs" />
     <Compile Include="Lib\Settings\OptionResult.cs" />
     <Compile Include="Lib\Settings\SerializationBinder.cs" />

@@ -152,6 +152,12 @@
     <Compile Include="Lib\Expressions\ExpressionUIControl.cs" />
     <Compile Include="Lib\Expressions\ExpressionVisitor.cs" />
     <Compile Include="Lib\Expressions\ExpressionWorldObject.cs" />
+    <Compile Include="Lib\GameEvents\BaseGameEvent.cs" />
+    <Compile Include="Lib\GameEvents\CharacterDeathGameEvent.cs" />
+    <Compile Include="Lib\GameEvents\LoginCompleteGameEvent.cs" />
+    <Compile Include="Lib\GameEvents\LoginGameEvent.cs" />
+    <Compile Include="Lib\GameEvents\LogoutGameEvent.cs" />
+    <Compile Include="Lib\GameEvents\UBGameEvent.cs" />
     <Compile Include="Lib\HotkeyWrapper.cs" />
     <Compile Include="Lib\Inventory.cs" />
     <Compile Include="Lib\Maps\markers\BaseMarker.cs" />
@@ -194,6 +200,7 @@
     <Compile Include="Lib\VHS_Connector.cs" />
     <Compile Include="Tools\Aliases.cs" />
     <Compile Include="Tools\Arrow.cs" />
+    <Compile Include="Tools\GameEvents.cs" />
     <Compile Include="Tools\Networking.cs" />
     <Compile Include="Tools\PlayerOptions.cs" />
     <Compile Include="Tools\Client.cs" />
@@ -1032,6 +1039,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Views\LongStringEditor.xml" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

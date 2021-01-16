@@ -31,6 +31,10 @@ namespace UtilityBelt.Views {
         private HudButton AliasesProfileCopyTo;
         private HudButton AliasesProfileReset;
 
+        private HudCombo GameEventsProfilesCombo;
+        private HudButton GameEventsProfileCopyTo;
+        private HudButton GameEventsProfileReset;
+
         private HudButton CheckForUpdate;
         internal HudButton ExportPCap;
         private ACImage icon;
@@ -92,6 +96,10 @@ namespace UtilityBelt.Views {
                 AliasesProfileCopyTo = (HudButton)view["AliasesProfileCopyTo"];
                 AliasesProfileReset = (HudButton)view["AliasesProfileReset"];
 
+                GameEventsProfilesCombo = (HudCombo)view["GameEventsProfilesCombo"];
+                GameEventsProfileCopyTo = (HudButton)view["GameEventsProfileCopyTo"];
+                GameEventsProfileReset = (HudButton)view["GameEventsProfileReset"];
+
                 SettingsProfilesCombo.Change += SettingsProfilesCombo_Change;
                 SettingsProfileCopyTo.Hit += SettingsProfileCopyTo_Hit;
                 SettingsProfileReset.Hit += SettingsProfileReset_Hit;
@@ -100,12 +108,18 @@ namespace UtilityBelt.Views {
                 AliasesProfileCopyTo.Hit += AliasesProfileCopyTo_Hit;
                 AliasesProfileReset.Hit += AliasesProfileReset_Hit;
 
+                GameEventsProfilesCombo.Change += GameEventsProfilesCombo_Change;
+                GameEventsProfileCopyTo.Hit += GameEventsProfileCopyTo_Hit;
+                GameEventsProfileReset.Hit += GameEventsProfileReset_Hit;
+
                 CheckForUpdate.Hit += CheckForUpdate_Hit;
                 ExportPCap.Hit += ExportPCap_Hit;
                 SettingsButton.Hit += SettingsButton_Hit;
+
                 UB.Plugin.PCap.Changed += PCap_Changed;
                 UB.Plugin.SettingsProfile.Changed += SettingsProfile_Changed;
                 UB.Aliases.Profile.Changed += AliasesProfile_Changed;
+                UB.GameEvents.Profile.Changed += GameEventsProfile_Changed;
 
                 foreach (var kv in buttons) {
                     UpdateButton(kv);
@@ -139,10 +153,8 @@ namespace UtilityBelt.Views {
                 PopulateProfiles(Tools.Plugin.SettingsProfileExtension, SettingsProfilesCombo, UB.Plugin.SettingsProfile);
                 PopulateProfiles(Tools.Client.ClientUIProfileExtension, UB.Client.ClientUIProfilesCombo, UB.Client.UIProfile);
                 PopulateProfiles(Tools.Aliases.AliasesProfileExtension, AliasesProfilesCombo, UB.Aliases.Profile);
+                PopulateProfiles(Tools.GameEvents.GameEventsProfileExtension, GameEventsProfilesCombo, UB.GameEvents.Profile);
                 SetupFileWatcher();
-
-                view.Visible = true;
-
             }
             catch (Exception ex) { Logger.LogException(ex); }
 
@@ -171,6 +183,11 @@ namespace UtilityBelt.Views {
         private void AliasesProfile_Changed(object sender, SettingChangedEventArgs e) {
             UB.AliasSettings.SettingsPath = UB.Aliases.AliasesProfilePath;
             PopulateProfiles(Tools.Aliases.AliasesProfileExtension, AliasesProfilesCombo, UB.Aliases.Profile);
+        }
+
+        private void GameEventsProfile_Changed(object sender, SettingChangedEventArgs e) {
+            UB.GameEventsSettings.SettingsPath = UB.GameEvents.GameEventsProfilePath;
+            PopulateProfiles(Tools.GameEvents.GameEventsProfileExtension, GameEventsProfilesCombo, UB.GameEvents.Profile);
         }
 
         private void WindowPosition_Changed(object sender, SettingChangedEventArgs e) {
@@ -256,6 +273,7 @@ namespace UtilityBelt.Views {
             PopulateProfiles(Tools.Plugin.SettingsProfileExtension, SettingsProfilesCombo, UB.Plugin.SettingsProfile);
             PopulateProfiles(Tools.Client.ClientUIProfileExtension, UB.Client.ClientUIProfilesCombo, UB.Client.UIProfile);
             PopulateProfiles(Tools.Aliases.AliasesProfileExtension, AliasesProfilesCombo, UB.Aliases.Profile);
+            PopulateProfiles(Tools.GameEvents.GameEventsProfileExtension, GameEventsProfilesCombo, UB.GameEvents.Profile);
         }
 
         private void SettingsProfileReset_Hit(object sender, EventArgs e) {
@@ -285,6 +303,20 @@ namespace UtilityBelt.Views {
 
         private void AliasesProfilesCombo_Change(object sender, EventArgs e) {
             UB.Aliases.Profile.Value = ((HudStaticText)AliasesProfilesCombo[AliasesProfilesCombo.Current]).Text;
+        }
+
+        private void GameEventsProfileReset_Hit(object sender, EventArgs e) {
+            ResetProfile(SettingType.GameEvent, UB.GameEventsSettings, UB.GameEvents.Profile);
+        }
+
+        private void GameEventsProfileCopyTo_Hit(object sender, EventArgs e) {
+            CopyProfile(UB.GameEvents.Profile, UB.GameEvents.GameEventsProfilePath, (v) => {
+                return Path.Combine(Util.GetProfilesDirectory(), $"{v}.{Tools.GameEvents.GameEventsProfileExtension}");
+            });
+        }
+
+        private void GameEventsProfilesCombo_Change(object sender, EventArgs e) {
+            UB.GameEvents.Profile.Value = ((HudStaticText)GameEventsProfilesCombo[GameEventsProfilesCombo.Current]).Text;
         }
 
         internal void CopyProfile(ISetting profileSetting, string profilePath, Func<string, string> calcNewProfilePath) {

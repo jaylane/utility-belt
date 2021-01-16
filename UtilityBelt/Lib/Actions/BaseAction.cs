@@ -8,9 +8,9 @@ using VirindiViewService.Controls;
 namespace UtilityBelt.Lib.Actions {
     public abstract class BaseAction {
         public enum ActionType {
-            Expression,
-            ChatExpression,
-            ChatCommand,
+            Expression = 0,
+            ChatExpression = 1,
+            ChatCommand = 2,
         }
 
         public ActionType Type { get; set; }

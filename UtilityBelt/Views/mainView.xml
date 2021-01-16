@@ -37,11 +37,16 @@
         <control progid="DecalControls.PushButton" name="ClientUIProfileCopyTo" left="256" top="36" width="48" height="16" text="Copy To"/>
         <control progid="DecalControls.PushButton" name="ClientUIProfileReset" left="312" top="36" width="32" height="16" text="Reset"/>
         <control progid="DecalControls.PushButton" name="ClientUIProfileImport" left="352" top="36" width="40" height="16" text="Import"/>
-        
+
         <control progid="DecalControls.StaticText" name="AliasesLabel" left="4" top="64" width="84" height="16" text="Aliases:"/>
         <control progid="DecalControls.Choice" name="AliasesProfilesCombo" left="108" top="64" width="140" height="19"/>
         <control progid="DecalControls.PushButton" name="AliasesProfileCopyTo" left="256" top="64" width="48" height="16" text="Copy To"/>
         <control progid="DecalControls.PushButton" name="AliasesProfileReset" left="312" top="64" width="32" height="16" text="Reset"/>
+
+        <control progid="DecalControls.StaticText" name="GameEventsLabel" left="4" top="92" width="84" height="16" text="GameEvents:"/>
+        <control progid="DecalControls.Choice" name="GameEventsProfilesCombo" left="108" top="92" width="140" height="19"/>
+        <control progid="DecalControls.PushButton" name="GameEventsProfileCopyTo" left="256" top="92" width="48" height="16" text="Copy To"/>
+        <control progid="DecalControls.PushButton" name="GameEventsProfileReset" left="312" top="92" width="32" height="16" text="Reset"/>
         <!--
         <control progid="DecalControls.StaticText" name="CharacterOptionsLabel" left="4" top="64" width="84" height="16" text="Char Options:"/>
         <control progid="DecalControls.Choice" name="CharacterOptionsProfilesCombo" left="108" top="64" width="140" height="19"/>
@@ -172,6 +177,30 @@
             </control>
           </control>
         </page>
+      </control>
+    </page>
+    <page label="Events">
+      <control progid="DecalControls.FixedLayout" clipped="">
+        <control progid="DecalControls.StaticText" name="GameEventsListEventColLabel" left="4" top="4" width="60" height="16" text="Event"/>
+        <control progid="DecalControls.StaticText" name="GameEventsListActionColLabel" left="110" top="4" width="60" height="16" text="Action"/>
+        
+        <control progid="DecalControls.List" name="GameEventsList" left="0" top="20" width="400" height="132">
+          <column progid="DecalControls.TextColumn" name="GameEventsListEventText" fixedwidth="100"/>
+          <column progid="DecalControls.TextColumn" name="GameEventsListActionText"/>
+          <column progid="DecalControls.IconColumn" name="GameEventsListRemoveIcon" fixedwidth="20"/>
+        </control>
+        
+        <control progid="DecalControls.StaticText" name="GameEventEventComboLabel" left="4" top="160" width="40" height="16" text="Event:"/>
+        <control progid="DecalControls.Choice" name="GameEventEventCombo" left="40" top="160" width="140" height="19"/>
+        <control progid="DecalControls.PushButton" name="GameEventEventInfo" left="184" top="160" width="16" height="16" text="?"/>
+        <control progid="DecalControls.StaticText" name="GameEventActionLabel" left="208" top="160" width="40" height="16" text="Action:"/>
+        <control progid="DecalControls.Choice" name="GameEventActionType" left="248" top="160" width="140" height="16"/>
+        
+        <control progid="DecalControls.FixedLayout" name="GameEventActionFormLayout" clipped="" left="4" top="184" width="392" height="20">
+        </control>
+        
+        <control progid="DecalControls.PushButton" name="GameEventCancel" left="266" top="208" width="60" height="16" text="Cancel"/>
+        <control progid="DecalControls.PushButton" name="GameEventUpdate" left="336" top="208" width="60" height="16" text="Add"/>
       </control>
     </page>
     <page label="QuestTracker">

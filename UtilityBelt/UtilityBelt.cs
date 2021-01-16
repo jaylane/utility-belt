@@ -130,6 +130,8 @@ namespace UtilityBelt {
         public Settings State;
         public Settings ClientUISettings;
         public Settings PlayerOptionsSettings;
+        public Settings AliasSettings;
+        public Settings GameEventsSettings;
         internal Database Database;
         internal UBHudManager Huds;
 
@@ -152,6 +154,7 @@ namespace UtilityBelt {
         public DungeonMaps DungeonMaps;
         public EquipmentManager EquipmentManager;
         public FellowshipManager FellowshipManager;
+        public GameEvents GameEvents;
         public HealthTracker HealthTracker;
         public InventoryManager InventoryManager;
         public Jumper Jumper;
@@ -267,10 +270,10 @@ namespace UtilityBelt {
 
             LoadTools();
             InitSettings();
-            InitTools();
             InitCommands();
             InitHotkeys();
             InitExpressions();
+            InitTools();
 
             MainView.Init();
             ItemGiverView.Init();
@@ -310,6 +313,9 @@ namespace UtilityBelt {
 
             AliasSettings = new Settings(Aliases, Aliases.AliasesProfilePath, p => p.SettingType == SettingType.Alias, null, "Aliases");
             AliasSettings.Load();
+
+            GameEventsSettings = new Settings(GameEvents, GameEvents.GameEventsProfilePath, p => p.SettingType == SettingType.GameEvent, null, "GameEvents");
+            GameEventsSettings.Load();
         }
 
         private void State_Changed(object sender, SettingChangedEventArgs e) {
@@ -515,7 +521,6 @@ namespace UtilityBelt {
 
         private static List<string> expressionExceptions = new List<string>();
 
-        public Settings AliasSettings { get; private set; }
 
         /// <summary>
         /// Runs a registered expression method
@@ -594,6 +599,8 @@ namespace UtilityBelt {
                     PlayerOptionsSettings.Save();
                 if (AliasSettings != null && AliasSettings.NeedsSave)
                     AliasSettings.Save();
+                if (GameEventsSettings != null && GameEventsSettings.NeedsSave)
+                    GameEventsSettings.Save();
 
                 if (Core != null) {
                     Core.CommandLineText -= Core_CommandLineText;
@@ -620,6 +627,7 @@ namespace UtilityBelt {
                 ClientUISettings?.Dispose();
                 PlayerOptionsSettings?.Dispose();
                 AliasSettings?.Dispose();
+                GameEventsSettings?.Dispose();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
