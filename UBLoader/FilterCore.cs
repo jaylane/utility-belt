@@ -97,7 +97,6 @@ namespace UBLoader {
                 if (Global.UploadExceptions) {
                     Exceptionless.ExceptionlessClient.Current.Configuration.IncludePrivateInformation = false;
                     Exceptionless.ExceptionlessClient.Current.Startup();
-                    Exceptionless.ExceptionlessClient.Current.UnhandledExceptionReporting += Current_UnhandledExceptionReporting;
                 }
 
                 Global.FrameRate.Changed += FrameRate_Changed;
@@ -110,12 +109,6 @@ namespace UBLoader {
                     UBHelper.SimpleFrameLimiter.globalMax = Global.FrameRate;
             }
             catch (Exception ex) { LogException(ex); }
-        }
-
-        private void Current_UnhandledExceptionReporting(object sender, UnhandledExceptionReportingEventArgs e) {
-            e.Cancel = true;
-            e.ShouldShowUI = false;
-            LogException(e.Exception);
         }
 
         private void FrameRate_Changed(object sender, SettingChangedEventArgs e) {
