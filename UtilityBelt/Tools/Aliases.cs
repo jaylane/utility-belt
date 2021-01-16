@@ -54,6 +54,8 @@ Allows you to define aliases that run actions when text is typed into the chatbo
 
 Multiple aliases can match the same input text, so you can add an alias that runs multiple actions.  Aliases cannot override commands that are defined by plugins.
 
+You can share a set of defined aliases with multiple characters by using the `Profiles` tab in the main plugin window. Setting the profile the `[character]` will make the defined aliases unique to this character.
+
 ### Examples
 
 #### Add an alias command `/ubpd` that shortcuts to `/ub propertydump`
@@ -69,7 +71,7 @@ Multiple aliases can match the same input text, so you can add an alias that run
 #### Add an `/tloc <name>` command that sends a tell to `<name>` with your current location
 * **Alias:** `^/tloc (?<name>.*)$`
 * **Action:** ChatExpression
-* **Expression:** `\/tell +getvar[capturegroup_name]+\, I am at: +getplayercoordinates[]`
+* **Expression:** `\/tell +getvar[capturegroup_name]+\, I am at\: +getplayercoordinates[]`
 
 #### Replace $LOC in typed chat with your current location
 * **Alias:** `^(?<start>.*)(?<loc>\$LOC)(?<end>.*)$`

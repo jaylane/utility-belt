@@ -58,7 +58,7 @@ namespace UtilityBelt.Lib.Expressions {
             return type.ToString().Split('.').Last().Replace("Expression","");
         }
 
-        private object FixTypes(object v) {
+        public static object FixTypes(object v) {
             if (v == null)
                 return (double)0;
 
