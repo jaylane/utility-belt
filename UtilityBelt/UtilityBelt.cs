@@ -196,7 +196,6 @@ namespace UtilityBelt {
                 if (UBLoader.FilterCore.Global.UploadExceptions) {
                     Exceptionless.ExceptionlessClient.Current.Configuration.IncludePrivateInformation = false;
                     Exceptionless.ExceptionlessClient.Current.Startup();
-                    Exceptionless.ExceptionlessClient.Current.UnhandledExceptionReporting += Current_UnhandledExceptionReporting;
                 }
                 Core = core;
                 Host = host;
@@ -219,12 +218,6 @@ namespace UtilityBelt {
                 }
             }
 			catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void Current_UnhandledExceptionReporting(object sender, Exceptionless.UnhandledExceptionReportingEventArgs e) {
-            e.Cancel = true;
-            e.ShouldShowUI = false;
-            Logger.LogException(e.Exception);
         }
 
         private void CharacterFilter_Login(object sender, EventArgs e) {
