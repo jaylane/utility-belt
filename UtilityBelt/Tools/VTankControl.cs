@@ -423,9 +423,6 @@ namespace UtilityBelt.Tools {
             return variable != null;
         }
         #endregion //testgvar[string varname]
-
-        public Dictionary<string, object> GlobalVariables = new Dictionary<string, object>();
-
         #region getgvar[string varname]
         [ExpressionMethod("getgvar")]
         [ExpressionParameter(0, typeof(string), "varname", "Variable name to get")]
@@ -528,7 +525,7 @@ namespace UtilityBelt.Tools {
         [ExpressionReturn(typeof(double), "Returns 1 if the variable was defined, 0 otherwise")]
         [Example("cleargvar[myvar]", "Clears the value stored in `myvar` global variable")]
         public object Cleargvar(string varname) {
-            if ((bool)Testpvar(varname)) {
+            if ((bool)Testgvar(varname)) {
                 UB.Database.GlobalVariables.Delete(
                     LiteDB.Query.And(
                         LiteDB.Query.EQ("Name", varname),
