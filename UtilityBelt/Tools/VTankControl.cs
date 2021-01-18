@@ -989,7 +989,7 @@ namespace UtilityBelt.Tools {
         [Summary("Gets a worldobject representing the first inventory item matching name regex, or 0 if none was found")]
         [Example("wobjectfindininventorybynamerx[`Massive.*`]", "Returns a worldobject of the first inventory item that matches regex `Massive.*`")]
         public object ExpressionWorldObjectfindininventorybynamerx(string namerx) {
-            var re = new Regex(namerx);
+            var re = new Regex(namerx, RegexOptions.IgnoreCase);
             List<int> weenies = new List<int>();
             UBHelper.InventoryManager.GetInventory(ref weenies, UBHelper.InventoryManager.GetInventoryType.Everything, Weenie.INVENTORY_LOC.ALL_LOC);
 
@@ -1031,7 +1031,7 @@ namespace UtilityBelt.Tools {
         [Example("wobjectfindnearestbynameandobjectclass[24,`Crash.*`]", "Returns a worldobject of the first object found matching objectlass 24 (player) and name regex `Crash.*`")]
         public object ExpressionWorldObjectfindnearestbynameandobjectclass(double objectClass, string namerx) {
             var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetByObjectClass((ObjectClass)Convert.ToInt32(objectClass));
-            var re = new Regex(namerx);
+            var re = new Regex(namerx, RegexOptions.IgnoreCase);
             var closestDistance = float.MaxValue;
             WorldObject closest = null;
             foreach (var wo in wos) {
