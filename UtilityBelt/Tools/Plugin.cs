@@ -975,6 +975,22 @@ namespace UtilityBelt.Tools {
             return list;
         }
         #endregion //listadd[list list, object item]
+        #region listinsert[list list, object item, number index]
+        [ExpressionMethod("listinsert")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to add the item to")]
+        [ExpressionParameter(1, typeof(object), "item", "Item to add to list, can be any type. Lists cannot contain references to themselves.")]
+        [ExpressionParameter(0, typeof(double), "index", "The index in the list where the item should be inserted")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns the list object")]
+        [Summary("Inserts an item at the specified index of the list")]
+        [Example("listinsert[getvar[myList],`some value`,1]", "Inserts `some value` at index 1 (second item) in the list")]
+        public object ListInsert(ExpressionList list, object item, double index) {
+            if (index > list.Items.Count) {
+                throw new Exception($"Attempted to insert item at index {index} of list, but list only has {list.Items.Count} items");
+            }
+            list.Items.Insert((int)index, item);
+            return list;
+        }
+        #endregion listinsert[list list, object item, number index]
         #region listremove[list list, object item]
         [ExpressionMethod("listremove")]
         [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to remove the item from")]
@@ -1038,6 +1054,19 @@ namespace UtilityBelt.Tools {
             return (double)list.Items.IndexOf(item);
         }
         #endregion //listindexof[list list, object item]
+        #region listlastindexof[list list, object item]
+        [ExpressionMethod("listlastindexof")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to check")]
+        [ExpressionParameter(1, typeof(object), "item", "The item to check if the list contains")]
+        [ExpressionReturn(typeof(double), "Returns the index of the last occurence of the specified item, or -1 if not found")]
+        [Summary("Finds the index of the last occurance of an item in a list. Indexes are zero based.")]
+        [Example("listlastindexof[getvar[myList],`some value`]", "Returns the index of the last occurence of the string `some value`")]
+        public object ListLastIndexOf(ExpressionList list, object item) {
+            var reversedItems = list.Items.ToList();
+            reversedItems.Reverse();
+            return (double)((reversedItems.Count - 1) - reversedItems.IndexOf(item));
+        }
+        #endregion //listlastindexof[list list, object item]
         #region listcopy[list list]
         [ExpressionMethod("listcopy")]
         [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to copy")]
@@ -1052,6 +1081,19 @@ namespace UtilityBelt.Tools {
             return newList;
         }
         #endregion //listcopy[list]
+        #region listreverse[list list]
+        [ExpressionMethod("listreverse")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to reverse")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a copy of the specified list, but the order is reversed")]
+        [Summary("Creates a copy of a list, and reverses the order")]
+        [Example("setvar[myListReversed,listreverse[getvar[myList]]", "Copies the list stored in myList variable, reverses it, and stores it to a variable called myListReversed")]
+        public object ListReverse(ExpressionList list) {
+            var reversedList = new ExpressionList();
+            for (var i = list.Items.Count - 1; i >= 0; i--)
+                reversedList.Items.Add(list.Items[i]);
+            return reversedList;
+        }
+        #endregion //listreverse[list]
         #region listpop[list list, number? index]
         [ExpressionMethod("listpop")]
         [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to pop the item from")]
