@@ -1504,6 +1504,26 @@ namespace UtilityBelt.Tools {
             return 1;
         }
         #endregion //uisetvisible[UIControl control, number visible]
+        #region uiviewexists[string windowName]
+        [ExpressionMethod("uiviewexists")]
+        [ExpressionParameter(0, typeof(string), "windowName", "Name of the window to check the existence of")]
+        [ExpressionReturn(typeof(ExpressionUIControl), "Returns 1 if it exists, 0 if not")]
+        [Summary("Checks if a meta view exists")]
+        [Example("uiviewexists[myWindow]", "returns true if a view with the title `myWindow` exists")]
+        public object uiviewexists(string windowName) {
+            return UBHelper.vTank.UIMetaViewExists(windowName);
+        }
+        #endregion //uiviewexists[string windowName]
+        #region uiviewvisible[string windowName]
+        [ExpressionMethod("uiviewvisible")]
+        [ExpressionParameter(0, typeof(string), "windowName", "Name of the window to check the visibilty of")]
+        [ExpressionReturn(typeof(ExpressionUIControl), "Returns 1 if it exists, 0 if not")]
+        [Summary("Checks if a meta view is visible")]
+        [Example("uiviewvisible[myWindow]", "returns true if a view with the title `myWindow` is visible")]
+        public object uiviewvisible(string windowName) {
+            return UBHelper.vTank.UIMetaViewIsVisible(windowName);
+        }
+        #endregion //uiviewvisible[string windowName]
         #endregion //VVS UI
         #endregion //Expressions
 
