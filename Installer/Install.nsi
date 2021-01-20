@@ -55,8 +55,6 @@ Section "" CoreSection
 	File "${BUILDPATH}\UtilityBelt.dll"
 	File "${BUILDPATH}\UtilityBelt.pdb"
 	File "${BUILDPATH}\0Harmony.dll"
-	File "${BUILDPATH}\Exceptionless.dll"
-	File "${BUILDPATH}\Exceptionless.Models.dll"
 
 SectionEnd
 
@@ -101,6 +99,8 @@ Section -FinishSection
 	Delete "$INSTDIR\Resources\quests.xml"
 	RMDir "$INSTDIR\Resources\"
 	Delete "$INSTDIR\UBHelper.dll"
+	Delete "$INSTDIR\Exceptionless.dll"
+	Delete "$INSTDIR\Exceptionless.Models.dll"
 
 SectionEnd
 
