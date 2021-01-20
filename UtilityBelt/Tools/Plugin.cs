@@ -1135,6 +1135,193 @@ namespace UtilityBelt.Tools {
         #endregion //List Expresions
         #endregion //Expressions
 
+        #region dictcreate[...items]
+        [ExpressionMethod("dictcreate")]
+        [ExpressionReturn(typeof(ExpressionDictionary), "Creates and returns a new dictionary")]
+        [ExpressionParameter(0, typeof(ParamArrayAttribute), "items",
+            "items to instantiate the dictionary with. alternates keys and values")]
+        [Summary("Creates a new dictionary object.  The dictionary is empty by default. The list of arguments must be even and broken in key-value pairs. Keys must be strings. Values may be any type.")]
+        [Example("dictcreate[]", "Returns a new empty dictionary")]
+        [Example("dictcreate[a,2,b,listcreate[4,5]]", "Returns a new dictionary with 2 items: a=>2,b=>[4,5]")]
+        [Example("setvar[myDict,dictcreate[]]", "Creates a new empty dictionary and stores it in `myDict` variable")]
+        public object DictCreate(params object[] items) {
+            ExpressionDictionary result = new ExpressionDictionary();
+
+            if (items.Length > 0) {
+                if (items.Length % 2 == 1) {
+                    throw new Exception("You passed in an odd number of arguments which cannot be used to create a dictionary");
+                }
+
+                for (int i = 0; i < items.Length; i+=2) {
+                    if (items[i].GetType() != typeof(string)) {
+                        throw new Exception($"Error with key {items[i]}. Keys must be strings");
+                    }
+
+                    result.Items.Add((string)items[i], items[i+1]);
+                }
+            }
+
+            return result;
+        }
+        #endregion
+
+        #region dictgetitem[dict dict, string key]
+        [ExpressionMethod("dictgetitem")]
+        [ExpressionParameter(0, typeof(ExpressionDictionary), "dict", "The dict to retrieve the item from")]
+        [ExpressionParameter(1, typeof(string), "key", "Key to retrieve from the dict.")]
+        [ExpressionReturn(typeof(object), "Returns the item for the specified key")]
+        [Summary("Retrieves the item at the specified dictionary key. If the key does not exist, it throws an error")]
+        [Example("dictgetitem[getvar[myDict],foo]", "Retrieves the item stored in `myDict` for the key `foo`")]
+        public object DictionaryGetItem(ExpressionDictionary dict, string key) {
+            if (!dict.Items.ContainsKey(key)) {
+                throw new Exception($"Attempted to get item at for key {key} of dictionary but it was not found");
+            }
+            return dict.Items[key];
+        }
+        #endregion //dictgetitem[dict dict, string key]
+
+        #region dictadditem[dict dict, string key, object item]
+        [ExpressionMethod("dictadditem")]
+        [ExpressionParameter(0, typeof(ExpressionDictionary), "dict", "The dict to add key item pair to")]
+        [ExpressionParameter(1, typeof(string), "key", "Key to add to the dict")]
+        [ExpressionParameter(2, typeof(object), "value", "Value to add to the dict")]
+        [ExpressionReturn(typeof(double), "Returns True if it overwrote a key, False otherwise")]
+        [Summary("Adds the Key Value pair to the dictionary. Returns true if it overwrote a key, false otherwise. Will throw an exception if the key is not a string")]
+        [Example("dictadditem[getvar[myDict],foo,1]", "adds a key foo to `myDict` and sets the value to 1")]
+        public double DictionaryAddItem(ExpressionDictionary dict, string key, object value) {
+            double result = 0;
+            if (dict.Items.ContainsKey(key)) {
+                result = 1;
+            }
+            
+            dict.Items.Add(key, value);
+
+            return result;
+        }
+        #endregion //dictadditem[dict dict, string key, object item]
+
+        #region dicthaskey[dict dict, string key]
+        [ExpressionMethod("dicthaskey")]
+        [ExpressionParameter(0, typeof(ExpressionDictionary), "dict", "The dict to check for a key")]
+        [ExpressionParameter(1, typeof(string), "key", "Key to look for")]
+        [ExpressionReturn(typeof(double), "Returns True if dictionary has the key, False otherwise")]
+        [Summary("Checks if the dictionary contains the key. Returns true if it does, false otherwise")]
+        [Example("dicthaskey[getvar[myDict],foo]", "Returns true if `myDict` has the key `foo`, false otherwise")]
+        public double DictionaryHasKey(ExpressionDictionary dict, string key) {
+            double result = 0;
+            if (dict.Items.ContainsKey(key)) {
+                result = 1;
+            }
+
+            if (key.GetType() != typeof(string)) {
+                throw new Exception($"Error with key {key}. Keys must be strings");
+            }
+
+            return result;
+        }
+        #endregion //dicthaskey[dict dict, string key]
+
+        #region dictremovekey[dict dict, string key]
+        [ExpressionMethod("dictremovekey")]
+        [ExpressionParameter(0, typeof(ExpressionDictionary), "dict", "The dict to delete the key from")]
+        [ExpressionParameter(1, typeof(string), "key", "Key to remove")]
+        [ExpressionReturn(typeof(double), "Returns True if dictionary had the key, False otherwise")]
+        [Summary("Deletes the specified key from the dictionary.")]
+        [Example("dictremovekey[getvar[myDict],foo]", "Removes the key `foo` from the dictionary `myDict`")]
+        public double DictionaryRemoveKey(ExpressionDictionary dict, string key) {
+            double result = 0;
+            if (dict.Items.ContainsKey(key)) {
+                result = 1;
+            }
+
+            if (key.GetType() != typeof(string)) {
+                throw new Exception($"Error with key {key}. Keys must be strings");
+            }
+
+            dict.Items.Remove(key);
+
+            return result;
+        }
+        #endregion //dicthaskey[dict dict, string key]
+
+        #region dictkeys[dict dict]
+        [ExpressionMethod("dictkeys")]
+        [ExpressionParameter(0, typeof(ExpressionDictionary), "dict", "The dictionary to return keys from")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of keys")]
+        [Summary("Returns a list of keys")]
+        [Example("dictkeys[getvar[myDict]]", "Returns a list of all the keys in `myDict`")]
+        public ExpressionList DictionaryKeys(ExpressionDictionary dict) {
+            ExpressionList result = new ExpressionList();
+
+            foreach (var key in dict.Items.Keys) {
+                result.Items.Add(key); //there's really no AddAll?
+            }
+
+            return result;
+        }
+        #endregion //dictkeys[dict dict]
+
+        #region dictvalues[dict dict]
+        [ExpressionMethod("dictvalues")]
+        [ExpressionParameter(0, typeof(ExpressionDictionary), "dict", "The dictionary to return values from")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of values")]
+        [Summary("Returns a list of keys")]
+        [Example("dictkeys[getvar[myDict]]", "Returns a list of all the values in `myDict`")]
+        public ExpressionList DictionaryValues(ExpressionDictionary dict) {
+            ExpressionList result = new ExpressionList();
+
+            foreach (var key in dict.Items.Values) {
+                result.Items.Add(key); //there's really no AddAll?
+            }
+
+            return result;
+        }
+        #endregion //dictvalues[dict dict]
+
+        #region dictsize[dict dict]
+        [ExpressionMethod("dictsize")]
+        [ExpressionParameter(0, typeof(ExpressionDictionary), "dict", "The dictionary to return size of")]
+        [ExpressionReturn(typeof(double), "Returns a number size")]
+        [Summary("Returns the size of the dictionary")]
+        [Example("dictsize[dictcreate[a,b,c,d]]", "Returns 2 as the example dict is `a=>b, c=>d`")]
+        public double DictionarySize(ExpressionDictionary dict) {
+            return dict.Items.Count();
+        }
+        #endregion //dictsize[dict dict]
+
+        #region dictclear[dict dict]
+        [ExpressionMethod("dictclear")]
+        [ExpressionParameter(0, typeof(ExpressionDictionary), "dict", "The dictionary to clear")]
+        [ExpressionReturn(typeof(ExpressionDictionary), "Returns the dictionary")]
+        [Summary("Clears the dictionary contents and returns the dictionary")]
+        [Example("dictclear[getvar[myDict]]", "Returns the empty dictionary `myDict`")]
+        public ExpressionDictionary DictionaryClear(ExpressionDictionary dict) {
+            foreach (var key in dict.Items.Keys) {
+                //there is no clear or removeAll
+                dict.Items.Remove(key);
+            }
+
+            return dict;
+        }
+        #endregion //dictclear[dict dict]
+
+        #region dictcopy[dict dict]
+        [ExpressionMethod("dictcopy")]
+        [ExpressionParameter(0, typeof(ExpressionDictionary), "dict", "The dictionary copy")]
+        [ExpressionReturn(typeof(ExpressionDictionary), "Returns the new copy")]
+        [Summary("Creates a new dictionary and copies over all the key value pairs. This is a shallow copy.")]
+        [Example("setvar[myDict2,dictcopy[getvar[myDict]]]", "Creates a shallow copy of `myDict` and stores it in `myDict2`")]
+        public ExpressionDictionary DictionaryCopy(ExpressionDictionary dict) {
+            ExpressionDictionary result = new ExpressionDictionary();
+
+            foreach (var key in dict.Items.Keys) {
+                result.Items[key] = dict.Items[key];
+            }
+
+            return result;
+        }
+        #endregion //dictcopy[dict dict]
+
         public Plugin(UtilityBeltPlugin ub, string name) : base(ub, name) {
 
         }
