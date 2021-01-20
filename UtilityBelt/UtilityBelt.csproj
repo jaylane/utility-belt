@@ -147,6 +147,7 @@
     <Compile Include="Lib\Dungeon\IsDungeon.cs" />
     <Compile Include="Lib\Expressions\ExpressionCoordinates.cs" />
     <Compile Include="Lib\Expressions\ExpressionList.cs" />
+    <Compile Include="Lib\Expressions\ExpressionDictionary.cs" />
     <Compile Include="Lib\Expressions\ExpressionObjectBase.cs" />
     <Compile Include="Lib\Expressions\ExpressionStopwatch.cs" />
     <Compile Include="Lib\Expressions\ExpressionUIControl.cs" />

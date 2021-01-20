@@ -2,6 +2,7 @@
 - Fix `cleargvar[]` expression wasn't actually clearing vars
 - Add list expressions: listlastindexof, listreverse, listinsert
 - Add expressions: uiviewvisible and uiviewexists
+- Add dictionary support to expression, see expression documentation
 
 ## 0.2.2 (2021-01-16) [UtilityBeltInstaller-0.2.2.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/a597bed6c0330841d223ce2a762ca99d/UtilityBeltInstaller-0.2.2.exe)
 - Revert Fix `-` character must now be escaped in expression strings
