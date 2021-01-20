@@ -72,11 +72,6 @@
       <HintPath>C:\Program Files (x86)\Decal 3.0\.NET 2.0 PIA\Decal.Interop.Render.DLL</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Exceptionless, Version=1.5.2121.0, Culture=neutral, PublicKeyToken=fc181f0a46f65747, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Exceptionless.1.5.2121\lib\net35\Exceptionless.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="LiteDB, Version=4.1.4.0, Culture=neutral, PublicKeyToken=4ee40123013c9f27, processorArchitecture=MSIL">
       <HintPath>..\packages\LiteDB.4.1.4\lib\net35\LiteDB.dll</HintPath>
       <Private>False</Private>
@@ -105,6 +100,10 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Data.Linq" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Threading">
+      <HintPath>..\UBLoader\Deps\System.Threading.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="UBHelper">
@@ -1068,10 +1067,6 @@
       <Output TaskParameter="branch" PropertyName="Branch" />
     </GitBranch>
     <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.cs" AssemblyTitle="UtilityBelt" AssemblyDescription="Hack the Planet" AssemblyCompany="Ellingson Mineral Company" AssemblyProduct="UtilityBelt" AssemblyCopyright="Copyright 1337 Zero Cool" ComVisible="false" CLSCompliant="false" AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Branch).$(Revision) ($([System.DateTime]::UTCNow.ToString(`yyyy-MM-dd HH:mm:ss`)))" AssemblyVersion="$(Major).$(Minor).$(Build)" AssemblyFileVersion="$(Major).$(Minor).$(Build)" Guid="d00fa5e5-e034-4c5a-ac9b-397875a8b788" />
-    <ReadLinesFromFile File="Properties\AssemblyInfo.cs" Condition="Exists('Properties\AssemblyInfo.cs')">
-      <Output TaskParameter="Lines" ItemName="AssemblyLines" />
-    </ReadLinesFromFile>
-    <WriteLinesToFile File="Properties\AssemblyInfo.cs" Lines="@(AssemblyLines)" Overwrite="true" Encoding="Unicode" />
   </Target>
   <Import Project="..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.targets" Condition="Exists('..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.targets')" />
 </Project>

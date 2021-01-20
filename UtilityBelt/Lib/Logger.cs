@@ -1,5 +1,4 @@
-﻿using Exceptionless;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -161,16 +160,6 @@ namespace UtilityBelt {
             exceptionCount++;
 
             UBLoader.Lib.File.TryWrite(exceptionsLog, $"== {DateTime.Now} ==================================================\r\n{ex.ToString()}\r\n============================================================================\r\n\r\n", true);
-
-            try {
-                if (logToMothership && UBLoader.FilterCore.Global.UploadExceptions && !UBLoader.FilterCore.IsDevelopmentVersion()) {
-                    ex.ToExceptionless(false)
-                        .SetUserName(UBLoader.FilterCore.GetAnonymousUserId())
-                        .AddObject(new ExceptionlessUserData())
-                        .Submit();
-                }
-            }
-            catch { }
         }
         public static void LogException(string ex) {
             UBLoader.Lib.File.TryWrite(exceptionsLog, $"== {DateTime.Now} {ex}\r\n", true);
