@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using UBLoader.Lib.Settings;
+using Exceptionless;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -67,6 +68,9 @@ namespace UBLoader {
 
             [Summary("Global frame rate limit. Set to 0 to disable.")]
             public Setting<int> FrameRate = new Setting<int>(0);
+
+            [Summary("Upload exceptions to the mothership")]
+            public Setting<bool> UploadExceptions = new Setting<bool>(true);
         }
         public static GlobalSettings Global = new GlobalSettings();
         #endregion Global Settings
@@ -76,7 +80,6 @@ namespace UBLoader {
             System.Reflection.Assembly.Load((byte[])rm.GetObject("LiteDB"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("Newtonsoft_Json"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("Antlr4_Runtime"));
-            System.Reflection.Assembly.Load((byte[])rm.GetObject("System_Threading"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("protobuf_net"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("ProtobufSerializer"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("NetworkCommsDotNet"));
@@ -90,6 +93,11 @@ namespace UBLoader {
             try {
                 Settings = new Settings(this, System.IO.Path.Combine(PluginAssemblyDirectory, "utilitybelt.settings.json"));
                 Settings.Load();
+
+                if (Global.UploadExceptions) {
+                    Exceptionless.ExceptionlessClient.Current.Configuration.IncludePrivateInformation = false;
+                    Exceptionless.ExceptionlessClient.Current.Startup();
+                }
 
                 Global.FrameRate.Changed += FrameRate_Changed;
                 LoadAssemblyConfig();
@@ -278,6 +286,15 @@ namespace UBLoader {
 
         public static void LogException(Exception ex) {
             Lib.File.TryWrite(System.IO.Path.Combine(Global.LogDirectory, "exceptions.txt"), $"== {DateTime.Now} ==================================================\r\n{ex.ToString()}\r\n============================================================================\r\n\r\n", true);
+
+            if (Global.UploadExceptions && !IsDevelopmentVersion()) {
+                try {
+                    ex.ToExceptionless(false)
+                        .SetUserName(GetAnonymousUserId())
+                        .Submit();
+                }
+                catch { }
+            }
         }
 
         public static void LogError(string ex) {
