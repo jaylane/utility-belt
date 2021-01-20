@@ -287,16 +287,15 @@ You can share a set of defined aliases with multiple characters by using the `Pr
         }
 
         private void Core_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
-            var text = e.Text.Trim(' ');
             foreach (var alias in DefinedAliases.Value) {
-                if (alias.AliasRegex.IsMatch(text)) {
+                if (alias.AliasRegex.IsMatch(e.Text)) {
                     if (alias.Eat)
                         e.Eat = true;
-                    Match match = alias.AliasRegex.Match(text);
+                    Match match = alias.AliasRegex.Match(e.Text);
                     foreach (var groupName in alias.AliasRegex.GetGroupNames()) {
                         UB.VTank.Setvar($"capturegroup_{groupName}", match.Groups[groupName].Value);
                     }
-                    alias.Run(text);
+                    alias.Run(e.Text);
                 }
             }
         }
