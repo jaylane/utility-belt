@@ -558,8 +558,7 @@ namespace UtilityBelt.Tools {
         [Summary("Pastes a message to the chatbox, leaving focus, so that the user can complete typing it")]
         [Example("chatboxpaste[test]", "pastes `test` to the chatbox, without sending")]
         public object Chatboxpaste(string text) {
-            Logger.Error("chatboxpaste[] is not currently implemented");
-            return 0;
+            return UBHelper.vTank.ChatboxPaste(text);
         }
         #endregion //chatboxpaste[string message]
         #region echo[string message, number color]
