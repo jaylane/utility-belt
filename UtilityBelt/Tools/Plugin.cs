@@ -1133,7 +1133,8 @@ namespace UtilityBelt.Tools {
         }
         #endregion //lsitclear[list]
         #endregion //List Expresions
-        #endregion //Expressions
+        #region Dictionary Expressions
+
 
         #region dictcreate[...items]
         [ExpressionMethod("dictcreate")]
@@ -1152,12 +1153,12 @@ namespace UtilityBelt.Tools {
                     throw new Exception("You passed in an odd number of arguments which cannot be used to create a dictionary");
                 }
 
-                for (int i = 0; i < items.Length; i+=2) {
+                for (int i = 0; i < items.Length; i += 2) {
                     if (items[i].GetType() != typeof(string)) {
                         throw new Exception($"Error with key {items[i]}. Keys must be strings");
                     }
 
-                    result.Items.Add((string)items[i], items[i+1]);
+                    result.Items.Add((string)items[i], items[i + 1]);
                 }
             }
 
@@ -1193,7 +1194,7 @@ namespace UtilityBelt.Tools {
             if (dict.Items.ContainsKey(key)) {
                 result = 1;
             }
-            
+
             dict.Items.Add(key, value);
 
             return result;
@@ -1321,6 +1322,23 @@ namespace UtilityBelt.Tools {
             return result;
         }
         #endregion //dictcopy[dict dict]
+        #endregion //Dictionar Expressions
+        #region getregexmatch[string text, string regex]
+        [ExpressionMethod("getregexmatch")]
+        [ExpressionParameter(0, typeof(string), "text", "The text to check the regex against")]
+        [ExpressionParameter(0, typeof(string), "regex", "The regex")]
+        [ExpressionReturn(typeof(string), "Returns the part of the text that matches the specified regex")]
+        [Summary("Returns the part of the text that matches the specified regex")]
+        [Example("getregexmatch[`test 123`,`\\d+`]", "Returns the string `123`")]
+        public object getregexmatch(string text, string regex) {
+            var re = new Regex(regex);
+            if (!re.IsMatch(text))
+                return false;
+
+            return re.Match(text).Value;
+        }
+        #endregion //getregexmatch[string text, string regex]
+        #endregion //Expressions
 
         public Plugin(UtilityBeltPlugin ub, string name) : base(ub, name) {
 
