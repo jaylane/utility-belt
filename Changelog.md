@@ -5,6 +5,7 @@
 - Add dictionary support to expression, see expression documentation
 - Add chatboxpaste expression
 - Fix issue where alias text was getting trimmed before regex match
+- Add getregexmatch expression
 
 ## 0.2.2 (2021-01-16) [UtilityBeltInstaller-0.2.2.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/a597bed6c0330841d223ce2a762ca99d/UtilityBeltInstaller-0.2.2.exe)
 - Revert Fix `-` character must now be escaped in expression strings
