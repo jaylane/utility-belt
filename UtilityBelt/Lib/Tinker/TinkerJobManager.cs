@@ -588,6 +588,7 @@ namespace UtilityBelt.Lib.Tinker {
                     filteredSalvageList.Add("Moonstone");
                     filteredSalvageList.Add("Linen");
                     filteredSalvageList.Add("Pine");
+                    filteredSalvageList.Add("Gold");
                     //Logger.WriteToChat("Armor");
                     break;
                 case ObjectClass.Jewelry:
@@ -601,8 +602,6 @@ namespace UtilityBelt.Lib.Tinker {
                     Console.WriteLine("Select an item");
                     break;
             }
-
-            filteredSalvageList.Sort();
             return filteredSalvageList;
         }
 
