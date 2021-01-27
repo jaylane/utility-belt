@@ -248,7 +248,7 @@ namespace UtilityBelt.Tools {
                     jobs.ForEach(j => {
                         if (j == null) Logger.LogException("j is null");
                         if (DateTime.UtcNow > j.nextSpam) {
-                            Logger.WriteToChat($"Assessor waiting to ID {j.ids.Count} of {j.initialCount} items. This will take about {(j.ids.Count * ((float)assessDelay / 1000f)):n2} seconds.");
+                            if (!j.silent) Logger.WriteToChat($"Assessor waiting to ID {j.ids.Count} of {j.initialCount} items. This will take about {(j.ids.Count * ((float)assessDelay / 1000f)):n2} seconds.");
                             j.nextSpam = DateTime.UtcNow + TimeSpan.FromSeconds(10);
                         }
                     });
@@ -297,16 +297,18 @@ namespace UtilityBelt.Tools {
             private ItemCallback itemCallback;
             private Assessor assessor;
             public readonly int initialCount;
-            public Job(Assessor assessor, ref List<int> items, ItemCallback itemCallback, JobCallback jobCallback, bool validateTypes = true) {
+            public readonly bool silent;
+            public Job(Assessor assessor, ref List<int> items, ItemCallback itemCallback, JobCallback jobCallback, bool validateTypes = true, bool silent = false) {
                 ids = new List<int>(items);
                 if (validateTypes) ids.RemoveAll(i => (!assessor.ShouldId(i)));
                 initialCount = ids.Count;
                 this.jobCallback = jobCallback;
                 this.itemCallback = itemCallback;
                 this.assessor = assessor;
+                this.silent = silent;
                 heartBeat = DateTime.UtcNow + TimeSpan.FromSeconds(1);
                 nextSpam = DateTime.MinValue;
-                Logger.WriteToChat($"new Assessor.Job initialized with {ids.Count} items...");
+                if (!silent) Logger.WriteToChat($"new Assessor.Job initialized with {ids.Count} items...");
                 assessor.Register(this);
                 CheckDone();
             }

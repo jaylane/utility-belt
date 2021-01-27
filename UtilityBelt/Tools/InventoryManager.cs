@@ -52,6 +52,19 @@ Provides a command-line interface to inventory management.
         private Assessor.Job assessor = null;
         private static FileSystemWatcher profilesWatcher = null;
         private bool subscribedToReloadLootRenderFrame;
+        private bool subscribedToRadarUpdateInscription;
+
+        private struct InscriptionAssessInfo {
+            public double LastInscribeTime { get; set; }
+            public double LastAssessTime { get; set; }
+
+            public InscriptionAssessInfo(double lastInscribeTime, double lastAssessTime = 0) {
+                LastInscribeTime = lastInscribeTime;
+                LastAssessTime = lastAssessTime;
+            }
+        }
+
+        private Dictionary<int, InscriptionAssessInfo> inscriptionAssessTimes = new Dictionary<int, InscriptionAssessInfo>();
 
         public event EventHandler Started;
         public event EventHandler Finished;
@@ -504,7 +517,7 @@ Provides a command-line interface to inventory management.
 
         // TODO: support AutoPack profiles when cramming
         public InventoryManager(UtilityBeltPlugin ub, string name) : base(ub, name) {
-
+            
         }
 
         public override void Init() {
@@ -515,6 +528,7 @@ Provides a command-line interface to inventory management.
 
             UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
             WatchLootProfile.Changed += WatchLootProfile_Changed;
+            UB.Core.EchoFilter.ClientDispatch += EchoFilter_ClientDispatch;
             IGRunning = false;
 
             if (UB.Core.CharacterFilter.LoginStatus != 0) {
@@ -522,6 +536,40 @@ Provides a command-line interface to inventory management.
             }
             else {
                 UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
+            }
+        }
+
+        private void EchoFilter_ClientDispatch(object sender, Decal.Adapter.NetworkMessageEventArgs e) {
+            if (e.Message.Type == 0xF7B1 && BitConverter.ToInt32(e.Message.RawData, 8) == 0x00BF) { // Writing_SetInscription
+                var itemId = BitConverter.ToInt32(e.Message.RawData, 12);
+                if (inscriptionAssessTimes.ContainsKey(itemId))
+                    inscriptionAssessTimes[itemId] = new InscriptionAssessInfo(UBHelper.Core.Uptime);
+                else
+                    inscriptionAssessTimes.Add(itemId, new InscriptionAssessInfo(UBHelper.Core.Uptime));
+
+                if (!subscribedToRadarUpdateInscription) {
+                    subscribedToRadarUpdateInscription = true;
+                    UBHelper.Core.RadarUpdate += Core_RadarUpdate_Inscriptions;
+                }
+            }
+        }
+
+        private void Core_RadarUpdate_Inscriptions(double uptime) {
+            var keys = inscriptionAssessTimes.Keys.ToArray();
+            foreach (var k in keys) {
+                // assess items 1-2 seconds after they have been inscribed, to update wf data
+                if (uptime - inscriptionAssessTimes[k].LastInscribeTime > 1 && uptime - inscriptionAssessTimes[k].LastAssessTime > 5) {
+                    var items = new List<int>() { k };
+                    new Assessor.Job(UB.Assessor, ref items, null, () => {
+                        inscriptionAssessTimes.Remove(k);
+                    }, false, true);
+                    inscriptionAssessTimes[k] = new InscriptionAssessInfo(inscriptionAssessTimes[k].LastInscribeTime, uptime);
+                }
+            }
+
+            if (inscriptionAssessTimes.Count == 0) {
+                subscribedToRadarUpdateInscription = false;
+                UBHelper.Core.RadarUpdate -= Core_RadarUpdate_Inscriptions;
             }
         }
 
@@ -709,6 +757,9 @@ Provides a command-line interface to inventory management.
         protected override void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
+                    if (subscribedToRadarUpdateInscription)
+                        UBHelper.Core.RadarUpdate -= Core_RadarUpdate_Inscriptions;
+                    UB.Core.EchoFilter.ClientDispatch -= EchoFilter_ClientDispatch;
                     WatchLootProfile.Changed -= WatchLootProfile_Changed;
                     if (UB.Core != null && UB.Core.WorldFilter != null) {
                         UB.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
