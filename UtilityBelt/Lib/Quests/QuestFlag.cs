@@ -13,6 +13,17 @@ namespace UtilityBelt.Lib.Quests {
 
         public static Dictionary<string, string> FriendlyNamesLookup = new Dictionary<string, string>();
 
+        public enum QuestSortType {
+            NameAscending,
+            NameDescending,
+            CompletedOnAscending,
+            CompletedOnDescending,
+            SolvesAscending,
+            SolvesDescending,
+            MaxSolvesAscending,
+            MaxSolvesDescending
+        }
+
         public string Key = "";
         public string Description = "";
         public int Solves = 0;
@@ -112,6 +123,10 @@ namespace UtilityBelt.Lib.Quests {
         }
 
         public int CompareTo(object obj) {
+            return CompareTo(obj, QuestSortType.NameAscending);
+        }
+
+        public int CompareTo(object obj, QuestSortType sortType) {
             if (obj == null) return (obj as QuestFlag) == null ? 0 : -1;
 
             QuestFlag otherQuestFlag = obj as QuestFlag;
@@ -132,7 +147,24 @@ namespace UtilityBelt.Lib.Quests {
                     return thisTime.CompareTo(otherTime);
                 }
                 else {
-                    return Name.ToLower().CompareTo(otherQuestFlag.Name.ToLower());
+                    switch (sortType) {
+                        case QuestSortType.SolvesAscending:
+                            return Solves.CompareTo(otherQuestFlag.Solves);
+                        case QuestSortType.SolvesDescending:
+                            return otherQuestFlag.Solves.CompareTo(Solves);
+                        case QuestSortType.MaxSolvesAscending:
+                            return otherQuestFlag.MaxSolves.CompareTo(MaxSolves);
+                        case QuestSortType.MaxSolvesDescending:
+                            return MaxSolves.CompareTo(otherQuestFlag.MaxSolves);
+                        case QuestSortType.CompletedOnAscending:
+                            return CompletedOn.CompareTo(otherQuestFlag.CompletedOn);
+                        case QuestSortType.CompletedOnDescending:
+                            return otherQuestFlag.CompletedOn.CompareTo(CompletedOn);
+                        case QuestSortType.NameDescending:
+                            return otherQuestFlag.Name.ToLower().CompareTo(Name.ToLower());
+                        default:
+                            return Name.ToLower().CompareTo(otherQuestFlag.Name.ToLower());
+                    }
                 }
             }
 
@@ -159,6 +191,10 @@ namespace UtilityBelt.Lib.Quests {
             else {
                 return "ready";
             }
+        }
+
+        public new string ToString() {
+            return $"{Key}: {Description} CompletedOn:{CompletedOn} Solves:{Solves} MaxSolves:{MaxSolves} RepeatTime:{Util.GetFriendlyTimeDifference(RepeatTime)}";
         }
     }
 }

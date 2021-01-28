@@ -9,6 +9,7 @@
 - Fix AutoTinker now allows gold to be added to Armor/Clothing
 - Fix bug where newly inscribed items were not seen by ub, allowing them to be sold/salvaged
 - Fix landscape maps icon no longer shows when disabled
+- Add questtracker list headers are now clickable, to modify sorting
 
 ## 0.2.2 (2021-01-16) [UtilityBeltInstaller-0.2.2.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/a597bed6c0330841d223ce2a762ca99d/UtilityBeltInstaller-0.2.2.exe)
 - Revert Fix `-` character must now be escaped in expression strings
