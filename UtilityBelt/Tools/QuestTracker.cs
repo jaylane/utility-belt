@@ -22,6 +22,13 @@ namespace UtilityBelt.Tools {
 
         public bool ShouldEat { get; private set; }
 
+        HudStaticText UIQuestsListName;
+        HudStaticText UIQuestsListRepeatTime;
+        HudStaticText UIQuestsListSolveCount;
+        HudStaticText UIQuestsListKTName;
+        HudStaticText UIQuestsListKTProgress;
+        HudStaticText UIQuestsListKTRequired;
+
         HudTextBox UIQuestsListFilter;
         HudTabView UIQuestListNotebook;
         HudButton UIQuestListRefresh;
@@ -32,6 +39,7 @@ namespace UtilityBelt.Tools {
 
         Timer questRedrawTimer = new Timer();
         Dictionary<string, QuestFlag> questFlags = new Dictionary<string, QuestFlag>();
+        private QuestFlag.QuestSortType sortType = QuestFlag.QuestSortType.NameAscending;
 
         #region Config
         [Summary("Loads Quests from server on login")]
@@ -186,6 +194,20 @@ namespace UtilityBelt.Tools {
             UIKillTaskQuestList = (HudList)UB.MainView.view["KillTaskQuestList"];
             UIOnceQuestList = (HudList)UB.MainView.view["OnceQuestList"];
 
+            UIQuestsListName = (HudStaticText)UB.MainView.view["QuestsListName"];
+            UIQuestsListRepeatTime = (HudStaticText)UB.MainView.view["QuestsListRepeatTime"];
+            UIQuestsListSolveCount = (HudStaticText)UB.MainView.view["QuestsListSolveCount"];
+            UIQuestsListKTName = (HudStaticText)UB.MainView.view["QuestsListKTName"];
+            UIQuestsListKTProgress = (HudStaticText)UB.MainView.view["QuestsListKTProgress"];
+            UIQuestsListKTRequired = (HudStaticText)UB.MainView.view["QuestsListKTRequired"];
+
+            UIQuestsListName.Hit += UIQuestsListLabel_Hit;
+            UIQuestsListRepeatTime.Hit += UIQuestsListLabel_Hit;
+            UIQuestsListSolveCount.Hit += UIQuestsListLabel_Hit;
+            UIQuestsListKTName.Hit += UIQuestsListLabel_Hit;
+            UIQuestsListKTProgress.Hit += UIQuestsListLabel_Hit;
+            UIQuestsListKTRequired.Hit += UIQuestsListLabel_Hit;
+
             UIQuestsListFilter.Change += (s, e) => { DrawQuestLists(); };
 
             UIQuestListRefresh.Hit += (s, e) => {
@@ -213,6 +235,38 @@ namespace UtilityBelt.Tools {
             } else UIQuestListRefresh.Text = "Load";
         }
 
+        private void UIQuestsListLabel_Hit(object sender, EventArgs e) {
+            if (!(sender is HudStaticText label))
+                return;
+            if (label == UIQuestsListName || label == UIQuestsListKTName) {
+                if (sortType == QuestFlag.QuestSortType.NameAscending)
+                    sortType = QuestFlag.QuestSortType.NameDescending;
+                else
+                    sortType = QuestFlag.QuestSortType.NameAscending;
+            }
+            else if (label == UIQuestsListRepeatTime) {
+                if (sortType == QuestFlag.QuestSortType.CompletedOnAscending)
+                    sortType = QuestFlag.QuestSortType.CompletedOnDescending;
+                else
+                    sortType = QuestFlag.QuestSortType.CompletedOnAscending;
+            }
+            else if (label == UIQuestsListSolveCount || label == UIQuestsListKTProgress) {
+                if (sortType == QuestFlag.QuestSortType.SolvesDescending)
+                    sortType = QuestFlag.QuestSortType.SolvesAscending;
+                else
+                    sortType = QuestFlag.QuestSortType.SolvesDescending;
+            }
+            else if (label == UIQuestsListKTRequired) {
+                if (sortType == QuestFlag.QuestSortType.MaxSolvesDescending)
+                    sortType = QuestFlag.QuestSortType.MaxSolvesAscending;
+                else
+                    sortType = QuestFlag.QuestSortType.MaxSolvesDescending;
+            }
+            else
+                return;
+            DrawQuestLists();
+        }
+
         private void Core_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
             try {
                 if (e.Text == "/myquests" || e.Text == "@myquests") {
@@ -232,6 +286,7 @@ namespace UtilityBelt.Tools {
         private bool GettingQuests = false;
         private bool GotFirstQuest = false;
         private sbyte GetQuestTries = 0;
+
         private void GetMyQuestsList(sbyte tries = 1, bool doCommand=true, bool shouldEat=true) {
             if (GettingQuests) {
                 if (doCommand) LogError("GetMyQuestsList called while it was already running");
@@ -362,8 +417,9 @@ namespace UtilityBelt.Tools {
         private void HandleRowClicked(HudList uiList, int row, int col) {
             try {
                 var key = ((HudStaticText)uiList[row][0]).Text;
-
-                Logger.WriteToChat($"Quest Key: {key}");
+                if (!questFlags.ContainsKey(key))
+                    return;
+                Logger.WriteToChat($"Quest: {questFlags[key].ToString()}");
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -413,7 +469,7 @@ namespace UtilityBelt.Tools {
             UIKillTaskQuestList.ClearRows();
             UIOnceQuestList.ClearRows();
 
-            flags.Sort((p1, p2) => p1.CompareTo(p2));
+            flags.Sort((p1, p2) => p1.CompareTo(p2, sortType));
 
             foreach (var questFlag in flags) {
                 UpdateQuestFlag(questFlag);

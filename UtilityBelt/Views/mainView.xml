@@ -223,9 +223,9 @@
           </page>
           <page label="KillTask">
             <control progid="DecalControls.FixedLayout" clipped="">
-              <control progid="DecalControls.StaticText" name="QuestsListName" left="1" top="4" width="200" height="24" text="Quest Flag"/>
-              <control progid="DecalControls.StaticText" name="QuestsListRepeatTime" left="272" top="4" width="60" height="16" justify="Right" text="Progress"/>
-              <control progid="DecalControls.StaticText" name="QuestsListSolveCount" left="336" top="4" width="60" height="16" justify="Right" text="Required"/>
+              <control progid="DecalControls.StaticText" name="QuestsListKTName" left="1" top="4" width="200" height="24" text="Quest Flag"/>
+              <control progid="DecalControls.StaticText" name="QuestsListKTProgress" left="272" top="4" width="60" height="16" justify="Right" text="Progress"/>
+              <control progid="DecalControls.StaticText" name="QuestsListKTRequired" left="336" top="4" width="60" height="16" justify="Right" text="Required"/>
               <control progid="DecalControls.List" name="KillTaskQuestList" left="0" top="20" width="400" height="145">
                 <column progid="DecalControls.TextColumn" name="QuestKey" fixedwidth="0" text="" />
                 <column progid="DecalControls.TextColumn" name="QuestName" fixedwidth="240"/>
