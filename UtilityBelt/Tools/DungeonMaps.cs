@@ -501,6 +501,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                             else {
                                 scale += 0.2f;
                             }
+                            hud.ZPriority = 9999;
                         }
                         break;
                     case ControlMouseEventArgs.MouseEventType.MouseDown:

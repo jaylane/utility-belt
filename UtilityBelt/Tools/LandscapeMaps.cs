@@ -152,6 +152,7 @@ namespace UtilityBelt.Tools {
 
             UB.LandscapeMapView.view.VisibleChanged += View_VisibleChanged;
             Enabled.Changed += LandscapeMaps_PropertyChanged;
+            UB.LandscapeMapView.view.ShowInBar = Enabled;
         }
 
         #region event handlers
