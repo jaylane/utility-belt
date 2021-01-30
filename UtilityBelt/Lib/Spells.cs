@@ -89,6 +89,11 @@ namespace UtilityBelt.Lib {
             return true;
         }
 
+        public static string GetName(int spellId) {
+            var spell = SpellTable.GetById(spellId);
+            return spell == null ? $"UnknownSpell:{spellId}" : spell.Name;
+        }
+
         public static int GetEffectiveSkillForSpell(int spellId) {
             return GetEffectiveSkillForSpell(SpellTable.GetById(spellId));
         }
