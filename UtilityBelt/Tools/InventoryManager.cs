@@ -531,11 +531,19 @@ Provides a command-line interface to inventory management.
             UB.Core.EchoFilter.ClientDispatch += EchoFilter_ClientDispatch;
             IGRunning = false;
 
-            if (UB.Core.CharacterFilter.LoginStatus != 0) {
+            if (UB.Core.CharacterFilter.LoginStatus == 3) {
                 TryStartLootProfileWatch();
             }
             else {
-                UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
+                UBHelper.Core.RadarUpdate += Core_RadarUpdate;
+            }
+        }
+
+        private void Core_RadarUpdate(double uptime) {
+            string loadedProfile = UBHelper.vTank.Instance?.GetLootProfile();
+            if (UBHelper.Core.GameState == GameState.In_Game && !string.IsNullOrEmpty(loadedProfile)) {
+                UBHelper.Core.RadarUpdate -= Core_RadarUpdate;
+                TryStartLootProfileWatch();
             }
         }
 
@@ -573,14 +581,6 @@ Provides a command-line interface to inventory management.
             }
         }
 
-        private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
-            try {
-                UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
-                TryStartLootProfileWatch();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
         #region Loot Profile Watcher
         private void WatchLootProfile_Changed(object sender, SettingChangedEventArgs e) {
             TryStartLootProfileWatch();
@@ -588,13 +588,10 @@ Provides a command-line interface to inventory management.
 
         // Handle settings changes while running
         public void TryStartLootProfileWatch() {
-            if (UB.Core.CharacterFilter.LoginStatus == 0)
-                return;
-
             if (profilesWatcher != null) {
                 profilesWatcher.Dispose();
-                uTank2.PluginCore.PC.LootProfileChanged -= PC_LootProfileChanged;
             }
+            uTank2.PluginCore.PC.LootProfileChanged -= PC_LootProfileChanged;
 
             if (WatchLootProfile) {
                 string profilePath = Util.GetVTankProfilesDirectory();
@@ -603,8 +600,10 @@ Provides a command-line interface to inventory management.
                     WatchLootProfile.Value = false;
                     return;
                 }
+                uTank2.PluginCore.PC.LootProfileChanged += PC_LootProfileChanged;
                 string loadedProfile = UBHelper.vTank.Instance?.GetLootProfile();
-                if (string.IsNullOrEmpty(loadedProfile)) return;
+                if (string.IsNullOrEmpty(loadedProfile))
+                    return;
 
                 profilesWatcher = new FileSystemWatcher {
                     NotifyFilter = NotifyFilters.LastWrite,
@@ -613,7 +612,6 @@ Provides a command-line interface to inventory management.
                     EnableRaisingEvents = true
                 };
                 profilesWatcher.Changed += LootProfile_Changed;
-                uTank2.PluginCore.PC.LootProfileChanged += PC_LootProfileChanged;
             }
         }
 
@@ -761,6 +759,7 @@ Provides a command-line interface to inventory management.
                         UBHelper.Core.RadarUpdate -= Core_RadarUpdate_Inscriptions;
                     UB.Core.EchoFilter.ClientDispatch -= EchoFilter_ClientDispatch;
                     WatchLootProfile.Changed -= WatchLootProfile_Changed;
+                    UBHelper.Core.RadarUpdate -= Core_RadarUpdate;
                     if (UB.Core != null && UB.Core.WorldFilter != null) {
                         UB.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
                     }
