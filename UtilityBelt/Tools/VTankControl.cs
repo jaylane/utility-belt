@@ -19,6 +19,9 @@ using Hellosam.Net.Collections;
 using Newtonsoft.Json;
 using VirindiViewService.Controls;
 using System.Collections;
+using Harmony;
+using Decal.Filters;
+using Decal.Adapter;
 
 namespace UtilityBelt.Tools {
     [Name("VTank")]
@@ -26,6 +29,10 @@ namespace UtilityBelt.Tools {
         internal Dictionary<string, object> ExpressionVariables = new Dictionary<string, object>();
         internal Dictionary<string, object> PersistentExpressionVariableCache = new Dictionary<string, object>();
         private Random rnd = new Random();
+
+        public static Regex castRe = new Regex("^You cast (?<spellname>.*) on .*$", RegexOptions.Compiled);
+        public Dictionary<string, string> PatchedAuraSpells { get; private set; }
+        public Dictionary<int, int> PlayerDescSkillState { get; private set; } = new Dictionary<int, int>();
 
         #region Config
         [Summary("VitalSharing")]
@@ -41,6 +48,10 @@ namespace UtilityBelt.Tools {
 
         [Summary("Number of portal loops to the same location to trigger portal loop fix")]
         public readonly Setting<int> PortalLoopCount = new Setting<int>(3);
+
+        [Summary("PatchForClassic")]
+        [Hotkey("PatchForClassic", "Patch vtank spells/skills for use on classic (pre-tod) servers.")]
+        public readonly Setting<bool> PatchForClassic = new Setting<bool>(false);
         #endregion
 
         #region Commands
@@ -1530,6 +1541,7 @@ namespace UtilityBelt.Tools {
         private int portalExitCount = 0;
         private int lastPortalExitLandcell = 0;
         private List<string> expressionExceptions = new List<string>();
+        private bool isClassicPatched;
 
         public VTankControl(UtilityBeltPlugin ub, string name) : base(ub, name) {
 
@@ -1537,18 +1549,54 @@ namespace UtilityBelt.Tools {
 
         public override void Init() {
             base.Init();
-            DoVTankPatches();
+            DoVTankExpressionPatches();
+            DoVTankClassicPatches();
 
             if (UBHelper.Core.GameState == UBHelper.GameState.In_Game) Enable();
             else UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
 
             FixPortalLoops.Changed += VTankControl_PropertyChanged;
             PatchExpressionEngine.Changed += VTankControl_PropertyChanged;
+            PatchForClassic.Changed += VTankControl_PropertyChanged;
 
             if (FixPortalLoops) {
                 UB.Core.CharacterFilter.ChangePortalMode += CharacterFilter_ChangePortalMode;
                 isFixingPortalLoops = true;
             }
+        }
+
+        private void EchoFilter_ServerDispatch(object sender, NetworkMessageEventArgs e) {
+            try {
+                if (e.Message.Type == 0x02DD) {
+                    var key = e.Message.Value<int>("key");
+                    var skill = e.Message.Struct("value");
+                    var state = skill.Value<int>("state");
+                    if (PlayerDescSkillState.ContainsKey(key))
+                        PlayerDescSkillState[key] = state;
+                    else
+                        PlayerDescSkillState.Add(key, state);
+                    UBHelper.vTank.UpdateVTankClassicSkills(PlayerDescSkillState);
+                }
+                else if (e.Message.Type == 0xF7B0 && e.Message.Value<int>("event") == 0x0013) {
+                    var vectors = e.Message.Struct("vectors");
+                    var flags = vectors.Value<int>("flags");
+                    if ((flags & 0x00000002) != 0) {
+                        var skillCount = vectors.Value<short>("skillCount");
+                        var skills = vectors.Struct("skills");
+                        for (var i = 0; i < skillCount; i++) {
+                            var key = skills.Struct(i).Value<short>("key");
+                            var skill = skills.Struct(i).Struct("value");
+                            var state = skill.Value<int>("state");
+                            if (PlayerDescSkillState.ContainsKey(key))
+                                PlayerDescSkillState[key] = state;
+                            else
+                                PlayerDescSkillState.Add(key, state);
+                        }
+                        UBHelper.vTank.UpdateVTankClassicSkills(PlayerDescSkillState);
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         class ExpressionErrorListener : DefaultErrorStrategy {
@@ -1600,12 +1648,28 @@ namespace UtilityBelt.Tools {
         }
 
         #region VTank Patches
-        private void DoVTankPatches() {
+        private void DoVTankExpressionPatches() {
             try {
                 UBHelper.vTank.UnpatchVTankExpressions();
                 if (!PatchExpressionEngine)
                     return;
                 UBHelper.vTank.PatchVTankExpressions(new UBHelper.vTank.Del_EvaluateExpression(EvaluateExpression));
+            }
+            catch (Exception ex) { Logger.LogException(ex); Logger.Error(ex.ToString()); }
+        }
+
+        private void DoVTankClassicPatches() {
+            try {
+                if (PatchForClassic && !isClassicPatched) {
+                    UBHelper.vTank.PatchVTankClassic();
+                    UB.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
+                    isClassicPatched = true;
+                }
+                else if (!PatchForClassic && isClassicPatched) {
+                    UBHelper.vTank.UnpatchVTankClassic();
+                    UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
+                    isClassicPatched = false;
+                }
             }
             catch (Exception ex) { Logger.LogException(ex); Logger.Error(ex.ToString()); }
         }
@@ -1644,9 +1708,11 @@ namespace UtilityBelt.Tools {
                     isFixingPortalLoops = false;
                 }
             }
-
-            if (e.PropertyName.Equals("PatchExpressionEngine")) {
-                DoVTankPatches();
+            else if (e.PropertyName.Equals("PatchExpressionEngine")) {
+                DoVTankExpressionPatches();
+            }
+            else if (e.PropertyName.Equals("PatchForClassic")) {
+                DoVTankClassicPatches();
             }
         }
 
@@ -1705,9 +1771,11 @@ namespace UtilityBelt.Tools {
                 if (disposing) {
                     FixPortalLoops.Changed -= VTankControl_PropertyChanged;
                     PatchExpressionEngine.Changed -= VTankControl_PropertyChanged;
+                    PatchForClassic.Changed -= VTankControl_PropertyChanged;
                     UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
                     UB.Core.CharacterFilter.Logoff -= CharacterFilter_Logoff;
-                    
+                    UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
+
                     if (isFixingPortalLoops)
                         UB.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
                     if (PatchExpressionEngine)
