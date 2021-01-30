@@ -11,6 +11,7 @@
 - Fix landscape maps icon no longer shows when disabled
 - Add questtracker list headers are now clickable, to modify sorting
 - Add ability to patch vtank for classic (pre-tod) servers. enable with setting `VTank.PatchForClassic`.
+- Fix `InventoryManager.WatchLootProfile` to wait until vtank is loaded to setup filewatcher
 
 ## 0.2.2 (2021-01-16) [UtilityBeltInstaller-0.2.2.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/a597bed6c0330841d223ce2a762ca99d/UtilityBeltInstaller-0.2.2.exe)
 - Revert Fix `-` character must now be escaped in expression strings
