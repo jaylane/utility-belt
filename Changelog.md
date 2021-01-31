@@ -1,4 +1,4 @@
-## 0.2.3 (TBD)
+## 0.2.3 (2021-01-30) [UtilityBeltInstaller-0.2.3.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/fee6e8ec9b64ef0aa33535e98fe3ed3d/UtilityBeltInstaller-0.2.3.exe)
 - Fix `cleargvar[]` expression wasn't actually clearing vars
 - Add list expressions: listlastindexof, listreverse, listinsert
 - Add expressions: uiviewvisible and uiviewexists
