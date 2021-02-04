@@ -33,6 +33,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
         private TimeSpan enableNavTimer;
         private bool waitingForJump = false;
         private int jumpTries = 0;
+        private bool renderFrameSubscribed = false;
 
         #region Config
         [Summary("Pause Navigation while jumping")]
@@ -68,6 +69,9 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
             needToTurn = false;
             UBHelper.Core.TurnToHeading(targetDirection);
             LogDebug("Turning to " + targetDirection);
+            if (!renderFrameSubscribed) {
+                UB.Core.RenderFrame += Core_RenderFrame;
+            }
         }
         #endregion
 
@@ -122,7 +126,9 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                 needToTurn = false;
                 UBHelper.Core.TurnToHeading(targetDirection);
             }
-            UB.Core.RenderFrame += Core_RenderFrame;
+            if (!renderFrameSubscribed) {
+                UB.Core.RenderFrame += Core_RenderFrame;
+            }
         }
         #endregion
         #endregion
@@ -181,7 +187,9 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                         UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
                         UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.CorpseOpenAttempt);
                         waitingForJump = false;
-                        UB.Core.RenderFrame -= Core_RenderFrame;
+                        if (renderFrameSubscribed) {
+                            UB.Core.RenderFrame -= Core_RenderFrame;
+                        }
                         //clear settings
                         addShift = addW = addZ = addX = addC = false;
                         jumpTries = 0;
@@ -195,7 +203,9 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
         private void Jumper_JumpComplete() {
             try {
                 UBHelper.Jumper.JumpComplete -= Jumper_JumpComplete;
-                UB.Core.RenderFrame -= Core_RenderFrame;
+                if (renderFrameSubscribed) {
+                    UB.Core.RenderFrame -= Core_RenderFrame;
+                }
                 if (ThinkComplete)
                     Util.Think("Jumper Success");
                 UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
