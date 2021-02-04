@@ -95,10 +95,15 @@ namespace UtilityBelt.Lib.Tinker {
                 lastTinkType = currentTinkType;
                 lastSkill = currentSkill;
 
-                //Logger.WriteToChat(nextSalvage.ToString());
                 FileService service = CoreManager.Current.Filter<FileService>();
                 var material = service.MaterialTable.GetById(tinkeringItem.Values(LongValueKey.Material, 0));
-                tinkeringItemName = string.Format("{0} {1}", material.Name.Trim(), tinkeringItem.Name);
+                if (tinkeringItem.Name.Contains(material.Name)) {
+                    tinkeringItemName = tinkeringItem.Name.Replace(material.Name, "");
+                }
+                else {
+                    tinkeringItemName = tinkeringItem.Name;
+                }
+                tinkeringItemName = string.Format("{0} {1}", material.Name.Trim(), tinkeringItemName);
                 tinkeringSalvage = CoreManager.Current.WorldFilter[nextSalvage];
                 tinkeringSalvageName = Util.GetObjectName(tinkeringSalvage.Id).Replace("Salvaged ", "").Replace("Salvage ", "").Replace("Salvage", "").Replace("(100)", "").Trim();
                 tinkeringSalvageWorkmanship = tinkeringSalvage.Values(DoubleValueKey.SalvageWorkmanship);
