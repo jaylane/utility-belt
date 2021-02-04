@@ -1,5 +1,6 @@
 ## 0.2.4 (TBD)
 - Fix classic server vtank patch, no longer patches non-itemenchantment auras 
+- Fix unary minus in meta expressions
 
 ## 0.2.3 (2021-01-30) [UtilityBeltInstaller-0.2.3.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/fee6e8ec9b64ef0aa33535e98fe3ed3d/UtilityBeltInstaller-0.2.3.exe)
 - Fix `cleargvar[]` expression wasn't actually clearing vars
