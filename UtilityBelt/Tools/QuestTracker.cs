@@ -102,7 +102,7 @@ namespace UtilityBelt.Tools {
             }
         }
         #endregion
-        #region /ub quests
+        #region /ub myquests
         [Summary("Refreshes your quest flags with /myquests, and hides the output.")]
         [Usage("/ub myquests")]
         [Example("/ub myquests", "Refreshes your quest flags with /myquests, and hides the output")]
@@ -123,7 +123,7 @@ namespace UtilityBelt.Tools {
         [Summary("Checks if a quest flag has ever been completed. You must manually refresh `/myquests` after completing a quest, for these values to be up to date.  UB will call `/myquests` once on login automatically.")]
         [Example("testquestflag[spokenbobo]", "Checks if your character is flagged for bobo")]
         public object Testquestflag(string questflag) {
-            return questFlags.ContainsKey(questflag);
+            return questFlags.ContainsKey(questflag.ToLower());
         }
         #endregion //testquestflag[string questflag]
         #region getqueststatus[string questflag]
@@ -133,6 +133,7 @@ namespace UtilityBelt.Tools {
         [Summary("Checks if a quest flag has a timer on it. If there is a timer it returns 0, if it's ready it returns 0. You must manually refresh `/myquests` after completing a quest, for these values to be up to date.  UB will call `/myquests` once on login automatically.")]
         [Example("getqueststatus[blankaug]", "Checks if your character is ready to run the blankaug quest again.")]
         public object Getqueststatus(string questflag) {
+            questflag = questflag.ToLower();
             if (questFlags.ContainsKey(questflag)) {
                 return questFlags[questflag].IsReady();
             }
@@ -148,6 +149,7 @@ namespace UtilityBelt.Tools {
         [Summary("Checks progress of a killtask quest. You must manually refresh `/myquests` after completing a quest, for these values to be up to date.  UB will call `/myquests` once on login automatically.")]
         [Example("getquestktprogress[totalgolemmagmaexarchdead]", "Checks how many exarch kills you currently have")]
         public object Getquestktprogress(string questflag) {
+            questflag = questflag.ToLower();
             if (questFlags.ContainsKey(questflag)) {
                 return questFlags[questflag].Solves;
             }
@@ -162,6 +164,7 @@ namespace UtilityBelt.Tools {
         [Summary("Checks total required solves of a killtask quest.  If you have not started the killtask, this will return 0. You must manually refresh `/myquests` after completing a quest, for these values to be up to date.  UB will call `/myquests` once on login automatically.")]
         [Example("getquestktrequired[totalgolemmagmaexarchdead]", "Checks required total exarch kills for this kill task")]
         public object Getquestktrequired(string questflag) {
+            questflag = questflag.ToLower();
             if (questFlags.ContainsKey(questflag)) {
                 return questFlags[questflag].MaxSolves;
             }
