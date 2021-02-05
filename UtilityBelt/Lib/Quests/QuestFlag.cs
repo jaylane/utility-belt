@@ -65,7 +65,7 @@ namespace UtilityBelt.Lib.Quests {
                 Match match = MyQuestRegex.Match(line);
 
                 if (match.Success) {
-                    questFlag.Key = match.Groups["key"].Value;
+                    questFlag.Key = match.Groups["key"].Value.ToLower();
                     questFlag.Description = match.Groups["description"].Value;
 
                     int.TryParse(match.Groups["solves"].Value, out questFlag.Solves);
