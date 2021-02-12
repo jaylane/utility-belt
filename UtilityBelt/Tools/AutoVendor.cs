@@ -939,7 +939,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             if (!EnableBuying)
                 return new List<BuyItem>();
 
-            VendorInfo vendor = VendorCache.GetVendor(UBHelper.Vendor.Id);
+            VendorInfo vendor = VendorCache.GetVendor(vendorId);
             List<BuyItem> buyItems = new List<BuyItem>();
 
             if (vendor == null) {

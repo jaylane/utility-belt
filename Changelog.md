@@ -4,6 +4,7 @@
 - Fix Autotinker to handle retail bug with items that contain a material in the name
 - Fix /ub face extended pause when in route
 - Fix quest flag expressions are no longer case sensitive
+- Fix autovendor race condition with small autovendor profiles
 
 ## 0.2.3 (2021-01-30) [UtilityBeltInstaller-0.2.3.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/fee6e8ec9b64ef0aa33535e98fe3ed3d/UtilityBeltInstaller-0.2.3.exe)
 - Fix `cleargvar[]` expression wasn't actually clearing vars
