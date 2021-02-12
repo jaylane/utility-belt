@@ -650,7 +650,6 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
 
             //UB.InventoryManager.Resume();
             isRunning = needsToBuy = needsToSell = false;
-            vendorId = 0;
 
             pendingBuy.Clear();
             pendingSell.Clear();
@@ -944,7 +943,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
 
             if (vendor == null) {
                 if (!TestMode)
-                    Logger.Error("Vendor is null");
+                    Logger.Error($"Vendor is null: {vendorId:X8}");
                 return buyItems;
             }
 
