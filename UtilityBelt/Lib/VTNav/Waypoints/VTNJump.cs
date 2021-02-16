@@ -1,4 +1,4 @@
-﻿using Decal.Adapter;
+using Decal.Adapter;
 using Decal.Adapter.Wrappers;
 using Decal.Filters;
 using System;
@@ -53,7 +53,7 @@ namespace UtilityBelt.Lib.VTNav.Waypoints {
             var textColor = Color.FromArgb(UtilityBeltPlugin.Instance.VisualNav.Display.JumpText.Color);
             var arrowColor = Color.FromArgb(UtilityBeltPlugin.Instance.VisualNav.Display.JumpArrow.Color);
             var tp = rp == null ? GetNextPoint() : rp;
-            rp = rp == null ? this : rp;
+            tp = tp == null ? this : tp;
 
             if (UtilityBeltPlugin.Instance.VisualNav.Display.JumpText.Enabled) {
                 var obj = CoreManager.Current.D3DService.MarkCoordsWithShape((float)tp.NS, (float)tp.EW, (float)(tp.Z * 240) + (float)route.GetZOffset(tp.NS, tp.EW), D3DShape.HorizontalArrow, arrowColor.ToArgb());
