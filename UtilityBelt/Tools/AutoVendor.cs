@@ -610,7 +610,14 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(1000));
 
             // Load our loot profile
-            lootProfile.LoadProfile(profilePath, false);
+            try {
+                lootProfile.LoadProfile(profilePath, false);
+            }
+            catch (Exception ex) {
+                LogError("Unable to load loot profile. Ensure that no profile is loaded in Virindi Item Tool.");
+                Stop();
+                return;
+            }
 
             itemsToId.Clear();
             List<int> inventory = new List<int>();

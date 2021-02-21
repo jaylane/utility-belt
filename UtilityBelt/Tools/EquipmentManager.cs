@@ -443,7 +443,13 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
                     }
 
                     // Load our loot profile
-                    ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
+                    try {
+                        ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
+                    }
+                    catch (Exception ex) {
+                        LogError("Unable to load loot profile. Ensure that no profile is loaded in Virindi Item Tool.");
+                        return;
+                    }
                 }
 
                 equippableItems.AddRange(GetEquippableItems());

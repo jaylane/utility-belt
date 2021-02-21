@@ -111,7 +111,13 @@ Counter is used to count items based on text or utl profiles as well as players 
                         return;
                     }
                 }
-                ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
+                try {
+                    ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
+                }
+                catch (Exception ex) {
+                    LogError("Unable to load loot profile. Ensure that no profile is loaded in Virindi Item Tool.");
+                    return;
+                }
                 isRunning = true;
                 UB.Core.RenderFrame += Core_RenderFrame;
                 lastScanUpdate = DateTime.UtcNow;

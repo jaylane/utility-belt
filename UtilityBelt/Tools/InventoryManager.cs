@@ -285,7 +285,13 @@ Provides a command-line interface to inventory management.
                 }
             }
 
-            lootProfile.LoadProfile(Path.Combine(profilePath, utlProfile), false);
+            try {
+                lootProfile.LoadProfile(Path.Combine(profilePath, utlProfile), false);
+            }
+            catch (Exception ex) {
+                LogError("Unable to load loot profile. Ensure that no profile is loaded in Virindi Item Tool.");
+                return;
+            }
 
             UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
             UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
