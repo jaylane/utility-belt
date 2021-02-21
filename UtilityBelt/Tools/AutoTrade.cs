@@ -298,7 +298,14 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
 
             // Load our loot profile
             LogDebug($"Loading loot profile at {profilePath}");
-            ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
+            try {
+                ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
+            }
+            catch (Exception ex) {
+                LogError("Unable to load loot profile. Ensure that no profile is loaded in Virindi Item Tool.");
+                Stop();
+                return;
+            }
 
             running = true;
             UB.Core.RenderFrame += Core_RenderFrame;
