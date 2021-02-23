@@ -1,0 +1,23 @@
+﻿<?xml version="1.0"?>
+<view icon="6989" title="UtilityBelt Network Stats" width="500" height="300">
+  <control progid="DecalControls.FixedLayout" clipped="">
+    <control progid="DecalControls.StaticText" name="SettingsLabel" left="2" top="8" width="84" height="16" text="Type"/>
+    <control progid="DecalControls.StaticText" name="SettingsLabel" left="142" top="8" width="80" height="16" text="1m(s)"/>
+    <control progid="DecalControls.StaticText" name="SettingsLabel" left="192" top="8" width="80" height="16" text="1m(r)"/>
+    <control progid="DecalControls.StaticText" name="SettingsLabel" left="242" top="8" width="80" height="16" text="5m(s)"/>
+    <control progid="DecalControls.StaticText" name="SettingsLabel" left="292" top="8" width="80" height="16" text="5m(r)"/>
+    <control progid="DecalControls.StaticText" name="SettingsLabel" left="342" top="8" width="80" height="16" text="1h(s)"/>
+    <control progid="DecalControls.StaticText" name="SettingsLabel" left="392" top="8" width="80" height="16" text="1h(r)"/>
+    <control progid="DecalControls.StaticText" name="SettingsLabel" left="442" top="8" width="80" height="16" text="AvgSize"/>
+    <control progid="DecalControls.List" name="StatsList" left="0" top="24" width="500" height="300">
+      <column progid="DecalControls.TextColumn" fixedwidth="140"/>
+      <column progid="DecalControls.TextColumn" fixedwidth="50"/>
+      <column progid="DecalControls.TextColumn" fixedwidth="50"/>
+      <column progid="DecalControls.TextColumn" fixedwidth="50"/>
+      <column progid="DecalControls.TextColumn" fixedwidth="50"/>
+      <column progid="DecalControls.TextColumn" fixedwidth="50"/>
+      <column progid="DecalControls.TextColumn" fixedwidth="50"/>
+      <column progid="DecalControls.TextColumn" fixedwidth="80"/>
+    </control>
+  </control>
+</view>

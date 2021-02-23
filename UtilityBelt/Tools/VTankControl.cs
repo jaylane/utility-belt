@@ -1642,7 +1642,7 @@ namespace UtilityBelt.Tools {
                 var message = UB.Plugin.Debug ? ex.ToString() : (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
                 //expression = expression.Insert(int.Parse(ex.Source, NumberStyles.Integer), "<Tell:IIDString:{Util.GetChatId()}:errorpos>errorpos</Tell>");
                 //UB.Core.Actions.AddChatTextRaw(expression, 1);
-                Logger.Error($"Error in expression: {expression}\n  {message}");
+                Logger.Error($"Error in expression: {expression}\n  {message}", false, false);
                 throw ex;
             }
         }
