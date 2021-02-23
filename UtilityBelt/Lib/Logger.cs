@@ -63,7 +63,7 @@ namespace UtilityBelt {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        public static void WriteToChat(string message, LogMessageType messageType=LogMessageType.Generic, bool addUBTag = true, bool sendToVTank = true) {
+        public static void WriteToChat(string message, LogMessageType messageType=LogMessageType.Generic, bool addUBTag = true, bool sendToVTank = true, bool writeToLog=true) {
             try {
                 message = (addUBTag && !message.StartsWith("[UB]") ? "[UB] " : "") + message;
                 var color = GetChatColor(messageType);
@@ -73,7 +73,8 @@ namespace UtilityBelt {
                     MyClasses.VCS_Connector.SendChatTextCategorized(messageType.ToString(), message, color, 0);
                 if (sendToVTank)
                     UBHelper.vTank.Tell(message, color, 0);
-                Util.WriteToDebugLog(message);
+                if (writeToLog)
+                    Util.WriteToDebugLog(message);
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -108,9 +109,9 @@ namespace UtilityBelt {
             }
         }
 
-        internal static void Error(string message) {
+        internal static void Error(string message, bool sendToVTank=true, bool writeLog=true) {
             try {
-                Logger.WriteToChat("Error: " + message, LogMessageType.Error);
+                Logger.WriteToChat("Error: " + message, LogMessageType.Error, true, sendToVTank, writeLog);
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

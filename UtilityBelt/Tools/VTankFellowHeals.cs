@@ -23,11 +23,15 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
     ")]
     public class VTankFellowHeals : ToolBase {
         DateTime lastThought = DateTime.UtcNow;
-        DateTime lastUpdate = DateTime.MinValue;
+        DateTime lastVitalUpdate = DateTime.MinValue;
+        private DateTime lastCastAttempt = DateTime.MinValue;
+        private DateTime lastCastSuccess = DateTime.MinValue;
         private bool isRunning;
+        private bool needsVitalUpdate;
 
         public int LastAttemptedSpellId { get; private set; }
         public int LastAttemptedTarget { get; private set; }
+        public int LastCastSpellId { get; private set; }
 
         public VTankFellowHeals(UtilityBeltPlugin ub, string name) : base(ub, name) {
 
@@ -55,7 +59,7 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
             UB.Core.CharacterFilter.ChangeVital += CharacterFilter_ChangeVital;
             UB.Core.EchoFilter.ClientDispatch += EchoFilter_ClientDispatch;
             UB.Core.ChatBoxMessage += Core_ChatBoxMessage;
-            UBHelper.Core.RadarUpdate += Core_RadarUpdate;
+            UB.Core.RenderFrame += Core_RenderFrame;
             UB.Networking.OnPlayerUpdateMessage += Networking_OnPlayerUpdateMessage;
             UB.Networking.OnCastAttemptMessage += Networking_OnCastAttemptMessage;
             UB.Networking.OnCastSuccessMessage += Networking_OnCastSuccessMessage;
@@ -68,11 +72,19 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
             UB.Core.CharacterFilter.ChangeVital -= CharacterFilter_ChangeVital;
             UB.Core.EchoFilter.ClientDispatch -= EchoFilter_ClientDispatch;
             UB.Core.ChatBoxMessage -= Core_ChatBoxMessage;
-            UBHelper.Core.RadarUpdate -= Core_RadarUpdate;
+            UB.Core.RenderFrame -= Core_RenderFrame;
             UB.Networking.OnPlayerUpdateMessage -= Networking_OnPlayerUpdateMessage;
             UB.Networking.OnCastAttemptMessage -= Networking_OnCastAttemptMessage;
             UB.Networking.OnCastSuccessMessage -= Networking_OnCastSuccessMessage;
             isRunning = false;
+        }
+
+        private void Core_RenderFrame(object sender, EventArgs e) {
+            if (needsVitalUpdate && DateTime.UtcNow - lastVitalUpdate > TimeSpan.FromMilliseconds(800)) {
+                lastVitalUpdate = DateTime.UtcNow;
+                UpdateMySharedVitals();
+                needsVitalUpdate = false;
+            }
         }
 
         private void Networking_OnPlayerUpdateMessage(object sender, EventArgs e) {
@@ -98,16 +110,9 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
             }
         }
 
-        private void Core_RadarUpdate(double uptime) {
-            try {
-                UpdateMySharedVitals();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
         private void CharacterFilter_ChangeVital(object sender, ChangeVitalEventArgs e) {
             try {
-                UpdateMySharedVitals();
+                needsVitalUpdate = true;
             }
             catch (Exception ex) { Logger.LogException(ex);  }
         }
@@ -118,7 +123,15 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
                 if (e.Message.Type == 0xF7B1 && e.Message.Value<int>("action") == 0x004A) {
                     var target = e.Message.Value<int>("target");
                     var spellId = e.Message.Value<int>("spell");
+                    if (LastAttemptedSpellId == spellId && LastAttemptedTarget == target && DateTime.UtcNow - lastCastAttempt < TimeSpan.FromMilliseconds(1200))
+                        return;
+
                     var skill = Spells.GetEffectiveSkillForSpell(spellId);
+                    var spell = Spells.GetSpell(spellId);
+                    // we currently only send debuffs, nothing else is used
+                    if (!spell.IsDebuff)
+                        return;
+                    lastCastAttempt = DateTime.UtcNow;
                     UB.Networking.SendObject("CastAttemptMessage", new CastAttemptMessage(spellId, target, skill));
                     LastAttemptedSpellId = spellId;
                     LastAttemptedTarget = target;
@@ -130,10 +143,15 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
         private void Core_ChatBoxMessage(object sender, Decal.Adapter.ChatTextInterceptEventArgs e) {
             try {
                 if (LastAttemptedSpellId != 0 && e.Text.StartsWith("You cast ")) {
+                    if (LastCastSpellId == LastAttemptedSpellId && DateTime.UtcNow - lastCastSuccess < TimeSpan.FromMilliseconds(50))
+                        return;
+                    lastCastSuccess = DateTime.UtcNow;
+                    LastCastSpellId = LastAttemptedSpellId;
+                    var spell = Spells.GetSpell(LastAttemptedSpellId);
+                    if (!spell.IsDebuff)
+                        return;
                     var duration = Spells.GetSpellDuration(LastAttemptedSpellId) * 1000;
                     UB.Networking.SendObject("CastSuccessMessage", new CastSuccessMessage(LastAttemptedSpellId, LastAttemptedTarget, duration));
-
-                    LastAttemptedSpellId = 0;
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }

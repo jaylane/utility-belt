@@ -57,6 +57,9 @@ namespace UtilityBelt.Lib {
 
             return effectiveSkill >= minSkillRequired;
         }
+        public static Spell GetSpell(int spellId) {
+            return SpellTable.GetById(spellId);
+        }
 
         /// <summary>
         /// Checks if player has scarabs required for a spell (currently does not check tapers)

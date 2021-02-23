@@ -281,6 +281,7 @@
     <Compile Include="Views\DungeonMapsView.cs" />
     <Compile Include="Views\LongStringEditor.cs" />
     <Compile Include="Views\MainView.cs" />
+    <Compile Include="Views\NetworkStatsView.cs" />
     <Compile Include="Views\SettingsView.cs" />
     <Compile Include="Views\TextEditPopup.cs" />
   </ItemGroup>
@@ -1040,7 +1041,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Views\LongStringEditor.xml" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Views\NetworkStatsView.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

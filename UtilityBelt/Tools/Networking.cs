@@ -14,6 +14,7 @@ using UtilityBelt.Lib.Networking.Messages;
 using NetworkCommsDotNet.DPSBase;
 using System.Text.RegularExpressions;
 using System.Threading;
+using UtilityBelt.Views;
 
 namespace UtilityBelt.Tools {
     [Name("Networking")]
@@ -50,10 +51,30 @@ namespace UtilityBelt.Tools {
             }
         }
 
+        internal struct MessageStatInfo {
+            public double Time { get; set; }
+            public int Size { get; set; }
+        }
+
+        internal class MessageTypeStatInfo {
+            public string Type { get; set; }
+
+            internal List<MessageStatInfo> LastMinuteRecvStats = new List<MessageStatInfo>();
+            internal List<MessageStatInfo> Last5MinuteRecvStats = new List<MessageStatInfo>();
+            internal List<MessageStatInfo> LastHourRecvStats = new List<MessageStatInfo>();
+
+            internal List<MessageStatInfo> LastMinuteSentStats = new List<MessageStatInfo>();
+            internal List<MessageStatInfo> Last5MinuteSentStats = new List<MessageStatInfo>();
+            internal List<MessageStatInfo> LastHourSentStats = new List<MessageStatInfo>();
+        }
+
         private ConcurrentDictionary<Connection, ClientInfo> ConnectedClients = new ConcurrentDictionary<Connection, ClientInfo>();
+        private NetworkStatsView statsView;
+        internal Dictionary<string, MessageTypeStatInfo> MessageStats = new Dictionary<string, MessageTypeStatInfo>();
 
         public BackgroundWorker BackgroundWorker { get; private set; }
         public bool IsServer { get; private set; }
+        private double lastStatsCleanup;
 
         #region Config
         [Summary("Networking server host")]
@@ -61,6 +82,15 @@ namespace UtilityBelt.Tools {
 
         [Summary("Networking server port")]
         public readonly Setting<int> ServerPort = new Setting<int>(42163);
+
+        [Summary("Show network stats (for debugging)")]
+        public readonly Setting<bool> ShowNetworkStats = new Setting<bool>(false);
+
+        [Summary("Main UB Window X position for this character (left is 0)")]
+        public readonly CharacterState<int> StatsWindowPositionX = new CharacterState<int>(200);
+
+        [Summary("Main UB Window Y position for this character (top is 0)")]
+        public readonly CharacterState<int> StatsWindowPositionY = new CharacterState<int>(150);
         #endregion Config
 
         #region Commands
@@ -99,9 +129,16 @@ namespace UtilityBelt.Tools {
 
             StartBackgroundWorker();
             UB.Core.RenderFrame += Core_RenderFrame;
+            ShowNetworkStats.Changed += ShowNetworkStats_Changed;
+            TryEnableNetworkStatsHud();
+        }
+
+        private void ShowNetworkStats_Changed(object sender, SettingChangedEventArgs e) {
+            TryEnableNetworkStatsHud();
         }
 
         public void SendObject(string packetType, object obj) {
+            AddMessageStat(packetType, 1, true, false);
             SendQueue.Enqueue(() => connection?.SendObject(packetType, obj));
         }
 
@@ -174,24 +211,28 @@ namespace UtilityBelt.Tools {
         #region Client Events
         private void Client_PlayerUpdateMessage(PacketHeader packetHeader, Connection connection, PlayerUpdateMessage incomingObject) {
             RunOnGameThread(() => {
+                if (ShowNetworkStats) AddMessageStat(packetHeader);
                 OnPlayerUpdateMessage?.Invoke(incomingObject, EventArgs.Empty);
             });
         }
 
         private void Client_CastAttemptMessage(PacketHeader packetHeader, Connection connection, CastAttemptMessage incomingObject) {
             RunOnGameThread(() => {
+                if (ShowNetworkStats) AddMessageStat(packetHeader);
                 OnCastAttemptMessage?.Invoke(incomingObject, EventArgs.Empty);
             });
         }
 
         private void Client_CastSuccessMessage(PacketHeader packetHeader, Connection connection, CastSuccessMessage incomingObject) {
             RunOnGameThread(() => {
+                if (ShowNetworkStats) AddMessageStat(packetHeader);
                 OnCastSuccessMessage?.Invoke(incomingObject, EventArgs.Empty);
             });
         }
 
         private void Client_CommandBroadcastMessage(PacketHeader packetHeader, Connection connection, CommandBroadcastMessage incomingObject) {
             RunOnGameThread(() => {
+                if (ShowNetworkStats) AddMessageStat(packetHeader);
                 UB.Plugin.AddDelayedCommand(incomingObject.Command, incomingObject.DelayMsBetweenClients * incomingObject.ClientIndex);
             });
         }
@@ -225,6 +266,7 @@ namespace UtilityBelt.Tools {
                 if (!GetClient(con, out ClientInfo conClient) || !conClient.IsAuthenticated || (sender != null && conClient.Id == sender.Id))
                     continue;
 
+                if (ShowNetworkStats) AddMessageStat(type, 0, true, true);
                 con.SendObject(type, message);
             }
         }
@@ -260,24 +302,24 @@ namespace UtilityBelt.Tools {
             try {
                 if (!GetClient(connection, out ClientInfo client))
                     return;
+                if (ShowNetworkStats) AddMessageStat(packetHeader, false, true);
                 client.Authenticate(incomingObject.Name);
             }
             catch (Exception ex) { RunOnGameThread(() => { Logger.LogException(ex); }); }
         }
 
-        private void Server_HandlerIncomingMessage(PacketHeader packetHeader, Connection connection, string incomingObject) {
-            BroadCastClientMessage(connection, "Message", incomingObject);
-        }
-
         private void Server_HandlePlayerUpdateMessage(PacketHeader packetHeader, Connection connection, PlayerUpdateMessage incomingObject) {
+            if (ShowNetworkStats) AddMessageStat(packetHeader, false, true);
             BroadCastClientMessage(connection, "PlayerUpdateMessage", incomingObject);
         }
 
         private void Server_HandleCastAttemptMessage(PacketHeader packetHeader, Connection connection, CastAttemptMessage incomingObject) {
+            if (ShowNetworkStats) AddMessageStat(packetHeader, false, true);
             BroadCastClientMessage(connection, "CastAttemptMessage", incomingObject);
         }
 
         private void Server_HandleCastSuccessMessage(PacketHeader packetHeader, Connection connection, CastSuccessMessage incomingObject) {
+            if (ShowNetworkStats) AddMessageStat(packetHeader, false, true);
             BroadCastClientMessage(connection, "CastSuccessMessage", incomingObject);
         }
 
@@ -285,11 +327,13 @@ namespace UtilityBelt.Tools {
             if (!GetClient(connection, out ClientInfo client) || !client.IsAuthenticated)
                 return;
 
+            if (ShowNetworkStats) AddMessageStat(packetHeader, false, true);
             var index = 0;
             foreach (var con in ConnectedClients.Keys) {
                 if (!GetClient(con, out ClientInfo conClient) || !conClient.IsAuthenticated)
                     continue;
                 incomingObject.ClientIndex = index++;
+                if (ShowNetworkStats) AddMessageStat("CommandBroadcastMessage", 0, true, true);
                 con.SendObject("CommandBroadcastMessage", incomingObject);
             }
         }
@@ -326,12 +370,71 @@ namespace UtilityBelt.Tools {
         }
         #endregion BackgroundWorker
 
+        #region Network Stats Hud
+        private void TryEnableNetworkStatsHud() {
+            if (statsView == null && ShowNetworkStats) {
+                statsView = new NetworkStatsView(UB);
+            }
+            else if (statsView != null && !ShowNetworkStats) {
+                MessageStats.Clear();
+                statsView.Dispose();
+                statsView = null;
+            }
+        }
+
+        private void AddMessageStat(PacketHeader packetHeader, bool wasSent = false, bool isServer = false) {
+            AddMessageStat(packetHeader.PacketType, packetHeader.TotalPayloadSize, wasSent, isServer);
+        }
+        private void AddMessageStat(string packetType, int size, bool wasSent, bool isServer) {
+            var key = $"{(isServer ? "S:" : "C:")}{packetType}";
+            if (!MessageStats.ContainsKey(key))
+                MessageStats.Add(key, new MessageTypeStatInfo() { Type = packetType });
+            
+            var stat = new MessageStatInfo() {
+                Size = size,
+                Time = UBHelper.Core.Uptime
+            };
+            if (wasSent) {
+                MessageStats[key].LastMinuteSentStats.Add(stat);
+                MessageStats[key].Last5MinuteSentStats.Add(stat);
+                MessageStats[key].LastHourSentStats.Add(stat);
+            }
+            else {
+                MessageStats[key].LastMinuteRecvStats.Add(stat);
+                MessageStats[key].Last5MinuteRecvStats.Add(stat);
+                MessageStats[key].LastHourRecvStats.Add(stat);
+            }
+        }
+        #endregion Network Stats Hud
+
         public void RunOnGameThread(Action action) {
             GameThreadActionQueue.Enqueue(action);
         }
 
         private void Core_RenderFrame(object sender, EventArgs e) {
             try {
+                if (ShowNetworkStats && UBHelper.Core.Uptime - lastStatsCleanup >= 1) {
+                    var now = UBHelper.Core.Uptime;
+                    var keys = MessageStats.Keys.ToArray();
+                    foreach (var k in keys) {
+                        var v = MessageStats[k];
+                        while (v.LastMinuteRecvStats.Count > 0 && now - v.LastMinuteRecvStats[0].Time > 60)
+                            v.LastMinuteRecvStats.RemoveAt(0);
+                        while (v.Last5MinuteRecvStats.Count > 0 && now - v.Last5MinuteRecvStats[0].Time > 60 * 5)
+                            v.Last5MinuteRecvStats.RemoveAt(0);
+                        while (v.LastHourRecvStats.Count > 0 && now - v.LastHourRecvStats[0].Time > 60 * 60)
+                            v.LastHourRecvStats.RemoveAt(0);
+                        while (v.LastMinuteSentStats.Count > 0 && now - v.LastMinuteSentStats[0].Time > 60)
+                            v.LastMinuteSentStats.RemoveAt(0);
+                        while (v.Last5MinuteSentStats.Count > 0 && now - v.Last5MinuteSentStats[0].Time > 60 * 5)
+                            v.Last5MinuteSentStats.RemoveAt(0);
+                        while (v.LastHourSentStats.Count > 0 && now - v.LastHourSentStats[0].Time > 60 * 60)
+                            v.LastHourSentStats.RemoveAt(0);
+                    }
+
+                    lastStatsCleanup = UBHelper.Core.Uptime;
+                    statsView.view.Title = $"UB Networking Stats: IsServer:{IsServer}";
+                }
                 //if (UBHelper.Core.Uptime - lastSpam > 5) {
                     //if (connection != null)
                     //    connection.SendObject("Message", $"Ping from {UB.Core.CharacterFilter.Name} ({lastSpam})");
@@ -348,6 +451,7 @@ namespace UtilityBelt.Tools {
         protected override void Dispose(bool disposing) {
             base.Dispose(disposing);
 
+            statsView?.Dispose();
             UB.Core.RenderFrame -= Core_RenderFrame;
 
             if (BackgroundWorker != null) {
@@ -358,6 +462,7 @@ namespace UtilityBelt.Tools {
             if (IsServer) {
                 StopServer();
             }
+
             NetworkComms.Shutdown();
         }
     }
