@@ -16,11 +16,15 @@ namespace UtilityBelt.Lib.Networking.Messages {
         [ProtoMember(3)]
         public int ClientIndex { get; set; }
 
+        [ProtoMember(4)]
+        public List<string> Tags { get; set; }
+
         public CommandBroadcastMessage() { }
 
-        public CommandBroadcastMessage(string command, int delayMsBetweenClients=0) {
+        public CommandBroadcastMessage(string command, int delayMsBetweenClients=0, List<string> tags=null) {
             Command = command;
             DelayMsBetweenClients = delayMsBetweenClients;
+            Tags = tags;
         }
     }
 }

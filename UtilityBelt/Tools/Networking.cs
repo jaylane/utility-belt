@@ -15,9 +15,12 @@ using NetworkCommsDotNet.DPSBase;
 using System.Text.RegularExpressions;
 using System.Threading;
 using UtilityBelt.Views;
+using System.Collections.ObjectModel;
 
 namespace UtilityBelt.Tools {
     [Name("Networking")]
+    [Summary("Provides client communication via a local tcp server.")]
+    [FullDescription(@"Allows clients to communicate with each other via a local tcp server.  Clients can  have tags added to them using the setting `Networking.Tags`.  Tags can be used in combination with the `/ub bct` command to broadcast a command to all characters of a specific tag.  See below for examples.")]
     public class Networking : ToolBase {
         private ConnectionInfo connectionInfo;
 
@@ -31,12 +34,15 @@ namespace UtilityBelt.Tools {
         private double lastConnectionAttempt;
         private double connectionRetryTimeout = 0;
 
-        private class ClientInfo {
+        public class ClientInfo {
             private static int __id = 0;
 
             public int Id { get; set; }
             public string Name { get; set; } = "Unknown";
             public bool IsAuthenticated { get; private set; }
+            public string WorldName { get; set; } = "Unknown";
+            public string CharacterName { get; set; } = "Unknown";
+            public List<string> Tags { get; set; } = new List<string>();
 
             public Connection Connection { get; private set; }
 
@@ -68,7 +74,8 @@ namespace UtilityBelt.Tools {
             internal List<MessageStatInfo> LastHourSentStats = new List<MessageStatInfo>();
         }
 
-        private ConcurrentDictionary<Connection, ClientInfo> ConnectedClients = new ConcurrentDictionary<Connection, ClientInfo>();
+        private ConcurrentDictionary<Connection, ClientInfo> Server_ConnectedClients = new ConcurrentDictionary<Connection, ClientInfo>();
+        public ObservableConcurrentDictionary<int, ClientInfo> Clients = new ObservableConcurrentDictionary<int, ClientInfo>();
         private NetworkStatsView statsView;
         internal Dictionary<string, MessageTypeStatInfo> MessageStats = new Dictionary<string, MessageTypeStatInfo>();
 
@@ -91,6 +98,9 @@ namespace UtilityBelt.Tools {
 
         [Summary("Main UB Window Y position for this character (top is 0)")]
         public readonly CharacterState<int> StatsWindowPositionY = new CharacterState<int>(150);
+
+        [Summary("Character identifier tags. You can use these with the /ub bct command to limit which characters are broadcast to.")]
+        public readonly CharacterState<ObservableCollection<string>> Tags = new CharacterState<ObservableCollection<string>>(new ObservableCollection<string>());
         #endregion Config
 
         #region Commands
@@ -116,6 +126,54 @@ namespace UtilityBelt.Tools {
             Logger.WriteToChat($"Broadcasting command to all clients: \"{command}\" with delay inbetween of {delay}ms");
 
             SendObject("CommandBroadcastMessage", new CommandBroadcastMessage(command, delay));
+        }
+        #endregion /ub bc <millisecondDelay> <command>
+        #region /ub bct <teamslist> <millisecondDelay> <command>
+        [Summary("Broadcasts a command to all clients with the specified comma-separated tags (no spaces!), with optional <millisecondDelay> inbetween each. Tags are managed with the Networking.Tags setting.")]
+        [Usage("/ub bct <teamslist> [millisecondDelay] <command>")]
+        [Example("/ub bct one,two 5000 /say hello", "Runs \"/say hello\" on every client tagged `one` or `two`, with a 5000ms delay between each")]
+        [Example("/ub bct three /say hello", "Runs \"/say hello\" on every client tagged `three`, with no delay")]
+        [CommandPattern("bct", @"^(?<tags>[a-z0-9,]+) (?<delay>\d*) ?(?<command>.*)$")]
+        public void DoTaggedBroadcast(string _, Match args) {
+            var command = args.Groups["command"].Value;
+            var tags = args.Groups["tags"].Value.Split(',');
+            int delay = 0;
+
+            if (!string.IsNullOrEmpty(args.Groups["delay"].Value) && !int.TryParse(args.Groups["delay"].Value, out delay)) {
+                Logger.Error($"Unable to broadcast command, invalid delay: {args.Groups["delay"].Value}");
+                return;
+            }
+            if (delay < 0) {
+                Logger.Error($"Delay must be greater than zero: {delay}");
+                return;
+            }
+            if (tags.Count() == 0) {
+                Logger.Error($"You must specify at least one tag to send the command to.");
+                return;
+            }
+
+            Logger.WriteToChat($"Broadcasting command to clients with tags ({String.Join(",", tags)}): \"{command}\" with delay inbetween of {delay}ms");
+
+            SendObject("CommandBroadcastMessage", new CommandBroadcastMessage(command, delay, tags.ToList()));
+        }
+        #endregion /ub bc <millisecondDelay> <command>
+        #region /ub netclients
+        [Summary("Broadcasts a command to all open clients, with optional <millisecondDelay> inbetween each")]
+        [Usage("/ub netclients <tag>")]
+        [Example("/ub netclients", "Show all clients on the ub network")]
+        [Example("/ub netclients one", "Show all clients on the ub network with tag `one`")]
+        [CommandPattern("netclients", @"^(?<tags>[a-z,]*)$")]
+        public void DoNetClients(string _, Match args) {
+            bool showedClients = false;
+            var tags = String.IsNullOrEmpty(args.Groups["tags"].Value) ? new string[] { } : args.Groups["tags"].Value.Split(',');
+            foreach (var kv in Clients) {
+                if (tags == null || tags.Count() == 0 || (tags.Count() > 0 && ClientHasTags(kv.Value, tags.ToList()))) {
+                    Logger.WriteToChat($"Client: {kv.Value.CharacterName}//{kv.Value.WorldName}: Tags({String.Join(",", kv.Value.Tags.ToArray())})", Logger.LogMessageType.Generic, true, false, false);
+                    showedClients = true;
+                }
+            }
+            if (!showedClients)
+                Logger.WriteToChat($"No net clients to show");
         }
         #endregion /ub bc <millisecondDelay> <command>
         #endregion Commands
@@ -159,8 +217,10 @@ namespace UtilityBelt.Tools {
                 connection.AppendIncomingPacketHandler<PlayerUpdateMessage>("PlayerUpdateMessage", Client_PlayerUpdateMessage);
                 connection.AppendIncomingPacketHandler<CastAttemptMessage>("CastAttemptMessage", Client_CastAttemptMessage);
                 connection.AppendIncomingPacketHandler<CastSuccessMessage>("CastSuccessMessage", Client_CastSuccessMessage);
+                connection.AppendIncomingPacketHandler<ClientInfoMessage>("ClientInfoMessage", Client_ClientInfoMessage);
                 connection.AppendIncomingPacketHandler<CommandBroadcastMessage>("CommandBroadcastMessage", Client_CommandBroadcastMessage);
-                connection.SendObject("LoginMessage", new LoginMessage(UB.Core.CharacterFilter.Name));
+                connection.SendObject("LoginMessage", new LoginMessage(UBHelper.Core.CharacterSet[UBHelper.Core.LoginCharacterID], UBHelper.Core.WorldName, Tags.Value.ToList()));
+                Tags.Changed += Tags_Changed;
             }
             catch (ConnectionSetupException ex) {
                 if (connection != null) connection.Dispose();
@@ -171,6 +231,11 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) {
                 RunOnGameThread(() => Logger.LogException(ex));
             }
+        }
+
+        private void Tags_Changed(object sender, SettingChangedEventArgs e) {
+            // client info id gets filled in on the server
+            connection.SendObject("ClientInfoMessage", new ClientInfoMessage(0, UBHelper.Core.CharacterSet[UBHelper.Core.LoginCharacterID], UBHelper.Core.WorldName, Tags.Value.ToList(), false));
         }
 
         private void StartServer() {
@@ -185,6 +250,7 @@ namespace UtilityBelt.Tools {
                 NetworkComms.AppendGlobalIncomingPacketHandler<CastAttemptMessage>("CastAttemptMessage", Server_HandleCastAttemptMessage);
                 NetworkComms.AppendGlobalIncomingPacketHandler<CastSuccessMessage>("CastSuccessMessage", Server_HandleCastSuccessMessage);
                 NetworkComms.AppendGlobalIncomingPacketHandler<CommandBroadcastMessage>("CommandBroadcastMessage", Server_CommandBroadcastMessage);
+                NetworkComms.AppendGlobalIncomingPacketHandler<ClientInfoMessage>("ClientInfoMessage", Server_ClientInfoMessage);
                 IsServer = true;
             }
             catch (CommsSetupShutdownException) {
@@ -205,6 +271,7 @@ namespace UtilityBelt.Tools {
             NetworkComms.RemoveGlobalIncomingPacketHandler<CastAttemptMessage>("CastAttemptMessage", Server_HandleCastAttemptMessage);
             NetworkComms.RemoveGlobalIncomingPacketHandler<CastSuccessMessage>("CastSuccessMessage", Server_HandleCastSuccessMessage);
             NetworkComms.RemoveGlobalIncomingPacketHandler<CommandBroadcastMessage>("CommandBroadcastMessage", Server_CommandBroadcastMessage);
+            NetworkComms.RemoveGlobalIncomingPacketHandler<ClientInfoMessage>("ClientInfoMessage", Server_ClientInfoMessage);
             IsServer = false;
         }
 
@@ -237,12 +304,36 @@ namespace UtilityBelt.Tools {
             });
         }
 
+        private void Client_ClientInfoMessage(PacketHeader packetHeader, Connection connection, ClientInfoMessage incomingObject) {
+            RunOnGameThread(() => {
+                if (incomingObject.Disconnected) {
+                    Clients.Remove(incomingObject.Id);
+                    return;
+                }
+                if (!Clients.ContainsKey(incomingObject.Id)) {
+                    var client = new ClientInfo(null) {
+                        Id = incomingObject.Id
+                    };
+                    client.Authenticate($"Client_{incomingObject.Id}");
+                    Clients.Add(incomingObject.Id, client);
+                }
+                Clients[incomingObject.Id].CharacterName = incomingObject.CharacterName;
+                Clients[incomingObject.Id].WorldName = incomingObject.WorldName;
+                Clients[incomingObject.Id].Tags = incomingObject.Tags;
+            });
+        }
+
         private void Client_Shutdown(Connection connection) {
+            var keys = Clients.Keys.ToArray();
+            foreach (var k in keys)
+                Clients.Remove(k);
             if (this.connection != null) {
+                Tags.Changed -= Tags_Changed;
                 this.connection.RemoveIncomingPacketHandler("PlayerUpdateMessage");
                 this.connection.RemoveIncomingPacketHandler("CastAttemptMessage");
                 this.connection.RemoveIncomingPacketHandler("CastSuccessMessage");
                 this.connection.RemoveIncomingPacketHandler("CommandBroadcastMessage");
+                this.connection.RemoveIncomingPacketHandler("ClientInfoMessage");
                 this.connection.RemoveShutdownHandler(Client_Shutdown);
                 this.connection.Dispose();
                 this.connection = null;
@@ -252,17 +343,28 @@ namespace UtilityBelt.Tools {
 
         #region Server Events
         private bool GetClient(Connection connection, out ClientInfo client) {
-            if (!ConnectedClients.ContainsKey(connection)) {
+            if (!Server_ConnectedClients.ContainsKey(connection)) {
                 client = null;
                 return false;
             }
 
-            client = ConnectedClients[connection];
+            client = Server_ConnectedClients[connection];
             return true;
         }
 
+        private bool ClientHasTags(ClientInfo conClient, List<string> tags) {
+            if (conClient.Tags == null || conClient.Tags.Count == 0)
+                return false;
+
+            foreach (var tag in tags) {
+                if (conClient.Tags.Contains(tag))
+                    return true;
+            }
+            return false;
+        }
+
         private void Broadcast(string type, object message, ClientInfo sender = null) {
-            foreach (var con in ConnectedClients.Keys) {
+            foreach (var con in Server_ConnectedClients.Keys) {
                 if (!GetClient(con, out ClientInfo conClient) || !conClient.IsAuthenticated || (sender != null && conClient.Id == sender.Id))
                     continue;
 
@@ -284,15 +386,20 @@ namespace UtilityBelt.Tools {
                     return;
 
                 var client = new ClientInfo(connection);
-                ConnectedClients.TryAdd(connection, client);
+                Server_ConnectedClients.TryAdd(connection, client);
             }
             catch (Exception ex) { RunOnGameThread(() => { Logger.LogException(ex); }); }
         }
 
         private void ConnectionClosedHandler(Connection connection) {
             try {
-                if (ConnectedClients.TryRemove(connection, out ClientInfo client) && client != null) {
-                    //RunOnGameThread(() => { Logger.WriteToChat($"Client disconnected: {client.Id}({client.Name})"); });
+                if (Server_ConnectedClients.TryRemove(connection, out ClientInfo client) && client != null) {
+                    RunOnGameThread(() => { Logger.WriteToChat($"Client disconnected: {client.Id}({client.Name})"); });
+                    var clientUpdateMessage = new ClientInfoMessage() {
+                        Id = client.Id,
+                        Disconnected = true
+                    };
+                    Broadcast("ClientInfoMessage", clientUpdateMessage);
                 }
             }
             catch (Exception ex) { RunOnGameThread(() => { Logger.LogException(ex); }); }
@@ -304,6 +411,28 @@ namespace UtilityBelt.Tools {
                     return;
                 if (ShowNetworkStats) AddMessageStat(packetHeader, false, true);
                 client.Authenticate(incomingObject.Name);
+                client.CharacterName = incomingObject.Name;
+                client.WorldName = incomingObject.WorldName;
+                client.Tags = incomingObject.Tags;
+                var clientUpdateMessage = new ClientInfoMessage() {
+                    Id = client.Id,
+                    CharacterName = incomingObject.Name,
+                    WorldName = incomingObject.WorldName,
+                    Tags = incomingObject.Tags
+                };
+                BroadCastClientMessage(connection, "ClientInfoMessage", clientUpdateMessage);
+                var keys = Server_ConnectedClients.Keys.ToArray();
+                foreach (var k in keys) {
+                    if (k == connection)
+                        continue;
+                    var existingClientInfo = new ClientInfoMessage() {
+                        Id = Server_ConnectedClients[k].Id,
+                        CharacterName = Server_ConnectedClients[k].CharacterName,
+                        WorldName = Server_ConnectedClients[k].WorldName,
+                        Tags = Server_ConnectedClients[k].Tags
+                    };
+                    connection.SendObject("ClientInfoMessage", existingClientInfo);
+                }
             }
             catch (Exception ex) { RunOnGameThread(() => { Logger.LogException(ex); }); }
         }
@@ -324,18 +453,35 @@ namespace UtilityBelt.Tools {
         }
 
         private void Server_CommandBroadcastMessage(PacketHeader packetHeader, Connection connection, CommandBroadcastMessage incomingObject) {
-            if (!GetClient(connection, out ClientInfo client) || !client.IsAuthenticated)
-                return;
+            try {
+                if (!GetClient(connection, out ClientInfo client) || !client.IsAuthenticated)
+                    return;
 
-            if (ShowNetworkStats) AddMessageStat(packetHeader, false, true);
-            var index = 0;
-            foreach (var con in ConnectedClients.Keys) {
-                if (!GetClient(con, out ClientInfo conClient) || !conClient.IsAuthenticated)
-                    continue;
-                incomingObject.ClientIndex = index++;
-                if (ShowNetworkStats) AddMessageStat("CommandBroadcastMessage", 0, true, true);
-                con.SendObject("CommandBroadcastMessage", incomingObject);
+                if (ShowNetworkStats) AddMessageStat(packetHeader, false, true);
+                var index = 0;
+                var keys = Server_ConnectedClients.Keys.ToArray();
+                foreach (var con in keys) {
+                    if (!GetClient(con, out ClientInfo conClient) || !conClient.IsAuthenticated)
+                        continue;
+                    if (incomingObject.Tags != null && incomingObject.Tags.Count > 0 && !ClientHasTags(conClient, incomingObject.Tags))
+                        continue;
+                    if (ShowNetworkStats) AddMessageStat("CommandBroadcastMessage", 0, true, true);
+                    incomingObject.ClientIndex = index++;
+                    con.SendObject("CommandBroadcastMessage", incomingObject);
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void Server_ClientInfoMessage(PacketHeader packetHeader, Connection connection, ClientInfoMessage incomingObject) {
+            if (!GetClient(connection, out ClientInfo conClient) || !conClient.IsAuthenticated)
+                return;
+            if (ShowNetworkStats) AddMessageStat(packetHeader, false, true);
+            incomingObject.Id = conClient.Id;
+            conClient.CharacterName = incomingObject.CharacterName;
+            conClient.WorldName = incomingObject.WorldName;
+            conClient.Tags = incomingObject.Tags;
+            BroadCastClientMessage(connection, "ClientInfoMessage", incomingObject);
         }
         #endregion Server Events
 

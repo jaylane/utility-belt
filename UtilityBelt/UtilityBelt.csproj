@@ -180,6 +180,7 @@
     <Compile Include="Lib\Models\WeenieSpawn.cs" />
     <Compile Include="Lib\Networking\Messages\CastAttemptMessage.cs" />
     <Compile Include="Lib\Networking\Messages\CastSuccessMessage.cs" />
+    <Compile Include="Lib\Networking\Messages\ClientInfoMessage.cs" />
     <Compile Include="Lib\Networking\Messages\CommandBroadcastMessage.cs" />
     <Compile Include="Lib\Networking\Messages\LoginMessage.cs" />
     <Compile Include="Lib\Networking\Messages\PlayerUpdateMessage.cs" />

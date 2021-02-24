@@ -221,18 +221,27 @@ namespace UtilityBelt.Tools {
                         switch (parts[0].ToLower()) {
                             case "add":
                                 if (parts.Length < 2 || string.IsNullOrEmpty(parts[1].Trim())) {
-                                    Logger.Debug("Missing item to add");
+                                    Logger.Debug("Missing items to add");
                                     return;
                                 }
-                                list.Add(parts[1]);
+                                var subpartsa = parts[1].Split(new[] { ',' });
+                                foreach (var spa in subpartsa) {
+                                    //Logger.WriteToChat($"Add item: {spa}");
+                                    if (!list.Contains(spa))
+                                        list.Add(spa);
+                                }
                                 break;
 
                             case "remove":
                                 if (parts.Length < 2 || string.IsNullOrEmpty(parts[1].Trim())) {
-                                    Logger.Debug("Missing item to remove");
+                                    Logger.Debug("Missing items to remove");
                                     return;
                                 }
-                                list.Remove(parts[1]);
+                                var subparts = parts[1].Split(new[] { ',' });
+                                foreach (var sp in subparts) {
+                                    //Logger.WriteToChat($"Remove item: {sp}");
+                                    list.Remove(sp);
+                                }
                                 break;
 
                             case "clear":
