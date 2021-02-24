@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -105,7 +105,7 @@ namespace UtilityBelt.Tools {
 
         #region Commands
         #region /ub bc <millisecondDelay> <command>
-        [Summary("Broadcasts a command to all open clients, with optional <millisecondDelay> inbetween each")]
+        [Summary("Broadcasts a command to all open clients, with optional `millisecondDelay` inbetween each")]
         [Usage("/ub bc [millisecondDelay] <command>")]
         [Example("/ub bc 5000 /say hello", "Runs \"/say hello\" on every client, with a 5000ms delay between each")]
         [Example("/ub bc /say hello", "Runs \"/say hello\" on every client, with no delay")]
@@ -129,7 +129,7 @@ namespace UtilityBelt.Tools {
         }
         #endregion /ub bc <millisecondDelay> <command>
         #region /ub bct <teamslist> <millisecondDelay> <command>
-        [Summary("Broadcasts a command to all clients with the specified comma-separated tags (no spaces!), with optional <millisecondDelay> inbetween each. Tags are managed with the Networking.Tags setting.")]
+        [Summary("Broadcasts a command to all clients with the specified comma-separated tags (no spaces!), with optional `millisecondDelay` inbetween each. Tags are managed with the Networking.Tags setting.")]
         [Usage("/ub bct <teamslist> [millisecondDelay] <command>")]
         [Example("/ub bct one,two 5000 /say hello", "Runs \"/say hello\" on every client tagged `one` or `two`, with a 5000ms delay between each")]
         [Example("/ub bct three /say hello", "Runs \"/say hello\" on every client tagged `three`, with no delay")]
@@ -158,7 +158,7 @@ namespace UtilityBelt.Tools {
         }
         #endregion /ub bc <millisecondDelay> <command>
         #region /ub netclients
-        [Summary("Broadcasts a command to all open clients, with optional <millisecondDelay> inbetween each")]
+        [Summary("Lists all available clients on the network, optionally limited to the specified tag.")]
         [Usage("/ub netclients <tag>")]
         [Example("/ub netclients", "Show all clients on the ub network")]
         [Example("/ub netclients one", "Show all clients on the ub network with tag `one`")]
