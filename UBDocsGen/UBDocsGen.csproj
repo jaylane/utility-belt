@@ -52,7 +52,7 @@
     </Reference>
     <Reference Include="NetworkCommsDotNet, Version=3.0.0.0, Culture=neutral, PublicKeyToken=f58108eb6480f6ec, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\UBLoader\Resources\NetworkCommsDotNet.dll</HintPath>
+      <HintPath>..\UBLoader\Deps\NetworkCommsDotNet.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\UBLoader\Deps\Newtonsoft.Json.dll</HintPath>
