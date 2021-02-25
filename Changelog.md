@@ -8,6 +8,7 @@
 - Add warning when using ub tools that require loot profiles, and vit has a profile loaded.
 - Add ability to tag characters, and broadcast commands to specific tags with `/ub bct` command
 - Fix getobjectinternaltype[] to return 0 for invalid world objects
+- Add ChatFilter settings with CLI toggles
 
 ## 0.2.3 (2021-01-30) [UtilityBeltInstaller-0.2.3.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/fee6e8ec9b64ef0aa33535e98fe3ed3d/UtilityBeltInstaller-0.2.3.exe)
 - Fix `cleargvar[]` expression wasn't actually clearing vars
