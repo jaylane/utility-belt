@@ -8,6 +8,7 @@
         <control progid="DecalControls.PushButton" name="AutoTradeEnable" left="8" top="40" width="88" height="24" text="  Auto Trade"/>
         <control progid="DecalControls.PushButton" name="AutoTradeTestMode" left="96" top="40" width="22" height="24" text="T"/>
         <control progid="DecalControls.PushButton" name="ArrowEnabled" left="8" top="72" width="110" height="24" text="Arrow"/>
+        <control progid="DecalControls.PushButton" name="ChatFilterEnabled" left="8" top="104" width="110" height="24" text="Chat Filter"/>
         <control progid="DecalControls.PushButton" name="ExportPCap" left="8" top="184" width="110" height="24" text="Export PCAP"/>
 
         <control progid="DecalControls.PushButton" name="DungeonMapsEnabled" left="144" top="8" width="110" height="24" text=" Dungeon Maps"/>

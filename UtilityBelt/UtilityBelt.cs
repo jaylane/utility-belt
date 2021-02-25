@@ -146,6 +146,8 @@ namespace UtilityBelt {
         public AutoTinker AutoTinker;
         public AutoTrade AutoTrade;
         public AutoVendor AutoVendor;
+        public ChatFilter ChatFilter;
+        public ChatHandler ChatHandler;
         public ChatLogger ChatLogger;
         public ChatNameClickHandler ChatNameClickHandler;
         public Client Client;
@@ -165,6 +167,7 @@ namespace UtilityBelt {
         public PlayerOptions PlayerOptions;
         public Professors Professors;
         public QuestTracker QuestTracker;
+        //public Tags Tags { get; private set; }
         public VisualNav VisualNav;
         public VTankControl VTank;
         public VTankFellowHeals VTankFellowHeals;

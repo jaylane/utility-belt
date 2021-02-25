@@ -123,6 +123,9 @@
       <HintPath>C:\Games\VirindiPlugins\VirindiHotkeySystem\VirindiHotkeySystem.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="VirindiHUDs">
+      <HintPath>C:\Games\VirindiPlugins\VirindiHUDs\VirindiHUDs.dll</HintPath>
+    </Reference>
     <Reference Include="VirindiViewService">
       <HintPath>C:\Games\VirindiPlugins\VirindiViewService\VirindiViewService.dll</HintPath>
       <Private>False</Private>
@@ -139,6 +142,7 @@
     <Compile Include="Lib\Actions\ChatExpressionAction.cs" />
     <Compile Include="Lib\Actions\ExpressionAction.cs" />
     <Compile Include="Lib\Attributes.cs" />
+    <Compile Include="Lib\Chat\ChatType.cs" />
     <Compile Include="Lib\Constants\WeenieType.cs" />
     <Compile Include="Lib\Coordinate.cs" />
     <Compile Include="Lib\Dungeon\Dungeon.cs" />
@@ -178,6 +182,7 @@
     <Compile Include="Lib\Models\Weenie.cs" />
     <Compile Include="Lib\Models\WeenieAttribute.cs" />
     <Compile Include="Lib\Models\WeenieSpawn.cs" />
+    <Compile Include="Lib\Settings\Chat\AttackOnTargetOption.cs" />
     <Compile Include="Lib\Networking\Messages\CastAttemptMessage.cs" />
     <Compile Include="Lib\Networking\Messages\CastSuccessMessage.cs" />
     <Compile Include="Lib\Networking\Messages\ClientInfoMessage.cs" />
@@ -185,6 +190,12 @@
     <Compile Include="Lib\Networking\Messages\LoginMessage.cs" />
     <Compile Include="Lib\Networking\Messages\PlayerUpdateMessage.cs" />
     <Compile Include="Lib\PerfMonitor.cs" />
+    <Compile Include="Lib\Settings\Chat\AttackOnYouOption.cs" />
+    <Compile Include="Lib\Settings\Chat\MessageOption.cs" />
+    <Compile Include="Lib\Settings\Chat\MiscOption.cs" />
+    <Compile Include="Lib\Settings\Chat\OthersCastOption.cs" />
+    <Compile Include="Lib\Settings\Chat\RechargeOptions.cs" />
+    <Compile Include="Lib\Settings\Chat\YouCastOption.cs" />
     <Compile Include="Lib\Settings\NametagDisplay.cs" />
     <Compile Include="Lib\Settings\PluginMessageDisplay.cs" />
     <Compile Include="Lib\Spells.cs" />
@@ -200,6 +211,8 @@
     <Compile Include="Lib\UBHudManager.cs" />
     <Compile Include="Lib\VCS_Connector.cs" />
     <Compile Include="Lib\VHS_Connector.cs" />
+    <Compile Include="Tools\ChatFilter.cs" />
+    <Compile Include="Tools\ChatHandler.cs" />
     <Compile Include="Tools\Aliases.cs" />
     <Compile Include="Tools\Arrow.cs" />
     <Compile Include="Tools\GameEvents.cs" />

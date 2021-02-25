@@ -55,7 +55,8 @@ namespace UtilityBelt.Views {
                     { "ArrowEnabled", "Arrow.Enabled" },
                     { "DerethTimeEnabled", "DerethTime.Enabled" },
                     { "LandscapeMapsEnabled", "LandscapeMaps.Enabled" },
-                    { "Debug", "Plugin.Debug" }
+                    { "Debug", "Plugin.Debug" },
+                    { "ChatFilterEnabled", "ChatFilter.Enabled" },
                 };
 
         public MainView(UtilityBeltPlugin ub) : base(ub) {
