@@ -9,7 +9,14 @@ namespace UtilityBelt.Lib.Expressions {
         public int Id { get; set; }
 
         [JsonIgnore]
-        public Decal.Adapter.Wrappers.WorldObject Wo { get => UtilityBeltPlugin.Instance.Core.WorldFilter[Id]; }
+        public Decal.Adapter.Wrappers.WorldObject Wo {
+            get {
+                if (!UtilityBeltPlugin.Instance.Core.Actions.IsValidObject(Id)) {
+                    return null;
+                }
+                return UtilityBeltPlugin.Instance.Core.WorldFilter[Id];
+            }
+        }
 
         public ExpressionWorldObject() {
             IsSerializable = true;

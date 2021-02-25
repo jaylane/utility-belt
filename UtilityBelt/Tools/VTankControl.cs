@@ -1323,6 +1323,8 @@ namespace UtilityBelt.Tools {
                 return 1;
             if (tocheck.GetType() == typeof(string))
                 return 3;
+            if (tocheck.GetType() == typeof(ExpressionWorldObject) && ((ExpressionWorldObject)tocheck).Wo == null)
+                return 0;
 
             return 7;
         }
