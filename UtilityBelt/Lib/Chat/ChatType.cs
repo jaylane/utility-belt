@@ -28,7 +28,7 @@ namespace UtilityBelt.Lib.Chat {
         DamageSpellOnYou,
         YouCastDamageSpell,
         OtherCastsDamageSpell,
-        Death,
+        DeathMessages,
         DebuffOnTarget,
         DebuffOnYou,
         DirtyFighting,

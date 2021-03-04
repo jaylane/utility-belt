@@ -371,7 +371,7 @@ namespace UtilityBelt.Tools {
                 chatType = ChatType.PeriodicHealing;
             }
             else if (deathMessages.Count != 0 && deathMessages.Contains(message.Trim())) {
-                chatType = ChatType.Death;
+                chatType = ChatType.DeathMessages;
             }
             else if (!string.IsNullOrEmpty(npcText) && e.Text.Contains(npcText)) {
                 npcText = "";
