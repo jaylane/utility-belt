@@ -8,6 +8,7 @@ using UtilityBelt.Views;
 using VirindiViewService;
 using VirindiViewService.Controls;
 using UBLoader.Lib.Settings;
+using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Lib.Settings {
     public class SettingsForm : IDisposable {
@@ -89,6 +90,7 @@ namespace UtilityBelt.Lib.Settings {
         }
 
         private List<HudControl> DrawSettingsForm(HudFixedLayout settingsForm, ISetting setting) {
+            //todo: fix this
             if (Type == typeof(bool)) {
                 return DrawBooleanSettingsForm(settingsForm);
             }
@@ -114,14 +116,55 @@ namespace UtilityBelt.Lib.Settings {
             else if (Type == typeof(KeyValuePair<string, string>)) {
                 return DrawKeyValueSettingsForm(settingsForm);
             }
+            else if (Type == typeof(TrackedItem)) {
+                return DrawTrackedItemSettingsForm(settingsForm);
+            }
             else if (Type == typeof(System.Collections.ObjectModel.ObservableCollection<string>)) {
-                new ListEditor(UtilityBeltPlugin.Instance.MainView, setting);
+                new ListEditor<string>(UtilityBeltPlugin.Instance.MainView, setting);
+            }
+            else if (Type == typeof(System.Collections.ObjectModel.ObservableCollection<TrackedItem>)) {
+                new ListEditor<TrackedItem>(UtilityBeltPlugin.Instance.MainView, setting);
             }
             else if (Type == typeof(Hellosam.Net.Collections.ObservableDictionary<string, string>)) {
                 new DictionaryEditor(UtilityBeltPlugin.Instance.MainView, setting);
             }
 
             return new List<HudControl>();
+        }
+
+        private List<HudControl> DrawTrackedItemSettingsForm(HudFixedLayout settingsForm) {
+            var childViews = new List<HudControl>();
+            var edit = new HudTextBox();
+            edit.Text = Value.ToString();
+            edit.Change += (s, e) => {
+                Value = edit.Text;
+                Changed?.Invoke(this, null);
+            };
+
+            Changed += (s, e) => {
+                edit.Text = Value.ToString();
+            };
+
+            var button = new HudButton();
+            button.Text = "Selected";
+            button.Hit += (s, e) => {
+                var selected = UtilityBeltPlugin.Instance.Core.Actions.CurrentSelection;
+                if (!UtilityBeltPlugin.Instance.Core.Actions.IsValidObject(selected)) {
+                    Logger.Error($"Nothing selected!");
+                    return;
+                }
+                var item = new UBHelper.Weenie(selected);
+                ((TrackedItem)Value).Icon = item.Icon;
+                ((TrackedItem)Value).Name = item.GetName(UBHelper.NameType.NAME_SINGULAR);
+                edit.Text = item.GetName(UBHelper.NameType.NAME_SINGULAR);
+            };
+
+            childViews.Add(edit);
+            childViews.Add(button);
+            settingsForm.AddControl(edit, new Rectangle(0, 0, 220, 20));
+            settingsForm.AddControl(button, new Rectangle(224, 0, 120, 20));
+
+            return childViews;
         }
 
         private List<HudControl> DrawEnumSettingsForm(HudFixedLayout settingsForm) {

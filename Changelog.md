@@ -9,6 +9,8 @@
 - Add ability to tag characters, and broadcast commands to specific tags with `/ub bct` command
 - Fix getobjectinternaltype[] to return 0 for invalid world objects
 - Add ChatFilter settings with CLI toggles
+- Add NetworkUI tool for visually showing/controlling network connected clients.
+- Add `/ub follow` command now enabled vtank navigation as well (since it uses it internally)
 
 ## 0.2.3 (2021-01-30) [UtilityBeltInstaller-0.2.3.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/fee6e8ec9b64ef0aa33535e98fe3ed3d/UtilityBeltInstaller-0.2.3.exe)
 - Fix `cleargvar[]` expression wasn't actually clearing vars

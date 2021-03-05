@@ -84,20 +84,8 @@
     <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <Private>False</Private>
     </Reference>
-    <Reference Include="NetworkCommsDotNet, Version=3.0.0.0, Culture=neutral, PublicKeyToken=f58108eb6480f6ec, processorArchitecture=MSIL">
-      <HintPath>..\packages\NetworkCommsDotNet.3.0.3\lib\NetworkCommsDotNet.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\UBLoader\Deps\Newtonsoft.Json.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="protobuf-net">
-      <HintPath>..\UBLoader\Deps\protobuf-net.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="ProtobufSerializer">
-      <HintPath>..\UBLoader\Deps\ProtobufSerializer.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -125,6 +113,7 @@
     </Reference>
     <Reference Include="VirindiHUDs">
       <HintPath>C:\Games\VirindiPlugins\VirindiHUDs\VirindiHUDs.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="VirindiViewService">
       <HintPath>C:\Games\VirindiPlugins\VirindiViewService\VirindiViewService.dll</HintPath>
@@ -182,13 +171,15 @@
     <Compile Include="Lib\Models\Weenie.cs" />
     <Compile Include="Lib\Models\WeenieAttribute.cs" />
     <Compile Include="Lib\Models\WeenieSpawn.cs" />
+    <Compile Include="Lib\Networking\ClientInfo.cs" />
+    <Compile Include="Lib\Networking\HotReloadTypeBinder.cs" />
+    <Compile Include="Lib\Networking\Messages\CharacterPositionMessage.cs" />
+    <Compile Include="Lib\Networking\Messages\TrackedItemUpdateMessage.cs" />
+    <Compile Include="Lib\Networking\TrackedItemStatus.cs" />
     <Compile Include="Lib\Settings\Chat\AttackOnTargetOption.cs" />
     <Compile Include="Lib\Networking\Messages\CastAttemptMessage.cs" />
     <Compile Include="Lib\Networking\Messages\CastSuccessMessage.cs" />
-    <Compile Include="Lib\Networking\Messages\ClientInfoMessage.cs" />
     <Compile Include="Lib\Networking\Messages\CommandBroadcastMessage.cs" />
-    <Compile Include="Lib\Networking\Messages\LoginMessage.cs" />
-    <Compile Include="Lib\Networking\Messages\PlayerUpdateMessage.cs" />
     <Compile Include="Lib\PerfMonitor.cs" />
     <Compile Include="Lib\Settings\Chat\AttackOnYouOption.cs" />
     <Compile Include="Lib\Settings\Chat\MessageOption.cs" />
@@ -198,6 +189,7 @@
     <Compile Include="Lib\Settings\Chat\YouCastOption.cs" />
     <Compile Include="Lib\Settings\NametagDisplay.cs" />
     <Compile Include="Lib\Settings\PluginMessageDisplay.cs" />
+    <Compile Include="Lib\Settings\TrackedItem.cs" />
     <Compile Include="Lib\Spells.cs" />
     <Compile Include="Lib\TextureCache.cs" />
     <Compile Include="Lib\Dungeon\TrackedObject.cs" />
@@ -217,6 +209,7 @@
     <Compile Include="Tools\Arrow.cs" />
     <Compile Include="Tools\GameEvents.cs" />
     <Compile Include="Tools\Networking.cs" />
+    <Compile Include="Tools\NetworkUI.cs" />
     <Compile Include="Tools\PlayerOptions.cs" />
     <Compile Include="Tools\Client.cs" />
     <Compile Include="Tools\DerethTime.cs" />
@@ -295,7 +288,7 @@
     <Compile Include="Views\DungeonMapsView.cs" />
     <Compile Include="Views\LongStringEditor.cs" />
     <Compile Include="Views\MainView.cs" />
-    <Compile Include="Views\NetworkStatsView.cs" />
+    <Compile Include="Views\NetworkClientsView.cs" />
     <Compile Include="Views\SettingsView.cs" />
     <Compile Include="Views\TextEditPopup.cs" />
   </ItemGroup>
@@ -1035,6 +1028,11 @@
       <Project>{bb14f564-6e92-4fd0-9394-120e517ea5ba}</Project>
       <Name>UBLoader</Name>
     </ProjectReference>
+    <ProjectReference Include="..\UBNetworking\UBNetworking.csproj">
+      <Project>{2829fc6e-2bec-4259-aa51-6cc180d3834b}</Project>
+      <Name>UBNetworking</Name>
+      <Private>False</Private>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\DictionaryEditor.xml">
@@ -1056,7 +1054,7 @@
     <EmbeddedResource Include="Views\LongStringEditor.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Views\NetworkStatsView.xml" />
+    <EmbeddedResource Include="Views\NetworkClientsView.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

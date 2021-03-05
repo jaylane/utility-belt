@@ -80,9 +80,6 @@ namespace UBLoader {
             System.Reflection.Assembly.Load((byte[])rm.GetObject("LiteDB"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("Newtonsoft_Json"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("Antlr4_Runtime"));
-            System.Reflection.Assembly.Load((byte[])rm.GetObject("protobuf_net"));
-            System.Reflection.Assembly.Load((byte[])rm.GetObject("ProtobufSerializer"));
-            System.Reflection.Assembly.Load((byte[])rm.GetObject("NetworkCommsDotNet"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("UBHelper"));
         }
 

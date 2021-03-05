@@ -1,19 +1,13 @@
-﻿using ProtoBuf;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace UtilityBelt.Lib.Networking.Messages {
-    [ProtoContract]
-    class LoginMessage {
-        [ProtoMember(1)]
+namespace UBNetworking.Messages {
+    [Serializable]
+    public class LoginMessage {
         public string Name { get; set; }
-
-        [ProtoMember(2)]
         public string WorldName { get; set; }
-
-        [ProtoMember(3)]
         public List<string> Tags { get; set; }
 
         public LoginMessage() { }

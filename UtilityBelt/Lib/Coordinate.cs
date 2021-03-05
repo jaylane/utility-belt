@@ -11,6 +11,16 @@ namespace UtilityBelt.Lib {
         public double EW { get; set; }
         public double Z { get; set; }
 
+        public static Coordinates Me {
+            get {
+                var me = UtilityBeltPlugin.Instance.Core.CharacterFilter.Id;
+                var pos = PhysicsObject.GetPosition(me);
+                var ew = Geometry.LandblockToEW((uint)PhysicsObject.GetLandcell(me), pos.X);
+                var ns = Geometry.LandblockToNS((uint)PhysicsObject.GetLandcell(me), pos.Y);
+                return new Coordinates(ew, ns, pos.Z);
+            }
+        }
+
         public uint LandBlock { get => Geometry.GetLandblockFromCoordinates(EW, NS); }
 
         public static Regex CoordinateRegex = new Regex(@"(?<NSval>\d+.?\d*)\s*(?<NSchr>[ns]),?\s*(?<EWval>\d+.?\d*)(?<EWchr>[ew])(,?\s*(?<Zval>\-?\d+.?\d*)z)?", RegexOptions.IgnoreCase | RegexOptions.Compiled);

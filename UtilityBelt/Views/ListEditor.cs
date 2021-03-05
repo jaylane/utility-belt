@@ -13,7 +13,7 @@ using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Views {
 
-    public class ListEditor : IDisposable {
+    public class ListEditor<T> : IDisposable {
         public VirindiViewService.ViewProperties properties;
         public VirindiViewService.ControlGroup controls;
         public VirindiViewService.HudView view;
@@ -27,12 +27,12 @@ namespace UtilityBelt.Views {
         private int selectedIndex = -1;
         private SettingsForm form;
         private ISetting Setting;
-        private ObservableCollection<string> Collection;
+        private ObservableCollection<T> Collection;
 
         public ListEditor(MainView mainView, ISetting setting) {
             this.mainView = mainView;
             Setting = setting;
-            Collection = setting.GetValue() as ObservableCollection<string>;
+            Collection = setting.GetValue() as ObservableCollection<T>;
 
             VirindiViewService.XMLParsers.Decal3XMLParser parser = new VirindiViewService.XMLParsers.Decal3XMLParser();
             parser.ParseFromResource("UtilityBelt.Views.ListEditor.xml", out properties, out controls);
@@ -98,10 +98,10 @@ namespace UtilityBelt.Views {
             try {
                 if (selectedIndex != -1) {
                     Collection.RemoveAt(selectedIndex);
-                    Collection.Insert(selectedIndex, (string)form.Value);
+                    Collection.Insert(selectedIndex, (T)form.Value);
                 }
                 else {
-                    Collection.Add((string)form.Value);
+                    Collection.Add((T)form.Value);
                 }
 
                 ResetForm();
@@ -138,10 +138,10 @@ namespace UtilityBelt.Views {
 
                 if (selectedIndex == i) {
                     ((HudStaticText)row[0]).TextColor = Color.Red;
-                    form = new SettingsForm(Setting, SettingsFormLayout, typeof(string), Collection[selectedIndex]);
+                    form = new SettingsForm(Setting, SettingsFormLayout, typeof(T), Collection[selectedIndex]);
                 }
 
-                ((HudStaticText)row[0]).Text = child;
+                ((HudStaticText)row[0]).Text = child.ToString();
                 //((HudPictureBox)row[1]).Image = 100673788;  // up arrow
                 //((HudPictureBox)row[2]).Image = 100673789;  // down arrow
                 ((HudPictureBox)row[1]).Image = 0x060011F8; // delete
@@ -151,7 +151,13 @@ namespace UtilityBelt.Views {
             ChildList.ScrollPosition = scrollPosition;
 
             if (form == null) {
-                form = new SettingsForm(Setting, SettingsFormLayout, typeof(string), "");
+                if (typeof(T).GetConstructor(new Type[0]) != null) {
+                    object newInstance = Activator.CreateInstance(typeof(T));
+                    form = new SettingsForm(Setting, SettingsFormLayout, typeof(T), newInstance);
+                }
+                else {
+                    form = new SettingsForm(Setting, SettingsFormLayout, typeof(T), "");
+                }
             }
         }
 

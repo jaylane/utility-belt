@@ -75,11 +75,11 @@ namespace UtilityBelt
         }
 
         public static string GetServerDirectory() {
-            return Path.Combine(GetPluginDirectory(), UB.ServerName);
+            return Path.Combine(GetPluginDirectory(), UB.WorldName);
         }
 
         public static string GetCharacterDirectory() {
-            String path = Path.Combine(GetPluginDirectory(), UB.ServerName);
+            String path = Path.Combine(GetPluginDirectory(), UB.WorldName);
             path = Path.Combine(path, UB.CharacterName);
             return path;
         }

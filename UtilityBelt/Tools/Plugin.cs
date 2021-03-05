@@ -466,6 +466,7 @@ namespace UtilityBelt.Tools {
                 if (!(bool)UBHelper.vTank.Instance.GetSetting("EnableNav"))
                     UBHelper.vTank.Instance.SetSetting("EnableNav", true);
                 Logger.WriteToChat($"Following {UB.Core.WorldFilter[id].Name}[0x{id:X8}]");
+                UBHelper.vTank.Instance.SetSetting("EnableNav", true);
             }
             catch {
                 Logger.Error($"Failed to follow {UB.Core.WorldFilter[id].Name}[0x{id:X8}] (is vTank loaded?)");

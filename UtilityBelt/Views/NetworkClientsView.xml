@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<view icon="28915" title="UtilityBelt Network Clients" width="360" height="100">
+		<control progid="DecalControls.FixedLayout" clipped="">
+			<control progid="DecalControls.PushButton" name="All_FollowMe" left="8" top="8" width="72" height="16" text="Follow Me"/>
+			<control progid="DecalControls.PushButton" name="All_UseSelected" left="88" top="8" width="72" height="16" text="Use Selected"/>
+      <control progid="DecalControls.StaticText" name="Label" left="168" top="8" width="96" height="16" text="Delay Chars (ms):"/>
+			<control progid="DecalControls.Edit" name="All_Delay" left="270" top="7" width="80" height="19" text="0" />
+      <control progid="DecalControls.FixedLayout" name="TabLayout" clipped="" left="0" top="28" width="600" height="176">
+      </control>
+		</control>
+</view>
