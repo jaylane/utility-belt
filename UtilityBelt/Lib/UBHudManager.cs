@@ -74,29 +74,16 @@ namespace UtilityBelt.Lib {
                     activeHud.Move(activeHud.X + dragOffset.X, activeHud.Y + dragOffset.Y);
                     dragOffset = new Point(0, 0);
                 }
-                return;
             }
 
-            if (e.Msg == WM_MOUSEMOVE || e.Msg == WM_LBUTTONDOWN || e.Msg == WM_LBUTTONUP) {
-                var mousePos = new Point(e.LParam);
-
-                if (!isDragging) {
-                    var foundHud = false;
-                    foreach (var hud in Huds) {
-                        if ((mousePos.X > hud.X && mousePos.X < hud.X + hud.Width && mousePos.Y > hud.Y && mousePos.Y < hud.Y + hud.Height)) {
-                            activeHud = hud;
-                            foundHud = true;
-                            break;
-                        }
-                    }
-                    if (!foundHud)
-                        activeHud = null;
+            if (!isDragging && (e.Msg == WM_LBUTTONDOWN || e.Msg == WM_LBUTTONUP || e.Msg == WM_MOUSEMOVE)) {
+                FindActiveHud(new Point(e.LParam));
+                if (activeHud != null) {
+                    activeHud.HandleWindowMessage(e);
                 }
             }
-            else
-                return;
-
-            if (activeHud == null)
+            
+            if (!IsHoldingControl || activeHud == null)
                 return;
 
             switch (e.Msg) {
@@ -131,6 +118,19 @@ namespace UtilityBelt.Lib {
                     }
                     break;
             }
+        }
+
+        private void FindActiveHud(Point mousePos) {
+            var foundHud = false;
+            foreach (var hud in Huds) {
+                if ((mousePos.X > hud.X && mousePos.X < hud.X + hud.Width && mousePos.Y > hud.Y && mousePos.Y < hud.Y + hud.Height)) {
+                    activeHud = hud;
+                    foundHud = true;
+                    break;
+                }
+            }
+            if (!foundHud)
+                activeHud = null;
         }
 
         public void Dispose() {

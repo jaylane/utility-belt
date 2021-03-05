@@ -114,13 +114,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\UBNetworking.dll" />
     <None Include="Deps\Newtonsoft.Json.dll" />
     <Content Include="Deps\0Harmony.dll" />
     <Content Include="Deps\Antlr4.Runtime.dll" />
     <Content Include="Deps\LiteDB.dll" />
-    <Content Include="Deps\NetworkCommsDotNet.dll" />
-    <Content Include="Deps\protobuf-net.dll" />
-    <Content Include="Deps\ProtobufSerializer.dll" />
     <Content Include="Deps\System.Threading.dll" />
     <Content Include="Deps\UBHelper.dll" />
   </ItemGroup>

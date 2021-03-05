@@ -29,6 +29,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilityBelt.Tests", "Utilit
 		{C2880823-67E7-4B3D-A481-9ADC9847C39C} = {C2880823-67E7-4B3D-A481-9ADC9847C39C}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UBNetworking", "UBNetworking\UBNetworking.csproj", "{2829FC6E-2BEC-4259-AA51-6CC180D3834B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UBNetServer", "UBNetServer\UBNetServer.csproj", "{2444A625-B122-4147-AFBA-7F681DB3EB28}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Release|x86 = Release|x86
@@ -44,6 +48,10 @@ Global
 		{6D6BC2D4-2251-469F-8E67-BBCFF83EF703}.Release|x86.Build.0 = Release|x86
 		{1C1F3A9B-1B2F-496B-84EE-A3AC6A3100C1}.Release|x86.ActiveCfg = Release|x86
 		{1C1F3A9B-1B2F-496B-84EE-A3AC6A3100C1}.Release|x86.Build.0 = Release|x86
+		{2829FC6E-2BEC-4259-AA51-6CC180D3834B}.Release|x86.ActiveCfg = Release|x86
+		{2829FC6E-2BEC-4259-AA51-6CC180D3834B}.Release|x86.Build.0 = Release|x86
+		{2444A625-B122-4147-AFBA-7F681DB3EB28}.Release|x86.ActiveCfg = Release|x86
+		{2444A625-B122-4147-AFBA-7F681DB3EB28}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

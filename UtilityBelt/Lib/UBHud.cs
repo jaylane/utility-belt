@@ -31,6 +31,7 @@ namespace UtilityBelt.Lib {
         public event EventHandler<EventArgs> OnRender;
         public event EventHandler<EventArgs> OnClose;
         public event EventHandler<EventArgs> OnReMake;
+        public event EventHandler<WindowMessageEventArgs> OnWindowMessage;
 
 
         /// <summary>
@@ -83,9 +84,16 @@ namespace UtilityBelt.Lib {
 
             Width = width;
             Height = height;
+            var enabled = Hud.Enabled;
             Hud.Dispose();
             Hud = new DxHud(new Point(X, Y), new Size(Width, Height), 0);
+            Hud.Enabled = enabled;
             OnResize?.Invoke(this, EventArgs.Empty);
+            Render();
+        }
+
+        internal void HandleWindowMessage(WindowMessageEventArgs e) {
+            OnWindowMessage?.Invoke(this, e);
         }
 
         public void Close() {
@@ -108,7 +116,7 @@ namespace UtilityBelt.Lib {
         }
 
         public void Render() {
-            if (Hud == null || !Hud.Enabled || Hud.Texture == null || Hud.Texture.IsDisposed)
+            if (!Enabled)
                 return;
 
             OnRender?.Invoke(this, EventArgs.Empty);

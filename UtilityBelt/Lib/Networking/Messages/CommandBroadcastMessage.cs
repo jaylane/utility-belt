@@ -1,30 +1,19 @@
-﻿using ProtoBuf;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace UtilityBelt.Lib.Networking.Messages {
-    [ProtoContract]
+    [Serializable]
     class CommandBroadcastMessage {
-        [ProtoMember(1)]
         public string Command { get; set; }
-
-        [ProtoMember(2)]
-        public int DelayMsBetweenClients { get; set; }
-
-        [ProtoMember(3)]
-        public int ClientIndex { get; set; }
-
-        [ProtoMember(4)]
-        public List<string> Tags { get; set; }
+        public int Delay { get; set; }
 
         public CommandBroadcastMessage() { }
 
-        public CommandBroadcastMessage(string command, int delayMsBetweenClients=0, List<string> tags=null) {
+        public CommandBroadcastMessage(string command, int delay=0) {
             Command = command;
-            DelayMsBetweenClients = delayMsBetweenClients;
-            Tags = tags;
+            Delay = delay;
         }
     }
 }

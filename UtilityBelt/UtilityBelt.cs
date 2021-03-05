@@ -120,7 +120,7 @@ namespace UtilityBelt {
         internal NetServiceHost Host;
         internal string PluginName = "UtilityBelt";
         internal string DatabaseFile;
-        internal string ServerName;
+        internal string WorldName;
         internal string CharacterName;
         internal MainView MainView;
         internal ItemGiverView ItemGiverView;
@@ -164,6 +164,7 @@ namespace UtilityBelt {
         public LSD LSD;
         public Nametags Nametags;
         public Networking Networking;
+        public NetworkUI NetworkUI;
         public PlayerOptions PlayerOptions;
         public Professors Professors;
         public QuestTracker QuestTracker;
@@ -203,7 +204,7 @@ namespace UtilityBelt {
                 Core = core;
                 Host = host;
                 DatabaseFile = databaseFile;
-                ServerName = UBHelper.Core.WorldName;
+                WorldName = UBHelper.Core.WorldName;
                 CharacterName = UBHelper.Core.CharacterSet[UBHelper.Core.LoginCharacterID];
 
                 Util.Init(this, assemblyLocation, storagePath); //static classes can not have constructors, but still need to init variables.
