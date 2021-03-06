@@ -19,6 +19,7 @@ using UBNetworking.Messages;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
+using System.Reflection;
 
 namespace UtilityBelt.Tools {
     [Name("Networking")]
@@ -32,6 +33,7 @@ namespace UtilityBelt.Tools {
 
         public bool Connected { get; internal set; }
         public bool IsRunning { get; private set; }
+        public int ClientId { get => ubNet != null ? ubNet.ClientId : 0; }
         public readonly ObservableConcurrentDictionary<int, ClientInfo> Clients = new ObservableConcurrentDictionary<int, ClientInfo>();
         
 
@@ -131,6 +133,13 @@ namespace UtilityBelt.Tools {
             foreach (var kv in Clients) {
                 if (tags == null || tags.Count() == 0 || (tags.Count() > 0 && kv.Value.HasTags(tags.ToList()))) {
                     Logger.WriteToChat($"Client: ({kv.Key}) {kv.Value.Name}//{kv.Value.WorldName}: Tags({(kv.Value.Tags == null ? "null" : String.Join(",", kv.Value.Tags.ToArray()))})", Logger.LogMessageType.Generic, true, false, false);
+                    if (UB.Plugin.Debug) {
+                        var extra = new StringBuilder("\t");
+                        foreach (var prop in kv.Value.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)) {
+                            extra.Append($"{prop.Name}:{prop.GetValue(kv.Value, null)},");
+                        }
+                        Logger.Debug(extra.ToString());
+                    }
                     showedClients = true;
                 }
             }

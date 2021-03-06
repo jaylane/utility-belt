@@ -434,7 +434,7 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
             var characterName = client == null ? UB.Core.CharacterFilter.Name : $"{client.Name}";
             texture.WriteText(characterName, Color.White, VirindiViewService.WriteTextFormats.SingleLine, new Rectangle(area.X + 2, area.Y + 1, CHAR_NAME_WIDTH, ROW_SIZE));
             // health % in the vitals area
-            texture.WriteText($"{(client.CurrentHealth / Math.Max(client.MaxHealth, 1)) * 100:N0}%", Color.White, VirindiViewService.WriteTextFormats.Right, new Rectangle(area.X + 2, area.Y + 1, CHAR_NAME_WIDTH, ROW_SIZE));
+            texture.WriteText($"{((double)client.CurrentHealth / Math.Max(client.MaxHealth, 1)) * 100:N0}%", Color.White, VirindiViewService.WriteTextFormats.Right, new Rectangle(area.X + 2, area.Y + 1, CHAR_NAME_WIDTH, ROW_SIZE));
 
             // range
             var c = (int)Math.Max(0, Math.Min(255, 255 - (client.DistanceTo() * 2)));
