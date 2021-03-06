@@ -119,6 +119,13 @@ namespace UtilityBelt.Lib {
             if (!Enabled)
                 return;
 
+            // this can happen sometimes, not exactly sure when, but i can force it by
+            // resetting my gpu drivers with ctrl+shift+win+b
+            if (Hud.Texture.IsDisposed) {
+                ReMake();
+                return;
+            }
+
             OnRender?.Invoke(this, EventArgs.Empty);
 
             if (!HudManager.IsHoldingControl)
