@@ -39,6 +39,8 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
         private DateTime lastPositionUpdate = DateTime.MinValue;
         private TimeSpan positionUpdateInterval = TimeSpan.FromMilliseconds(300);
 
+        private bool isInPortalSpace = false;
+
         public int LastAttemptedSpellId { get; private set; }
         public int LastAttemptedTarget { get; private set; }
         public int LastCastSpellId { get; private set; }
@@ -70,6 +72,7 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
             UB.Core.EchoFilter.ClientDispatch += EchoFilter_ClientDispatch;
             UB.Core.ChatBoxMessage += Core_ChatBoxMessage;
             UB.Core.RenderFrame += Core_RenderFrame;
+            UB.Core.CharacterFilter.ChangePortalMode += CharacterFilter_ChangePortalMode;
             UB.Networking.AddMessageHandler<PlayerUpdateMessage>(Handle_PlayerUpdateMessage);
             UB.Networking.AddMessageHandler<CastAttemptMessage>(Handle_CastAttemptMessage);
             UB.Networking.AddMessageHandler<CastSuccessMessage>(Handle_CastSuccessMessage);
@@ -77,6 +80,10 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
             UB.Networking.OnConnected += Networking_OnConnected;
             UB.Networking.OnRemoteClientConnected += Networking_OnRemoteClientConnected;
             isRunning = true;
+        }
+
+        private void CharacterFilter_ChangePortalMode(object sender, ChangePortalModeEventArgs e) {
+            isInPortalSpace = e.Type == PortalEventType.EnterPortal;
         }
 
         private void Networking_OnConnected(object sender, EventArgs e) {
@@ -92,10 +99,14 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
         }
 
         private void Handle_CastSuccessMessage(MessageHeader header, CastSuccessMessage message) {
+            if (header.SendingClientId == UB.Networking.ClientId)
+                return;
             UBHelper.vTank.Instance?.LogSpellCast(message.Target, message.SpellId, message.Duration);
         }
 
         private void Handle_CastAttemptMessage(MessageHeader header, CastAttemptMessage message) {
+            if (header.SendingClientId == UB.Networking.ClientId)
+                return;
             UBHelper.vTank.Instance?.LogCastAttempt(message.SpellId, message.Target, message.Skill);
         }
 
@@ -110,6 +121,7 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
             UB.Core.EchoFilter.ClientDispatch -= EchoFilter_ClientDispatch;
             UB.Core.ChatBoxMessage -= Core_ChatBoxMessage;
             UB.Core.RenderFrame -= Core_RenderFrame;
+            UB.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
             UB.Networking.RemoveMessageHandler<PlayerUpdateMessage>(Handle_PlayerUpdateMessage);
             UB.Networking.RemoveMessageHandler<CastAttemptMessage>(Handle_CastAttemptMessage);
             UB.Networking.RemoveMessageHandler<CastSuccessMessage>(Handle_CastSuccessMessage);
@@ -200,6 +212,8 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
         }
 
         public void UpdateMyPosition() {
+            if (isInPortalSpace)
+                return;
             var me = UtilityBeltPlugin.Instance.Core.CharacterFilter.Id;
             var pos = PhysicsObject.GetPosition(me);
             var lc = PhysicsObject.GetLandcell(me);
