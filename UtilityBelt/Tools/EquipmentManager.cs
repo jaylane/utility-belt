@@ -672,6 +672,11 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
             }
             catch (Exception ex) { Logger.LogException(ex); }
 
+            ids.Sort((a, b) => {
+                var loreA = UB.Core.WorldFilter[a].Values(LongValueKey.LoreRequirement);
+                var loreB = UB.Core.WorldFilter[b].Values(LongValueKey.LoreRequirement);
+                return loreA.CompareTo(loreB);
+            });
             return ids;
         }
 
