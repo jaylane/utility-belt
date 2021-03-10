@@ -64,7 +64,7 @@ namespace UtilityBelt.Lib {
         }
 
         public override string ToString() {
-            return $"{Math.Abs(NS).ToString("F2")}{(NS >= 0 ? "N" : "S")}, {Math.Abs(EW).ToString("F2")}{(EW >= 0 ? "E" : "W")}, {Z.ToString("F2")}Z";
+            return $"{Math.Abs(NS).ToString("F2")}{(NS >= 0 ? "N" : "S")}, {Math.Abs(EW).ToString("F2")}{(EW >= 0 ? "E" : "W")}, {(Z/240).ToString("F2")}Z";
         }
     }
 }
