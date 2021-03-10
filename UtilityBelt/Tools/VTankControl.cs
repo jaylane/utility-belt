@@ -785,7 +785,7 @@ namespace UtilityBelt.Tools {
         [Summary("Gets the Z position of a coordinates object as a number")]
         [Example("coordinategetz[getplayercoordinates[]]", "Returns your character's current Z position")]
         public object Coordinategetz(ExpressionCoordinates coords) {
-            return coords.Z;
+            return coords.Z/240;
         }
         #endregion //coordinategetz[coordinates obj]
         #region coordinatetostring[coordinates obj]
