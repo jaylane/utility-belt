@@ -473,12 +473,6 @@ namespace UtilityBelt.Tools {
             }
 
         }
-        private void CharacterFilter_Logoff_Follow(object sender, LogoffEventArgs e) {
-            try {
-                if (e.Type == LogoffEventType.Requested) UB_Follow_Clear();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
         private void CharacterFilter_LoginComplete_Follow(object sender, EventArgs e) {
             try {
                 UB_Follow_Clear();
@@ -1357,7 +1351,7 @@ namespace UtilityBelt.Tools {
         public override void Init() {
             base.Init();
 
-            UB.Core.CharacterFilter.Logoff += CharacterFilter_Logoff_Follow;
+            UBHelper.Core.GameStateChanged += Core_GameStateChanged;
             if (UBHelper.Core.GameState == UBHelper.GameState.In_Game) UB_Follow_Clear();
             else UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete_Follow;
 
@@ -1405,6 +1399,16 @@ namespace UtilityBelt.Tools {
             UBHelper.SimpleFrameLimiter.bgMax = BackgroundFrameLimit;
         }
 
+        private void Core_GameStateChanged(UBHelper.GameState previous, UBHelper.GameState new_state) {
+            try {
+                if (new_state == UBHelper.GameState.Logging_Out) {
+                    UB_Follow_Clear();
+                    UBHelper.VideoPatch.Enabled = false;
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
@@ -1416,7 +1420,6 @@ namespace UtilityBelt.Tools {
                     UB.Core.RenderFrame -= Core_RenderFrame_PortalOpen;
                     UB.Core.RenderFrame -= Core_RenderFrame_Delay;
                     UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch_PortalOpen;
-                    UB.Core.CharacterFilter.Logoff -= CharacterFilter_Logoff_Follow;
                     UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete_Follow;
                 }
                 disposedValue = true;
