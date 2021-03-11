@@ -21,6 +21,7 @@
         <control progid="DecalControls.PushButton" name="VideoPatchFocusEnabled" left="368" top="8" width="22" height="24" text="F"/>
         <control progid="DecalControls.PushButton" name="VitalSharingEnabled" left="280" top="40" width="110" height="24" text="Vital Sharing"/>
         <control progid="DecalControls.PushButton" name="DerethTimeEnabled" left="280" top="72" width="110" height="24" text="Dereth Time"/>
+        <control progid="DecalControls.PushButton" name="NetworkUIEnabled" left="280" top="104" width="110" height="24" text="Network UI"/>
 
         <control progid="DecalControls.PushButton" name="Debug" left="280" top="152" width="110" height="24" text="  Debug Mode"/>
         <control progid="DecalControls.PushButton" name="Settings" left="280" top="184" width="110" height="24" text="  Settings"/>
