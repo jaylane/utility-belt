@@ -40,6 +40,7 @@ namespace UtilityBelt.Tools {
         private UBClient ubNet;
 
         private ConcurrentQueue<Action> GameThreadActionQueue = new ConcurrentQueue<Action>();
+        private DateTime lastClientCleanup = DateTime.MinValue;
 
         #region Config
         [Summary("Networking server host")]
@@ -166,6 +167,17 @@ namespace UtilityBelt.Tools {
 
         private void Core_RenderFrame(object sender, EventArgs e) {
             try {
+                if (DateTime.UtcNow - lastClientCleanup > TimeSpan.FromSeconds(3)) {
+                    lastClientCleanup = DateTime.UtcNow;
+                    var clients = Clients.ToArray();
+                    foreach (var client in clients) {
+                        if (DateTime.UtcNow - client.Value.LastUpdate > TimeSpan.FromSeconds(15)) {
+                            Logger.WriteToChat($"Client Timed Out: {client.Value.WorldName}//{client.Value.Name}");
+                            Clients.Remove(client.Key);
+                        }
+                    }
+                }
+
                 while (GameThreadActionQueue.TryDequeue(out Action action)) {
                     action.Invoke();
                 }
@@ -239,6 +251,7 @@ namespace UtilityBelt.Tools {
 
         private void Handle_TrackedItemUpdateMessage(MessageHeader header, TrackedItemUpdateMessage message) {
             var client = GetClient(header);
+            client.LastUpdate = DateTime.UtcNow;
             if (message.TrackedItems != null)
                 client.TrackedItems = message.TrackedItems;
 
@@ -253,6 +266,7 @@ namespace UtilityBelt.Tools {
             client.EW = message.EW;
             client.LandCell = message.LandCell;
             client.Heading = message.Heading;
+            client.LastUpdate = DateTime.UtcNow;
         }
 
         private void UbNet_OnMessageReceived(object sender, OnMessageEventArgs e) {
