@@ -55,6 +55,7 @@ namespace UtilityBelt.Views {
                     { "ArrowEnabled", "Arrow.Enabled" },
                     { "DerethTimeEnabled", "DerethTime.Enabled" },
                     { "LandscapeMapsEnabled", "LandscapeMaps.Enabled" },
+                    { "NetworkUIEnabled", "NetworkUI.Enabled" },
                     { "Debug", "Plugin.Debug" },
                     { "ChatFilterEnabled", "ChatFilter.Enabled" },
                 };
