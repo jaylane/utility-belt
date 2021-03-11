@@ -7,6 +7,7 @@ using Decal.Adapter.Wrappers;
 using Decal.Adapter;
 using System.Runtime.InteropServices;
 using UBLoader.Lib.Settings;
+using UtilityBelt.Lib.Expressions;
 
 namespace UtilityBelt.Tools {
     [Name("Fellowships")]
@@ -132,6 +133,40 @@ namespace UtilityBelt.Tools {
         [Example("getfellowshipcanrecruit[]", "Returns 1 if you're in a fellowship, and are the leader, or the fellowship is open, and the fellowship is not full")]
         public object GetfellowshipCanRecruit() {
             return (UBHelper.Fellow.IsLeader || UBHelper.Fellow.Open) && UBHelper.Fellow.MemberCount < 9;
+        }
+        #endregion
+
+        #region getfellownames[]
+        [ExpressionMethod("getfellownames")]
+        [ExpressionReturn(typeof(ExpressionList), "List of character names in the fellowship, sorted alphabetically")]
+        [Summary("Returns a list of character names in your current fellowship, sorted alphabetically.")]
+        [Example("getfellownames[]", "Returns a list of character names in your current fellowship, sorted alphabetically")]
+        public object GetfellowNames() {
+            var list = new ExpressionList();
+            if (UBHelper.Fellow.MemberCount > 0) {
+                var members = UBHelper.Fellow.Members.Select(kv => kv.Value.name).ToList();
+                members.Sort();
+                foreach (var member in members)
+                    list.Items.Add(member);
+            }
+            return list;
+        }
+        #endregion
+
+        #region getfellowids[]
+        [ExpressionMethod("getfellowids")]
+        [ExpressionReturn(typeof(ExpressionList), "List of character ids in the fellowship, sorted numerically")]
+        [Summary("Returns a list of character ids in your current fellowship, sorted numerically.")]
+        [Example("getfellowids[]", "Returns a list of character ids in your current fellowship, sorted numerically")]
+        public object GetfellowIds() {
+            var list = new ExpressionList();
+            if (UBHelper.Fellow.MemberCount > 0) {
+                var members = UBHelper.Fellow.Members.Select(kv => kv.Value.id).ToList();
+                members.Sort();
+                foreach (var member in members)
+                    list.Items.Add(member);
+            }
+            return list;
         }
         #endregion
 
