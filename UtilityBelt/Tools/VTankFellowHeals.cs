@@ -39,7 +39,7 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
         private DateTime lastPositionUpdate = DateTime.MinValue;
         private TimeSpan positionUpdateInterval = TimeSpan.FromMilliseconds(300);
 
-        private bool isInPortalSpace = false;
+        private bool isInPortalSpace = true;
 
         public int LastAttemptedSpellId { get; private set; }
         public int LastAttemptedTarget { get; private set; }

@@ -71,7 +71,7 @@ namespace UBNetworking {
                 try {
                     if (TcpClient == null && DateTime.UtcNow - lastRetry > TimeSpan.FromSeconds(retrySeconds)) {
                         retrySeconds *= 2;
-                        LogAction?.Invoke($"Attempting to connect to {Host}:{Port}");
+                        //LogAction?.Invoke($"Attempting to connect to {Host}:{Port}");
                         lastKeepAliveRecv = DateTime.UtcNow;
                         lastKeepAliveSent = DateTime.UtcNow;
                         var client = new TcpClient(Host, Port);

@@ -277,12 +277,15 @@ namespace UBNetworking.Lib {
             if (!handlers.ContainsKey(type.ToString()))
                 return;
 
-            foreach (var handler in handlers[type.ToString()]) {
-                try {
-                    ((Action<MessageHeader, object>)handler)?.Invoke(header, obj);
+            var _handlers = handlers[type.ToString()].ToArray();
+            RunOnMainThread(() => {
+                foreach (var handler in _handlers) {
+                    try {
+                        ((Action<MessageHeader, object>)handler)?.Invoke(header, obj);
+                    }
+                    catch (Exception ex) { LogAction?.Invoke(ex.ToString()); }
                 }
-                catch (Exception ex) { LogAction?.Invoke(ex.ToString()); }
-            }
+            });
         }
         #endregion Network Message Handlers
 

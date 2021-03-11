@@ -152,11 +152,11 @@ namespace UBNetworking {
             if (Clients.ContainsKey(clientId)) {
                 // we should do cleanup here or something?
                 // probably only here if disconnection detection is bugged or something..
-                BroadcastClientMessage(Clients[clientId], new MessageHeader() {
+                Clients.Remove(clientId);
+                Broadcast(new MessageHeader() {
                     SendingClientId = clientId,
                     Type = MessageHeaderType.RemoteClientDisconnected
                 }, new byte[] { });
-                Clients.Remove(clientId);
                 LogAction?.Invoke($"Client {clientId} disconnected.");
                 OnClientDisconnected(this, EventArgs.Empty);
             }
@@ -199,10 +199,20 @@ namespace UBNetworking {
             header.SendingClientId = sendingClient.ClientId;
             var clients = Clients.Values.ToArray();
             foreach (var client in clients) {
-                //if (client.ClientId == sendingClient.ClientId)
-                //   continue;
+                try {
+                    client.SendMessageBytes(header, body);
+                }
+                catch (Exception ex) { LogAction?.Invoke(ex.ToString()); }
+            }
+        }
 
-                client.SendMessageBytes(header, body);
+        private void Broadcast(MessageHeader header, byte[] body) {
+            var clients = Clients.Values.ToArray();
+            foreach (var client in clients) {
+                try {
+                    client.SendMessageBytes(header, body);
+                }
+                catch (Exception ex) { LogAction?.Invoke(ex.ToString()); }
             }
         }
 
