@@ -13,6 +13,7 @@
 - Add `/ub follow` command now enabled vtank navigation as well (since it uses it internally)
 - Fix EquipmentManager now equips items in order of lowest lore req first
 - Fix coordinategetz[] to be compatible with vtank z values
+- Fix ub jump command lockup issue after failing to jump, adjusted timeouts
 
 ## 0.2.3 (2021-01-30) [UtilityBeltInstaller-0.2.3.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/fee6e8ec9b64ef0aa33535e98fe3ed3d/UtilityBeltInstaller-0.2.3.exe)
 - Fix `cleargvar[]` expression wasn't actually clearing vars

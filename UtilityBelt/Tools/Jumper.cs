@@ -154,7 +154,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                 }
 
                 //abort turning if takes longer than 15 seconds
-                if (isTurning && DateTime.UtcNow - turningSeconds >= TimeSpan.FromSeconds(15)) {
+                if (isTurning && DateTime.UtcNow - turningSeconds >= TimeSpan.FromSeconds(5)) {
                     isTurning = needToJump = false;
                     Util.ThinkOrWrite("Turning failed", ThinkFail);
                     UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
@@ -163,7 +163,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                 //Do the jump thing
                 if (needToJump && !isTurning) {
                     needToJump = false;
-                    enableNavTimer = TimeSpan.FromMilliseconds(msToHoldDown + 15000);
+                    enableNavTimer = TimeSpan.FromMilliseconds(msToHoldDown + 5000);
                     UBHelper.Jumper.JumpComplete += Jumper_JumpComplete;
                     UBHelper.Jumper.Jump(targetDirection, ((float)msToHoldDown / 1000), addShift, addW, addX, addZ, addC);
                     waitingForJump = true;
@@ -183,7 +183,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                     }
                     else {
                         Util.ThinkOrWrite("You have failed to jump too many times.", ThinkFail);
-
+                        UBHelper.Jumper.JumpCancel();
                         UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
                         UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.CorpseOpenAttempt);
                         waitingForJump = false;
