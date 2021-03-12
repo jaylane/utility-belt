@@ -786,7 +786,7 @@ namespace UtilityBelt.Tools {
         [Example("wobjectfindnearestbytemplatetype[42137]", "Returns a worldobject with templaye type 42137 (level 10 ice tachi warden)")]
         public object Wobjectfindnearestbytemplatetype(double templateType) {
             WorldObject closest = null;
-            var closestDistance = float.MaxValue;
+            var closestDistance = double.MaxValue;
             var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetLandscape();
             var typeInt = Convert.ToInt32(templateType);
             foreach (var wo in wos) {

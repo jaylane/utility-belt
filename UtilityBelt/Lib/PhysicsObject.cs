@@ -18,13 +18,15 @@ namespace UtilityBelt.Lib {
             return new Vector3();
         }
 
-        public static unsafe float GetDistance(int id) {
+        public static unsafe double GetDistance(int id) {
             if (CoreManager.Current.Actions.IsValidObject(id)) {
-                var p = CoreManager.Current.Actions.Underlying.GetPhysicsObjectPtr(id);
-                return *(float*)(p + 0x20);
+                var pos = PhysicsObject.GetPosition(id);
+                var landcell = PhysicsObject.GetLandcell(id);
+                var coords = new Coordinates(Geometry.LandblockToEW((uint)landcell, pos.X), Geometry.LandblockToNS((uint)landcell, pos.Y), pos.Z);
+                return coords.DistanceTo(Coordinates.Me);
             }
 
-            return float.MaxValue;
+            return double.MaxValue;
         }
 
         public static unsafe int GetLandcell(int id) {

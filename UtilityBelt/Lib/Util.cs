@@ -437,7 +437,7 @@ namespace UtilityBelt
         public static WorldObject FindClosestByObjectClass(ObjectClass objectclass) {
             WorldObject closest = null;
             var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetByObjectClass(objectclass);
-            var closestDistance = float.MaxValue;
+            var closestDistance = double.MaxValue;
             foreach (var wo in wos) {
                 if (PhysicsObject.GetDistance(wo.Id) < closestDistance) {
                     closest = wo;
