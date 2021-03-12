@@ -936,7 +936,7 @@ namespace UtilityBelt.Tools {
         public object ExpressionWorldObjectfindnearestbyobjectclass(double objectClass) {
             WorldObject closest = null;
             var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetByObjectClass((ObjectClass)Convert.ToInt32(objectClass));
-            var closestDistance = float.MaxValue;
+            var closestDistance = double.MaxValue;
             foreach (var wo in wos) {
                 if (wo.Id == UtilityBeltPlugin.Instance.Core.CharacterFilter.Id)
                     continue;
@@ -1042,7 +1042,7 @@ namespace UtilityBelt.Tools {
         public object ExpressionWorldObjectfindnearestbynameandobjectclass(double objectClass, string namerx) {
             var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetByObjectClass((ObjectClass)Convert.ToInt32(objectClass));
             var re = new Regex(namerx);
-            var closestDistance = float.MaxValue;
+            var closestDistance = double.MaxValue;
             WorldObject closest = null;
             foreach (var wo in wos) {
                 if (wo.Id == UtilityBeltPlugin.Instance.Core.CharacterFilter.Id)

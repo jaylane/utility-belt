@@ -16,6 +16,7 @@
 - Fix ub jump command lockup issue after failing to jump, adjusted timeouts
 - Fix ub videopatch is now disabled when logging out
 - Add expressions getfellowids[] and getfellownames[] to get a sorted list of fellowship members
+- Fix issue with wobject physics position distances, could cause expressions that return nearest items to return stale items after portalling
 
 ## 0.2.3 (2021-01-30) [UtilityBeltInstaller-0.2.3.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/fee6e8ec9b64ef0aa33535e98fe3ed3d/UtilityBeltInstaller-0.2.3.exe)
 - Fix `cleargvar[]` expression wasn't actually clearing vars
