@@ -89,6 +89,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         private Weenie.ITEM_TYPE vendorCategories;
         private bool waitingForAutoStackCram = false;
         private bool waitingForSplit = false;
+        private DateTime lastSplit;
         private ActionQueue.Item splitQueue;
         private bool shouldAutoStack = false;
         private bool shouldAutoCram = false;
@@ -159,7 +160,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         [Usage("/ub vendor {open[p] <vendorname,vendorid,vendorhex> | buyall | sellall | clearbuy | clearsell | opencancel}")]
         [Example("/ub vendor open Tunlok Weapons Master", "Opens vendor with name \"Tunlok Weapons Master\"")]
         [Example("/ub vendor opencancel", "Quietly cancels the last /ub vendor open* command")]
-        [CommandPattern("vendor", @"^ *(?<params>(openp? ?.+|buy(all)?|sell(all)?|clearbuy|clearsell|opencancel)) *$")]
+        [CommandPattern("vendor", @"^ *(?<params>(openp? ?.+|buy(all)?|sell(all)?|clearbuy|clearsell|opencancel|addsellp? .+|addbuyp? .+)) *$")]
         public void DoVendor(string _, Match args) {
             UB_vendor(args.Groups["params"].Value);
         }
@@ -167,14 +168,19 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         private int vendorOpening = 0;
         private static WorldObject vendor = null;
         private bool hasLootCore;
+        private int sellListSplitItemId;
+        private int sellListItemsNeeded;
+        private int lastSellListItemCount;
 
         public void UB_vendor(string parameters) {
             char[] stringSplit = { ' ' };
             string[] parameter = parameters.Split(stringSplit, 2);
             if (parameter.Length == 0) {
-                Logger.Error("Usage: /ub vendor {open[p] [vendorname,vendorid,vendorhex],opencancel,buyall,sellall,clearbuy,clearsell}");
+                Logger.Error("Usage: /ub vendor {open[p] [vendorname,vendorid,vendorhex],opencancel,buyall,sellall,clearbuy,clearsell,addsell[p] [count] itemname,addbuy[p] [count] itemname}");
                 return;
             }
+            var partial = parameter[0].EndsWith("p");
+            VendorInfo cachedVendor = VendorCache.GetVendor(vendorId);
 
             switch (parameter[0]) {
                 case "buy":
@@ -214,8 +220,140 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     vendorOpening = 0;
                     UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
                     break;
+                case "addbuy":
+                case "addbuyp":
+                    var buyItemName = string.Join(" ", parameter.Skip(1).ToArray());
+                    var buyParts = parameter[1].Split(' ');
+                    if (int.TryParse(buyParts[0], out int parsedCount)) {
+                        buyItemName = string.Join(" ", buyParts.Skip(1).ToArray());
+                    }
+                    else {
+                        parsedCount = 1;
+                    }
+
+                    Logger.WriteToChat($"Name: {buyItemName} count: {parsedCount} param:{parameter[1]}");
+
+                    if (UBHelper.Vendor.Id == 0 || cachedVendor == null) {
+                        Logger.Error("addbuy: No vendor open");
+                        return;
+                    }
+
+                    foreach (var item in cachedVendor.Items) {
+                        if (partial && item.Value.Name.ToLower().Contains(buyItemName.ToLower())) {
+                            AddItemToBuyList(item.Value, parsedCount);
+                            return;
+                        }
+                        else if (!partial && item.Value.Name.ToLower().Equals(buyItemName.ToLower())) {
+                            AddItemToBuyList(item.Value, parsedCount);
+                            return;
+                        }
+                    }
+                    Logger.Error($"addbuy: Unable to find item {(partial ? "partially " : "")}named '{buyItemName}' in vendor sell list");
+                    break;
+                case "addsell":
+                case "addsellp":
+                    var sellItemName = string.Join(" ", parameter.Skip(1).ToArray());
+                    var sellParts = parameter[1].Split(' ');
+                    if (int.TryParse(sellParts[0], out int parsedSellCount)) {
+                        sellItemName = string.Join(" ", sellParts.Skip(1).ToArray());
+                    }
+                    else {
+                        parsedSellCount = 1;
+                    }
+
+                    if (UBHelper.Vendor.Id == 0 || cachedVendor == null) {
+                        Logger.Error("addsell: No vendor open");
+                        return;
+                    }
+                    var inv = new List<int>();
+                    var foundItems = new List<Weenie>();
+                    UBHelper.InventoryManager.GetInventory(ref inv, UBHelper.InventoryManager.GetInventoryType.AllItems);
+                    foreach (var id in inv) {
+                        var weenie = new Weenie(id);
+                        var wo = UB.Core.WorldFilter[id];
+                        if (weenie == null || wo == null)
+                            continue;
+                        var name = weenie.GetName(NameType.NAME_SINGULAR).ToLower();
+                        if (partial && name.Contains(sellItemName.ToLower()) && ItemIsSafeToGetRidOf(wo)) {
+                            foundItems.Add(weenie);
+                        }
+                        else if (!partial && name.Equals(sellItemName.ToLower()) && ItemIsSafeToGetRidOf(wo)) {
+                            foundItems.Add(weenie);
+                        }
+                    }
+
+                    if (foundItems.Count > 0)
+                        AddItemToSellList(foundItems, parsedSellCount);
+                    else
+                        Logger.Error($"addsell: Unable to find item {(partial ? "partially " : "")}named '{sellItemName}' in inventory");
+                    break;
             }
         }
+
+        private void AddItemToSellList(List<Weenie> weenies, int count) {
+            // see if we can fulfil count with current stacks..
+            lastSellListItemCount = count;
+            var itemsNeeded = count;
+            var sellList = new List<int>();
+            Weenie oversized = null;
+            foreach (var weenie in weenies) {
+                var stackCount = weenie.StackCount == 0 ? 1 : weenie.StackCount;
+                if (stackCount <= itemsNeeded) {
+                    UB.Core.Actions.VendorAddSellList(weenie.Id);
+                    sellList.Add(weenie.Id);
+                    itemsNeeded -= stackCount;
+                }
+                else if (oversized == null || oversized.StackCount > stackCount)
+                    oversized = weenie;
+                if (itemsNeeded == 0)
+                    break;
+            }
+
+            if (itemsNeeded == 0) {
+                Logger.WriteToChat($"Added item to sell list: {weenies.First().GetName(NameType.NAME_SINGULAR)} * {count}");
+            }
+            else if (itemsNeeded > 0 && oversized == null) {
+                Logger.WriteToChat($"Added item to sell list: {weenies.First().GetName(NameType.NAME_SINGULAR)} * {count}, but was missing {itemsNeeded} items 22");
+            }
+            else {
+                // we need items and have an item with at least that many
+                UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(1000));
+                DoSplit(UB.Core.WorldFilter[oversized.Id], itemsNeeded);
+                sellListSplitItemId = oversized.Id;
+                sellListItemsNeeded = itemsNeeded;
+                UB.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
+                UB.Core.RenderFrame += Core_RenderFrame_SellListSplit;
+            }
+        }
+
+        private void Core_RenderFrame_SellListSplit(object sender, EventArgs e) {
+            if (!waitingForSplit) {
+                var splitWeenie = new UBHelper.Weenie(sellListSplitItemId);
+                var inv = new List<int>();
+                bool foundItem = false;
+                UBHelper.InventoryManager.GetInventory(ref inv, UBHelper.InventoryManager.GetInventoryType.AllItems);
+                foreach (var id in inv) {
+                    var weenie = new Weenie(id);
+                    if (weenie.GetName(NameType.NAME_SINGULAR).ToLower() == splitWeenie.GetName(NameType.NAME_SINGULAR).ToLower() && sellListItemsNeeded == weenie.StackCount) {
+                        foundItem = true;
+                        UB.Core.Actions.VendorAddSellList(weenie.Id);
+                        Logger.WriteToChat($"Added item to sell list: {weenie.GetName(NameType.NAME_SINGULAR)} * {lastSellListItemCount}");
+                        break;
+                    }
+                }
+
+                if (!foundItem)
+                    Logger.WriteToChat($"Added item to sell list: {splitWeenie.GetName(NameType.NAME_SINGULAR)} * {lastSellListItemCount - sellListItemsNeeded}, but was missing {sellListItemsNeeded} items");
+                UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
+                UB.Core.RenderFrame -= Core_RenderFrame_SellListSplit;
+            }
+        }
+
+        private void AddItemToBuyList(VendorItem item, int count) {
+            UB.Core.Actions.VendorAddBuyList(item.Id, count);
+            Logger.WriteToChat($"Added item to buy list: {item.Name} * {count}");
+        }
+
         private void UB_vendor_open(string vendorname, bool partial) {
             vendor = Util.FindName(vendorname, partial, new ObjectClass[] { ObjectClass.Vendor });
             if (vendor != null) {
@@ -495,6 +633,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                         }
                     } else if (waitingForSplit) {
                         waitingForSplit = false;
+                        lastSplit = DateTime.UtcNow;
                     }
                 }
             } catch (Exception ex) { Logger.Debug(ex.ToString()); }
@@ -924,6 +1063,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             weenie.Split(UB.Core.CharacterFilter.Id, 0, newStackSize);
             splitQueue.Queue(weenie.Id);
             waitingForSplit = true;
+            lastSplit = DateTime.UtcNow;
             LogDebug($"DoSplit Splitting {Util.GetObjectName(item.Id)}:{item.Id:X8}. old: {item.Values(LongValueKey.StackCount)} new: {newStackSize}");
         }
 
