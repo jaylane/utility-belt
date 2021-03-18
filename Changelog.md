@@ -17,6 +17,7 @@
 - Fix ub videopatch is now disabled when logging out
 - Add expressions getfellowids[] and getfellownames[] to get a sorted list of fellowship members
 - Fix issue with wobject physics position distances, could cause expressions that return nearest items to return stale items after portalling
+- Add commands `/ub vendor {addbuy[p] [count] <item name>, addsell[p] [count] <item name>}` for manually adding buy/sell items to vendors
 
 ## 0.2.3 (2021-01-30) [UtilityBeltInstaller-0.2.3.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/fee6e8ec9b64ef0aa33535e98fe3ed3d/UtilityBeltInstaller-0.2.3.exe)
 - Fix `cleargvar[]` expression wasn't actually clearing vars
