@@ -1407,7 +1407,7 @@ namespace UtilityBelt.Tools {
         [ExpressionMethod("vtgetmetastate")]
         [ExpressionReturn(typeof(string), "Returns the current vt meta state as a string")]
         [Summary("Gets the current vtank meta state as a string")]
-        [Example("vtsetmetastate[myState]", "Returns the current vt meta state as a string")]
+        [Example("vtgetmetastate[]", "Returns the current vt meta state as a string")]
         public object Vtgetmetastate() {
             return UBHelper.vTank.Instance.CurrentMetaState;
         }
