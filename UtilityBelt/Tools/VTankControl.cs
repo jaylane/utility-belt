@@ -1239,7 +1239,7 @@ namespace UtilityBelt.Tools {
         #region Misc
         #region isfalse[int value]
         [ExpressionMethod("isfalse")]
-        [ExpressionParameter(0, typeof(double), "value", "value to check")]
+        [ExpressionParameter(0, typeof(object), "value", "value to check")]
         [ExpressionReturn(typeof(double), "Returns 1 if value is false, 0 otherwise")]
         [Summary("Checks if a value is equal to false (0)")]
         [Example("isfalse[0]", "Checks that 0 is false, and returns true because it is")]
@@ -1254,7 +1254,7 @@ namespace UtilityBelt.Tools {
         #endregion //isfalse[int value]
         #region istrue[int value]
         [ExpressionMethod("istrue")]
-        [ExpressionParameter(0, typeof(double), "value", "value to check")]
+        [ExpressionParameter(0, typeof(object), "value", "value to check")]
         [ExpressionReturn(typeof(double), "Returns 1 if value is true, 0 otherwise")]
         [Summary("Checks if a value is equal to true (1)")]
         [Example("istrue[1]", "Checks that 0 is true, and returns true because it is")]
@@ -1403,6 +1403,15 @@ namespace UtilityBelt.Tools {
             return 1;
         }
         #endregion //vtsetmetastate[string state]
+        #region vtgetmetastate[]
+        [ExpressionMethod("vtgetmetastate")]
+        [ExpressionReturn(typeof(string), "Returns the current vt meta state as a string")]
+        [Summary("Gets the current vtank meta state as a string")]
+        [Example("vtgetmetastate[]", "Returns the current vt meta state as a string")]
+        public object Vtgetmetastate() {
+            return UBHelper.vTank.Instance.CurrentMetaState;
+        }
+        #endregion //vtgetmetastate[]
         #region ord[string character]
         [ExpressionMethod("ord")]
         [ExpressionParameter(0, typeof(string), "character", "string to convert")]
