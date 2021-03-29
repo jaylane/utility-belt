@@ -15,6 +15,8 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.DirectX;
 using UtilityBelt.Lib;
+using uTank2;
+using Harmony;
 
 namespace UtilityBelt
 {
@@ -448,6 +450,81 @@ namespace UtilityBelt
 
             return closest;
         }
+
+
+        public static WorldObject FindInventoryObjectByName(string name, bool partial = false, WorldObject excludeObject = null) {
+            WorldObject returnWO = null;
+            foreach (var item in UB.Core.WorldFilter.GetInventory()) {
+                if (item == excludeObject) continue;
+                if (partial && item.Name.ToLower().Contains(name.ToLower())) {
+                    returnWO = item;
+                }
+                else if (item.Name.Equals(name)) {
+                    returnWO = item;
+                }
+                if (returnWO != null) break;
+            }
+            return returnWO;
+        }
+        public static WorldObject FindContainerObjectByName(string name, bool partial = false, WorldObject excludeObject = null) {
+            WorldObject returnWO = null;
+            if (CoreManager.Current.Actions.OpenedContainer != 0) {
+                foreach (var item in CoreManager.Current.WorldFilter.GetByContainer(CoreManager.Current.Actions.OpenedContainer)) {
+                    if (item == excludeObject) continue;
+                    if (partial && item.Name.ToLower().Contains(name.ToLower())) {
+                        returnWO = item;
+                    }
+                    else if (item.Name.Equals(name)) {
+                        returnWO = item;
+                    }
+                    if (returnWO != null) break;
+                }
+            }
+            return returnWO;
+        }
+
+        public static WorldObject FindLandscapeObjectByName(string name, bool partial = false, WorldObject excludeObject = null) {
+            WorldObject returnWO = null;
+            List<WorldObject> wos = new List<WorldObject>();
+            foreach (var item in UB.Core.WorldFilter.GetLandscape()) {
+                if (item == excludeObject) continue;
+                if (partial && item.Name.ToLower().Contains(name.ToLower())) {
+                    wos.Add(item);
+                }
+                else if (item.Name.Equals(name)) {
+                    wos.Add(item);
+                }
+            }
+            var closestDistance = double.MaxValue;
+            foreach (var wo in wos) {
+                if (PhysicsObject.GetDistance(wo.Id) < closestDistance) {
+                    returnWO = wo;
+                    closestDistance = PhysicsObject.GetDistance(wo.Id);
+                }
+            }
+            return returnWO;
+        }
+
+
+        public static WorldObject FindObjectByName(string name, bool partial = false, bool inventory = false, bool landscape = false, WorldObject excludeObject = null) {
+            WorldObject returnWO = null;
+
+            if (inventory) {
+                returnWO = FindInventoryObjectByName(name, partial, excludeObject);
+            }
+            if (landscape) {
+                returnWO = FindLandscapeObjectByName(name, partial, excludeObject);
+            }
+            if (!inventory && !landscape) {
+                returnWO = FindInventoryObjectByName(name, partial, excludeObject);
+
+                if (returnWO == null) {
+                    returnWO = FindContainerObjectByName(name, partial, excludeObject);
+                }
+            }
+            return returnWO;
+        }
+
 
         private static bool CheckObjectClassArray(ObjectClass needle, ObjectClass[] haystack) {
             if (haystack.Length == 0) return true;
