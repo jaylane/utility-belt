@@ -20,6 +20,8 @@
 - Add commands `/ub vendor {addbuy[p] [count] <item name>, addsell[p] [count] <item name>}` for manually adding buy/sell items to vendors
 - Add vtgetmetastate[] expression to return current vtank meta state as a string
 - Fix isfalse and istrue expressions to accept any object
+- Add commands `/ub use[li][p] <item name> and /ub use[li][p] <item1 name> on <item2 name>` for using items
+- Add commands `/ub select[li][p] <item name>` for selecting items
 
 ## 0.2.3 (2021-01-30) [UtilityBeltInstaller-0.2.3.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/fee6e8ec9b64ef0aa33535e98fe3ed3d/UtilityBeltInstaller-0.2.3.exe)
 - Fix `cleargvar[]` expression wasn't actually clearing vars
