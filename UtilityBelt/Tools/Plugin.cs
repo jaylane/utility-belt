@@ -809,7 +809,7 @@ namespace UtilityBelt.Tools {
         #endregion //wobjectfindnearestbytemplatetype[int templatetype]
         #region wobjectgetintprop[wobject obj, int property]
         [ExpressionMethod("wobjectgetintprop")]
-        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to get intproperty of")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to get int property of")]
         [ExpressionParameter(1, typeof(double), "property", "IntProperty to return")]
         [ExpressionReturn(typeof(double), "Returns an int property value")]
         [Summary("Returns an int property from a specific world object, or 0 if it's undefined")]
@@ -818,6 +818,60 @@ namespace UtilityBelt.Tools {
             return wobject.Wo.Values((LongValueKey)Convert.ToInt32(property), 0);
         }
         #endregion //wobjectgetintprop[wobject obj, int property]
+        #region wobjectgetdoubleprop[wobject obj, int property]
+        [ExpressionMethod("wobjectgetdoubleprop")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to get double property of")]
+        [ExpressionParameter(1, typeof(double), "property", "DoubleProperty to return")]
+        [ExpressionReturn(typeof(double), "Returns a double property value")]
+        [Summary("Returns a double property from a specific world object, or 0 if it's undefined")]
+        [Example("wobjectgetdoubleprop[wobjectgetselection[],167772169]", "Returns the salvage workmanship of the currently selected object")]
+        public object Wobjectgetdoubleprop(ExpressionWorldObject wobject, double property) {
+            return wobject.Wo.Values((DoubleValueKey)Convert.ToInt32(property), 0);
+        }
+        #endregion //wobjectgetdoubleprop[wobject obj, int property]
+        #region wobjectgetboolprop[wobject obj, int property]
+        [ExpressionMethod("wobjectgetboolprop")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to get bool property of")]
+        [ExpressionParameter(1, typeof(double), "property", "BoolProperty to return")]
+        [ExpressionReturn(typeof(double), "Returns a bool property value")]
+        [Summary("Returns a bool property from a specific world object, or 0 if it's undefined")]
+        [Example("wobjectgetboolprop[wobjectgetselection[],99]", "Returns 1 if the currently selected object is ivoryable")]
+        public object Wobjectgetboolprop(ExpressionWorldObject wobject, double property) {
+            return wobject.Wo.Values((BoolValueKey)Convert.ToInt32(property), false);
+        }
+        #endregion //wobjectgetboolprop[wobject obj, int property]
+        #region wobjectgetstringprop[wobject obj, int property]
+        [ExpressionMethod("wobjectgetstringprop")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to get string property of")]
+        [ExpressionParameter(1, typeof(double), "property", "StringProperty to return")]
+        [ExpressionReturn(typeof(string), "Returns a string property value")]
+        [Summary("Returns a string property from a specific world object, or and empty string if it's undefined")]
+        [Example("wobjectgetstringprop[wobjectgetselection[],1]", "Returns the name of the currently selected object")]
+        public object Wobjectgetstringprop(ExpressionWorldObject wobject, double property) {
+            return wobject.Wo.Values((StringValueKey)Convert.ToInt32(property), "");
+        }
+        #endregion //wobjectgetstringprop[wobject obj, int property]
+        #region wobjecthasdata[wobject obj]
+        [ExpressionMethod("wobjecthasdata")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to check if we have assess data for")]
+        [ExpressionReturn(typeof(double), "Returns 1 if we have assess data for the object")]
+        [Summary("Checks if a wobject has assess data from the server")]
+        [Example("wobjecthasdata[wobjectgetselection[]]", "Returns 1 if the currently selected object has assess data from the server")]
+        public object WobjectHasData(ExpressionWorldObject wobject) {
+            return wobject.Wo.HasIdData;
+        }
+        #endregion //wobjecthasdata[wobject obj]
+        #region wobjectrequestdata[wobject obj]
+        [ExpressionMethod("wobjectrequestdata")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to request assess data for")]
+        [ExpressionReturn(typeof(double), "Returns 1")]
+        [Summary("Requests assess data for a wobject from the server")]
+        [Example("wobjectrequestdata[wobjectgetselection[]]", "Requests assess data from the server for the currently selected object")]
+        public object wobjectrequestdata(ExpressionWorldObject wobject) {
+            UB.Core.Actions.RequestId(wobject.Id);
+            return 1;
+        }
+        #endregion //wobjectrequestdata[wobject obj]
         #region wobjectgetheadingto[wobject obj]
         [ExpressionMethod("getheadingto")]
         [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to calculate heading towards")]

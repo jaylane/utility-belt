@@ -1,5 +1,5 @@
 ## 0.2.5 (TBD)
-- Changes go here
+- Add expressions: wobjectgetdoubleprop[], wobjectgetboolprop[], wobjectgetstringprop[], wobjecthasdata[], wobjectrequestdata[]
 
 ## 0.2.4 (2021-03-29) [UtilityBeltInstaller-0.2.4.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/deac20cf3c483c039174e4e9fee2f7ca/UtilityBeltInstaller-0.2.4.exe)
 - Fix classic server vtank patch, no longer patches non-itemenchantment auras
