@@ -772,9 +772,6 @@ namespace UtilityBelt.Tools {
             string itemTwo = args.Groups["itemTwo"].Value;
             string parameters = command.Replace("use","");
             bool partial = false;
-            WorldObject excludeObject = null;
-            WorldObject woOne = null;
-            WorldObject woTwo = null;
 
             //return if item is empty or used both i and l
             if (string.IsNullOrEmpty(itemOne)) return;
@@ -785,13 +782,22 @@ namespace UtilityBelt.Tools {
 
             if (parameters.Contains("p")) partial = true;
             if (!parameters.Contains("l") && !parameters.Contains("i"))
-                woOne = Util.FindObjectByName(itemOne, Util.WOSearchFlags.All, partial, null);
+                UB_UseItem(itemOne, Util.WOSearchFlags.All, partial, itemTwo);
             else if (parameters.Contains("i"))
-                woOne = Util.FindObjectByName(itemOne, Util.WOSearchFlags.Inventory, partial, null);
+                UB_UseItem(itemOne, Util.WOSearchFlags.Inventory, partial, itemTwo);
             else if (parameters.Contains("l"))
-                woOne = Util.FindObjectByName(itemOne, Util.WOSearchFlags.Landscape, partial, null);
+                UB_UseItem(itemOne, Util.WOSearchFlags.Landscape, partial, itemTwo);
+        }
 
-            excludeObject = woOne;
+        public void UB_UseItem(string itemOne, Util.WOSearchFlags flags, bool partial, string itemTwo = null) {
+            WorldObject woOne = null;
+            WorldObject woTwo = null;
+            WorldObject excludeObject = null;
+
+
+            if (string.IsNullOrEmpty(itemOne)) return;
+
+            woOne = excludeObject = Util.FindObjectByName(itemOne, flags, partial, null);
 
             //if only itemOne exists, run use on that item
             if (woOne != null) {
