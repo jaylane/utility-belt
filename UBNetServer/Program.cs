@@ -7,7 +7,7 @@ namespace UBNetServer {
     class Program {
         static bool shouldExit = false;
         static DateTime lastclientAction = DateTime.UtcNow;
-        static TimeSpan programExitTimeout = TimeSpan.FromSeconds(30);
+        static TimeSpan programExitTimeout = TimeSpan.FromSeconds(5);
 
         static void Main(string[] args) {
             using (var mutex = new Mutex(false, "com.UBNetServer.Instance")) {

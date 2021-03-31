@@ -13,6 +13,7 @@ using VirindiViewService.Controls;
 using System.IO;
 using UtilityBelt.Views;
 using System.Drawing;
+using System.Runtime.InteropServices;
 
 namespace UtilityBelt.Tools {
     [Name("Client")]
@@ -358,6 +359,28 @@ namespace UtilityBelt.Tools {
             }
             UB.Plugin.BackgroundFrameLimit.Value = frameRate;
             WriteToChat($"Background FrameRate Limited to {frameRate} fps, and saved to Plugin.BackgroundFrameLimit");
+        }
+        #endregion
+        #region /ub logout
+        [Summary("Loggs out of the current character")]
+        [Usage("/ub logout")]
+        [CommandPattern("logout", @"^$")]
+        public void Logout(string _, Match _2) {
+            Logger.WriteToChat($"Logging Out");
+            UB.Core.Actions.Logout();
+        }
+        #endregion
+        
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern bool PostMessage(IntPtr hhwnd, uint msg, IntPtr wparam, UIntPtr lparam);
+
+        #region /ub quit
+        [Summary("Closes the client")]
+        [Usage("/ub quit")]
+        [CommandPattern("quit", @"^$")]
+        public void Quit(string _, Match _2) {
+            Logger.WriteToChat($"Quitting Client");
+            PostMessage(UB.Core.Decal.Hwnd, 0x0002 /* WM_DESTROY */, (IntPtr)0, (UIntPtr)0);
         }
         #endregion
         #endregion Commands
