@@ -505,25 +505,30 @@ namespace UtilityBelt
             return returnWO;
         }
 
+        public enum WOSearchFlags { Landscape = 0x0001, Inventory = 0x0002, All = 0x0004 }
 
-        public static WorldObject FindObjectByName(string name, bool partial = false, bool inventory = false, bool landscape = false, WorldObject excludeObject = null) {
+        public static WorldObject FindObjectByName(string name, WOSearchFlags flags, bool partial = false, WorldObject excludeObject = null) {
             WorldObject returnWO = null;
-
-            if (inventory) {
-                returnWO = FindInventoryObjectByName(name, partial, excludeObject);
-            }
-            if (landscape) {
-                returnWO = FindLandscapeObjectByName(name, partial, excludeObject);
-            }
-            if (!inventory && !landscape) {
-                returnWO = FindInventoryObjectByName(name, partial, excludeObject);
-
-                if (returnWO == null) {
-                    returnWO = FindContainerObjectByName(name, partial, excludeObject);
-                }
+            switch (flags) {
+                case WOSearchFlags.Inventory:
+                    returnWO = FindInventoryObjectByName(name, partial, excludeObject);
+                    break;
+                case WOSearchFlags.Landscape:
+                    returnWO = FindLandscapeObjectByName(name, partial, excludeObject);
+                    break;
+                case WOSearchFlags.All:
+                    returnWO = FindInventoryObjectByName(name, partial, excludeObject);
+                    if (returnWO == null) {
+                        returnWO = FindContainerObjectByName(name, partial, excludeObject);
+                    }
+                    if (returnWO == null) {
+                        returnWO = FindLandscapeObjectByName(name, partial, excludeObject);
+                    }
+                    break;
             }
             return returnWO;
         }
+
 
 
         private static bool CheckObjectClassArray(ObjectClass needle, ObjectClass[] haystack) {

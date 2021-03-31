@@ -46,7 +46,7 @@ namespace UtilityBelt.Tools {
         private int portalAttempts = 0;
         private static WorldObject portal = null;
         private bool isDelayListening;
-        readonly private List<DelayedCommand> delayedCommands = new List<DelayedCommand>();
+        readonly private List<DelayedCommand> delayedCommands = new List<DelayedCommand>(); 
 
         /// <summary>
         /// The default character settings path
@@ -772,8 +772,6 @@ namespace UtilityBelt.Tools {
             string itemTwo = args.Groups["itemTwo"].Value;
             string parameters = command.Replace("use","");
             bool partial = false;
-            bool landscape = false;
-            bool inventory = false;
             WorldObject excludeObject = null;
             WorldObject woOne = null;
             WorldObject woTwo = null;
@@ -786,20 +784,28 @@ namespace UtilityBelt.Tools {
             }
 
             if (parameters.Contains("p")) partial = true;
-            if (parameters.Contains("l")) landscape = true;
-            if (parameters.Contains("i")) inventory = true;
+            if (!parameters.Contains("l") && !parameters.Contains("i"))
+                woOne = Util.FindObjectByName(itemOne, Util.WOSearchFlags.All, partial, null);
+            else if (parameters.Contains("i"))
+                woOne = Util.FindObjectByName(itemOne, Util.WOSearchFlags.Inventory, partial, null);
+            else if (parameters.Contains("l"))
+                woOne = Util.FindObjectByName(itemOne, Util.WOSearchFlags.Landscape, partial, null);
 
-            if (!string.IsNullOrEmpty(itemOne)) woOne = excludeObject = Util.FindObjectByName(itemOne, partial, inventory, landscape);
+            excludeObject = woOne;
 
             //if only itemOne exists, run use on that item
             if (woOne != null) {
                 if (string.IsNullOrEmpty(itemTwo)) {
+                    Logger.WriteToChat("using " + woOne.Name);
                     if (woOne.ObjectClass == ObjectClass.Portal) UB_portal(woOne.Name, partial);
                     else if (woOne.ObjectClass == ObjectClass.Vendor) UB.AutoVendor.UB_vendor_open(woOne.Name, partial);
                     else UB.Core.Actions.UseItem(woOne.Id, 0);
                 }
                 else if (!string.IsNullOrEmpty(itemTwo)) {
-                    woTwo = Util.FindObjectByName(itemTwo, partial, false, false, excludeObject);
+                    woTwo = Util.FindObjectByName(itemTwo, Util.WOSearchFlags.All, partial, excludeObject);
+                    if (woTwo == null) Logger.WriteToChat(itemTwo + " is null");
+                    //UB.Core.Actions.ApplyItem(woOne.Id, woTwo.Id);
+                    Logger.WriteToChat("using " + woOne.Name + " on " + woTwo.Name);
                     UB.Core.Actions.ApplyItem(woOne.Id, woTwo.Id);
                 }
             }
@@ -816,8 +822,6 @@ namespace UtilityBelt.Tools {
             string itemOne = args.Groups["itemOne"].Value;
             string parameters = command.Replace("select", "");
             bool partial = false;
-            bool landscape = false;
-            bool inventory = false;
             WorldObject woOne = null;
 
             //return if item is empty or used both i and l
@@ -829,10 +833,12 @@ namespace UtilityBelt.Tools {
             }
 
             if (parameters.Contains("p")) partial = true;
-            if (parameters.Contains("l")) landscape = true;
-            if (parameters.Contains("i")) inventory = true;
-
-            if (!string.IsNullOrEmpty(itemOne)) woOne = Util.FindObjectByName(itemOne, partial, inventory, landscape);
+            if (!parameters.Contains("l") && !parameters.Contains("i"))
+                woOne = Util.FindObjectByName(itemOne, Util.WOSearchFlags.All, partial, null);
+            else if (parameters.Contains("i"))
+                woOne = Util.FindObjectByName(itemOne, Util.WOSearchFlags.Inventory, partial, null);
+            else if (parameters.Contains("l"))
+                woOne = Util.FindObjectByName(itemOne, Util.WOSearchFlags.Landscape, partial, null);
 
             if (woOne != null) UB.Core.Actions.SelectItem(woOne.Id);
 
