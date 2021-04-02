@@ -1,6 +1,7 @@
 ## 0.2.5 (TBD)
 - Add expressions: wobjectgetdoubleprop[], wobjectgetboolprop[], wobjectgetstringprop[], wobjecthasdata[], wobjectrequestdata[]
 - Add commands: `/ub logout`, `/ub quit`
+- Fix jump/face commands to accept decimals instead of just whole numbers for heading
 
 ## 0.2.4 (2021-03-29) [UtilityBeltInstaller-0.2.4.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/deac20cf3c483c039174e4e9fee2f7ca/UtilityBeltInstaller-0.2.4.exe)
 - Fix classic server vtank patch, no longer patches non-itemenchantment auras
