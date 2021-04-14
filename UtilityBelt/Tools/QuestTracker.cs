@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Decal.Adapter;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
@@ -356,6 +356,7 @@ namespace UtilityBelt.Tools {
                     UB.Core.RenderFrame -= Core_RenderFrame;
                     UIQuestListRefresh.Visible = true;
                     ShouldEat = false;
+                    Logger.WriteToChat($"Quest data updated.");
 
                     UpdateQuestDB();
                 }
