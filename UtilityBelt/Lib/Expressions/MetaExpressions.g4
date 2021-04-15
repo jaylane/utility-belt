@@ -24,7 +24,7 @@ BOOL                : ([tT][rR][uU][eE] | [fF][aA][lL][sS][eE]) ;
 MINUS               : '-';
 NUMBER              : (DIGIT* '.'? DIGIT+);
 HEXNUMBER           : '0x' [0-9A-Fa-f]+;
-STRING              : ( ('`' (BSLASH '`' | ~[`])* '`') | (([a-zA-Z_'"] | BSLASH .)+ ([a-zA-Z0-9_'" ]+ | BSLASH .)*) ) ;
+STRING              : ( ('`' (BSLASH '`' | ~[`])* '`') | (([@a-zA-Z_'"] | BSLASH .)+ ([@a-zA-Z0-9_'" ]+ | BSLASH .)*) ) ;
 WHITESPACE          : [ \t\r\n]+ -> skip;
 
 fragment DIGIT      : [0-9] ;
