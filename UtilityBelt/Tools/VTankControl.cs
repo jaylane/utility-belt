@@ -715,7 +715,7 @@ namespace UtilityBelt.Tools {
         [Summary("Gets your characters training level for a specified skill")]
         [Example("getcharskill_traininglevel[23]", "Returns your character's LockPick skill training level")]
         public object Getcharskill_traininglevel(double skillId) {
-            return (double)UtilityBeltPlugin.Instance.Core.CharacterFilter.Skills[(CharFilterSkillType)Convert.ToInt32(skillId)].Training;
+            return (double)UtilityBeltPlugin.Instance.Core.CharacterFilter.Underlying.Skill[(Decal.Interop.Filters.eSkillID)Convert.ToInt32(skillId)].Training;
         }
         #endregion //getcharskill_traininglevel[int vitalId]
         #region getcharskill_base[int skillId]
@@ -725,7 +725,7 @@ namespace UtilityBelt.Tools {
         [Summary("Gets your characters base skill level for a speficied skill")]
         [Example("getcharskill_base[43]", "Returns your character's base Void skill level")]
         public object Getcharskill_base(double skillId) {
-            return (double)UtilityBeltPlugin.Instance.Core.CharacterFilter.Skills[(CharFilterSkillType)Convert.ToInt32(skillId)].Base;
+            return (double)UtilityBeltPlugin.Instance.Core.Actions.Skill[(Decal.Adapter.Wrappers.SkillType)Convert.ToInt32(skillId) + 50];
         }
         #endregion //getcharskill_base[int vitalId]
         #region getcharskill_buffed[int skillId]
@@ -735,7 +735,14 @@ namespace UtilityBelt.Tools {
         [Summary("Gets your characters buffed skill level for a speficied skill")]
         [Example("getcharskill_buffed[33]", "Returns your character's buffed Life Magic skill level")]
         public object Getcharskill_buffed(double skillId) {
-            return (double)UtilityBeltPlugin.Instance.Core.CharacterFilter.Skills[(CharFilterSkillType)Convert.ToInt32(skillId)].Buffed;
+            var buffedSkill = (double)UtilityBeltPlugin.Instance.Core.CharacterFilter.Underlying.Skill[(Decal.Interop.Filters.eSkillID)Convert.ToInt32(skillId)].Buffed;
+
+            if (UB.Core.CharacterFilter.GetCharProperty(326/*Jack of All Trades*/) == 1)
+                buffedSkill += 5;
+            if (UB.Core.CharacterFilter.GetCharProperty((int)Augmentations.MasterFiveFoldPath) == 1)
+                buffedSkill += 10;
+
+            return buffedSkill;
         }
         #endregion //getcharskill_buffed[int vitalId]
         #region getplayerlandcell[]
