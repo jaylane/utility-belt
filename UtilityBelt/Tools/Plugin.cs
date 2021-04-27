@@ -19,6 +19,7 @@ using static UtilityBelt.Tools.VTankControl;
 using UBLoader.Lib.Settings;
 using System.Collections.ObjectModel;
 using Hellosam.Net.Collections;
+using Exceptionless.Extensions;
 
 namespace UtilityBelt.Tools {
     public class DelayedCommand {
@@ -45,7 +46,7 @@ namespace UtilityBelt.Tools {
         private int portalAttempts = 0;
         private static WorldObject portal = null;
         private bool isDelayListening;
-        readonly private List<DelayedCommand> delayedCommands = new List<DelayedCommand>();
+        readonly private List<DelayedCommand> delayedCommands = new List<DelayedCommand>(); 
 
         /// <summary>
         /// The default character settings path
@@ -755,6 +756,98 @@ namespace UtilityBelt.Tools {
                 return;
             }
             Logger.Error($"Could not find {(charName == null ? "closest player" : $"player {charName}")} Command:{command}");
+        }
+        #endregion
+
+        #region /ub use[li][p] <itemOne> on <itemTwo>
+        [Summary("Use Item")]
+        [Usage("/ub use[li][p] [itemOne] on [itemTwo]")]
+        [Example("/ub use Cake", "Use an item with exact name of Cake")]
+        [Example("/ub usepi splitting on gold pea", "Use a partial match (splitting) splitting tool on a gold pea")]
+        [Example("/ub uselp plant", "Use a plant on the landscape.")]
+        [Example("/ub usei Stamina Elixer", "Use a stamina elixer in your inventory.")]
+        [CommandPattern("use", @"^(?<itemOne>.+?)(?=\son|$)( on (?<itemTwo>.+))?$", true)]
+        public void UseItem(string command, Match args) {
+            string itemOne = args.Groups["itemOne"].Value;
+            string itemTwo = args.Groups["itemTwo"].Value;
+            string parameters = command.Replace("use","");
+            bool partial = false;
+
+            //return if item is empty or used both i and l
+            if (string.IsNullOrEmpty(itemOne)) return;
+            if (parameters.Contains("l") && parameters.Contains("i")) {
+                Logger.WriteToChat("l and i cannot be used in the same command"); 
+                return;
+            }
+
+            if (parameters.Contains("p")) partial = true;
+            if (!parameters.Contains("l") && !parameters.Contains("i"))
+                UB_UseItem(itemOne, Util.WOSearchFlags.All, partial, itemTwo);
+            else if (parameters.Contains("i"))
+                UB_UseItem(itemOne, Util.WOSearchFlags.Inventory, partial, itemTwo);
+            else if (parameters.Contains("l"))
+                UB_UseItem(itemOne, Util.WOSearchFlags.Landscape, partial, itemTwo);
+        }
+
+        public void UB_UseItem(string itemOne, Util.WOSearchFlags flags, bool partial, string itemTwo = null) {
+            WorldObject woOne = null;
+            WorldObject woTwo = null;
+            WorldObject excludeObject = null;
+
+
+            if (string.IsNullOrEmpty(itemOne)) return;
+
+            woOne = excludeObject = Util.FindObjectByName(itemOne, flags, partial, null);
+
+            //if only itemOne exists, run use on that item
+            if (woOne != null) {
+                if (string.IsNullOrEmpty(itemTwo)) {
+                    Logger.WriteToChat("using " + woOne.Name);
+                    if (woOne.ObjectClass == ObjectClass.Portal) UB_portal(woOne.Name, partial);
+                    else if (woOne.ObjectClass == ObjectClass.Vendor) UB.AutoVendor.UB_vendor_open(woOne.Name, partial);
+                    else UB.Core.Actions.UseItem(woOne.Id, 0);
+                }
+                else if (!string.IsNullOrEmpty(itemTwo)) {
+                    woTwo = Util.FindObjectByName(itemTwo, Util.WOSearchFlags.All, partial, excludeObject);
+                    if (woTwo == null) Logger.WriteToChat(itemTwo + " is null");
+                    //UB.Core.Actions.ApplyItem(woOne.Id, woTwo.Id);
+                    Logger.WriteToChat("using " + woOne.Name + " on " + woTwo.Name);
+                    UB.Core.Actions.ApplyItem(woOne.Id, woTwo.Id);
+                }
+            }
+        }
+        #endregion
+        #region /ub select[li][p] <itemOne>
+        [Summary("Select Item")]
+        [Usage("/ub select[li][p] [item]")]
+        [Example("/ub select Cake", "Select an item with exact name of Cake")]
+        [Example("/ub selectpi gold", "Select a partial match to the word gold ")]
+        [Example("/ub selectlp plant", "Select a partial match of a plant on the landscape.")]
+        [CommandPattern("select", @"^(?<itemOne>.+?)$", true)]
+        public void SelectItem(string command, Match args) {
+            string itemOne = args.Groups["itemOne"].Value;
+            string parameters = command.Replace("select", "");
+            bool partial = false;
+            WorldObject woOne = null;
+
+            //return if item is empty or used both i and l
+            if (string.IsNullOrEmpty(itemOne)) return;
+
+            if (parameters.Contains("l") && parameters.Contains("i")) {
+                Logger.WriteToChat("l and i cannot be used in the same command");
+                return;
+            }
+
+            if (parameters.Contains("p")) partial = true;
+            if (!parameters.Contains("l") && !parameters.Contains("i"))
+                woOne = Util.FindObjectByName(itemOne, Util.WOSearchFlags.All, partial, null);
+            else if (parameters.Contains("i"))
+                woOne = Util.FindObjectByName(itemOne, Util.WOSearchFlags.Inventory, partial, null);
+            else if (parameters.Contains("l"))
+                woOne = Util.FindObjectByName(itemOne, Util.WOSearchFlags.Landscape, partial, null);
+
+            if (woOne != null) UB.Core.Actions.SelectItem(woOne.Id);
+
         }
         #endregion
         #endregion

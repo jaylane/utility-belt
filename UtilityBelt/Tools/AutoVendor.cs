@@ -354,7 +354,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             Logger.WriteToChat($"Added item to buy list: {item.Name} * {count}");
         }
 
-        private void UB_vendor_open(string vendorname, bool partial) {
+        public void UB_vendor_open(string vendorname, bool partial) {
             vendor = Util.FindName(vendorname, partial, new ObjectClass[] { ObjectClass.Vendor });
             if (vendor != null) {
                 OpenVendor();
