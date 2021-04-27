@@ -1344,6 +1344,7 @@ namespace UtilityBelt.Tools {
             double result = 0;
             if (dict.Items.ContainsKey(key)) {
                 result = 1;
+                dict.Items.Remove(key);
             }
 
             dict.Items.Add(key, value);

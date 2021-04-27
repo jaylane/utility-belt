@@ -1,6 +1,10 @@
 ## 0.2.5 (TBD)
 - Add expressions: wobjectgetdoubleprop[], wobjectgetboolprop[], wobjectgetstringprop[], wobjecthasdata[], wobjectrequestdata[]
 - Add commands: `/ub logout`, `/ub quit`
+- Fix jump/face commands to accept decimals instead of just whole numbers for heading
+- Fix `dictadditem` expression to properly overwrite existing keys
+- Add support for @ symbol in unquoted expression strings
+- Fix `getcharskill_traininglevel`, `getcharskill_base`, and `getcharskill_buffed` expressions to support summoning
 - Add commands `/ub use[li][p] <item name> and /ub use[li][p] <item1 name> on <item2 name>` for using items
 - Add commands `/ub select[li][p] <item name>` for selecting items
 

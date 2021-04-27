@@ -25,8 +25,8 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
         private bool addC = false;
         private bool addShift = false;
         private int msToHoldDown;
-        private int faceDirectionInt;
-        private int targetDirection;
+        private double faceDirectionDouble;
+        private double targetDirection;
         private DateTime lastThought = DateTime.MinValue;
         private DateTime turningSeconds = DateTime.MinValue;
         private DateTime navSettingTimer = DateTime.MinValue;
@@ -55,9 +55,9 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
         [Summary("Face heading commands with built in VTank pausing and retries")]
         [Usage("/ub face <heading>")]
         [Example("/ub face 180", "Faces your character towards 180 degrees (south).")]
-        [CommandPattern("face", @"^ *(?<Heading>\d+) *$")]
+        [CommandPattern("face", @"^ *(?<Heading>[\.\d]+) *$")]
         public void DoFace(string command, Match args) {
-            if (!int.TryParse(args.Groups["Heading"].Value, out targetDirection)) {
+            if (!double.TryParse(args.Groups["Heading"].Value, out targetDirection)) {
                 LogError("Invalid jump heading: " + args.Groups["Heading"].Value);
                 return;
             }
@@ -67,7 +67,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                 UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(15000));
 
             needToTurn = false;
-            UBHelper.Core.TurnToHeading(targetDirection);
+            UBHelper.Core.TurnToHeading((float)targetDirection);
             LogDebug("Turning to " + targetDirection);
             if (!renderFrameSubscribed) {
                 UB.Core.RenderFrame += Core_RenderFrame;
@@ -81,7 +81,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
         [Example("/ub jumpsw 180 500", "Face 180 degrees (south) and jump forward with 500/1000 power.")]
         [Example("/ub jumpsx 300", "Jump backward with 300/1000 power.")]
         [Example("/ub jump", "Taps jump.")]
-        [CommandPattern("jump", @"^ *((?<faceDirection>\d+)\s+)?(?<msToHoldDown>\d+)?$", true)]
+        [CommandPattern("jump", @"^ *((?<faceDirection>[\.\d]+)\s+)?(?<msToHoldDown>\d+)?$", true)]
         public void DoJump(string command, Match args) {
             if (needToJump || waitingForJump) {
                 LogError("You are already jumping. try again later.");
@@ -97,15 +97,18 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                 }
             } else { msToHoldDown = 0; }
             if (!string.IsNullOrEmpty(args.Groups["faceDirection"].Value)) {
-                if (!int.TryParse(args.Groups["faceDirection"].Value, out faceDirectionInt)) return;
-                if (faceDirectionInt < 0 || faceDirectionInt > 359) {
+                if (!double.TryParse(args.Groups["faceDirection"].Value, out faceDirectionDouble)) return;
+                if (faceDirectionDouble < 0 || faceDirectionDouble > 359) {
                     LogError("direction should be a number between 0 and 359");
                     return;
                 }
                 needToTurn = true;
-                targetDirection = faceDirectionInt;
+                targetDirection = faceDirectionDouble;
             }
-            else { needToTurn = false; targetDirection = (int)Math.Round(CoreManager.Current.Actions.Heading, 0); }
+            else {
+                needToTurn = false;
+                targetDirection = CoreManager.Current.Actions.Heading;
+            }
 
             //set jump direction
             if (command.Contains("w")) addW = true;
@@ -124,7 +127,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
             if (needToTurn) {
                 turningSeconds = DateTime.UtcNow;
                 needToTurn = false;
-                UBHelper.Core.TurnToHeading(targetDirection);
+                UBHelper.Core.TurnToHeading((float)targetDirection);
             }
             if (!renderFrameSubscribed) {
                 UB.Core.RenderFrame += Core_RenderFrame;
@@ -141,7 +144,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
             try {
                 if (isTurning && DateTime.UtcNow - lastThought >= TimeSpan.FromMilliseconds(100)) {
                     lastThought = DateTime.UtcNow;
-                    if (targetDirection == Math.Round(CoreManager.Current.Actions.Heading, 0)) {
+                    if (Math.Abs(targetDirection - CoreManager.Current.Actions.Heading) < 1) {
                         if (ThinkComplete && !needToJump)
                             Util.Think("Turning Success");
                         isTurning = false;
@@ -150,7 +153,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                             UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.CorpseOpenAttempt);
                         }
                     }
-                    else UBHelper.Core.TurnToHeading(targetDirection); // giv'er!
+                    else UBHelper.Core.TurnToHeading((float)targetDirection); // giv'er!
                 }
 
                 //abort turning if takes longer than 15 seconds
@@ -165,7 +168,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                     needToJump = false;
                     enableNavTimer = TimeSpan.FromMilliseconds(msToHoldDown + 5000);
                     UBHelper.Jumper.JumpComplete += Jumper_JumpComplete;
-                    UBHelper.Jumper.Jump(targetDirection, ((float)msToHoldDown / 1000), addShift, addW, addX, addZ, addC);
+                    UBHelper.Jumper.Jump((float)targetDirection, ((float)msToHoldDown / 1000), addShift, addW, addX, addZ, addC);
                     waitingForJump = true;
 
                     navSettingTimer = DateTime.UtcNow;
@@ -179,7 +182,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                         Logger.Debug("Timeout waiting for jump, trying again...");
                         if (PauseNav)
                             UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(15000));
-                        UBHelper.Jumper.Jump(targetDirection, ((float)msToHoldDown / 1000), addShift, addW, addX, addZ, addC);
+                        UBHelper.Jumper.Jump((float)targetDirection, ((float)msToHoldDown / 1000), addShift, addW, addX, addZ, addC);
                     }
                     else {
                         Util.ThinkOrWrite("You have failed to jump too many times.", ThinkFail);

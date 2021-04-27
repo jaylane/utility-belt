@@ -9,7 +9,7 @@ using System.Xml;
 namespace UtilityBelt.Lib.Quests {
     class QuestFlag : IComparable {
         public static readonly Regex MyQuestRegex = new Regex(@"(?<key>\S+) \- (?<solves>\d+) solves \((?<completedOn>\d{0,11})\)""?((?<description>.*)"" (?<maxSolves>.*) (?<repeatTime>\d{0,11}))?.*$");
-        public static readonly Regex KillTaskRegex = new Regex(@"killtask|killcount|slayerquest|totalgolem.*dead|(kills$)");
+        public static readonly Regex KillTaskRegex = new Regex(@"(killtask|killcount|slayerquest|totalgolem.*dead|(kills$))");
 
         public static Dictionary<string, string> FriendlyNamesLookup = new Dictionary<string, string>();
 
@@ -43,7 +43,7 @@ namespace UtilityBelt.Lib.Quests {
 
         public QuestFlagType FlagType {
             get {
-                if (KillTaskRegex.IsMatch(Key)) {
+                if (KillTaskRegex.IsMatch(Key) && MaxSolves >= 0) {
                     return QuestFlagType.KillTask;
                 }
                 else if (MaxSolves == 1 && Solves <= 1) {
