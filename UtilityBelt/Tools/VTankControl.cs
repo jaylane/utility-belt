@@ -22,6 +22,7 @@ using System.Collections;
 using Harmony;
 using Decal.Filters;
 using Decal.Adapter;
+using System.Security.Cryptography;
 
 namespace UtilityBelt.Tools {
     [Name("VTank")]
@@ -745,6 +746,30 @@ namespace UtilityBelt.Tools {
             return buffedSkill;
         }
         #endregion //getcharskill_buffed[int vitalId]
+        #region getcharattribute_buffed[int attributeId]
+        [ExpressionMethod("getcharattribute_buffed")]
+        [ExpressionParameter(0, typeof(double), "attributeId", "Which attribute to check. 1 = Strength, 2 = Endurance, 3 = Quickness, 4 = Coordination, 5 = Focus, 6 = Self")]
+        [ExpressionReturn(typeof(double), "Returns buffed attribute level of the specified attribute")]
+        [Summary("Gets your characters buffed attribute level for a speficied attribute")]
+        [Example("getcharattribute_buffed[1]", "Returns your character's buffed Strength attribute level")]
+        public object Getcharattribute_buffed(double attributeId) {
+            var buffedAttribute = (double)UtilityBeltPlugin.Instance.Core.CharacterFilter.Underlying.Attribute[(Decal.Interop.Filters.eAttributeID)Convert.ToInt32(attributeId)].Buffed;
+
+            return buffedAttribute;
+        }
+        #endregion //getcharattribute_buffed[int attributeId]
+        #region getcharattribute_buffed[int attributeId]
+        [ExpressionMethod("getcharattribute_base")]
+        [ExpressionParameter(0, typeof(double), "attributeId", "Which attribute to check. 1 = Strength, 2 = Endurance, 3 = Quickness, 4 = Coordination, 5 = Focus, 6 = Self")]
+        [ExpressionReturn(typeof(double), "Returns base attribute level of the specified attribute")]
+        [Summary("Gets your characters base attribute level for a speficied attribute")]
+        [Example("getcharattribute_base[1]", "Returns your character's base Strength attribute level")]
+        public object Getcharattribute_base(double attributeId) {
+            var baseAttribute = (double)UtilityBeltPlugin.Instance.Core.CharacterFilter.Underlying.Attribute[(Decal.Interop.Filters.eAttributeID)Convert.ToInt32(attributeId)].Base;
+            
+            return baseAttribute;
+        }
+        #endregion //getcharattribute_base[int attributeId]
         #region getplayerlandcell[]
         [ExpressionMethod("getplayerlandcell")]
         [ExpressionReturn(typeof(double), "Returns the landcell your character is currently standing in, including the landblock")]
