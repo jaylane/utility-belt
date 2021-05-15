@@ -8,6 +8,7 @@
 - Add commands `/ub use[li][p] <item name> and /ub use[li][p] <item1 name> on <item2 name>` for using items
 - Add commands `/ub select[li][p] <item name>` for selecting items
 - Add expressions getcharattribute_base[int] and getcharattribute_buffed[int]
+- Fix autotinker bug where skill lowered hangs up autotinker and requires relog.  Stop button now fixes.
 
 ## 0.2.4 (2021-03-29) [UtilityBeltInstaller-0.2.4.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/deac20cf3c483c039174e4e9fee2f7ca/UtilityBeltInstaller-0.2.4.exe)
 - Fix classic server vtank patch, no longer patches non-itemenchantment auras

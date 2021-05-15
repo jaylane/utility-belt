@@ -144,6 +144,9 @@ namespace UtilityBelt.Lib.Tinker {
             itemID = 0;
             isRunning = false;
             activeJob = null;
+            lastSkill = 0;
+            lastTinkType = 0;
+            tinking = false;
             CoreManager.Current.ChatBoxMessage -= Current_ChatBoxMessage;
             UBHelper.ConfirmationRequest.ConfirmationRequestEvent -= UBHelper_ConfirmationRequest;
         }
