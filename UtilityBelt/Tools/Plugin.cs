@@ -871,6 +871,39 @@ namespace UtilityBelt.Tools {
             return UBHelper.Core.WorldName;
         }
         #endregion //getworldname[]
+        #region getdatetimelocal[string format]
+        [ExpressionMethod("getdatetimelocal")]
+        [ExpressionParameter(0, typeof(string), "text", "The format to return the date/time")]
+        [ExpressionReturn(typeof(string), "Returns the local date and time")]
+        [Summary("Gets the local date and time using the format provided")]
+        [Example("getdatetimelocal[`hh:mm:ss tt`]", "Returns current local time '06:09:01 PM'")]
+        public string Getdatetimelocal(string format = "hh:mm:ss tt") {
+            try {
+                return DateTime.Now.ToString(format).ToString();
+            }
+            catch (Exception ex) {
+                Logger.WriteToChat(ex.Message);
+            }
+            return "";
+        }
+        #endregion //getdatetimelocal[string format]
+        #region getdatetimeutc[string format]
+        [ExpressionMethod("getdatetimeutc")]
+        [ExpressionParameter(0, typeof(string), "text", "The format to return the date/time")]
+        [ExpressionReturn(typeof(string), "Returns the universal date and time")]
+        [Summary("Gets the universal date and time using the format provided")]
+        [Example("getdatetimeutc[`hh:mm:ss tt`]", "Returns current universal time '06:09:01 PM'")]
+        public string Getdatetimeutc(string format = "hh:mm:ss tt") {
+            try {
+                return DateTime.UtcNow.ToString(format).ToString();
+            }
+            catch (Exception ex) {
+                Logger.WriteToChat(ex.Message);
+            }
+            return "";
+        }
+        #endregion //getdatetimeutc[string format]
+
         #region wobjectfindnearestbytemplatetype[int templatetype]
         [ExpressionMethod("wobjectfindnearestbytemplatetype")]
         [ExpressionParameter(0, typeof(double), "templatetype", "templatetype to filter by")]
