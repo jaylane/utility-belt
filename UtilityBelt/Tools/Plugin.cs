@@ -850,6 +850,24 @@ namespace UtilityBelt.Tools {
 
         }
         #endregion
+        #region /ub close <corpse|chest>
+        [Summary("Close the open corpse")]
+        [Usage("/ub close corpse")]
+        [Example("/ub close corpse", "Close the corpse if one is open")]
+        [CommandPattern("close", @"^(?<objectclass>.+)?$", true)]
+        public void DoClose(string command, Match args) {
+            string objectClass = args.Groups["objectclass"].Value;
+            if (objectClass.Length == 0) objectClass = null;
+            int openContainer = UB.Core.Actions.OpenedContainer;
+            if (objectClass == "corpse" && UB.Core.WorldFilter[openContainer].ObjectClass == ObjectClass.Corpse) {
+                UB.Core.Actions.UseItem(openContainer, 0);
+            }
+            else if (objectClass == "chest" && UB.Core.WorldFilter[openContainer].ObjectClass == ObjectClass.Container) {
+                UB.Core.Actions.UseItem(openContainer, 0);
+            }
+
+        }
+        #endregion
         #endregion
 
         #region Expressions
