@@ -512,6 +512,20 @@ namespace UtilityBelt.Tools {
             }
         }
         #endregion
+        #region /ub mexecm
+        [Summary("Evaluates a meta expression without writing to chat")]
+        [Usage("/ub mexecm <expression>")]
+        [Example("/ub mexecm <expression>", "Evaluates expression")]
+        [CommandPattern("mexecm", @"^(?<Expression>.*)?$")]
+        public void EvaluateMutedExpressionCommand(string command, Match args) {
+            try {
+                var res = UB.VTank.EvaluateExpression(args.Groups["Expression"].Value, true);
+            }
+            catch (Exception ex) {
+                Logger.LogException(ex, false);
+            }
+        }
+        #endregion
         #region /ub pos
         [Summary("Prints position information for the currently selected object")]
         [Usage("/ub pos")]
@@ -794,7 +808,6 @@ namespace UtilityBelt.Tools {
             WorldObject woTwo = null;
             WorldObject excludeObject = null;
 
-
             if (string.IsNullOrEmpty(itemOne)) return;
 
             woOne = excludeObject = Util.FindObjectByName(itemOne, flags, partial, null);
@@ -809,10 +822,18 @@ namespace UtilityBelt.Tools {
                 }
                 else if (!string.IsNullOrEmpty(itemTwo)) {
                     woTwo = Util.FindObjectByName(itemTwo, Util.WOSearchFlags.All, partial, excludeObject);
-                    if (woTwo == null) Logger.WriteToChat(itemTwo + " is null");
-                    //UB.Core.Actions.ApplyItem(woOne.Id, woTwo.Id);
+                    if (woTwo == null) {
+                        Logger.WriteToChat(itemTwo + " is null");
+                        return;
+                    }
                     Logger.WriteToChat("using " + woOne.Name + " on " + woTwo.Name);
-                    UB.Core.Actions.ApplyItem(woOne.Id, woTwo.Id);
+                    if (woOne.ObjectClass == ObjectClass.WandStaffOrb) {
+                        if (UB.Core.Actions.CombatMode == CombatState.Magic && UB.Core.Actions.BusyState == 0) {
+                            UB.Core.Actions.SelectItem(woTwo.Id);
+                            UB.Core.Actions.UseItem(woOne.Id, 1, woTwo.Id);
+                        }
+                    }
+                    else UB.Core.Actions.ApplyItem(woOne.Id, woTwo.Id);
                 }
             }
         }

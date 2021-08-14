@@ -1145,6 +1145,23 @@ namespace UtilityBelt.Tools {
             return 0;
         }
         #endregion //actiontryuseitem[wobject obj]
+        #region actiontryuseitemon[wobject useObj, wobject onObj]
+        [ExpressionMethod("actiontryuseitemon")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "useObj", "wobject to use first")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "onObj", "wobject to be used on")]
+        [ExpressionReturn(typeof(double), "Returns 0 if failed, and 1 if it *could* succeed")]
+        [Summary("Attempts to use a worldobject on another worldobject")]
+        [Example("actiontryuseitemon[wobjectfindininventorybyname[`Wings of Rakhil`],wobjectfindnearestmonster[]]", "Attempts to use Wings of Rakhil on the nearest monster")]
+        public object Actiontryuseitemon(ExpressionWorldObject useObj, ExpressionWorldObject onObj) {
+            if (UtilityBeltPlugin.Instance.Core.Actions.BusyState != 0)
+                return 0;
+            if (useObj.Wo.ObjectClass == ObjectClass.WandStaffOrb && UtilityBeltPlugin.Instance.Core.Actions.CombatMode != CombatState.Magic)
+                return 0;
+            UtilityBeltPlugin.Instance.Core.Actions.SelectItem(onObj.Id);
+            UtilityBeltPlugin.Instance.Core.Actions.UseItem(useObj.Wo.Id, 1, onObj.Id);
+            return 1;
+        }
+        #endregion //actiontryuseitem[wobject obj]
         #region actiontryapplyitem[wobject useObj, wobject onObj]
         [ExpressionMethod("actiontryapplyitem")]
         [ExpressionParameter(0, typeof(ExpressionWorldObject), "useObj", "wobject to use first")]
