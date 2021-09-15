@@ -495,6 +495,27 @@ Provides a command-line interface to inventory management.
             return count;
         }
         #endregion //getitemcountininventorybynamerx[string name]
+        #region getinventorycountbytemplatetype[string name]
+        [ExpressionMethod("getinventorycountbytemplatetype")]
+        [ExpressionParameter(0, typeof(double), "templatetype", "templatetype to filter by")]
+        [ExpressionReturn(typeof(double), "Returns a count of the number of items found. stack size is counted")]
+        [Summary("Counts how many items you have in your inventory of a certain template type. Stack sizes are counted")]
+        [Example("getinventorycountbytemplatetype[42137]", "Returns total count of inventory items with templaye type 42137 (level 10 ice tachi warden)")]
+        public object Getinventorycountbytemplatetype(double templateType) {
+            double count = 0;
+            List<int> weenies = new List<int>();
+            UBHelper.InventoryManager.GetInventory(ref weenies, UBHelper.InventoryManager.GetInventoryType.Everything, Weenie.INVENTORY_LOC.ALL_LOC);
+            foreach (var id in weenies) {
+                var weenie = new Weenie(id);
+                if (weenie.WCID == templateType) {
+                    count += (weenie.StackMax > 1 && weenie.StackCount >= 1) ? weenie.StackCount : 1;
+                }
+            }
+
+            return count;
+        }
+        #endregion //getinventorycountbytemplatetype[string name]
+
         #region actiontrygiveprofile[string lootprofile, string target]
         [ExpressionMethod("actiontrygiveprofile")]
         [ExpressionParameter(0, typeof(string), "lootprofile", "loot profile to give")]
