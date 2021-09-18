@@ -493,13 +493,17 @@ namespace UtilityBelt.Tools {
         [Summary("Evaluates a meta expression")]
         [Usage("/ub mexec <expression>")]
         [Example("/ub mexec <expression>", "Evaluates expression")]
-        [CommandPattern("mexec", @"^(?<Expression>.*)?$")]
+        [CommandPattern("mexec", @"^(?<Expression>.*)?$", true)]
         public void EvaluateExpressionCommand(string command, Match args) {
-            EvaluateExpression(args.Groups["Expression"].Value);
+            EvaluateExpression(args.Groups["Expression"].Value, command.Replace("mexec", "").Equals("m"));
         }
 
-        public void EvaluateExpression(string expression) {
+        public void EvaluateExpression(string expression, bool silent=false) {
             try {
+                if (silent) {
+                    UB.VTank.EvaluateExpression(expression);
+                    return;
+                }
                 var watch = new System.Diagnostics.Stopwatch();
                 Logger.WriteToChat($"Evaluating expression: \"{expression}\"", Logger.LogMessageType.Expression, true, false);
                 watch.Start();
@@ -794,7 +798,6 @@ namespace UtilityBelt.Tools {
             WorldObject woTwo = null;
             WorldObject excludeObject = null;
 
-
             if (string.IsNullOrEmpty(itemOne)) return;
 
             woOne = excludeObject = Util.FindObjectByName(itemOne, flags, partial, null);
@@ -809,10 +812,18 @@ namespace UtilityBelt.Tools {
                 }
                 else if (!string.IsNullOrEmpty(itemTwo)) {
                     woTwo = Util.FindObjectByName(itemTwo, Util.WOSearchFlags.All, partial, excludeObject);
-                    if (woTwo == null) Logger.WriteToChat(itemTwo + " is null");
-                    //UB.Core.Actions.ApplyItem(woOne.Id, woTwo.Id);
+                    if (woTwo == null) {
+                        Logger.WriteToChat(itemTwo + " is null");
+                        return;
+                    }
                     Logger.WriteToChat("using " + woOne.Name + " on " + woTwo.Name);
-                    UB.Core.Actions.ApplyItem(woOne.Id, woTwo.Id);
+                    if (woOne.ObjectClass == ObjectClass.WandStaffOrb) {
+                        if (UB.Core.Actions.CombatMode == CombatState.Magic && UB.Core.Actions.BusyState == 0) {
+                            UB.Core.Actions.SelectItem(woTwo.Id);
+                            UB.Core.Actions.UseItem(woOne.Id, 1, woTwo.Id);
+                        }
+                    }
+                    else UB.Core.Actions.ApplyItem(woOne.Id, woTwo.Id);
                 }
             }
         }

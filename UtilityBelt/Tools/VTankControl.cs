@@ -1155,7 +1155,13 @@ namespace UtilityBelt.Tools {
         public object Actiontryapplyitem(ExpressionWorldObject useObj, ExpressionWorldObject onObj) {
             if (UtilityBeltPlugin.Instance.Core.Actions.BusyState != 0)
                 return 0;
-            UtilityBeltPlugin.Instance.Core.Actions.ApplyItem(useObj.Wo.Id, onObj.Wo.Id);
+            if (useObj.Wo.ObjectClass == ObjectClass.WandStaffOrb && UtilityBeltPlugin.Instance.Core.Actions.CombatMode != CombatState.Magic)
+                return 0;
+            UtilityBeltPlugin.Instance.Core.Actions.SelectItem(onObj.Id);
+            if (useObj.Wo.ObjectClass == ObjectClass.WandStaffOrb)
+                UtilityBeltPlugin.Instance.Core.Actions.UseItem(useObj.Wo.Id, onObj.Wo.Id);
+            else
+                UtilityBeltPlugin.Instance.Core.Actions.ApplyItem(useObj.Wo.Id, onObj.Wo.Id);
             return 1;
         }
         #endregion //actiontryapplyitem[wobject useObj, wobject onObj]

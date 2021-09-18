@@ -7,6 +7,7 @@ For documentation and latest install files, check out [http://utilitybelt.gitlab
 Have a feature / suggestion / bug report? Join us in [Discord](https://discord.gg/c75pPaz)
 
 ## Contributors
+* Aquafir
 * Cosmic Jester
 * enknamel
 * Harli
