@@ -493,33 +493,23 @@ namespace UtilityBelt.Tools {
         [Summary("Evaluates a meta expression")]
         [Usage("/ub mexec <expression>")]
         [Example("/ub mexec <expression>", "Evaluates expression")]
-        [CommandPattern("mexec", @"^(?<Expression>.*)?$")]
+        [CommandPattern("mexec", @"^(?<Expression>.*)?$", true)]
         public void EvaluateExpressionCommand(string command, Match args) {
-            EvaluateExpression(args.Groups["Expression"].Value);
+            EvaluateExpression(args.Groups["Expression"].Value, command.Replace("mexec", "").Equals("m"));
         }
 
-        public void EvaluateExpression(string expression) {
+        public void EvaluateExpression(string expression, bool silent=false) {
             try {
+                if (silent) {
+                    UB.VTank.EvaluateExpression(expression);
+                    return;
+                }
                 var watch = new System.Diagnostics.Stopwatch();
                 Logger.WriteToChat($"Evaluating expression: \"{expression}\"", Logger.LogMessageType.Expression, true, false);
                 watch.Start();
                 var res = UB.VTank.EvaluateExpression(expression);
                 watch.Stop();
                 Logger.WriteToChat($"Result: [{ExpressionVisitor.GetFriendlyType(res.GetType())}] {res} ({Math.Round(watch.ElapsedTicks / 10000.0, 3)}ms)", Logger.LogMessageType.Expression);
-            }
-            catch (Exception ex) {
-                Logger.LogException(ex, false);
-            }
-        }
-        #endregion
-        #region /ub mexecm
-        [Summary("Evaluates a meta expression without writing to chat")]
-        [Usage("/ub mexecm <expression>")]
-        [Example("/ub mexecm <expression>", "Evaluates expression")]
-        [CommandPattern("mexecm", @"^(?<Expression>.*)?$")]
-        public void EvaluateMutedExpressionCommand(string command, Match args) {
-            try {
-                var res = UB.VTank.EvaluateExpression(args.Groups["Expression"].Value, true);
             }
             catch (Exception ex) {
                 Logger.LogException(ex, false);
