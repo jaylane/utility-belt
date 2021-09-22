@@ -119,7 +119,7 @@ Provides a command-line interface to inventory management.
             }
             else {
                 var partialMatchTarget = command.Contains('P');
-                var partialMatchItem = command.Contains('P');
+                var partialMatchItem = command.Contains('p');
                 var isRegex = command.Contains("r");
                 int count = 0;
                 if (!string.IsNullOrEmpty(args.Groups["Count"].Value))
