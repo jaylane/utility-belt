@@ -1552,6 +1552,89 @@ namespace UtilityBelt.Tools {
             return re.Match(text).Value;
         }
         #endregion //getregexmatch[string text, string regex]
+        #region uboptget[string name]
+        [ExpressionMethod("uboptget")]
+        [ExpressionParameter(0, typeof(string), "name", "The name of the variable to get. Prepend global options with `global.`.")]
+        [ExpressionReturn(typeof(object), "Returns the value of the setting, if valid. 0 if invalid setting.")]
+        [Summary("Returns the value of a ub setting.")]
+        [Example("uboptget[`Plugin.Debug`]", "Gets the current value for the `Plugin.Debug` setting")]
+        public object uboptget(string name) {
+            name = name.ToLower();
+            OptionResult option;
+            if (name.StartsWith("global."))
+                option = UBLoader.FilterCore.Settings.Get(name);
+            else if (UB.Settings.Exists(name))
+                option = UB.Settings.Get(name);
+            else
+                option = UB.State.Get(name);
+
+            if (option == null || option.Setting == null) {
+                Logger.Error("Invalid option: " + name);
+                return 0;
+            }
+
+            if (option.Setting.GetValue() is System.Collections.IList list) {
+                var elist = new ExpressionList();
+                foreach (var item in list) {
+                    elist.Items.Add(item);
+                }
+
+                return elist;
+            }
+
+            return option.Setting.GetValue();
+        }
+        #endregion //uboptget[string name]
+        #region uboptset[string name, object newValue]
+        [ExpressionMethod("uboptset")]
+        [ExpressionParameter(0, typeof(string), "name", "The name of the variable to set. Prepend global options with `global.`.")]
+        [ExpressionParameter(1, typeof(object), "newValue", "The new value to set.")]
+        [ExpressionReturn(typeof(object), "Returns 1 if successful, 0 if it failed.")]
+        [Summary("Changes the value of a ub setting.")]
+        [Example("uboptset[`Plugin.Debug`, 1]", "Sets the current value for the `Plugin.Debug` setting to true")]
+        public object uboptset(string name, object newValue) {
+            name = name.ToLower();
+            OptionResult option;
+            if (name.StartsWith("global."))
+                option = UBLoader.FilterCore.Settings.Get(name);
+            else if (UB.Settings.Exists(name))
+                option = UB.Settings.Get(name);
+            else
+                option = UB.State.Get(name);
+
+            if (option == null || option.Setting == null) {
+                Logger.Error("Invalid option: " + name);
+                return 0;
+            }
+
+            if (option.Setting.GetValue() is System.Collections.IList list) {
+                if (!(newValue is ExpressionList)) {
+                    Logger.Error($"{name} expects a value of type list");
+                    return 0;
+                }
+                list.Clear();
+                foreach (var eItem in ((ExpressionList)newValue).Items) {
+                    list.Add(eItem);
+                }
+                return 1;
+            }
+            else {
+                try {
+                    option.Setting.SetValue(newValue);
+                    if (!UB.Plugin.Debug)
+                        Logger.WriteToChat(option.Setting.FullDisplayValue());
+                    return 1;
+                }
+                catch (Exception ex) {
+                    Logger.Error(ex.Message);
+                    return 0;
+                }
+            }
+
+            return 0;
+        }
+        #endregion //uboptset[string name, object value]
+
         #endregion //Expressions
 
         public Plugin(UtilityBeltPlugin ub, string name) : base(ub, name) {
