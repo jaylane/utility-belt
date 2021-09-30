@@ -1090,4 +1090,7 @@
     <WriteLinesToFile File="Properties\AssemblyInfo.cs" Lines="@(AssemblyLines)" Overwrite="true" Encoding="Unicode" />
   </Target>
   <Import Project="..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.targets" Condition="Exists('..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.targets')" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(TargetPath)" "C:\Games\Decal Plugins\UtilityBelt\UtilityBelt.dll"</PostBuildEvent>
+  </PropertyGroup>
 </Project>
