@@ -1,4 +1,4 @@
-## 0.2.5 (2021-10-06) [UtilityBeltInstaller-0.2.5.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/11d424ce9ce538a773ca4dc4797ce9fd/UtilityBeltInstaller-0.2.5.exe)
+## 0.2.5 (2021-10-06) [UtilityBeltInstaller-0.2.5.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/dd7285b144ef9327bf8041c64841c22f/UtilityBeltInstaller-0.2.5.exe)
 - Add expressions: wobjectgetdoubleprop[], wobjectgetboolprop[], wobjectgetstringprop[], wobjecthasdata[], wobjectrequestdata[]
 - Add commands: `/ub logout`, `/ub quit`
 - Fix jump/face commands to accept decimals instead of just whole numbers for heading
