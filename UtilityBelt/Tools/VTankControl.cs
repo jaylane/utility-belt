@@ -1159,6 +1159,38 @@ namespace UtilityBelt.Tools {
             return new ExpressionWorldObject(UB.Core.Actions.OpenedContainer);
         }
         #endregion //wobjectgetopencontainer[]
+        #region getfreeitemslots[worldobject? container]
+        [ExpressionMethod("getfreeitemslots")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "container", "Optional container to get free item slots of, defaulting to player.", null)]
+        [ExpressionReturn(typeof(double), "Returns the number of free slots of container, or -1 if the WorldObject was invalid")]
+        [Summary("Gets the number of free item slots in a container")]
+        [Example("getfreeitemslots[]", "Returns the free item slots of the player")]
+        [Example("getfreeitemslots[wobjectgetselection[]]", "Returns the free item slots of the selected object")]
+        public double Getfreeitemslots(ExpressionWorldObject container = null) {
+            //Check if container was left blank or is explicitly the player
+            if (container is null || container.Id == UB.Core.CharacterFilter.Id)
+                return new Weenie(UB.Core.CharacterFilter.Id).FreeSpace;
+            else if (container.Wo.ObjectClass == ObjectClass.Container)
+                return new Weenie(container.Id).FreeSpace;
+            return -1;
+        }
+        #endregion getfreeitemslots[worldobject? container]
+        #region getfreecontainerslots[worldobject? container]
+        [ExpressionMethod("getfreecontainerslots")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "container", "Optional container to get free item slots of, defaulting to player.", null)]
+        [ExpressionReturn(typeof(double), "Returns the number of free container slots, or -1 if the WorldObject was invalid")]
+        [Summary("Gets the number of free container slots")]
+        [Example("getfreecontainerslots[]", "Returns the free container slots of the player")]
+        [Example("getfreecontainerslots[wobjectgetselection[]]", "Returns the free container slots of the selected object")]
+        public double Getfreecontainerslots(ExpressionWorldObject container = null) {
+            var w = new Weenie((container is null || container.Id == UB.Core.CharacterFilter.Id) ? UB.Core.CharacterFilter.Id : container.Id);
+
+            if (w.ObjectClass != ObjectClass.Container && w.ObjectClass != ObjectClass.Player)
+                return -1;
+
+            return w.ContainersCapacity - w.ContainersContained;
+        }
+        #endregion getfreecontainerslots[worldobject? container]
         #endregion //WorldObjects
         #region Actions
         #region actiontryselect[wobject obj]
