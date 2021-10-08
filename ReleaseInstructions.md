@@ -1,0 +1,8 @@
+- Checkout release
+- merge master
+- build release
+- build installer
+- upload to gitlab
+- push branch to gitlab
+- make new tag with release notes
+- update changelog / ub / ubloader versions in sln

@@ -676,6 +676,44 @@ namespace UtilityBelt.Tools {
             return Spells.IsKnown(id) && Spells.HasComponents(id) && Spells.HasSkillBuff(id);
         }
         #endregion //getcancastspell_buff[int spellId]
+        #region getspellduration[int spellId]
+        [ExpressionMethod("getspellexpiration")]
+        [ExpressionParameter(0, typeof(double), "spellId", "Spell ID to check")]
+        [ExpressionReturn(typeof(double), "Returns the number of seconds until a spell expires.  0 if spell not active, MaxInt if it doesn't expire.")]
+        [Summary("Gets the number of seconds until a spell expires by id")]
+        [Example("getspellexpiration[515]", "Get the number of seconds until Acid Protection Self I expires")]
+        public object Getspellexpiration(double spellId) {
+            var spell = CoreManager.Current.CharacterFilter.Enchantments.Where(x => x.SpellId == (int)spellId).FirstOrDefault();
+            if (spell is null)
+                return 0;
+            //-1 time remaining/expiration for values that don't expire
+            if (spell.TimeRemaining < 0)
+                return double.MaxValue;
+            else
+                return (double)spell.TimeRemaining;
+        }
+        #endregion //getspellexpiration[int spellId]
+        #region getspellexpirationbyname[string spellName]
+        [ExpressionMethod("getspellexpirationbyname")]
+        [ExpressionParameter(0, typeof(string), "spellName", "Spell name to check")]
+        [ExpressionReturn(typeof(double), "Returns the number of seconds until a spell expires.  0 if spell not active, MaxInt if it doesn't expire.")]
+        [Summary("Gets the number of seconds until a spell expires by name")]
+        [Example("getspellexpirationbyname[`acid prot`]", "Get the number of seconds until an Acid Protection spell expires")]
+        public object Getspellexpirationbyname(string spellName) {
+            FileService fs = CoreManager.Current.Filter<FileService>();
+            var spell = CoreManager.Current.CharacterFilter.Enchantments
+                .Where(x => fs.SpellTable.GetById(x.SpellId).Name.IndexOf(spellName, StringComparison.OrdinalIgnoreCase) >= 0)
+                .FirstOrDefault();
+
+            if (spell is null)
+                return 0;
+            //-1 time remaining/expiration for values that don't expire
+            if (spell.TimeRemaining < 0)
+                return double.MaxValue;
+            else
+                return (double)spell.TimeRemaining;
+        }
+        #endregion //getspellexpirationbyname[string spellName]
         #region getcharvital_base[int vitalId]
         [ExpressionMethod("getcharvital_base")]
         [ExpressionParameter(0, typeof(double), "vitalId", "Which vital to get. 1 = Health, 2 = Stamina, 3 = Mana.")]
