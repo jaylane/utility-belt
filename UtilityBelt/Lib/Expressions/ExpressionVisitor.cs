@@ -116,7 +116,7 @@ namespace UtilityBelt.Lib.Expressions {
         /// <param name="context"></param>
         /// <returns></returns>
         public override object VisitHexNumberAtomExp([NotNull] MetaExpressionsParser.HexNumberAtomExpContext context) {
-            return (double)Convert.ToInt32(context.HEXNUMBER().GetText(), 16);
+            return (double)Convert.ToUInt32(context.HEXNUMBER().GetText(), 16);
         }
 
         /// <summary>
