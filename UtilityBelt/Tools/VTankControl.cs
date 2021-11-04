@@ -810,13 +810,22 @@ namespace UtilityBelt.Tools {
         #endregion //getcharattribute_base[int attributeId]
         #region getplayerlandcell[]
         [ExpressionMethod("getplayerlandcell")]
-        [ExpressionReturn(typeof(double), "Returns the landcell your character is currently standing in, including the landblock")]
-        [Summary("Gets the landcell your character is currently standing in, including the landblock")]
-        [Example("getplayerlandcell[]", "Returns your character's current landblock as in int")]
+        [ExpressionReturn(typeof(double), "Returns the landcell your character is currently standing in")]
+        [Summary("Gets the landcell your character is currently standing in")]
+        [Example("getplayerlandcell[]", "Returns your character's current landcell as in uint")]
         public object Getplayerlandcell() {
-            return (double)UtilityBeltPlugin.Instance.Core.Actions.Landcell;
+            return (double)(uint)UtilityBeltPlugin.Instance.Core.Actions.Landcell;
         }
         #endregion //getplayerlandcell[]
+        #region getplayerlandblock[]
+        [ExpressionMethod("getplayerlandblock")]
+        [ExpressionReturn(typeof(double), "Returns the landblock your character is currently standing in")]
+        [Summary("Gets the landblock your character is currently standing in")]
+        [Example("getplayerlandblock[]", "Returns your character's current landblock as in uint")]
+        public object Getplayerlandblock() {
+            return (double)((uint)UtilityBeltPlugin.Instance.Core.Actions.Landcell & 0xFFFF0000); ;
+        }
+        #endregion //getplayerlandblock[]
         #region getplayercoordinates[]
         [ExpressionMethod("getplayercoordinates")]
         [ExpressionReturn(typeof(ExpressionCoordinates), "Returns your character's global coordinates object")]
@@ -1445,7 +1454,10 @@ namespace UtilityBelt.Tools {
         [Summary("Converts a number to a string using a specified format")]
         [Example("cstrf[3.14159,`N3`]", "Formats 3.14159 to a string with 3 decimal places")]
         public object Cstrf(double number, string format) {
-            return number.ToString(format);
+            if (format.Contains("X"))
+                return ((uint)number).ToString(format);
+            else
+                return number.ToString(format);
         }
         #endregion //cstrf[int number, string format]
         #region cnumber[string number]
