@@ -1532,6 +1532,70 @@ namespace UtilityBelt.Tools {
             return UBHelper.vTank.Instance.CurrentMetaState;
         }
         #endregion //vtgetmetastate[]
+        #region vtsetsetting[string setting, string value]
+        [ExpressionMethod("vtsetsetting")]
+        [ExpressionParameter(0, typeof(string), "setting", "setting to set the value of")]
+        [ExpressionParameter(1, typeof(string), "setting", "value to set the setting to")]
+        [ExpressionReturn(typeof(double), "Returns 0 if known to fail and 1 if it may have succeeded")]
+        [Summary("Sets the specified vtank setting")]
+        [Example("vtsetsetting[EnableCombat,`1`]", "Sets the vtank EnableCombat setting to true.  Any other number sets to false")]
+        [Example("vtsetsetting[RingDistance,cstrf[cnumber[vtgetsetting[DoorOpenRange]],`N5`]", "Sets the vtank RingDistance setting to match the DoorOpenRange")]
+        public object Vtsetsetting(string setting, string value) {
+            try {
+                var settingType = vTank.Instance.GetSettingType(setting);
+
+                if (settingType == typeof(string)) {
+                    vTank.Instance.SetSetting(setting, value.ToString());
+                }
+                else if (double.TryParse(value, out double number)) {
+                    if (settingType == typeof(bool)) {
+                        vTank.Instance.SetSetting(setting, (number == 1) ? true : false);
+                    }
+                    else if (settingType == typeof(double)) {
+                        vTank.Instance.SetSetting(setting, number);
+                    }
+                    else if (settingType == typeof(int)) {
+                        vTank.Instance.SetSetting(setting, Convert.ToInt32(number));
+                    }
+                    else if (settingType == typeof(float)) {
+                        vTank.Instance.SetSetting(setting, Convert.ToSingle(number));
+                    }
+                }
+                else {
+                    //Fail here?
+                    //Logger.WriteToChat($"Attempted to set a setting of unknown type: {settingType}");
+                    return 0;
+                }
+            }
+            //Known failures
+            catch (FormatException ex) {
+                return 0;
+            }
+            catch (InvalidCastException ex) {
+                return 0;
+            }
+            catch (Exception ex) {
+                //Eat the error thrown even on successes
+            }
+            return 1;
+        }
+        #endregion //vtsetsetting[string setting, string value]
+        #region vtgetsetting[string setting]
+        [ExpressionMethod("vtgetsetting")]
+        [ExpressionParameter(0, typeof(string), "setting", "setting to get the state of")]
+        [ExpressionReturn(typeof(string), "Returns the string value of the specific setting or an empty string if undefined")]
+        [Summary("Gets the value of a vtank setting")]
+        [Example("vtgetsetting[EnableCombat]", "Gets the value of the vtank EnableCombat setting")]
+        [Example("cnumber[vtgetsetting[RingDistance]]", "Gets the number value of the vtank RingDistance setting")]
+        public object Vtgetsetting(string setting) {
+            //try {
+                return UBHelper.vTank.Instance.GetSetting(setting).ToString();
+            //}
+            //catch (Exception ex) {
+            //    return string.Empty;
+            //}
+        }
+        #endregion //vtgetsetting[string setting]
         #region ord[string character]
         [ExpressionMethod("ord")]
         [ExpressionParameter(0, typeof(string), "character", "string to convert")]
