@@ -1075,7 +1075,7 @@
   </Target>
   <Target Name="BeforeBuild">
     <ItemGroup>
-      <AssemblyLines Include="[assembly: Exceptionless.Configuration.Exceptionless(&quot;B94a7v4HvLtiUr10Dvgx7zyQs8hbsJGmDgKCvg9B&quot;, EnableSSL=false, ServerUrl=&quot;http://ex.utilitybelt.ga/&quot;)]" />
+      <AssemblyLines Include="[assembly: Exceptionless.Configuration.Exceptionless(&quot;B94a7v4HvLtiUr10Dvgx7zyQs8hbsJGmDgKCvg9B&quot;, EnableSSL=false, ServerUrl=&quot;http://ex.haxit.org/&quot;)]" />
     </ItemGroup>
     <GitVersion LocalPath="$(MSBuildProjectDirectory)">
       <Output TaskParameter="CommitHash" PropertyName="Revision" />
