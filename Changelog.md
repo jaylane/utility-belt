@@ -1,6 +1,7 @@
 ## 0.2.6 (TBD)
 - Add expressions: getspellexpiration[id], getspellexpirationbyname[name]
 - Add expressions: getfreeitemslots[WorldObject? container], getfreecontainerslots[WorldObject? container]
+- Add expressions: vtgetsetting[setting], vtsetsetting[setting,value]
 
 ## 0.2.5 (2021-10-06) [UtilityBeltInstaller-0.2.5.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/dd7285b144ef9327bf8041c64841c22f/UtilityBeltInstaller-0.2.5.exe)
 - Add expressions: wobjectgetdoubleprop[], wobjectgetboolprop[], wobjectgetstringprop[], wobjecthasdata[], wobjectrequestdata[]
