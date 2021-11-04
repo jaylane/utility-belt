@@ -8,6 +8,7 @@ Have a feature / suggestion / bug report? Join us in [Discord](https://discord.g
 
 ## Contributors
 * Aquafir
+* Brycter
 * Cosmic Jester
 * enknamel
 * Harli
