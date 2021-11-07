@@ -146,6 +146,7 @@ namespace UtilityBelt {
         public AutoTinker AutoTinker;
         public AutoTrade AutoTrade;
         public AutoVendor AutoVendor;
+        public AutoXp AutoXp;
         public ChatFilter ChatFilter;
         public ChatHandler ChatHandler;
         public ChatLogger ChatLogger;
@@ -352,7 +353,6 @@ namespace UtilityBelt {
             foreach (var toolInfo in toolInfos) {
                 try {
                     var nameAttrs = toolInfo.FieldType.GetCustomAttributes(typeof(NameAttribute), true);
-
                     if (nameAttrs.Length == 1) {
                         var tool = Activator.CreateInstance(toolInfo.FieldType, new object[] {
                             this,
