@@ -19,7 +19,17 @@ using UBLoader.Lib.Settings;
 namespace UtilityBelt.Tools {
     [Name("AutoXp")]
     [Summary("Automatically spends experience based on a policy.")]
-    [FullDescription(@"")]
+    [FullDescription(@"
+### Overview
+
+This plugin will attempt to spend experience based on a weighted importance of a skill set in the Policy.
+The higher the number the more experience you'd be willing to spend on the skill (e.g., War - 10, Endurance - 1 would level War next if it cost less than 10x Endurance).
+
+The plugin can spend either batches of experience up to the max chunk size or just enough to get to the next level.
+If the plugin is already spending experience it will stop if you use a command to spend experience.
+
+You can tell the plugin to stop a specified number of levels before the max, but it will always halt at least 1 before the max.
+    ")]
     public class AutoXp : ToolBase {
         private DateTime lastXpSpend = DateTime.MinValue;
         private bool disposed;
