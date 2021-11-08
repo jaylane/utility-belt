@@ -325,12 +325,6 @@ namespace UtilityBelt.Tools {
 
         public override void Init() {
             base.Init();
-            try {
-                Directory.CreateDirectory(Path.Combine(Util.GetPluginDirectory(), "autoxp"));
-                Directory.CreateDirectory(Path.Combine(Util.GetCharacterDirectory(), "autoxp"));
-                Directory.CreateDirectory(Path.Combine(Util.GetServerDirectory(), "autoxp"));
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
 
             //if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
             //    UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
