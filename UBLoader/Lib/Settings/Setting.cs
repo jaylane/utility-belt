@@ -54,6 +54,13 @@ namespace UBLoader.Lib.Settings {
                     InvokeChange();
                 };
             }
+            else if (Value != null && Value is ObservableDictionary<XpTarget, double> ddict) {
+                DefaultValue = (T)Convert.ChangeType(new ObservableDictionary<XpTarget, double>(), Value.GetType());
+                var defaultDict = DefaultValue as ObservableDictionary<XpTarget, double>;
+                ddict.CollectionChanged += (s, e) => {
+                    InvokeChange();
+                };
+            }
         }
 
         public void AssignDefault(bool force=false) {
@@ -89,6 +96,9 @@ namespace UBLoader.Lib.Settings {
                 }
             }
             else if (Value is ObservableDictionary<string, string>) {
+                throw new NotImplementedException();
+            }
+            else if (Value is ObservableDictionary<XpTarget, double>) {
                 throw new NotImplementedException();
             }
             else {

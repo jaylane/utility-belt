@@ -11,6 +11,7 @@ using VirindiViewService;
 using VirindiViewService.Controls;
 using UBLoader.Lib.Settings;
 using Hellosam.Net.Collections;
+using UBLoader.Lib;
 
 namespace UtilityBelt.Views {
 
@@ -33,11 +34,16 @@ namespace UtilityBelt.Views {
         private MainView mainView;
         private string selectedKey = "";
         private SettingsForm form;
-        private Setting<ObservableDictionary<string, string>> Setting;
+        private ISetting Setting;
+        private Type keyType;
+        private Type valueType;
 
         public DictionaryEditor(MainView mainView, ISetting setting) {
             this.mainView = mainView;
-            Setting = setting as Setting<ObservableDictionary<string, string>>;
+            Setting = setting;
+            Type[] arguments = setting.GetValue().GetType().GetGenericArguments();
+            keyType = arguments[0];
+            valueType = arguments[1];
 
             VirindiViewService.XMLParsers.Decal3XMLParser parser = new VirindiViewService.XMLParsers.Decal3XMLParser();
             parser.ParseFromResource("UtilityBelt.Views.DictionaryEditor.xml", out properties, out controls);
@@ -90,14 +96,24 @@ namespace UtilityBelt.Views {
                         selectedKey = keyCol.Text;
                         keyCol.TextColor = Color.Red;
                         valCol.TextColor = Color.Red;
-                        form.SetValue(new KeyValuePair<string, string>(keyCol.Text, valCol.Text));
+
+                        // ehhhhhh
+                        if (keyType == typeof(string) && valueType == typeof(string)) {
+                            form.SetValue(new KeyValuePair<string, string>(keyCol.Text, valCol.Text));
+                        }
+                        else if (keyType == typeof(XpTarget) && valueType == typeof(double)) {
+                            var k = (XpTarget)Enum.Parse(typeof(XpTarget), selectedKey);
+                            var v = (double)(Setting.GetValue() as ObservableDictionary<XpTarget, double>)[k];
+                            form.SetValue(new KeyValuePair<XpTarget, double>(k, v));
+                        }
+
                         AddOrUpdate.Text = "Update";
                         Cancel.Visible = true;
                         Redraw();
                         break;
 
                     case Columns.Delete: // delete
-                        Setting.Value.Remove(keyCol.Text);
+                        RemoveKey(keyCol.Text);
                         ResetForm();
                         break;
                 }
@@ -107,18 +123,61 @@ namespace UtilityBelt.Views {
 
         private void AddOrUpdate_Hit(object sender, EventArgs e) {
             try {
-                KeyValuePair<string, string> kv = (KeyValuePair<string, string>)form.Value;
-
                 if (selectedKey != "") {
-                    Setting.Value.Remove(selectedKey);
+                    RemoveKey(selectedKey);
                 }
 
-                Setting.Value.Remove(kv.Key);
-                Setting.Value.Add(kv.Key, kv.Value);
+                // ehhhhhh
+                if (keyType == typeof(string) && valueType == typeof(string)) {
+                    KeyValuePair<string, string> kv = (KeyValuePair<string, string>)form.Value;
+                    RemoveKey(kv.Key);
+                    AddKey(kv.Key, kv.Value);
+                }
+                else if (keyType == typeof(XpTarget) && valueType == typeof(double)) {
+                    KeyValuePair<XpTarget, double> kv = (KeyValuePair<XpTarget, double>)form.Value;
+                    Logger.WriteToChat($"kv is {kv.Key} -> {kv.Value}");
+                    RemoveKey(kv.Key);
+                    AddKey(kv.Key, kv.Value);
+                }
 
                 ResetForm();
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private object GetKeyValue(object key) {
+            // ehhhhhh
+            if (keyType == typeof(string) && valueType == typeof(string)) {
+                return (Setting.GetValue() as ObservableDictionary<string, string>)[(string)key];
+            }
+            else if (keyType == typeof(XpTarget) && valueType == typeof(double)) {
+                var k = key.GetType() == typeof(string) ? (XpTarget)Enum.Parse(typeof(XpTarget), (string)key) : (XpTarget)key;
+                return (Setting.GetValue() as ObservableDictionary<XpTarget, double>)[k];
+            }
+
+            return null;
+        }
+
+        private void RemoveKey(object key) {
+            // ehhhhhh
+            if (keyType == typeof(string) && valueType == typeof(string)) {
+                (Setting.GetValue() as ObservableDictionary<string, string>).Remove((string)key);
+            }
+            else if (keyType == typeof(XpTarget) && valueType == typeof(double)) {
+                var k = key.GetType() == typeof(string) ? (XpTarget)Enum.Parse(typeof(XpTarget), (string)key) : (XpTarget)key;
+                (Setting.GetValue() as ObservableDictionary<XpTarget, double>).Remove(k);
+            }
+        }
+
+        private void AddKey(object key, object value) {
+            // ehhhhhh
+            if (keyType == typeof(string) && valueType == typeof(string)) {
+                (Setting.GetValue() as ObservableDictionary<string, string>).Add((string)key, (string)value);
+            }
+            else if (keyType == typeof(XpTarget) && valueType == typeof(double)) {
+                var k = key.GetType() == typeof(string) ? (XpTarget)Enum.Parse(typeof(XpTarget), (string)key) : (XpTarget)key;
+                (Setting.GetValue() as ObservableDictionary<XpTarget, double>).Add(k, (double)value);
+            }
         }
 
         private void Cancel_Hit(object sender, EventArgs e) {
@@ -145,26 +204,51 @@ namespace UtilityBelt.Views {
                 form = null;
             }
 
-            foreach (var key in Setting.Value.Keys) {
-                var row = ChildList.AddRow();
+            IEnumerable<object> keys = null;
 
-                if (selectedKey == key) {
-                    ((HudStaticText)row[(int)Columns.Key]).TextColor = Color.Red;
-                    ((HudStaticText)row[(int)Columns.Value]).TextColor = Color.Red;
-                    form = new SettingsForm(Setting, SettingsFormLayout, typeof(KeyValuePair<string, string>), new KeyValuePair<string, string>(key, Setting.Value[key]));
+            // ehhhhhh
+            if (keyType == typeof(string) && valueType == typeof(string)) {
+                keys = (Setting.GetValue() as ObservableDictionary<string, string>).Keys.Select(k => (object)k);
+            }
+            else if (keyType == typeof(XpTarget) && valueType == typeof(double)) {
+                keys = (Setting.GetValue() as ObservableDictionary<XpTarget, double>).Keys.Select(k => (object)k);
+            }
+
+            if (keys != null) {
+                foreach (var key in keys) {
+                    var row = ChildList.AddRow();
+
+                    if (selectedKey == key.ToString()) {
+                        ((HudStaticText)row[(int)Columns.Key]).TextColor = Color.Red;
+                        ((HudStaticText)row[(int)Columns.Value]).TextColor = Color.Red;
+
+                        // ehhhhhh
+                        if (keyType == typeof(string) && valueType == typeof(string)) {
+                            form = new SettingsForm(Setting, SettingsFormLayout, typeof(KeyValuePair<string, string>), new KeyValuePair<string, string>((string)key, (string)GetKeyValue(key)));
+                        }
+                        else if (keyType == typeof(XpTarget) && valueType == typeof(double)) {
+                            form = new SettingsForm(Setting, SettingsFormLayout, typeof(KeyValuePair<XpTarget, double>), new KeyValuePair<XpTarget, double>((XpTarget)key, (double)GetKeyValue(key)));
+                        }
+                    }
+
+                    ((HudStaticText)row[(int)Columns.Key]).Text = key.ToString();
+                    ((HudStaticText)row[(int)Columns.Value]).Text = GetKeyValue(key).ToString();
+                    ((HudStaticText)row[(int)Columns.Value]).TextAlignment = WriteTextFormats.Right;
+                    ((HudPictureBox)row[(int)Columns.Delete]).Image = 0x060011F8; // delete
+
+                    i++;
                 }
-
-                ((HudStaticText)row[(int)Columns.Key]).Text = key;
-                ((HudStaticText)row[(int)Columns.Value]).Text = Setting.Value[key];
-                ((HudStaticText)row[(int)Columns.Value]).TextAlignment = WriteTextFormats.Right;
-                ((HudPictureBox)row[(int)Columns.Delete]).Image = 0x060011F8; // delete
-
-                i++;
             }
             ChildList.ScrollPosition = scrollPosition;
 
             if (form == null) {
-                form = new SettingsForm(Setting, SettingsFormLayout, typeof(KeyValuePair<string, string>), new KeyValuePair<string, string>("",""));
+                // ehhhhhh
+                if (keyType == typeof(string) && valueType == typeof(string)) {
+                    form = new SettingsForm(Setting, SettingsFormLayout, typeof(KeyValuePair<string, string>), new KeyValuePair<string, string>("", ""));
+                }
+                else if (keyType == typeof(XpTarget) && valueType == typeof(double)) {
+                    form = new SettingsForm(Setting, SettingsFormLayout, typeof(KeyValuePair<XpTarget, double>), new KeyValuePair<XpTarget, double>(XpTarget.Alchemy, 0));
+                }
             }
         }
 

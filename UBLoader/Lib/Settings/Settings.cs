@@ -303,11 +303,21 @@ namespace UBLoader.Lib.Settings {
             var deserializedSettings = new List<string>();
             if (jToken.Type == JTokenType.Object) {
                 if (setting is ISetting && !((ISetting)setting).IsContainer) {
-                    var dict = ((ISetting)setting).GetValue() as ObservableDictionary<string, string>;
-                    deserializedSettings.Add(((ISetting)setting).FullName);
-                    dict.Clear();
-                    foreach (var kv in (JObject)jToken) {
-                        dict.Add(kv.Key, kv.Value.ToString());
+                    if (((ISetting)setting).GetValue().GetType() == typeof(ObservableDictionary<string, string>)) {
+                        var dict = ((ISetting)setting).GetValue() as ObservableDictionary<string, string>;
+                        deserializedSettings.Add(((ISetting)setting).FullName);
+                        dict.Clear();
+                        foreach (var kv in (JObject)jToken) {
+                            dict.Add(kv.Key, kv.Value.ToString());
+                        }
+                    }
+                    else if (((ISetting)setting).GetValue().GetType() == typeof(ObservableDictionary<XpTarget, double>)) {
+                        var dict = ((ISetting)setting).GetValue() as ObservableDictionary<XpTarget, double>;
+                        deserializedSettings.Add(((ISetting)setting).FullName);
+                        dict.Clear();
+                        foreach (var kv in (JObject)jToken) {
+                            dict.Add((XpTarget)Enum.Parse(typeof(XpTarget), kv.Key), kv.Value.ToObject<double>());
+                        }
                     }
                 }
                 else {
@@ -383,12 +393,22 @@ namespace UBLoader.Lib.Settings {
                     jObj.Add(setting.Name, jArray);
                 }
                 else if (setting.GetValue() is IDict) {
-                    var dict = setting.GetValue() as ObservableDictionary<string, string>;
-                    var dObj = new JObject();
-                    foreach (var key in dict.Keys) {
-                        dObj.Add(key, dict[key]);
+                    if (setting.GetValue().GetType() == typeof(ObservableDictionary<string, string>)) {
+                        var dict = setting.GetValue() as ObservableDictionary<string, string>;
+                        var dObj = new JObject();
+                        foreach (var key in dict.Keys) {
+                            dObj.Add(key, dict[key]);
+                        }
+                        jObj.Add(setting.Name, dObj);
                     }
-                    jObj.Add(setting.Name, dObj);
+                    else if (setting.GetValue().GetType() == typeof(ObservableDictionary<XpTarget, double>)) {
+                        var dict = setting.GetValue() as ObservableDictionary<XpTarget, double>;
+                        var dObj = new JObject();
+                        foreach (var key in dict.Keys) {
+                            dObj.Add(key.ToString(), dict[key]);
+                        }
+                        jObj.Add(setting.Name, dObj);
+                    }
                 }
                 else {
                     // ugly... but not sure how else to get type definitions serialized

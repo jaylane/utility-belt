@@ -9,6 +9,7 @@ using VirindiViewService;
 using VirindiViewService.Controls;
 using UBLoader.Lib.Settings;
 using UtilityBelt.Lib.Settings;
+using UBLoader.Lib;
 
 namespace UtilityBelt.Lib.Settings {
     public class SettingsForm : IDisposable {
@@ -116,6 +117,9 @@ namespace UtilityBelt.Lib.Settings {
             else if (Type == typeof(KeyValuePair<string, string>)) {
                 return DrawKeyValueSettingsForm(settingsForm);
             }
+            else if (Type == typeof(KeyValuePair<XpTarget, double>)) {
+                return DrawKeyValueSettingsForm(settingsForm);
+            }
             else if (Type == typeof(TrackedItem)) {
                 return DrawTrackedItemSettingsForm(settingsForm);
             }
@@ -126,6 +130,9 @@ namespace UtilityBelt.Lib.Settings {
                 new ListEditor<TrackedItem>(UtilityBeltPlugin.Instance.MainView, setting);
             }
             else if (Type == typeof(Hellosam.Net.Collections.ObservableDictionary<string, string>)) {
+                new DictionaryEditor(UtilityBeltPlugin.Instance.MainView, setting);
+            }
+            else if (Type == typeof(Hellosam.Net.Collections.ObservableDictionary<XpTarget, double>)) {
                 new DictionaryEditor(UtilityBeltPlugin.Instance.MainView, setting);
             }
 
@@ -249,38 +256,98 @@ namespace UtilityBelt.Lib.Settings {
 
         private List<HudControl> DrawKeyValueSettingsForm(HudFixedLayout settingsForm) {
             var childViews = new List<HudControl>();
-            var keyEdit = new HudTextBox();
-            var valueEdit = new HudTextBox();
             var keyLabel = new HudStaticText();
             var valueLabel = new HudStaticText();
 
             keyLabel.Text = "Key:";
             valueLabel.Text = "Value:";
+            Type[] arguments = Value.GetType().GetGenericArguments();
+            var keyType = arguments[0];
+            var valueType = arguments[1];
+            var valueEdit = new HudTextBox();
 
-            keyEdit.Text = ((KeyValuePair<string, string>)Value).Key;
-            keyEdit.Change += (s, e) => {
-                Value = new KeyValuePair<string, string>(keyEdit.Text, valueEdit.Text);
-                Changed?.Invoke(this, null);
-            };
-            valueEdit.Text = ((KeyValuePair<string, string>)Value).Value;
-            valueEdit.Change += (s, e) => {
-                Value = new KeyValuePair<string, string>(keyEdit.Text, valueEdit.Text);
-                Changed?.Invoke(this, null);
-            };
-
-            Changed += (s, e) => {
+            if (keyType == typeof(string) && valueType == typeof(string)) {
+                var keyEdit = new HudTextBox();
                 keyEdit.Text = ((KeyValuePair<string, string>)Value).Key;
+                keyEdit.Change += (s, e) => {
+                    Value = new KeyValuePair<string, string>(keyEdit.Text, valueEdit.Text);
+                    Changed?.Invoke(this, null);
+                };
                 valueEdit.Text = ((KeyValuePair<string, string>)Value).Value;
-            };
+                valueEdit.Change += (s, e) => {
+                    Value = new KeyValuePair<string, string>(keyEdit.Text, valueEdit.Text);
+                    Changed?.Invoke(this, null);
+                };
 
-            childViews.Add(keyEdit);
-            childViews.Add(valueEdit);
+                Changed += (s, e) => {
+                    keyEdit.Text = ((KeyValuePair<string, string>)Value).Key;
+                    valueEdit.Text = ((KeyValuePair<string, string>)Value).Value;
+                };
+
+                childViews.Add(keyEdit);
+                childViews.Add(valueEdit);
+                settingsForm.AddControl(keyEdit, new Rectangle(50, 0, 300, 20));
+                settingsForm.AddControl(valueEdit, new Rectangle(50, 20, 300, 20));
+            }
+            else if (keyType == typeof(XpTarget) && valueType == typeof(double)) {
+                var combo = new HudCombo(new ControlGroup());
+                var values = Enum.GetValues(keyType);
+
+                for (var i = 0; i < values.Length; i++) {
+                    // this could probably be improved, but we want to sort this list
+                    bool didAdd = false;
+                    for (var y = 0; y < combo.Count; y++) {
+                        if (string.Compare(values.GetValue(i).ToString(), ((HudStaticText)combo[y]).Text) < 0) {
+                            combo.InsertItem(y, values.GetValue(i).ToString(), values.GetValue(i).ToString());
+                            didAdd = true;
+                            break;
+                        }
+                    }
+
+                    if (!didAdd) {
+                        combo.AddItem(values.GetValue(i).ToString(), values.GetValue(i).ToString());
+                        if (values.GetValue(i).ToString() == ((KeyValuePair<XpTarget, double>)Value).Key.ToString()) {
+                            combo.Current = combo.Count;
+                        }
+                    }
+                }
+
+                for (var i = 0; i < combo.Count; i++) {
+                    if (((HudStaticText)combo[i]).Text == ((KeyValuePair<XpTarget, double>)Value).Key.ToString()) {
+                        combo.Current = i;
+                    }
+                }
+
+                combo.Change += (s, e) => {
+                    try {
+                        Value = Enum.ToObject(keyType, Enum.Parse(keyType, ((HudStaticText)combo[combo.Current]).Text));
+                        Changed?.Invoke(this, null);
+                    }
+                    catch (Exception ex) {
+                        Logger.LogException(ex);
+                        Logger.Error($"Invalid option selected: {((HudStaticText)combo[combo.Current]).Text}");
+                    }
+                };
+
+                valueEdit.Text = ((KeyValuePair<XpTarget, double>)Value).Value.ToString();
+                valueEdit.Change += (s, e) => {
+                    if (!double.TryParse(valueEdit.Text, out double pv)) {
+                        Logger.Error($"Could not parse number value: {valueEdit.Text}");
+                        return;
+                    }
+                    Value = new KeyValuePair<XpTarget, double>((XpTarget)Enum.Parse(typeof(XpTarget), ((HudStaticText)combo[combo.Current]).Text), pv);
+                    Changed?.Invoke(this, null);
+                };
+
+                childViews.Add(valueEdit);
+                settingsForm.AddControl(valueEdit, new Rectangle(50, 20, 300, 20));
+                childViews.Add(combo);
+                settingsForm.AddControl(combo, new Rectangle(50, 0, 300, 20));
+            }
             childViews.Add(keyLabel);
             childViews.Add(valueLabel);
             settingsForm.AddControl(keyLabel, new Rectangle(5, 0, 40, 20));
             settingsForm.AddControl(valueLabel, new Rectangle(5, 20, 40, 20));
-            settingsForm.AddControl(keyEdit, new Rectangle(50, 0, 300, 20));
-            settingsForm.AddControl(valueEdit, new Rectangle(50, 20, 300, 20));
 
             return childViews;
         }
