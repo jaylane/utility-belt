@@ -1589,7 +1589,7 @@ namespace UtilityBelt.Tools {
         [Example("cnumber[vtgetsetting[RingDistance]]", "Gets the number value of the vtank RingDistance setting")]
         public object Vtgetsetting(string setting) {
             //try {
-                return UBHelper.vTank.Instance.GetSetting(setting).ToString();
+                return UBHelper.vTank.Instance.GetSetting(setting);
             //}
             //catch (Exception ex) {
             //    return string.Empty;
