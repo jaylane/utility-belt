@@ -1200,6 +1200,22 @@ namespace UtilityBelt.Tools {
             return w.ContainersCapacity - w.ContainersContained;
         }
         #endregion getfreecontainerslots[worldobject? container]
+        #region getcontaineritemcount[worldobject? container]
+        [ExpressionMethod("getcontaineritemcount")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "container", "Optional container to get number of items in, defaulting to player.", null)]
+        [ExpressionReturn(typeof(double), "Returns the number of items in a container, or -1 if the WorldObject was invalid")]
+        [Summary("Gets the number of items in a container")]
+        [Example("getcontaineritemcount[]", "Returns the used container slots of the player")]
+        [Example("getcontaineritemcount[wobjectgetselection[]]", "Returns the number of items in the selected item")]
+        public double getcontaineritemcount(ExpressionWorldObject container = null) {
+            //Check if container was left blank or is explicitly the player
+            if (container is null || container.Id == UB.Core.CharacterFilter.Id)
+                return new Weenie(UB.Core.CharacterFilter.Id).ItemsContained;
+            else if (container.Wo.ObjectClass == ObjectClass.Container)
+                return new Weenie(container.Id).ItemsContained;
+            return -1;
+        }
+        #endregion getcontaineritemcount[worldobject? container]
         #endregion //WorldObjects
         #region Actions
         #region actiontryselect[wobject obj]
