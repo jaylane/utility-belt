@@ -676,7 +676,7 @@ namespace UtilityBelt.Tools {
             return Spells.IsKnown(id) && Spells.HasComponents(id) && Spells.HasSkillBuff(id);
         }
         #endregion //getcancastspell_buff[int spellId]
-        #region getspellduration[int spellId]
+        #region getspellexpiration[int spellId]
         [ExpressionMethod("getspellexpiration")]
         [ExpressionParameter(0, typeof(double), "spellId", "Spell ID to check")]
         [ExpressionReturn(typeof(double), "Returns the number of seconds until a spell expires.  0 if spell not active, MaxInt if it doesn't expire.")]
@@ -686,7 +686,7 @@ namespace UtilityBelt.Tools {
             var spell = CoreManager.Current.CharacterFilter.Enchantments.Where(x => x.SpellId == (int)spellId).FirstOrDefault();
             if (spell is null)
                 return 0;
-            //-1 time remaining/expiration for values that don't expire
+            //Max value for spells that don't expire
             if (spell.TimeRemaining < 0)
                 return double.MaxValue;
             else
@@ -696,18 +696,33 @@ namespace UtilityBelt.Tools {
         #region getspellexpirationbyname[string spellName]
         [ExpressionMethod("getspellexpirationbyname")]
         [ExpressionParameter(0, typeof(string), "spellName", "Spell name to check")]
-        [ExpressionReturn(typeof(double), "Returns the number of seconds until a spell expires.  0 if spell not active, MaxInt if it doesn't expire.")]
+        [ExpressionReturn(typeof(double), "Returns the number of seconds until a spell expires.  0 if spell not active, MaxInt if it doesn't expire, -1 if an error occurred.")]
         [Summary("Gets the number of seconds until a spell expires by name")]
         [Example("getspellexpirationbyname[`acid prot`]", "Get the number of seconds until an Acid Protection spell expires")]
         public object Getspellexpirationbyname(string spellName) {
-            FileService fs = CoreManager.Current.Filter<FileService>();
-            var spell = CoreManager.Current.CharacterFilter.Enchantments
-                .Where(x => fs.SpellTable.GetById(x.SpellId).Name.IndexOf(spellName, StringComparison.OrdinalIgnoreCase) >= 0)
-                .FirstOrDefault();
+            EnchantmentWrapper spell = null;
+            var enchants = CoreManager.Current.CharacterFilter.Enchantments;
+
+            //Look through each enchantment on the player
+            for (var i = 0; i < enchants.Count; i++) {
+                var enchant = enchants[i];
+                var enchantId = enchant.SpellId;
+                //Lookup spell information based on the ID
+                var spellInfo = Util.FileService?.SpellTable?.GetById(enchantId);
+                if (spellInfo is null) {
+                    Logger.Debug("An error occurred obtaining the SpellTable: try using getspellexpirationbyid");
+                    return -1;
+                }
+                //Check for a match with the expression
+                if (spellInfo.Name.IndexOf(spellName, StringComparison.OrdinalIgnoreCase) >= 0) {
+                    spell = enchant;
+                    break;
+                }
+            }
 
             if (spell is null)
                 return 0;
-            //-1 time remaining/expiration for values that don't expire
+            //Max value for values that don't expire
             if (spell.TimeRemaining < 0)
                 return double.MaxValue;
             else
