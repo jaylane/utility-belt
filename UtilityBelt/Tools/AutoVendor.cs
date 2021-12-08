@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -32,7 +32,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
 
 ### How to use
 
-* Create a virindi tank loot profile with some keep rules, here is an example for [Aun Amanaualuan the Elder Shaman](uploads/7e2943b4e4924a30cc0a876251e3bee5/Aun_Amanaualuan_the_Elder_Shaman.utl). (replace underscores with spaces after downloading)
+* Create a virindi tank loot profile with some keep rules, here is an example for [Aun Amanaualuan the Elder Shaman](/utl/Aun Amanaualuan the Elder Shaman.utl). (replace underscores with spaces after downloading)
 * Drop the profile in `%USERPROFILE%\Documents\Decal Plugins\UtilityBelt\autovendor\`
 * Make sure UB AutoVendor option is enabled in the decal plugin window
 * I **highly** suggest enabling test mode before actually running, this can **sell all of your stuff** so please don't blame me.

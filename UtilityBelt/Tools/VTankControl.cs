@@ -810,13 +810,22 @@ namespace UtilityBelt.Tools {
         #endregion //getcharattribute_base[int attributeId]
         #region getplayerlandcell[]
         [ExpressionMethod("getplayerlandcell")]
-        [ExpressionReturn(typeof(double), "Returns the landcell your character is currently standing in, including the landblock")]
-        [Summary("Gets the landcell your character is currently standing in, including the landblock")]
-        [Example("getplayerlandcell[]", "Returns your character's current landblock as in int")]
+        [ExpressionReturn(typeof(double), "Returns the landcell your character is currently standing in")]
+        [Summary("Gets the landcell your character is currently standing in")]
+        [Example("getplayerlandcell[]", "Returns your character's current landcell as in uint")]
         public object Getplayerlandcell() {
-            return (double)UtilityBeltPlugin.Instance.Core.Actions.Landcell;
+            return (double)(uint)UtilityBeltPlugin.Instance.Core.Actions.Landcell;
         }
         #endregion //getplayerlandcell[]
+        #region getplayerlandblock[]
+        [ExpressionMethod("getplayerlandblock")]
+        [ExpressionReturn(typeof(double), "Returns the landblock your character is currently standing in")]
+        [Summary("Gets the landblock your character is currently standing in")]
+        [Example("getplayerlandblock[]", "Returns your character's current landblock as in uint")]
+        public object Getplayerlandblock() {
+            return (double)((uint)UtilityBeltPlugin.Instance.Core.Actions.Landcell & 0xFFFF0000); ;
+        }
+        #endregion //getplayerlandblock[]
         #region getplayercoordinates[]
         [ExpressionMethod("getplayercoordinates")]
         [ExpressionReturn(typeof(ExpressionCoordinates), "Returns your character's global coordinates object")]
@@ -1159,6 +1168,54 @@ namespace UtilityBelt.Tools {
             return new ExpressionWorldObject(UB.Core.Actions.OpenedContainer);
         }
         #endregion //wobjectgetopencontainer[]
+        #region getfreeitemslots[worldobject? container]
+        [ExpressionMethod("getfreeitemslots")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "container", "Optional container to get free item slots of, defaulting to player.", null)]
+        [ExpressionReturn(typeof(double), "Returns the number of free slots of container, or -1 if the WorldObject was invalid")]
+        [Summary("Gets the number of free item slots in a container")]
+        [Example("getfreeitemslots[]", "Returns the free item slots of the player")]
+        [Example("getfreeitemslots[wobjectgetselection[]]", "Returns the free item slots of the selected object")]
+        public double Getfreeitemslots(ExpressionWorldObject container = null) {
+            //Check if container was left blank or is explicitly the player
+            if (container is null || container.Id == UB.Core.CharacterFilter.Id)
+                return new Weenie(UB.Core.CharacterFilter.Id).FreeSpace;
+            else if (container.Wo.ObjectClass == ObjectClass.Container)
+                return new Weenie(container.Id).FreeSpace;
+            return -1;
+        }
+        #endregion getfreeitemslots[worldobject? container]
+        #region getfreecontainerslots[worldobject? container]
+        [ExpressionMethod("getfreecontainerslots")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "container", "Optional container to get free item slots of, defaulting to player.", null)]
+        [ExpressionReturn(typeof(double), "Returns the number of free container slots, or -1 if the WorldObject was invalid")]
+        [Summary("Gets the number of free container slots")]
+        [Example("getfreecontainerslots[]", "Returns the free container slots of the player")]
+        [Example("getfreecontainerslots[wobjectgetselection[]]", "Returns the free container slots of the selected object")]
+        public double Getfreecontainerslots(ExpressionWorldObject container = null) {
+            var w = new Weenie((container is null || container.Id == UB.Core.CharacterFilter.Id) ? UB.Core.CharacterFilter.Id : container.Id);
+
+            if (w.ObjectClass != ObjectClass.Container && w.ObjectClass != ObjectClass.Player)
+                return -1;
+
+            return w.ContainersCapacity - w.ContainersContained;
+        }
+        #endregion getfreecontainerslots[worldobject? container]
+        #region getcontaineritemcount[worldobject? container]
+        [ExpressionMethod("getcontaineritemcount")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "container", "Optional container to get number of items in, defaulting to player.", null)]
+        [ExpressionReturn(typeof(double), "Returns the number of items in a container, or -1 if the WorldObject was invalid")]
+        [Summary("Gets the number of items in a container")]
+        [Example("getcontaineritemcount[]", "Returns the used container slots of the player")]
+        [Example("getcontaineritemcount[wobjectgetselection[]]", "Returns the number of items in the selected item")]
+        public double getcontaineritemcount(ExpressionWorldObject container = null) {
+            //Check if container was left blank or is explicitly the player
+            if (container is null || container.Id == UB.Core.CharacterFilter.Id)
+                return new Weenie(UB.Core.CharacterFilter.Id).ItemsContained;
+            else if (container.Wo.ObjectClass == ObjectClass.Container)
+                return new Weenie(container.Id).ItemsContained;
+            return -1;
+        }
+        #endregion getcontaineritemcount[worldobject? container]
         #endregion //WorldObjects
         #region Actions
         #region actiontryselect[wobject obj]
@@ -1413,7 +1470,10 @@ namespace UtilityBelt.Tools {
         [Summary("Converts a number to a string using a specified format")]
         [Example("cstrf[3.14159,`N3`]", "Formats 3.14159 to a string with 3 decimal places")]
         public object Cstrf(double number, string format) {
-            return number.ToString(format);
+            if (format.Contains("X"))
+                return ((uint)number).ToString(format);
+            else
+                return number.ToString(format);
         }
         #endregion //cstrf[int number, string format]
         #region cnumber[string number]
@@ -1488,6 +1548,70 @@ namespace UtilityBelt.Tools {
             return UBHelper.vTank.Instance.CurrentMetaState;
         }
         #endregion //vtgetmetastate[]
+        #region vtsetsetting[string setting, string value]
+        [ExpressionMethod("vtsetsetting")]
+        [ExpressionParameter(0, typeof(string), "setting", "setting to set the value of")]
+        [ExpressionParameter(1, typeof(string), "setting", "value to set the setting to")]
+        [ExpressionReturn(typeof(double), "Returns 0 if known to fail and 1 if it may have succeeded")]
+        [Summary("Sets the specified vtank setting")]
+        [Example("vtsetsetting[EnableCombat,`1`]", "Sets the vtank EnableCombat setting to true.  Any other number sets to false")]
+        [Example("vtsetsetting[RingDistance,cstrf[cnumber[vtgetsetting[DoorOpenRange]],`N5`]", "Sets the vtank RingDistance setting to match the DoorOpenRange")]
+        public object Vtsetsetting(string setting, string value) {
+            try {
+                var settingType = vTank.Instance.GetSettingType(setting);
+
+                if (settingType == typeof(string)) {
+                    vTank.Instance.SetSetting(setting, value.ToString());
+                }
+                else if (double.TryParse(value, out double number)) {
+                    if (settingType == typeof(bool)) {
+                        vTank.Instance.SetSetting(setting, (number == 1) ? true : false);
+                    }
+                    else if (settingType == typeof(double)) {
+                        vTank.Instance.SetSetting(setting, number);
+                    }
+                    else if (settingType == typeof(int)) {
+                        vTank.Instance.SetSetting(setting, Convert.ToInt32(number));
+                    }
+                    else if (settingType == typeof(float)) {
+                        vTank.Instance.SetSetting(setting, Convert.ToSingle(number));
+                    }
+                }
+                else {
+                    //Fail here?
+                    //Logger.WriteToChat($"Attempted to set a setting of unknown type: {settingType}");
+                    return 0;
+                }
+            }
+            //Known failures
+            catch (FormatException ex) {
+                return 0;
+            }
+            catch (InvalidCastException ex) {
+                return 0;
+            }
+            catch (Exception ex) {
+                //Eat the error thrown even on successes
+            }
+            return 1;
+        }
+        #endregion //vtsetsetting[string setting, string value]
+        #region vtgetsetting[string setting]
+        [ExpressionMethod("vtgetsetting")]
+        [ExpressionParameter(0, typeof(string), "setting", "setting to get the state of")]
+        [ExpressionReturn(typeof(string), "Returns the string value of the specific setting or an empty string if undefined")]
+        [Summary("Gets the value of a vtank setting")]
+        [Example("vtgetsetting[EnableCombat]", "Gets the value of the vtank EnableCombat setting")]
+        [Example("cnumber[vtgetsetting[RingDistance]]", "Gets the number value of the vtank RingDistance setting")]
+        public object Vtgetsetting(string setting) {
+            //try {
+                return UBHelper.vTank.Instance.GetSetting(setting);
+            //}
+            //catch (Exception ex) {
+            //    return string.Empty;
+            //}
+        }
+        #endregion //vtgetsetting[string setting]
         #region ord[string character]
         [ExpressionMethod("ord")]
         [ExpressionParameter(0, typeof(string), "character", "string to convert")]
