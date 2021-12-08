@@ -307,12 +307,7 @@ You can tell the plugin to stop a specified number of levels before the max, but
 
             Logger.WriteToChat($"Experience plan for {expToSpend} exp:");
             foreach (var t in plan) {
-                var steps = t.Value.Count;
-                var description = new StringBuilder($"{t.Key.ToString()} ({steps}): ");
-
-                for (var i = 0; i < t.Value.Count; i++) {
-                    description.Append($"{t.Value[i]}\t");
-                }
+                var description = new StringBuilder($"{t.Key.ToString()}: {t.Value.Count} levels for {t.Value.Sum()} xp");
 
                 Logger.WriteToChat(description.ToString());
             }
@@ -350,7 +345,5 @@ You can tell the plugin to stop a specified number of levels before the max, but
                 disposed = true;
             }
         }
-    }
-
-    
+    }   
 }
