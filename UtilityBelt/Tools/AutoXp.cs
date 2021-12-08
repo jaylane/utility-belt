@@ -1,18 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Decal.Adapter;
-using Decal.Adapter.Wrappers;
-using UBHelper;
 using UtilityBelt.Lib;
-using UtilityBelt.Lib.Settings;
-using UtilityBelt.Lib.VendorCache;
-using UtilityBelt.Views;
-using VirindiViewService.Controls;
 using UBLoader.Lib.Settings;
 using Hellosam.Net.Collections;
 using UBLoader.Lib;
@@ -26,7 +18,7 @@ namespace UtilityBelt.Tools {
 This plugin will attempt to spend experience based on a weighted importance of a skill set in the Policy.
 The higher the number the more experience you'd be willing to spend on the skill (e.g., War - 10, Endurance - 1 would level War next if it cost less than 10x Endurance).
 
-The plugin can spend either batches of experience up to the max chunk size or just enough to get to the next level.
+The plugin can spend either batches of experience up to the max chunk size (/ub xp level) or just enough to get to the next level ((/ub xp slow).
 If the plugin is already spending experience it will stop if you use a command to spend experience.
 
 You can tell the plugin to stop a specified number of levels before the max, but it will always halt at least 1 before the max.
@@ -39,9 +31,6 @@ You can tell the plugin to stop a specified number of levels before the max, but
         private int planIndex { get; set; } = 0;
 
         #region Config
-//        [Summary("Spend experience when it is gained")]
-//        public readonly Setting<bool> EnableXpChange = new Setting<bool>(true);
-
         [Summary("Levels before max level to stop attempting to level a target.")]
         public readonly Setting<int> StopBeforeMax = new Setting<int>(10);
 
