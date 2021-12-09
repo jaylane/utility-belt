@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using UBNetworking.Messages;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
 
 namespace UBNetworking.Lib {
     public class ServerClient : ClientBase {
