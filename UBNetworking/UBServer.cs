@@ -30,7 +30,7 @@ namespace UBNetworking {
         TcpListener listener;
         BackgroundWorker worker;
 
-        public UBServer(string host, int port, Action<string>log=null, SerializationBinder binder) {
+        public UBServer(string host, int port, Action<string>log=null, SerializationBinder binder=null) {
             Host = host;
             Port = port;
             LogAction = (s) => { log($"Server: {s}"); };
