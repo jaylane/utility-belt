@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections;
 using System.ComponentModel;
@@ -8,6 +8,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using UBNetworking.Lib;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
 
 namespace UBNetworking {
     public class UBServer : IDisposable {
@@ -22,15 +24,17 @@ namespace UBNetworking {
         public bool IsRunning { get; private set; }
         
         private Action<string> LogAction = null;
+        private SerializationBinder Binder = null;
         public Dictionary<int, ServerClient> Clients = new Dictionary<int, ServerClient>();
 
         TcpListener listener;
         BackgroundWorker worker;
 
-        public UBServer(string host, int port, Action<string>log=null) {
+        public UBServer(string host, int port, Action<string>log=null, SerializationBinder binder) {
             Host = host;
             Port = port;
             LogAction = (s) => { log($"Server: {s}"); };
+            Binder = binder;
 
             Start();
         }
@@ -128,7 +132,7 @@ namespace UBNetworking {
             string connectionId = tcpClient.Client.RemoteEndPoint.ToString();
             var client = new ServerClient(++_id, connectionId, tcpClient, LogAction, (a) => {
                 a.Invoke();
-            });
+            }, Binder);
             client.OnMessageReceived += Client_OnMessageReceived;
             Clients.Add(client.ClientId, client);
             LogAction?.Invoke($"Client {client.ClientId} connected.");
