@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +7,7 @@ using UBNetworking.Messages;
 
 namespace UBNetworking.Lib {
     public class ServerClient : ClientBase {
-        public ServerClient(int clientId, string connectionId, TcpClient client, Action<string> log, Action<Action> runOnMainThread) : base(clientId, connectionId, log, runOnMainThread, null) {
+        public ServerClient(int clientId, string connectionId, TcpClient client, Action<string> log, Action<Action> runOnMainThread, SerializationBinder binder=null) : base(clientId, connectionId, log, runOnMainThread, binder) {
             SetClient(client);
             IsRemote = true;
         }
