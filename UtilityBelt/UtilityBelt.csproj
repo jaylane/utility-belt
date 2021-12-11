@@ -203,6 +203,7 @@
     <Compile Include="Lib\UBHudManager.cs" />
     <Compile Include="Lib\VCS_Connector.cs" />
     <Compile Include="Lib\VHS_Connector.cs" />
+    <Compile Include="Tools\AutoXp.cs" />
     <Compile Include="Tools\ChatFilter.cs" />
     <Compile Include="Tools\ChatHandler.cs" />
     <Compile Include="Tools\Aliases.cs" />

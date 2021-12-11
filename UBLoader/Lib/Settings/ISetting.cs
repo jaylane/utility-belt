@@ -142,14 +142,27 @@ namespace UBLoader.Lib.Settings {
             }
             else if (value is Hellosam.Net.Collections.IDict) {
                 if (expandLists) {
-                    var results = new List<string>();
-                    var dict = value as Hellosam.Net.Collections.ObservableDictionary<string, string>;
+                    if (value is Hellosam.Net.Collections.ObservableDictionary<string, string>) {
+                        var results = new List<string>();
+                        var dict = value as Hellosam.Net.Collections.ObservableDictionary<string, string>;
+                        foreach (var dk in dict.Keys) {
+                            results.Add($"{dk}: {dict[dk]}");
+                        }
 
-                    foreach (var dk in dict.Keys) {
-                        results.Add($"{dk}: {dict[dk]}");
+                        return $"{{{string.Join(",", results.ToArray())}}}";
                     }
+                    else if (value is Hellosam.Net.Collections.ObservableDictionary<XpTarget, double>) {
+                        var results = new List<string>();
+                        var dict = value as Hellosam.Net.Collections.ObservableDictionary<XpTarget, double>;
+                        foreach (var dk in dict.Keys) {
+                            results.Add($"{dk}: {dict[dk]}");
+                        }
 
-                    return $"{{{string.Join(",", results.ToArray())}}}";
+                        return $"{{{string.Join(",", results.ToArray())}}}";
+                    }
+                    else {
+                        return "{Dictionary}";
+                    }
                 }
                 else {
                     return "{Dictionary}";
