@@ -6,6 +6,22 @@ var main = {
   numImgs : null,
 
   init : function() {
+    var anchorOffset = 65;
+    if (window.location.toString().indexOf("#") != -1){
+      var anchor = $(location).attr('hash').substr(1);
+      var bodyRect = document.body.getBoundingClientRect(),
+        elemRect = document.getElementById(anchor).getBoundingClientRect(),
+        offset   = elemRect.top - bodyRect.top;
+      window.scroll({
+        top: offset + anchorOffset,
+        left: window.ScrollX,
+        behavior: 'instant'
+      });
+    }
+
+    // fix anchor links to show below navbar
+    $('h1,h2,h3,h4,h5').css({"padding-top": "" + anchorOffset + "px", "margin-top": "-" + anchorOffset + "px"});
+
     // beta site modifiers
     if (location.hostname != "utilitybelt.gitlab.io") {
       $(".navbar").css("background-color","red");
@@ -22,6 +38,12 @@ var main = {
             $(".navbar").removeClass("top-nav-short");
         }
     });
+
+        if ($(".navbar").offset().top > 50) {
+            $(".navbar").addClass("top-nav-short");
+        } else {
+            $(".navbar").removeClass("top-nav-short");
+        }
     
     // On mobile, hide the avatar when expanding the navbar menu
     $('#main-navbar').on('show.bs.collapse', function () {

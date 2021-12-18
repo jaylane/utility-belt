@@ -15,6 +15,12 @@ pygmentCodeFences = true
 
 disableKinds = ["taxonomy", "taxonomyTerm"]
 
+[markup]
+  [markup.tableOfContents]
+    endLevel = 5
+    ordered = false
+    startLevel = 2
+
 [Params]
   subtitle = "A multipurpose Decal plugin for Asheron's Call"
   logo = "img/avatar-icon.png"

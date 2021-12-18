@@ -353,3 +353,4 @@ Site/layouts/partials/*.html
 public/
 public_staging/
 Site/resources/
+.hugo_build.lock

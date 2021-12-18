@@ -3,7 +3,6 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -600,10 +599,10 @@ All settings take immediate effect on the plugin, and will save to your [charact
         private static void WriteExpressionMethod(StringWriter stringWriter, ExpressionInfo method) {
             var parameters = new List<string>();
             foreach (var p in method.Parameters) {
-                parameters.Add($"<span style=\"color:#27436F\">{p.FriendlyType} {p.Name}{(p.DefaultValue != null ? $"={p.DefaultValue}" : "")}</span>");
+                parameters.Add($"{p.FriendlyType} {p.Name}{(p.DefaultValue != null ? $"={p.DefaultValue}" : "")}");
             }
 
-            stringWriter.WriteLine($"#### {HttpUtility.HtmlEncode(method.MethodName)}[{string.Join(", ", parameters.ToArray())}]");
+            stringWriter.WriteLine($"#### {HttpUtility.HtmlEncode(method.MethodName)}");
             stringWriter.WriteLine("> ");
             stringWriter.WriteLine("> " + method.Summary);
 
