@@ -201,19 +201,11 @@ namespace UtilityBelt
         internal static string GetVTankProfilesDirectory() {
             var defaultPath = @"C:\Games\VirindiPlugins\VirindiTank\";
             try {
-                var key = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Decal\Plugins\{642F1F48-16BE-48BF-B1D4-286652C4533E}";
-                var path = (string)Registry.GetValue(key, "ProfilePath", "");
+                var path = Registry.LocalMachine.OpenSubKey("Software\\Decal\\Plugins\\{642F1F48-16BE-48BF-B1D4-286652C4533E}").GetValue("ProfilePath").ToString();
 
-                if (string.IsNullOrEmpty(path)) {
-                    key = @"HKEY_CURRENT_USER\Software\Classes\VirtualStore\MACHINE\SOFTWARE\WOW6432Node\Decal\Plugins\{642F1F48-16BE-48BF-B1D4-286652C4533E}";
-                    path = (string)Registry.GetValue(key, "ProfilePath", "");
+                if (!string.IsNullOrEmpty(path)) {
+                    return path;
                 }
-
-                if (string.IsNullOrEmpty(path)) {
-                    return defaultPath;
-                }
-
-                return path;
             }
             catch (Exception ex) { Logger.LogException(ex); }
 
