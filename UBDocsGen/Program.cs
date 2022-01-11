@@ -119,7 +119,9 @@ namespace UBDocsGen {
     class Program {
         static Dictionary<string, ToolInfo> AvailableTools = new Dictionary<string, ToolInfo>();
         static string RepoURL = "https://gitlab.com/utilitybelt/utilitybelt.gitlab.io";
+        static string StagingURL = "https://ubstaging.surge.sh/";
 
+        public static string BuildBranch { get; private set; }
         public static string AssemblyPath { get; private set; }
         public static string ProjectRoot { get; private set; }
         public static UtilityBeltPlugin UB { get; private set; }
@@ -128,6 +130,10 @@ namespace UBDocsGen {
 
         static void Main(string[] args) {
             try {
+                BuildBranch = args[0];
+                if (string.IsNullOrEmpty(BuildBranch)) {
+                    throw new Exception($"BuildBranch invalid: {BuildBranch}");
+                }
                 AssemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 ProjectRoot = Path.GetFullPath(Path.Combine(AssemblyPath, Path.Combine("..", "..")));
                 Console.WriteLine($"Project Root: {ProjectRoot}");
@@ -456,13 +462,19 @@ namespace UBDocsGen {
 
                     if (releaseDate == "TBD") {
                         // we want this to throw an exception if it fails, so the build will fail
-                        //*
-                        using (StreamReader file = File.OpenText(Path.Combine(ProjectRoot, @"bin/installer.json")))
-                        using (JsonTextReader reader = new JsonTextReader(file)) {
-                            JObject o2 = (JObject)JToken.ReadFrom(reader);
-                            installerPath = RepoURL + o2["url"];
+                        var productVersion = FileVersionInfo.GetVersionInfo(Path.Combine(AssemblyPath, "UtilityBelt.dll")).ProductVersion;
+                        //0.1.7.bin-cleanup.3bcea54 (2020-11-25 00:13:21)
+                        var versionRe = new Regex(@"(?<version>\d+\.\d+\.\d+)\.(?<branch>[^\.]+)\.(?<commit>\S+) (?<releaseDate>.*)");
+                        var matches = versionRe.Match(productVersion);
+                        var installerName = $"UtilityBeltInstaller-{ matches.Groups["version"].Value}.exe";
+                        var expectedInstallerPath = Path.Combine(ProjectRoot, $"bin/{installerName}");
+
+                        if (!File.Exists(expectedInstallerPath)) {
+                            throw new Exception($"Could not find installer: {expectedInstallerPath}");
                         }
-                        //*/
+                        installerPath = $"{StagingURL}{BuildBranch}/{installerName}";
+                        Directory.CreateDirectory(Path.Combine(ProjectRoot, $"public\\{BuildBranch}"));
+                        File.Copy(expectedInstallerPath, Path.Combine(ProjectRoot, $"public\\{BuildBranch}\\{installerName}"));
                         releaseDate = DateTime.Now.ToString("yyyy-MM-dd");
                     }
                     else {
