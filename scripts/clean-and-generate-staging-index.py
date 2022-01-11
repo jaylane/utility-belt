@@ -8,6 +8,7 @@ from math import trunc
 
 project_id = "10819053"
 web_dir = "C:\\UtilityBelt\\www\\"
+staging_url = "https://ubstaging.surge.sh"
 
 template = """
 <!DOCTYPE html>
@@ -75,6 +76,8 @@ template = """
         <h1>UtilityBelt Beta Branches</h1>
         <p>These are automatically updated every time a branch is pushed to <a href="https://gitlab.com/utilitybelt/utilitybelt.gitlab.io" target="_blank">https://gitlab.com/utilitybelt/utilitybelt.gitlab.io</a></p>
 
+        <p><strong>For the latest release visit <a href="https://utilitybelt.gitlab.io/">utilitybelt.gitlab.io</a></strong></p>
+
         %CONTENTS%
     </div>
     <script type="text/javascript">
@@ -132,6 +135,15 @@ def get_pipeline_status(branch):
         status = "<a href=\"" + data[0]['web_url'] + "\" class=\"" + s + "\">" + s + "</a>"
     return status
 
+
+def get_installer_link(branch):
+    link = "#"
+    for root, dirs, files in os.walk(web_dir + branch['name']):
+        for name in files:
+            if "UtilityBeltInstaller" in name:
+                return staging_url + "/" + branch['name'] + "/" + name
+    return "#"
+
 def sortBranches(e):
     # 2020-12-11T07:15:49.000+00:00
     if e['name'] == "master":
@@ -156,16 +168,20 @@ for branch in data:
 
     valid_branches.append(branch['name'])
     pipeline_status = get_pipeline_status(branch)
+    installer_link = get_installer_link(branch)
 
     print("Found branch: " + branch['name'])
     contents = contents + "<div class=\"branch " + branch_class + "\">\n"
-    contents = contents + "<h3>" + branch['name'] + "</h3>\n"
+    if branch['name'] == "master":
+        contents = contents + "<h3>Latest Stable Beta (master)</h3>\n"
+    else:
+        contents = contents + "<h3>" + branch['name'] + "</h3>\n"
     contents = contents + "<h4><strong>Status:</strong> " + pipeline_status + " | <strong>Updated:</strong> <span class=\"timeago\">" + branch['commit']['created_at'] + "</span></h4>\n"
     contents = contents + "<p><strong>Last Commit:</strong> " + html.escape(branch['commit']['message']) + "</p>\n"
     contents = contents + "<div class=\"links\"><strong>Links:</strong> "
-    #contents = contents + "<a href=\"#\">Installer</a> | "
-    contents = contents + "<a href=\"/" + branch['name'] + "/\">Beta Documentation Site</a> | "
-    contents = contents + "<a href=\"" + branch['web_url'] + "\">GitLab Branch</a>"
+    contents = contents + "<a href=\"" + installer_link + "\">Installer</a> | "
+    contents = contents + "<a href=\"/" + branch['name'] + "/\">Beta Site</a> | "
+    contents = contents + "<a href=\"" + branch['web_url'] + "\">GitLab</a>"
     contents = contents + "</div>\n"
     contents = contents + "</div>\n\n"
 

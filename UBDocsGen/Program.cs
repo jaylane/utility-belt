@@ -467,14 +467,15 @@ namespace UBDocsGen {
                         var versionRe = new Regex(@"(?<version>\d+\.\d+\.\d+)\.(?<branch>[^\.]+)\.(?<commit>\S+) (?<releaseDate>.*)");
                         var matches = versionRe.Match(productVersion);
                         var installerName = $"UtilityBeltInstaller-{ matches.Groups["version"].Value}.exe";
+                        var newInstallerName = $"UtilityBeltInstaller-{ matches.Groups["version"].Value}-{BuildBranch}.exe";
                         var expectedInstallerPath = Path.Combine(ProjectRoot, $"bin/{installerName}");
 
                         if (!File.Exists(expectedInstallerPath)) {
                             throw new Exception($"Could not find installer: {expectedInstallerPath}");
                         }
-                        installerPath = $"{StagingURL}{BuildBranch}/{installerName}";
+                        installerPath = $"{StagingURL}{BuildBranch}/{newInstallerName}";
                         Directory.CreateDirectory(Path.Combine(ProjectRoot, $"public\\{BuildBranch}"));
-                        File.Copy(expectedInstallerPath, Path.Combine(ProjectRoot, $"public\\{BuildBranch}\\{installerName}"));
+                        File.Copy(expectedInstallerPath, Path.Combine(ProjectRoot, $"public\\{BuildBranch}\\{newInstallerName}"));
                         releaseDate = DateTime.Now.ToString("yyyy-MM-dd");
                     }
                     else {
