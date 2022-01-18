@@ -84,7 +84,15 @@ namespace UBLoader.Lib.Settings {
         }
 
         public override void SetValue(object newValue) {
-            if (Value is ObservableCollection<string>) {
+            if (Value == null) {
+                try {
+                    Value = (T)Convert.ChangeType(newValue, typeof(T));
+                }
+                catch {
+                    Value = (T)newValue;
+                }
+            }
+            else if (Value is ObservableCollection<string>) {
                 foreach (var v in (IEnumerable)newValue) {
                     (Value as ObservableCollection<string>).Add(v.ToString());
                 }
