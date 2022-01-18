@@ -656,9 +656,9 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
         private void Core_RadarUpdate(double uptime) {
             try {
                 if (needsNewHud) {
-                    needsNewHud = false;
-                    isRunning = false;
                     CreateHud(MapWindowWidth, MapWindowHeight, MapWindowX, MapWindowY);
+                    LoadLandblock(UB.Core.Actions.Landcell, true);
+                    needsNewHud = false;
                 }
 
                 if (isPortaling && (UB.Core.Actions.Landcell & 0xFFFF0000) != currentLandblock) {
@@ -915,6 +915,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                 if (hud != null) {
                     ClearHud();
                     hud.Dispose();
+                    hud = null;
                 }
 
                 if (!Enabled || (!DrawWhenClosed && !UB.DungeonMapView.view.Visible)) {
@@ -933,6 +934,9 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                     UB.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
                     UBHelper.Core.RadarUpdate -= Core_RadarUpdate;
                     isRunning = false;
+                    ClearCache();
+                    mapTexture?.Dispose();
+                    mapTexture = null;
                 }
 
                 int landcell = 0;
@@ -962,7 +966,10 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
 
         #region Rendering
         private void RenderHud() {
-            if (hud == null || hud.Texture == null || hud.Texture.IsDisposed || mapTexture == null || mapTexture.IsDisposed) return;
+            if (hud == null || hud.Texture == null || hud.Texture.IsDisposed || mapTexture == null || mapTexture.IsDisposed) {
+                needsNewHud = true;
+                return;
+            }
 
             if (UB.DungeonMapView?.view == null || (UB.DungeonMapView.view.Visible && UIMapNotebook.CurrentTab != 0)) {
                 hud.Enabled = false;
@@ -1224,7 +1231,7 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
-            finally { mapTexture.EndRender(); }
+            finally { mapTexture?.EndRender(); }
         }
 
         private void DrawDynamicZLayer(KeyValuePair<int, DungeonLayer> kp) {
