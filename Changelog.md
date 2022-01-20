@@ -6,6 +6,7 @@
 - Fix issue where vTank profiles directory was not being detected properly
 - Fix Nullable settings in settings form (PlayerOptions stuff)
 - Fix issue where dungeonmaps would no longer draw after changing game resolution
+- Fix /ub igp/give commands to be non greedy when matching profile (fixes /ub ig test.utl to char with to in the name)
 
 ## 0.2.5 (2021-10-06) [UtilityBeltInstaller-0.2.5.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/dd7285b144ef9327bf8041c64841c22f/UtilityBeltInstaller-0.2.5.exe)
 - Add expressions: wobjectgetdoubleprop[], wobjectgetboolprop[], wobjectgetstringprop[], wobjecthasdata[], wobjectrequestdata[]
