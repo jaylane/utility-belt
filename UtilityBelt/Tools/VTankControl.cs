@@ -1231,6 +1231,241 @@ namespace UtilityBelt.Tools {
             return -1;
         }
         #endregion getcontaineritemcount[worldobject? container]
+        #region wobject find lists
+        #region wobjectfindall[]
+        [ExpressionMethod("wobjectfindall")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of *all* worldobjects")]
+        [Summary("Gets a list of all worldobjects known by the client")]
+        [Example("wobjectfindall[]", "Returns a list of *all* wobjects")]
+        public object ExpressionWorldObjectfindall() {
+            var list = new ExpressionList();
+            var wos = UB.Core.WorldFilter.GetAll();
+            foreach (var wo in wos) {
+                if (UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindall[]
+        #region wobjectfindallinventory[]
+        [ExpressionMethod("wobjectfindallinventory")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all worldobjects in the player inventory")]
+        [Summary("Gets a list of all worldobjects in the players inventory")]
+        [Example("wobjectfindallinventory[]", "Returns a list of all your inventory wobjects")]
+        public object ExpressionWorldObjectfindallinventory() {
+            var list = new ExpressionList();
+            var wos = UB.Core.WorldFilter.GetInventory();
+            foreach (var wo in wos) {
+                if (UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindallinventory[]
+        #region wobjectfindalllandscape[] 
+        [ExpressionMethod("wobjectfindalllandscape")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all worldobjects in the landscape")]
+        [Summary("Gets a list of all worldobjects in the landscape")]
+        [Example("wobjectfindalllandscape[]", "Returns a list of all landscape wobjects")]
+        public object ExpressionWorldObjectfindalllandscape() {
+            var list = new ExpressionList();
+            var wos = UB.Core.WorldFilter.GetLandscape();
+            foreach (var wo in wos) {
+                if (UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindalllandscape[]
+        #region wobjectfindallbyobjectclass[int objectclass]
+        [ExpressionMethod("wobjectfindallbyobjectclass")]
+        [ExpressionParameter(0, typeof(double), "objectclass", "objectclass to filter by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching worldobjects")]
+        [Summary("Gets a list of all worldobjects of the passed objectclass")]
+        [Example("wobjectfindallbyobjectclass[24]", "Returns a list of all players the client is aware of")]
+        public object ExpressionWorldObjectfindallbyobjectclass(double objectClass) {
+            var list = new ExpressionList();
+            var wos = UB.Core.WorldFilter.GetByObjectClass((ObjectClass)Convert.ToInt32(objectClass));
+            foreach (var wo in wos) {
+                if (UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindallbyobjectclass[int objectclass]
+        #region wobjectfindallbytemplatetype[int templatetype]
+        [ExpressionMethod("wobjectfindallbytemplatetype")]
+        [ExpressionParameter(0, typeof(double), "templatetype", "templatetype to filter by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching worldobjects")]
+        [Summary("Gets a list of all wobjects matching templatetype")]
+        [Example("wobjectfindallbytemplatetype[9060]", "Returns a list of worldobjects that are a Titan Mana Charge (template type 9060)")]
+        public object ExpressionWorldObjectfindallbytemplatetype(double templateType) {
+            var list = new ExpressionList();
+            var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetAll();
+            var typeInt = Convert.ToInt32(templateType);
+            foreach (var wo in wos) {
+                if (wo.Type == typeInt && UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindallbytemplatetype[int templatetype]
+        #region wobjectfindallbynamerx[string namerx]
+        [ExpressionMethod("wobjectfindallbynamerx")]
+        [ExpressionParameter(0, typeof(string), "namerx", "regular expression to filter name by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching worldobjects")]
+        [Summary("Gets a list of all wobjects matching the passed regular expression")]
+        [Example("wobjectfindallbynamerx[`Crash.*`]", "Returns a list of all worldobjects that match the regex `Crash.*`")]
+        public object ExpressionWorldObjectfindallbynamerx(string namerx) {
+            var re = new Regex(namerx);
+            var list = new ExpressionList();
+            var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetAll();
+            foreach (var wo in wos) {
+                if (re.IsMatch(Util.GetObjectName(wo.Id)) && UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindallbynamerx[string namerx]
+        #region wobjectfindallinventorybyobjectclass[int objectclass]
+        [ExpressionMethod("wobjectfindallinventorybyobjectclass")]
+        [ExpressionParameter(0, typeof(double), "objectclass", "objectclass to filter by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching worldobjects")]
+        [Summary("Gets a list of all inventory worldobjects of the passed objectclass")]
+        [Example("wobjectfindallinventorybyobjectclass[16]", "Returns a list of all mana stones in the players inventory")]
+        public object ExpressionWorldObjectfindallinventorybyobjectclass(double objectClass) {
+            var oc = (ObjectClass)Convert.ToInt32(objectClass);
+            var list = new ExpressionList();
+            var wos = UB.Core.WorldFilter.GetInventory();
+            foreach (var wo in wos) {
+                if (wo.ObjectClass == oc && UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindallinventorybyobjectclass[int objectclass]
+        #region wobjectfindallinventorybytemplatetype[int templatetype]
+        [ExpressionMethod("wobjectfindallinventorybytemplatetype")]
+        [ExpressionParameter(0, typeof(double), "templatetype", "templatetype to filter by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching inventory worldobjects")]
+        [Summary("Gets a list of all inventory items matching templatetype")]
+        [Example("wobjectfindallinventorybytemplatetype[9060]", "Returns a list of inventory worldobjects that are a Titan Mana Charge (template type 9060)")]
+        public object ExpressionWorldObjectfindallininventorybytemplatetype(double templateType) {
+            var list = new ExpressionList();
+            var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetInventory();
+            var typeInt = Convert.ToInt32(templateType);
+            foreach (var wo in wos) {
+                if (wo.Type == typeInt && UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindallinventorybytemplatetype[int templatetype]
+        #region wobjectfindallinventorybynamerx[string namerx]
+        [ExpressionMethod("wobjectfindallinventorybynamerx")]
+        [ExpressionParameter(0, typeof(string), "namerx", "regular expression to filter name by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching worldobjects")]
+        [Summary("Gets a list of all inventory wobjects with name matching the passed regular expression")]
+        [Example("wobjectfindallinventorybynamerx[`Crash.*`]", "Returns a list of all inventory worldobjects that match the regex `Crash.*`")]
+        public object ExpressionWorldObjectfindallinventorybynamerx(string namerx) {
+            var re = new Regex(namerx);
+            var list = new ExpressionList();
+            var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetInventory();
+            foreach (var wo in wos) {
+                if (re.IsMatch(Util.GetObjectName(wo.Id)) && UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindallinventorybynamerx[string namerx]
+        #region wobjectfindalllandscapebyobjectclass[int objectclass]
+        [ExpressionMethod("wobjectfindalllandscapebyobjectclass")]
+        [ExpressionParameter(0, typeof(double), "objectclass", "objectclass to filter by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching worldobjects")]
+        [Summary("Gets a list of all landscape worldobjects of the passed objectclass")]
+        [Example("wobjectfindalllandscapebyobjectclass[16]", "Returns a list of all mana stones in the landscape")]
+        public object ExpressionWorldObjectfindalllandscapebyobjectclass(double objectClass) {
+            var oc = (ObjectClass)Convert.ToInt32(objectClass);
+            var list = new ExpressionList();
+            var wos = UB.Core.WorldFilter.GetLandscape();
+            foreach (var wo in wos) {
+                if (wo.ObjectClass == oc && UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindalllandscapebyobjectclass[int objectclass]
+        #region wobjectfindalllandscapebytemplatetype[int templatetype]
+        [ExpressionMethod("wobjectfindalllandscapebytemplatetype")]
+        [ExpressionParameter(0, typeof(double), "templatetype", "templatetype to filter by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching worldobjects")]
+        [Summary("Gets a list of all landscape items matching templatetype")]
+        [Example("wobjectfindalllandscapebytemplatetype[9060]", "Returns a list of landscape worldobjects that are a Titan Mana Charge (template type 9060)")]
+        public object ExpressionWorldObjectfindalllandscapebytemplatetype(double templateType) {
+            var list = new ExpressionList();
+            var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetLandscape();
+            var typeInt = Convert.ToInt32(templateType);
+            foreach (var wo in wos) {
+                if (wo.Type == typeInt && UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindalllandscapebytemplatetype[int templatetype]
+        #region wobjectfindalllandscapebynamerx[string namerx]
+        [ExpressionMethod("wobjectfindalllandscapebynamerx")]
+        [ExpressionParameter(0, typeof(string), "namerx", "regular expression to filter name by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching worldobjects")]
+        [Summary("Gets a list of all landscape wobjects with name matching the passed regular expression")]
+        [Example("wobjectfindalllandscapebynamerx[`Crash.*`]", "Returns a list of all landscape worldobjects that match the regex `Crash.*`")]
+        public object ExpressionWorldObjectfindalllandscapebynamerx(string namerx) {
+            var re = new Regex(namerx);
+            var list = new ExpressionList();
+            var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetLandscape();
+            foreach (var wo in wos) {
+                if (re.IsMatch(Util.GetObjectName(wo.Id)) && UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindalllandscapebynamerx[string namerx]
+        #endregion //wobject find lists
         #endregion //WorldObjects
         #region Actions
         #region actiontryselect[wobject obj]
