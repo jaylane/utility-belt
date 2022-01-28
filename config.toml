@@ -20,6 +20,8 @@ disableKinds = ["taxonomy", "taxonomyTerm"]
     endLevel = 5
     ordered = false
     startLevel = 2
+  [markup.goldmark.renderer]
+    unsafe= true
 
 [Params]
   subtitle = "A multipurpose Decal plugin for Asheron's Call"
