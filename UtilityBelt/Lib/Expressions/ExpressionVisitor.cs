@@ -272,25 +272,25 @@ namespace UtilityBelt.Lib.Expressions {
             if (context.op.Text == "==") {
                 if (left.GetType() == typeof(string))
                     return left.ToString().ToLower().Equals(right.ToString().ToLower());
-                return left.Equals(right);
+                return left.Equals(right) ? 1 : 0;
             }
             if (context.op.Text == "!=") {
                 if (left.GetType() == typeof(string))
                     return !left.ToString().ToLower().Equals(right.ToString().ToLower());
-                return !left.Equals(right);
+                return !left.Equals(right) ? 1 : 0;
             }
 
             if (left.GetType() != typeof(double) || right.GetType() != typeof(double))
                 throw new Exception("Invalid comparison of non number types");
 
             if (context.op.Text == "<")
-                return (double)left < (double)right;
+                return (double)left < (double)right ? 1 : 0;
             if (context.op.Text == ">")
-                return (double)left > (double)right;
+                return (double)left > (double)right ? 1 : 0;
             if (context.op.Text == "<=")
-                return (double)left <= (double)right;
+                return (double)left <= (double)right ? 1 : 0;
             if (context.op.Text == ">=")
-                return (double)left >= (double)right;
+                return (double)left >= (double)right ? 1 : 0;
 
             return false;
         }

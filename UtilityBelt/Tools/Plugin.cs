@@ -893,6 +893,16 @@ namespace UtilityBelt.Tools {
             return UB.VTank.EvaluateExpression(expression, true);
         }
         #endregion //vitae[]
+        #region tostring[object obj]
+        [ExpressionMethod("tostring")]
+        [ExpressionParameter(0, typeof(object), "obj", "The object to convert to a string")]
+        [ExpressionReturn(typeof(object), "Returns the object, converted to a string")]
+        [Summary("Converts an object to a string")]
+        [Example("tostring[2]", "returns the string `2`")]
+        public object ObjToString(object obj) {
+            return obj.ToString();
+        }
+        #endregion //vitae[]
         #region vitae[]
         [ExpressionMethod("vitae")]
         [ExpressionReturn(typeof(double), "Returns a number")]
