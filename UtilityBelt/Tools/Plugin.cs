@@ -882,6 +882,16 @@ namespace UtilityBelt.Tools {
         #endregion
 
         #region Expressions
+        #region exec[]
+        [ExpressionMethod("exec")]
+        [ExpressionParameter(0, typeof(string), "text", "The expression string to evaluate")]
+        [ExpressionReturn(typeof(object), "Returns the result of evaluating the expression string")]
+        [Summary("Evaluates a string as an expression")]
+        [Example("exec[`1+1`]", "returns 2")]
+        public object Exec(string expression) {
+            return UB.VTank.EvaluateExpression(expression, true);
+        }
+        #endregion //vitae[]
         #region vitae[]
         [ExpressionMethod("vitae")]
         [ExpressionReturn(typeof(double), "Returns a number")]
