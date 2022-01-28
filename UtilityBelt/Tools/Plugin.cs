@@ -34,6 +34,17 @@ namespace UtilityBelt.Tools {
             RunAt = DateTime.UtcNow.AddMilliseconds(delayMilliseconds);
         }
     }
+    public class DelayedExpression {
+        public string Expression;
+        public double Delay;
+        public DateTime RunAt;
+
+        public DelayedExpression(string expression, double delayMilliseconds) {
+            Expression = expression;
+            Delay = delayMilliseconds;
+            RunAt = DateTime.UtcNow.AddMilliseconds(delayMilliseconds);
+        }
+    }
 
     [Name("Plugin")]
     [Summary("Provides misc commands")]
@@ -47,7 +58,8 @@ namespace UtilityBelt.Tools {
         private int portalAttempts = 0;
         private static WorldObject portal = null;
         private bool isDelayListening;
-        readonly private List<DelayedCommand> delayedCommands = new List<DelayedCommand>(); 
+        readonly private List<DelayedCommand> delayedCommands = new List<DelayedCommand>();
+        readonly private List<DelayedExpression> delayedExpressions = new List<DelayedExpression>();
 
         /// <summary>
         /// The default character settings path
@@ -333,10 +345,11 @@ namespace UtilityBelt.Tools {
             var command = string.Join(" ", rest.Skip(1).ToArray());
             AddDelayedCommand(command, delay);
         }
+
         public void AddDelayedCommand(string command, double delay) {
             Logger.Debug($"Scheduling command `{command}` with delay of {delay}ms");
 
-            DelayedCommand delayed = new DelayedCommand(command, delay);
+            var delayed = new DelayedCommand(command, delay);
 
             delayedCommands.Add(delayed);
             delayedCommands.Sort((x, y) => x.RunAt.CompareTo(y.RunAt));
@@ -346,6 +359,20 @@ namespace UtilityBelt.Tools {
                 UB.Core.RenderFrame += Core_RenderFrame_Delay;
             }
         }
+        public void AddDelayedExpression(string expression, double delay) {
+            Logger.Debug($"Scheduling expression `{expression}` with delay of {delay}ms");
+
+            var delayed = new DelayedExpression(expression, delay);
+
+            delayedExpressions.Add(delayed);
+            delayedExpressions.Sort((x, y) => x.RunAt.CompareTo(y.RunAt));
+
+            if (!isDelayListening) {
+                isDelayListening = true;
+                UB.Core.RenderFrame += Core_RenderFrame_Delay;
+            }
+        }
+
         public void Core_RenderFrame_Delay(object sender, EventArgs e) {
             try {
                 while (delayedCommands.Count > 0 && delayedCommands[0].RunAt <= DateTime.UtcNow) {
@@ -354,7 +381,13 @@ namespace UtilityBelt.Tools {
                     delayedCommands.RemoveAt(0);
                 }
 
-                if (delayedCommands.Count == 0) {
+                while (delayedExpressions.Count > 0 && delayedExpressions[0].RunAt <= DateTime.UtcNow) {
+                    LogDebug($"Executing expression `{delayedExpressions[0].Expression}` (delay was {delayedExpressions[0].Delay}ms)");
+                    UB.VTank.EvaluateExpression(delayedExpressions[0].Expression, true);
+                    delayedExpressions.RemoveAt(0);
+                }
+
+                if (delayedCommands.Count == 0 && delayedExpressions.Count == 0) {
                     UB.Core.RenderFrame -= Core_RenderFrame_Delay;
                     isDelayListening = false;
                 }
@@ -383,6 +416,7 @@ namespace UtilityBelt.Tools {
         public void UB_portal(string portalName, bool partial) {
             portal = Util.FindName(portalName, partial, new ObjectClass[] { ObjectClass.Portal, ObjectClass.Npc });
             if (portal != null) {
+                Logger.WriteToChat($"Attempting to use portal: {portal.Name}");
                 UsePortal();
                 return;
             }
@@ -543,11 +577,33 @@ namespace UtilityBelt.Tools {
             var d = PhysicsObject.GetDistance(wo.Id);
             var lc = PhysicsObject.GetLandcell(wo.Id);
 
+            Logger.WriteToChat($"Id: {wo.Id} ( 0x{(uint)wo.Id:X8} )");
             Logger.WriteToChat($"Offset: {wo.Offset()}");
             Logger.WriteToChat($"Coords: {wo.Coordinates()}");
             Logger.WriteToChat($"RawCoords: {wo.RawCoordinates()}"); //same as offset?
             Logger.WriteToChat($"Phys lb: {lc.ToString("X8")}");
             Logger.WriteToChat($"Phys pos: x:{pos.X} y:{pos.Y} z:{pos.Z}");
+        }
+        #endregion
+        #region /ub id
+        [Summary("Prints object id for the currently selected object")]
+        [Usage("/ub id")]
+        [CommandPattern("id", @"^$")]
+        public void DoId(string _, Match _1) {
+            var selected = UB.Core.Actions.CurrentSelection;
+
+            if (selected == 0 || !UB.Core.Actions.IsValidObject(selected)) {
+                Logger.Error("Id: No object selected");
+                return;
+            }
+
+            var wo = UB.Core.WorldFilter[selected];
+
+            if (wo == null) {
+                Logger.Error("Id: null object selected");
+                return;
+            }
+            Logger.WriteToChat($"Id: {wo.Id} ( 0x{(uint)wo.Id:X8} )");
         }
         #endregion
         #region /ub printcolors
@@ -827,6 +883,9 @@ namespace UtilityBelt.Tools {
                     else UB.Core.Actions.ApplyItem(woOne.Id, woTwo.Id);
                 }
             }
+            else {
+                Logger.Error($"Could not find object: {itemOne}");
+            }
         }
         #endregion
         #region /ub select[li][p] <itemOne>
@@ -892,7 +951,37 @@ namespace UtilityBelt.Tools {
         public object Exec(string expression) {
             return UB.VTank.EvaluateExpression(expression, true);
         }
-        #endregion //vitae[]
+        #endregion //exec[]
+        #region delayexec[]
+        [ExpressionMethod("delayexec")]
+        [ExpressionParameter(0, typeof(double), "delay", "The delay in milliseconds. 1 second = 1000 milliseconds.")]
+        [ExpressionParameter(1, typeof(string), "text", "The expression string to evaluate")]
+        [ExpressionReturn(typeof(object), "Returns 1")]
+        [Summary("Evaluates a string as an expression, after the specified delay")]
+        [Example("delayexec[1000, `1+1`]", "evaluates the expression `1+1` after a 1000ms (1s) delay")]
+        public object DelayExec(double delay, string expression) {
+            AddDelayedExpression(expression, delay);
+            return (double)1;
+        }
+        #endregion //delayexec[]
+        #region if[]
+        [ExpressionMethod("if")]
+        [ExpressionParameter(0, typeof(object), "value", "value to check for truthiness")]
+        [ExpressionParameter(1, typeof(string), "trueexpr", "expression string to evaluate if value is truthy")]
+        [ExpressionParameter(2, typeof(string), "falseexpr", "expression string to evaluate if value is *not* truthy")]
+        [ExpressionReturn(typeof(object), "Returns the result of evaluating the conditional expression string")]
+        [Summary("If value is truthy, will execute the trueexpr string and return the results. If value is *not* truthy it will evaluate falseexpr string and return the results")]
+        [Example("if[1, `chatbox[\\`true\\`]`,`chatbox[\\`false\\`]`]", "writes `true` to the chatbox")]
+        [Example("if[0, `chatbox[\\`true\\`]`,`chatbox[\\`false\\`]`]", "writes `false` to the chatbox")]
+        public object If(object condition, string trueExpression, string falseExpression) {
+            if (ExpressionVisitor.IsTruthy(condition)) {
+                return UB.VTank.EvaluateExpression(trueExpression, true);
+            }
+            else {
+                return UB.VTank.EvaluateExpression(falseExpression, true);
+            }
+        }
+        #endregion //if[]
         #region tostring[object obj]
         [ExpressionMethod("tostring")]
         [ExpressionParameter(0, typeof(object), "obj", "The object to convert to a string")]

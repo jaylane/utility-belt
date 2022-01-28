@@ -1642,24 +1642,19 @@ namespace UtilityBelt.Tools {
         [Summary("Checks if a value is equal to true (1)")]
         [Example("istrue[1]", "Checks that 0 is true, and returns true because it is")]
         public object Istrue(object value) {
-            if (value.GetType() == typeof(double))
-                return ((double)value).Equals(1);
-            else if (value.GetType() == typeof(Boolean))
-                return ((bool)value).Equals(true);
-
-            return false;
+            return ExpressionVisitor.IsTruthy(value) ? 1 : 0;
         }
         #endregion //istrue[int value]
         #region iif[int value, object truevalue, object falsevalue]
         [ExpressionMethod("iif")]
-        [ExpressionParameter(0, typeof(double), "value", "value to check")]
+        [ExpressionParameter(0, typeof(object), "value", "value to check")]
         [ExpressionParameter(0, typeof(object), "truevalue", "value to return if value is true")]
         [ExpressionParameter(0, typeof(object), "falsevalue", "value to return if value is false")]
         [ExpressionReturn(typeof(double), "Returns 1 if value is true, 0 otherwise")]
-        [Summary("Checks if the first parameter is true, if so returns the second argument.  If the first parameter is false or not a number, returns the second argument")]
+        [Summary("Checks if the first parameter is true, if so returns the second argument.  If the first parameter is false or not a number, returns the third argument.  Both arguments will always be evaluated.  if you want conditional evaluation use `if[]`")]
         [Example("iif[1,2,3]", "Returns 2 (second param) because 1 (first param) is true")]
         public object Iif(object value, object truevalue, object falsevalue) {
-            return (value.GetType() == typeof(double) && value.Equals((double)1)) ? truevalue : falsevalue;
+            return ExpressionVisitor.IsTruthy(value) ? truevalue : falsevalue;
         }
         #endregion //iif[int value, any truevalue, any falsevalue]
         #region randint[int min, int max]
