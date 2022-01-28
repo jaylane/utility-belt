@@ -226,7 +226,7 @@ namespace UtilityBelt.Lib.Expressions {
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        private bool IsTruthy(object obj) {
+        internal static bool IsTruthy(object obj) {
             if (obj.GetType() == typeof(double))
                 return (double)obj != 0;
             if (obj.GetType() == typeof(string))
