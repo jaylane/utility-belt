@@ -2108,6 +2108,29 @@ namespace UtilityBelt.Tools {
             }
         }
 
+        public Lib.Models.CompiledExpression CompileExpression(string expression) {
+            try {
+                AntlrInputStream inputStream = new AntlrInputStream(expression);
+                MetaExpressionsLexer spreadsheetLexer = new MetaExpressionsLexer(inputStream);
+                CommonTokenStream commonTokenStream = new CommonTokenStream(spreadsheetLexer);
+                MetaExpressionsParser expressionParser = new MetaExpressionsParser(commonTokenStream);
+                expressionParser.ErrorHandler = new ExpressionErrorListener();
+                MetaExpressionsParser.ParseContext parseContext = expressionParser.parse();
+                ExpressionVisitor visitor = new ExpressionVisitor();
+
+                return new Lib.Models.CompiledExpression(parseContext, visitor);
+            }
+            catch (Exception ex) {
+                expressionExceptions.Add(ex.ToString());
+
+                var message = UB.Plugin.Debug ? ex.ToString() : (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+                //expression = expression.Insert(int.Parse(ex.Source, NumberStyles.Integer), "<Tell:IIDString:{Util.GetChatId()}:errorpos>errorpos</Tell>");
+                //UB.Core.Actions.AddChatTextRaw(expression, 1);
+                Logger.Error($"Error in expression: {expression}\n  {message}", false, false);
+                throw ex;
+            }
+        }
+
         #region VTank Patches
         private void DoVTankExpressionPatches() {
             try {

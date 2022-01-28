@@ -20,6 +20,7 @@ using UBLoader.Lib.Settings;
 using System.Collections.ObjectModel;
 using Hellosam.Net.Collections;
 using Exceptionless.Extensions;
+using System.Diagnostics;
 
 namespace UtilityBelt.Tools {
     public class DelayedCommand {
@@ -1364,10 +1365,10 @@ namespace UtilityBelt.Tools {
         [Example("listfilter[wobjectfindallbyobjectclass[24],`wobjectgetintprop[$1,25]==275`]", "creates a new list with all nearby level 275 characters")]
         public object ListFilter(ExpressionList list, string expression) {
             var results = new ExpressionList();
+            var compiled = UB.VTank.CompileExpression(expression);
             foreach (var item in list.Items) {
                 UB.VTank.Setvar("1", item);
-                var res = UB.VTank.EvaluateExpression(expression, true);
-                if ((bool)UB.VTank.Istrue(res)) {
+                if ((bool)UB.VTank.Istrue(compiled.Run())) {
                     results.Items.Add(item);
                 }
             }
@@ -1383,10 +1384,10 @@ namespace UtilityBelt.Tools {
         [Example("listmap[wobjectfindallbyobjectclass[24],`wobjectgetstringprop[$1,5]", "creates a new list with all nearby players titles")]
         public object ListMap(ExpressionList list, string expression) {
             var results = new ExpressionList();
+            var compiled = UB.VTank.CompileExpression(expression);
             foreach (var item in list.Items) {
                 UB.VTank.Setvar("1", item);
-                var res = UB.VTank.EvaluateExpression(expression, true);
-                results.Items.Add(res);
+                results.Items.Add(compiled.Run());
             }
             return results;
         }
@@ -1400,10 +1401,11 @@ namespace UtilityBelt.Tools {
         [Example("listreduce[wobjectfindallbyobjectclass[24],`$2+wobjectgetintprop[$1,25]`]", "find the sum of all nearby character levels")]
         public object ListReduce(ExpressionList list, string expression) {
             object result = 0;
+            var compiled = UB.VTank.CompileExpression(expression);
             foreach (var item in list.Items) {
                 UB.VTank.Setvar("1", item);
                 UB.VTank.Setvar("2", result);
-                result = UB.VTank.EvaluateExpression(expression, true);
+                result = compiled.Run();
             }
             return result;
         }
@@ -1418,11 +1420,11 @@ namespace UtilityBelt.Tools {
         public object ListSort(ExpressionList list, string expression) {
             var results = new ExpressionList();
             var orig = list.Items.ToList();
+            var compiled = UB.VTank.CompileExpression(expression);
             orig.Sort((a, b) => {
                 UB.VTank.Setvar("1", a);
                 UB.VTank.Setvar("2", b);
-
-                return Convert.ToInt32(UB.VTank.EvaluateExpression(expression, true));
+                return Convert.ToInt32(compiled.Run());
             });
             foreach (var item in orig) {
                 results.Items.Add(item);
