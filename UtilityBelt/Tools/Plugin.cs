@@ -1344,7 +1344,60 @@ namespace UtilityBelt.Tools {
             list.Items.Clear();
             return list;
         }
-        #endregion //lsitclear[list]
+        #endregion //lsitclear[list list, string expression]
+        #region listfilter[list list, string expression]
+        [ExpressionMethod("listfilter")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to filter")]
+        [ExpressionParameter(0, typeof(string), "expression", "The expression to use for filtering. $1 (getvar[\\`1\\`]) will be set to the current item. return 1 to include, 0 to exclude")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a new filtered list")]
+        [Summary("Creates a new list filtered by the specified expression")]
+        [Example("listfilter[wobjectfindallbyobjectclass[24],`wobjectgetintprop[$1,25]==275`]", "creates a new list with all nearby level 275 characters")]
+        public object ListFilter(ExpressionList list, string expression) {
+            var results = new ExpressionList();
+            foreach (var item in list.Items) {
+                UB.VTank.Setvar("1", item);
+                var res = UB.VTank.EvaluateExpression(expression, true);
+                if ((bool)UB.VTank.Istrue(res)) {
+                    results.Items.Add(item);
+                }
+            }
+            return results;
+        }
+        #endregion //listfilter[list list, string expression]
+        #region listmap[list list, string expression]
+        [ExpressionMethod("listmap")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to map")]
+        [ExpressionParameter(0, typeof(string), "expression", "The expression to use for mapping. $1 (getvar[\\`1\\`]) will be set to the current item. return the mapped result")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a new mapped list")]
+        [Summary("Creates a new list mapped by the specified expression")]
+        [Example("listmap[wobjectfindallbyobjectclass[24],`wobjectgetstringprop[$1,5]", "creates a new list with all nearby players titles")]
+        public object ListMap(ExpressionList list, string expression) {
+            var results = new ExpressionList();
+            foreach (var item in list.Items) {
+                UB.VTank.Setvar("1", item);
+                var res = UB.VTank.EvaluateExpression(expression, true);
+                results.Items.Add(res);
+            }
+            return results;
+        }
+        #endregion //listmap[list list, string expression]
+        #region listreduce[list list, string expression]
+        [ExpressionMethod("listreduce")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to reduce to a single value")]
+        [ExpressionParameter(0, typeof(string), "expression", "The expression to use for reducing. $1 (getvar[\\`1\\`]) will be set to the current item, $2 will be set to the current reduced value, return the modified result")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list reduced to a single value")]
+        [Summary("Reduces a list down into a single value")]
+        [Example("listreduce[wobjectfindallbyobjectclass[24],`$2+wobjectgetintprop[$1,25]`]", "find the sum of all nearby character levels")]
+        public object ListReduce(ExpressionList list, string expression) {
+            object result = 0;
+            foreach (var item in list.Items) {
+                UB.VTank.Setvar("1", item);
+                UB.VTank.Setvar("2", result);
+                result = UB.VTank.EvaluateExpression(expression, true);
+            }
+            return result;
+        }
+        #endregion //listreduce[list list, string expression]
         #endregion //List Expresions
         #region Dictionary Expressions
 
