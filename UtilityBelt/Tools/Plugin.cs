@@ -1358,7 +1358,7 @@ namespace UtilityBelt.Tools {
         #region listfilter[list list, string expression]
         [ExpressionMethod("listfilter")]
         [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to filter")]
-        [ExpressionParameter(0, typeof(string), "expression", "The expression to use for filtering. $1 (getvar[\\`1\\`]) will be set to the current item. return 1 to include, 0 to exclude")]
+        [ExpressionParameter(1, typeof(string), "expression", "The expression to use for filtering. $1 (getvar[\\`1\\`]) will be set to the current item. return 1 to include, 0 to exclude")]
         [ExpressionReturn(typeof(ExpressionList), "Returns a new filtered list")]
         [Summary("Creates a new list filtered by the specified expression")]
         [Example("listfilter[wobjectfindallbyobjectclass[24],`wobjectgetintprop[$1,25]==275`]", "creates a new list with all nearby level 275 characters")]
@@ -1394,7 +1394,7 @@ namespace UtilityBelt.Tools {
         #region listreduce[list list, string expression]
         [ExpressionMethod("listreduce")]
         [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to reduce to a single value")]
-        [ExpressionParameter(0, typeof(string), "expression", "The expression to use for reducing. $1 (getvar[\\`1\\`]) will be set to the current item, $2 will be set to the current reduced value, return the modified result")]
+        [ExpressionParameter(1, typeof(string), "expression", "The expression to use for reducing. $1 (getvar[\\`1\\`]) will be set to the current item, $2 will be set to the current reduced value, return the modified result")]
         [ExpressionReturn(typeof(ExpressionList), "Returns a list reduced to a single value")]
         [Summary("Reduces a list down into a single value")]
         [Example("listreduce[wobjectfindallbyobjectclass[24],`$2+wobjectgetintprop[$1,25]`]", "find the sum of all nearby character levels")]
@@ -1408,6 +1408,21 @@ namespace UtilityBelt.Tools {
             return result;
         }
         #endregion //listreduce[list list, string expression]
+        #region listfromrange[int start, int end]
+        [ExpressionMethod("listfromrange")]
+        [ExpressionParameter(0, typeof(double), "start", "inclusive start")]
+        [ExpressionParameter(1, typeof(double), "end", "inclusive end")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of numbers between start to end, inclusive")]
+        [Summary("Create a list of numbers between start and end inclusively")]
+        [Example("listfromrange[1,10]", "returns a list with numbers 1-10")]
+        public object ListFromRange(double start, double end) {
+            var results = new ExpressionList();
+            for (var i = (int)start; i <= (int)end; i += (start < end) ? 1 : -1) {
+                results.Items.Add(i);
+            }
+            return results;
+        }
+        #endregion listfromrange[int start, int end]
         #endregion //List Expresions
         #region Dictionary Expressions
 
