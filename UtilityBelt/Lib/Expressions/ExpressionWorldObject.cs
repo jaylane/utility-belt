@@ -35,5 +35,15 @@ namespace UtilityBelt.Lib.Expressions {
             else
                 return $"{Id:X8} (Invalid)";
         }
+
+        public override bool Equals(object obj) {
+            if (obj is ExpressionWorldObject tobj)
+                return Id.Equals(tobj.Id);
+            return false;
+        }
+
+        public override int GetHashCode() {
+            return 2108858624 + Id.GetHashCode();
+        }
     }
 }

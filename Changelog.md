@@ -12,6 +12,8 @@
 - Add expression: exec[string]
 - Add expression: listfromrange[start, end]
 - Add expression: listsort[list list, string expression]
+- Add expression: tostring[object]
+- Fix issue when comparing worldobjects of different instances but same Id (fixes listcontains when the list is wobjects as well)
 
 ## 0.2.5 (2021-10-06) [UtilityBeltInstaller-0.2.5.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/dd7285b144ef9327bf8041c64841c22f/UtilityBeltInstaller-0.2.5.exe)
 - Add expressions: wobjectgetdoubleprop[], wobjectgetboolprop[], wobjectgetstringprop[], wobjecthasdata[], wobjectrequestdata[]
