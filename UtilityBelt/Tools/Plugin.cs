@@ -1408,6 +1408,28 @@ namespace UtilityBelt.Tools {
             return result;
         }
         #endregion //listreduce[list list, string expression]
+        #region listsort[list list, string expression]
+        [ExpressionMethod("listsort")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to sort")]
+        [ExpressionParameter(1, typeof(string), "expression", "The expression to use for sorting. $1 (getvar[\\`1\\`]) will be set to item a, $2 will be set item b, return 0 if they are equal, -1 if $1 is less than $2, and 1 if $1 is greater than $2")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a new list sorted by expression")]
+        [Summary("Creates a list from another, sorted by expression")]
+        [Example("listsort[wobjectfindallbyobjectclass[24],`setvar[la,wobjectgetintprop[$1,25]];setvar[lb,wobjectgetintprop[$2,25]];iif[$la==$lb,0,iif[$la<$lb,-1,1]]`]", "get a list of all characters sorted by level")]
+        public object ListSort(ExpressionList list, string expression) {
+            var results = new ExpressionList();
+            var orig = list.Items.ToList();
+            orig.Sort((a, b) => {
+                UB.VTank.Setvar("1", a);
+                UB.VTank.Setvar("2", b);
+
+                return Convert.ToInt32(UB.VTank.EvaluateExpression(expression, true));
+            });
+            foreach (var item in orig) {
+                results.Items.Add(item);
+            }
+            return results;
+        }
+        #endregion //listsort[list list, string expression]
         #region listfromrange[int start, int end]
         [ExpressionMethod("listfromrange")]
         [ExpressionParameter(0, typeof(double), "start", "inclusive start")]
