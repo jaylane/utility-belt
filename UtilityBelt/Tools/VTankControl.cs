@@ -1465,6 +1465,27 @@ namespace UtilityBelt.Tools {
             return list;
         }
         #endregion //wobjectfindalllandscapebynamerx[string namerx]
+        #region wobjectfindallbycontainer[object container]
+        [ExpressionMethod("wobjectfindallbycontainer")]
+        [ExpressionParameter(0, typeof(object), "container", "container to find objects in. can be an id or a wobject")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of worldobjects")]
+        [Summary("Gets a list of all worldobjects inside the specified container")]
+        [Example("wobjectfindallbycontainer[wobjectgetselection[]]", "Returns a list of all wobjects in the currently selected container")]
+        [Example("wobjectfindallbycontainer[0x1234ABCD]", "Returns a list of all wobjects in the container with id 0x1234ABCD")]
+        public object ExpressionWorldObjectfindallbycontainer(object container) {
+            var list = new ExpressionList();
+            var id = container is ExpressionWorldObject cwo ? cwo.Id : Convert.ToInt32(container);
+            var wos = UB.Core.WorldFilter.GetByContainer(id);
+            foreach (var wo in wos) {
+                if (UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindallbycontainer[object container]
         #endregion //wobject find lists
         #endregion //WorldObjects
         #region Actions

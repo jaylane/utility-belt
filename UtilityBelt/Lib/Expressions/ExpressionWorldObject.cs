@@ -31,9 +31,9 @@ namespace UtilityBelt.Lib.Expressions {
 
         public override string ToString() {
             if (Wo != null)
-                return $"{Id:X8}: {Wo.Name}, {Wo.ObjectClass}";
+                return $"0x{Id:X8}: {Wo.Name}";
             else
-                return $"{Id:X8} (Invalid)";
+                return $"0x{Id:X8} (Invalid)";
         }
 
         public override bool Equals(object obj) {
