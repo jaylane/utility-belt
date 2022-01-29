@@ -577,7 +577,7 @@ namespace UtilityBelt.Tools {
             var d = PhysicsObject.GetDistance(wo.Id);
             var lc = PhysicsObject.GetLandcell(wo.Id);
 
-            Logger.WriteToChat($"Id: {wo.Id} ( 0x{(uint)wo.Id:X8} )");
+            Logger.WriteToChat($"Id: {wo.Id} ( 0x{wo.Id:X8} )");
             Logger.WriteToChat($"Offset: {wo.Offset()}");
             Logger.WriteToChat($"Coords: {wo.Coordinates()}");
             Logger.WriteToChat($"RawCoords: {wo.RawCoordinates()}"); //same as offset?
@@ -603,7 +603,7 @@ namespace UtilityBelt.Tools {
                 Logger.Error("Id: null object selected");
                 return;
             }
-            Logger.WriteToChat($"Id: {wo.Id} ( 0x{(uint)wo.Id:X8} )");
+            Logger.WriteToChat($"Id: {wo.Id} ( 0x{wo.Id:X8} )");
         }
         #endregion
         #region /ub printcolors
