@@ -1458,14 +1458,16 @@ namespace UtilityBelt.Tools {
         #region listfilter[list list, string expression]
         [ExpressionMethod("listfilter")]
         [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to filter")]
-        [ExpressionParameter(1, typeof(string), "expression", "The expression to use for filtering. $1 (getvar[\\`1\\`]) will be set to the current item. return 1 to include, 0 to exclude")]
+        [ExpressionParameter(1, typeof(string), "expression", "The expression to use for filtering. $0 (getvar[\\`0\\`]) will be set to the current iteration count, $1 will be set to the current item. return 1 to include, 0 to exclude")]
         [ExpressionReturn(typeof(ExpressionList), "Returns a new filtered list")]
         [Summary("Creates a new list filtered by the specified expression")]
         [Example("listfilter[wobjectfindallbyobjectclass[24],`wobjectgetintprop[$1,25]==275`]", "creates a new list with all nearby level 275 characters")]
         public object ListFilter(ExpressionList list, string expression) {
             var results = new ExpressionList();
             var compiled = UB.VTank.CompileExpression(expression);
+            var i = 0;
             foreach (var item in list.Items) {
+                UB.VTank.Setvar("0", i++);
                 UB.VTank.Setvar("1", item);
                 if ((bool)UB.VTank.Istrue(compiled.Run())) {
                     results.Items.Add(item);
@@ -1477,14 +1479,16 @@ namespace UtilityBelt.Tools {
         #region listmap[list list, string expression]
         [ExpressionMethod("listmap")]
         [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to map")]
-        [ExpressionParameter(0, typeof(string), "expression", "The expression to use for mapping. $1 (getvar[\\`1\\`]) will be set to the current item. return the mapped result")]
+        [ExpressionParameter(0, typeof(string), "expression", "The expression to use for mapping. $0 (getvar[\\`0\\`]) will be set to the current iteration count, $1 will be set to the current item. return the mapped result")]
         [ExpressionReturn(typeof(ExpressionList), "Returns a new mapped list")]
         [Summary("Creates a new list mapped by the specified expression")]
         [Example("listmap[wobjectfindallbyobjectclass[24],`wobjectgetstringprop[$1,5]", "creates a new list with all nearby players titles")]
         public object ListMap(ExpressionList list, string expression) {
             var results = new ExpressionList();
             var compiled = UB.VTank.CompileExpression(expression);
+            var i = 0;
             foreach (var item in list.Items) {
+                UB.VTank.Setvar("0", i++);
                 UB.VTank.Setvar("1", item);
                 results.Items.Add(compiled.Run());
             }
@@ -1494,14 +1498,16 @@ namespace UtilityBelt.Tools {
         #region listreduce[list list, string expression]
         [ExpressionMethod("listreduce")]
         [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to reduce to a single value")]
-        [ExpressionParameter(1, typeof(string), "expression", "The expression to use for reducing. $1 (getvar[\\`1\\`]) will be set to the current item, $2 will be set to the current reduced value, return the modified result")]
+        [ExpressionParameter(1, typeof(string), "expression", "The expression to use for reducing. $0 (getvar[\\`0\\`]) will be set to the current iteration count, $1 will be set to the current item, $2 will be set to the current reduced value, return the modified result")]
         [ExpressionReturn(typeof(ExpressionList), "Returns a list reduced to a single value")]
         [Summary("Reduces a list down into a single value")]
         [Example("listreduce[wobjectfindallbyobjectclass[24],`$2+wobjectgetintprop[$1,25]`]", "find the sum of all nearby character levels")]
         public object ListReduce(ExpressionList list, string expression) {
             object result = 0;
             var compiled = UB.VTank.CompileExpression(expression);
+            var i = 0;
             foreach (var item in list.Items) {
+                UB.VTank.Setvar("0", i++);
                 UB.VTank.Setvar("1", item);
                 UB.VTank.Setvar("2", result);
                 result = compiled.Run();
