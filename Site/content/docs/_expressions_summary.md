@@ -18,7 +18,11 @@ The expression language offers functionality to control and read game client sta
 		* `123 test` should be escaped as `\1\2\3 test` or `` `123 test` ``
 		* `some example string` does not need escaping
 		* `p@cMan$)`  should be escaped as `p\@cMan\$\)` or `` `p@cMan$` ``
+		* Strings support slices like arrays. ie `test[1:]`
 * **List** - A set of items. Items can be of any type.
+	* Lists support indice access with $list{indice}, slices are supported as well with {start:stop} ie `$list{:-1}`, `$list[1:3]`
+* **Dictionary** - A set of Key/Value pairs. Keys must be strings but values can be of any type.
+	* Dictionaries support key access with $dict{key}.
 * **Coordinates** - Represents a set of NS/EW/Z game coordinates.
 * **WorldObject** - Represents a game object (player, item, monster, npc, etc)
 * **StopWatch** - Time based counter, with the ability to stop/start.

@@ -19,6 +19,7 @@
 - Add command: /ub id
 - Fix /ub use|portal|select all take ids in decimal or hex format on top of string names. ie /ub portal 0x733D902D
 - Add expression wobjectfindallbycontainer[object container]
+- Add expression shorthand syntax for list/dict/string indice/slicing. `$list[1:3]`
 
 ## 0.2.5 (2021-10-06) [UtilityBeltInstaller-0.2.5.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/dd7285b144ef9327bf8041c64841c22f/UtilityBeltInstaller-0.2.5.exe)
 - Add expressions: wobjectgetdoubleprop[], wobjectgetboolprop[], wobjectgetstringprop[], wobjecthasdata[], wobjectrequestdata[]

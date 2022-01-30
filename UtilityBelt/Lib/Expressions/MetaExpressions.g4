@@ -5,6 +5,7 @@ parse               : (expression (';' expression)* ';'?) EOF;
 expression          : '(' expression ')'                                                          #parenthesisExp
 
                     | id=( '$' | '@' | '&' ) expression                                           #getvarAtomExp
+                    | expression ('{' (c=':' | (c=':' i2=expression) | i1=expression | (i1=expression c=':' i2=expression) | (i1=expression c=':')) '}')    #getindexAtomExp
                     | (MINUS)? NUMBER                                                             #numericAtomExp
                     | STRING expressionList                                                       #functionCall
                     | <assoc=right> expression '^' expression                                     #powerExp
@@ -16,6 +17,7 @@ expression          : '(' expression ')'                                        
                     | BOOL                                                                        #boolAtomExp
                     | STRING                                                                      #stringAtomExp                    
                     | HEXNUMBER                                                                   #hexNumberAtomExp
+                    | .                                                                           #catchallAtomExp
                     ;
 
 expressionList      : '[' (expression (',' expression)*)? ']' ;

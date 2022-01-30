@@ -390,7 +390,101 @@ namespace UtilityBelt.Lib.Expressions {
             else
                 return null;
         }
+
+        /// <summary>
+        /// Shortcut for list/dict/string indice chunks. $something{0:4}
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public override object VisitGetindexAtomExp([NotNull] MetaExpressionsParser.GetindexAtomExpContext context) {
+            var obj = Visit(context.expression(0));
+
+            if (obj is ExpressionList exprList) {
+                bool isRange = false;
+                var lstart = IndiceFromExpression(context.i1, exprList.Items.Count, 0);
+                var lend = 0;
+
+                if (context.c != null) {
+                    lend = IndiceFromExpression(context.i2, exprList.Items.Count, exprList.Items.Count);
+                    isRange = true;
+                }
+
+                if (isRange) {
+                    var newList = new ExpressionList();
+                    newList.AddRange(exprList.Items.Skip(lstart).Take(lend - lstart));
+                    return newList;
+                }
+                else {
+                    return exprList.Items[lstart];
+                }
+            }
+            else if (obj is string exprString) {
+                bool isRange = false;
+                var lstart = IndiceFromExpression(context.i1, exprString.Length, 0);
+                var lend = 0;
+
+                if (context.c != null) {
+                    lend = IndiceFromExpression(context.i2, exprString.Length, exprString.Length);
+                    isRange = true;
+                }
+
+                if (isRange) {
+                    return exprString.Substring(lstart, lend - lstart < 0 ? 0 : lend - lstart);
+                }
+                else {
+                    return exprString.Substring(lstart, 1);
+                }
+            }
+            else if (obj is ExpressionDictionary exprDict) {
+                if (context.c != null)
+                    throw new Exception($"Range indices not supported with dictionaries");
+                var key = Visit(context.i1);
+
+                if (!(key is string keyString))
+                    throw new Exception($"Dictionary key must be a string, tried to use: {key.GetType()}");
+
+                exprDict.Items.TryGetValue(keyString, out object val);
+
+                return val;
+            }
+
+            throw new Exception($"{obj.GetType()} doest not support indice access");
+        }
+
+        private int IndiceFromExpression(MetaExpressionsParser.ExpressionContext expressionContext, int listLength, int defaultValue=0) {
+            int indice;
+
+            if (expressionContext != null && !string.IsNullOrEmpty(expressionContext.GetText())) {
+                var exprResult = Visit(expressionContext);
+                if (!(exprResult is double dindice))
+                    throw new Exception($"Indice was type {exprResult.GetType()} ({exprResult}). Indices need to be numbers.");
+                indice = (int)dindice;
+            }
+            else {
+                indice = defaultValue;
+            }
+
+            if (indice < 0) {
+                indice = listLength + indice;
+                if (indice < 0)
+                    throw new Exception($"Indice was {indice}. Cannot be less than zero.");
+            }
+
+            if (indice > listLength)
+                throw new Exception($"Indice was {indice}. Cannot be greater than length ({listLength}).");
+
+            return indice;
+        }
         #endregion
+
+        /// <summary>
+        /// Shortcut for list/dict/string indice chunks. $something{0:4}
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public override object VisitCatchallAtomExp([NotNull] MetaExpressionsParser.CatchallAtomExpContext context) {
+            throw new Exception($"Unexpected character: {context.GetText()} @ {context.Start.StartIndex}");
+        }
 
         public override object VisitErrorNode([NotNull] IErrorNode node) {
             Logger.Error($"Some error or something: ({node.Payload}) {node.GetText()}");
