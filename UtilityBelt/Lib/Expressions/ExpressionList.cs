@@ -18,6 +18,15 @@ namespace UtilityBelt.Lib.Expressions {
             InvokeChange();
         }
 
+        public void Clear() {
+            Items.Clear();
+        }
+
+        public void AddRange(IEnumerable<object> items) {
+            foreach (var item in items)
+                Items.Add(item);
+        }
+
         public override string ToString() {
             return $"[{string.Join(",", Items.Select(o => o.ToString()).ToArray())}]";
         }
