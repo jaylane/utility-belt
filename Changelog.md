@@ -23,6 +23,8 @@
 - Add support for storing dicts in global/persistent storage
 - Add expression hexstr[]
 - Add expression support for bitwise operators ~, &, |, and ^, and shift operators << and >>.
+- Fix Expression conditions that are "truthy" in vtank will now return true, instead of having to specifically return 1.0 for expression conditions
+- Fix boolean operators now return the right-most executed operand
 
 ## 0.2.5 (2021-10-06) [UtilityBeltInstaller-0.2.5.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/dd7285b144ef9327bf8041c64841c22f/UtilityBeltInstaller-0.2.5.exe)
 - Add expressions: wobjectgetdoubleprop[], wobjectgetboolprop[], wobjectgetstringprop[], wobjecthasdata[], wobjectrequestdata[]
