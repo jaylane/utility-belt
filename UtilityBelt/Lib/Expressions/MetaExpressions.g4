@@ -8,6 +8,9 @@ expression          : '(' expression ')'                                        
                     | expression ('{' (c=':' | (c=':' i2=expression) | i1=expression | (i1=expression c=':' i2=expression) | (i1=expression c=':')) '}')    #getindexAtomExp
                     | (MINUS)? NUMBER                                                             #numericAtomExp
                     | STRING expressionList                                                       #functionCall
+                    | '~' expression                                                              #bitwiseComplementOp
+                    | expression op=( '>>' | '<<' ) expression                                    #bitshiftOps
+                    | expression op=( '&' | '^' | '|' ) expression                                #bitwiseOps
                     | <assoc=right> expression '^' expression                                     #powerExp
                     | expression op=( '*' | '/' | '%' ) expression                                #mulDivExp
                     | expression op=( '+' | '-' ) expression                                      #addSubExp

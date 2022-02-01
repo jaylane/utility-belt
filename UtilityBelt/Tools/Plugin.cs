@@ -1166,6 +1166,15 @@ namespace UtilityBelt.Tools {
             return (heading * 180f / Math.PI) % 360 + 180;
         }
         #endregion //getheading[wobject obj]
+        #region hexstr[number d, number h]
+        [ExpressionMethod("hexstr")]
+        [ExpressionParameter(0, typeof(double), "d", "the number to convert")]
+        [ExpressionReturn(typeof(double), "Returns a string")]
+        [Summary("converts a number to a hexadecimal string")]
+        public object Hexstr(double d) {
+            return $"0x{(int)d:X}";
+        }
+        #endregion //acos[number d]
         #region Math Expressions
         #region acos[number d]
         [ExpressionMethod("acos")]

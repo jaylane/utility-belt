@@ -362,6 +362,64 @@ namespace UtilityBelt.Lib.Expressions {
         }
 
         /// <summary>
+        /// bitwise complement operator
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public override object VisitBitwiseComplementOp(MetaExpressionsParser.BitwiseComplementOpContext context) {
+            int num = (int)Visit(context.expression());
+
+            return (double)~num;
+        }
+
+        /// <summary>
+        /// bitshift operators
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public override object VisitBitshiftOps(MetaExpressionsParser.BitshiftOpsContext context) {
+            int left = Convert.ToInt32(Visit(context.expression(0)));
+            int right = Convert.ToInt32(Visit(context.expression(1)));
+            int result = 0;
+
+            switch (context.op.Text) {
+                case ">>":
+                    result = left >> right;
+                    break;
+                case "<<":
+                    result = left << right;
+                    break;
+            }
+
+            return (double)result;
+        }
+
+        /// <summary>
+        /// bitshift operators
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public override object VisitBitwiseOps(MetaExpressionsParser.BitwiseOpsContext context) {
+            int left = Convert.ToInt32(Visit(context.expression(0)));
+            int right = Convert.ToInt32(Visit(context.expression(1)));
+            int result = 0;
+
+            switch (context.op.Text) {
+                case "&":
+                    result = left & right;
+                    break;
+                case "|":
+                    result = left | right;
+                    break;
+                case "^":
+                    result = left ^ right;
+                    break;
+            }
+
+            return (double)result;
+        }
+
+        /// <summary>
         /// Handle regex operation, this handles expr#regex format
         /// </summary>
         /// <param name="context"></param>

@@ -41,6 +41,12 @@ The expression language offers functionality to control and read game client sta
 * **`#`** Evaluates to true if the first value matches the passed regular expression. Example: `test#s` checks if the string `test` matches the regex `s`. Regexes used here are case-insensitive when matching. This only works with strings.
 * **`&&`** Evaluates to true if both the expression before and after the operator return true
 * **`||`** Evaluates to true if either the expression before or after the operator returns true
+* **`~`** Produces a bitwise complement of its operand by reversing each bit. This only works with numbers.
+* **`<<`** Shifts its left-hand operand left by the number of bits defined by its right-hand operand. This only works with numbers.
+* **`>>`** Shifts its left-hand operand right by the number of bits defined by its right-hand operand. This only works with numbers.
+* **`&`** Computes the bitwise logical AND of its integral operands. This only works with numbers.
+* **`^`** Computes the bitwise logical exclusive OR, also known as the bitwise logical XOR, of its integral operands. This only works with numbers.
+* **`|`** Computes the bitwise logical OR of its integral operands. This only works with numbers.
 
 ### Expressions (Functions)
 Expression functions, also referred to as just expressions, are used to perform actions or operate on data passed to them.  They are all called using the same syntax: `expressionname[]`. The square brackets are used to enclose arguments, even when there are no arguments they are required. 
