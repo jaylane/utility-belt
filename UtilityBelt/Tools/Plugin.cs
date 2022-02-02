@@ -1478,7 +1478,7 @@ namespace UtilityBelt.Tools {
             foreach (var item in list.Items) {
                 UB.VTank.Setvar("0", i++);
                 UB.VTank.Setvar("1", item);
-                if ((bool)UB.VTank.Istrue(compiled.Run())) {
+                if (ExpressionVisitor.IsTruthy(compiled.Run())) {
                     results.Items.Add(item);
                 }
             }
