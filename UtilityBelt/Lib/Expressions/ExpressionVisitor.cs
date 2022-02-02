@@ -128,7 +128,7 @@ namespace UtilityBelt.Lib.Expressions {
         public override object VisitStringAtomExp(MetaExpressionsParser.StringAtomExpContext context) {
             var str = context.GetText();
             if (str.StartsWith("`"))
-                return str.Trim('`').Replace("\\`","`");
+                return Regex.Replace(str.Substring(1, str.Length - 2), @"\\(.)", "$1");
             else
                 return Regex.Replace(str, @"\\(.)", "$1");
         }
