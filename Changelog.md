@@ -15,7 +15,7 @@
 - Add expression: tostring[object]
 - Fix issue when comparing worldobjects of different instances but same Id (fixes listcontains when the list is wobjects as well)
 - Add expression: delayexec[number delay, string expression]
-- Add expression: if[object valuetocheck, string trueexpression, string falseexpression]
+- Add expression: ifthen[object valuetocheck, string trueexpression[, string falseexpression]]
 - Add command: /ub id
 - Fix /ub use|portal|select all take ids in decimal or hex format on top of string names. ie /ub portal 0x733D902D
 - Add expression wobjectfindallbycontainer[object container]

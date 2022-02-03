@@ -964,24 +964,26 @@ namespace UtilityBelt.Tools {
             return (double)1;
         }
         #endregion //delayexec[]
-        #region if[]
-        [ExpressionMethod("if")]
+        #region ifthen[]
+        [ExpressionMethod("ifthen")]
         [ExpressionParameter(0, typeof(object), "value", "value to check for truthiness")]
         [ExpressionParameter(1, typeof(string), "trueexpr", "expression string to evaluate if value is truthy")]
-        [ExpressionParameter(2, typeof(string), "falseexpr", "expression string to evaluate if value is *not* truthy")]
+        [ExpressionParameter(2, typeof(string), "falseexpr", "expression string to evaluate if value is *not* truthy, optional")]
         [ExpressionReturn(typeof(object), "Returns the result of evaluating the conditional expression string")]
         [Summary("If value is truthy, will execute the trueexpr string and return the results. If value is *not* truthy it will evaluate falseexpr string and return the results")]
-        [Example("if[1, `chatbox[\\`true\\`]`,`chatbox[\\`false\\`]`]", "writes `true` to the chatbox")]
-        [Example("if[0, `chatbox[\\`true\\`]`,`chatbox[\\`false\\`]`]", "writes `false` to the chatbox")]
-        public object If(object condition, string trueExpression, string falseExpression) {
+        [Example("ifthen[1, `chatbox[\\`true\\`]`,`chatbox[\\`false\\`]`]", "writes `true` to the chatbox")]
+        [Example("ifthen[0, `chatbox[\\`true\\`]`,`chatbox[\\`false\\`]`]", "writes `false` to the chatbox")]
+        public object IfThen(object condition, string trueExpression, string falseExpression=null) {
             if (ExpressionVisitor.IsTruthy(condition)) {
                 return UB.VTank.EvaluateExpression(trueExpression, true);
             }
-            else {
+            else if (falseExpression != null) {
                 return UB.VTank.EvaluateExpression(falseExpression, true);
             }
+
+            return (double)0;
         }
-        #endregion //if[]
+        #endregion //ifthen[]
         #region tostring[object obj]
         [ExpressionMethod("tostring")]
         [ExpressionParameter(0, typeof(object), "obj", "The object to convert to a string")]
