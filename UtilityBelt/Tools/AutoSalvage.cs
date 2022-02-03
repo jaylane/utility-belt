@@ -9,6 +9,7 @@ using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using VirindiViewService.Controls;
 using UBLoader.Lib.Settings;
+using UtilityBelt.Lib.Expressions;
 
 namespace UtilityBelt.Tools {
     [Name("AutoSalvage")]
@@ -52,6 +53,49 @@ This plugin will attempt to salvage all items in your inventory that match loot 
         public void DoAutoSalvage(string command, Match args) {
             Start(!string.IsNullOrEmpty(args.Groups["Force"].Value));
         }
+        #endregion
+
+        #region Expressions
+        #region ustadd[wobject obj]
+        [ExpressionMethod("ustadd")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to add to the ust panel")]
+        [ExpressionReturn(typeof(double), "Returns 1")]
+        [Summary("Adds an item to the ust panel")]
+        [Example("ustadd[wobjectgetselection[]]", "Adds the currently selected item to your ust panel")]
+        public object UstAdd(ExpressionWorldObject wobject) {
+            UB.Core.Actions.SalvagePanelAdd(wobject.Id);
+            return 1;
+        }
+        #endregion //ustadd[wobject obj]
+        #region ustopen[]
+        [ExpressionMethod("ustopen")]
+        [ExpressionReturn(typeof(double), "Returns 1 on succes, 0 on failure")]
+        [Summary("Opens the ust panel")]
+        [Example("ustopen[]", "Opens the ust panel")]
+        public object UstOpen() {
+            bool foundUst = false;
+            using (var inv = UB.Core.WorldFilter.GetInventory()) {
+                foreach (var item in inv) {
+                    if (item != null && item.Name == "Ust") {
+                        foundUst = true;
+                        UB.Core.Actions.UseItem(item.Id, 0);
+                        break;
+                    }
+                }
+            }
+            return foundUst ? 1 : 0;
+        }
+        #endregion //ustopen[]
+        #region ustsalvage[]
+        [ExpressionMethod("ustsalvage")]
+        [ExpressionReturn(typeof(double), "Returns 1")]
+        [Summary("Salvages the items in the ust panel")]
+        [Example("ustsalvage[]", "Salvages all the items in the ust panel")]
+        public object UstSalvage() {
+            UB.Core.Actions.SalvagePanelSalvage();
+            return 1;
+        }
+        #endregion //ustsalvage[]
         #endregion
 
         public AutoSalvage(UtilityBeltPlugin ub, string name) : base(ub, name) {
