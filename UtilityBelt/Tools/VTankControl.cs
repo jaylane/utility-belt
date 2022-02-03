@@ -811,7 +811,7 @@ namespace UtilityBelt.Tools {
             return buffedAttribute;
         }
         #endregion //getcharattribute_buffed[int attributeId]
-        #region getcharattribute_buffed[int attributeId]
+        #region getcharattribute_base[int attributeId]
         [ExpressionMethod("getcharattribute_base")]
         [ExpressionParameter(0, typeof(double), "attributeId", "Which attribute to check. 1 = Strength, 2 = Endurance, 3 = Quickness, 4 = Coordination, 5 = Focus, 6 = Self")]
         [ExpressionReturn(typeof(double), "Returns base attribute level of the specified attribute")]
@@ -821,6 +821,15 @@ namespace UtilityBelt.Tools {
             var baseAttribute = (double)UtilityBeltPlugin.Instance.Core.CharacterFilter.Underlying.Attribute[(Decal.Interop.Filters.eAttributeID)Convert.ToInt32(attributeId)].Base;
             
             return baseAttribute;
+        }
+        #endregion //getcharattribute_base[int attributeId]
+        #region getcharburden[]
+        [ExpressionMethod("getcharburden")]
+        [ExpressionReturn(typeof(double), "Return current burden shown in character panel")]
+        [Summary("Gets your current burden shown on the character panel")]
+        [Example("getcharburden[0]", "Returns your character's current burden level")]
+        public object Getcharburden() {
+            return Util.GetFriendlyBurden();
         }
         #endregion //getcharattribute_base[int attributeId]
         #region getplayerlandcell[]

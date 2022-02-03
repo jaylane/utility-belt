@@ -252,6 +252,15 @@ namespace UtilityBelt
             return count;
         }
 
+        public static double GetFriendlyBurden() {
+            int burdenAugs = CoreManager.Current.CharacterFilter.GetCharProperty((int)Augmentations.MightSeventhMule);
+            int strength = CoreManager.Current.CharacterFilter.EffectiveAttribute[CharFilterAttributeType.Strength];
+            double burdenUnits = CoreManager.Current.CharacterFilter.BurdenUnits;
+            double capacity = (150 * strength) + (strength * burdenAugs * 30);
+            double friendlyBurden = burdenUnits / capacity * 100;
+            return friendlyBurden;
+        }
+
         internal static bool IsItemSafeToGetRidOf(int id) {
             return IsItemSafeToGetRidOf(UB.Core.WorldFilter[id]);
         }

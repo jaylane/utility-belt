@@ -865,6 +865,7 @@ namespace UtilityBelt.Tools {
                     Logger.WriteToChat("using " + woOne.Name);
                     if (woOne.ObjectClass == ObjectClass.Portal) UB_portal(woOne.Name, partial);
                     else if (woOne.ObjectClass == ObjectClass.Vendor) UB.AutoVendor.UB_vendor_open(woOne.Name, partial);
+                    else if (woOne.ObjectClass == ObjectClass.Container || woOne.ObjectClass == ObjectClass.Corpse) UB.Looter.OpenContainer(woOne.Id);
                     else UB.Core.Actions.UseItem(woOne.Id, 0);
                 }
                 else if (!string.IsNullOrEmpty(itemTwo)) {

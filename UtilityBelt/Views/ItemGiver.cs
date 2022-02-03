@@ -32,6 +32,19 @@ namespace UtilityBelt.Views {
         HudTextBox LP_GiveItemDelay;
         HudTabView ItemGiverTabs;
 
+        //Looter
+
+        HudButton Looter_SetKeyButton;
+        HudStaticText Looter_Key;
+
+        HudButton Looter_SetTargetChestButton;
+        HudStaticText Looter_TargetChest;
+
+        HudButton Looter_StartButton;
+
+        private int chestID;
+        private bool looterRunning = false;
+
         public ItemGiverView(UtilityBeltPlugin ub) : base(ub) {
             CreateFromXMLResource("UtilityBelt.Views.ItemGiver.xml", false, false);
         }
@@ -91,12 +104,35 @@ namespace UtilityBelt.Views {
 
                 UB.InventoryManager.IGWindowX.Changed += IGWindow_Changed;
                 UB.InventoryManager.IGWindowY.Changed += IGWindow_Changed;
+
+                //Looter settings
+                //key text box
+                //key label
+
+                Looter_SetKeyButton = (HudButton)view["Looter_SetKeyButton"];
+                Looter_SetKeyButton.Hit += Looter_SetKeyButton_Hit;
+                Looter_Key = (HudStaticText)view["Looter_Key"];
+
+                Looter_SetTargetChestButton = (HudButton)view["Looter_SetTargetChestButton"];
+                Looter_SetTargetChestButton.Hit += Looter_SetTargetChestButton_Hit;
+                Looter_TargetChest = (HudStaticText)view["Looter_TargetChest"];
+
+
+                Looter_StartButton = (HudButton)view["Looter_StartButton"];
+                Looter_StartButton.Hit += Looter_StartButton_Hit;
+
+                //chest text box
+                //chest label
+
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void IGWindow_Changed(object sender, SettingChangedEventArgs e) {
+            try {
             view.Location = new Point(UB.InventoryManager.IGWindowX, UB.InventoryManager.IGWindowY);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void LP_LootProfile_Change(object sender, EventArgs e) {
@@ -197,23 +233,132 @@ namespace UtilityBelt.Views {
         }
 
         private void InventoryManager_Started(object sender, EventArgs e) {
-            StartGiveItems.Text = "Stop";
-            LP_StartGiveItems.Text = "Stop";
+            try { 
+                StartGiveItems.Text = "Stop";
+                LP_StartGiveItems.Text = "Stop";
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void InventoryManager_Finished(object sender, EventArgs e) {
-            StartGiveItems.Text = "Start";
-            LP_StartGiveItems.Text = "Start";
+            try { 
+                StartGiveItems.Text = "Start";
+                LP_StartGiveItems.Text = "Start";
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void InventoryManager_PropertyChanged(object sender, SettingChangedEventArgs e) {
-            view.ShowInBar = UB.InventoryManager.IGUIEnabled;
+            try {
+                view.ShowInBar = UB.InventoryManager.IGUIEnabled;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void Looter_SetKeyButton_Hit(object sender, EventArgs e) {
+            try {
+                var item = UB.Core.WorldFilter[UB.Core.Actions.CurrentSelection];
+
+                if (item == null) {
+                    Logger.Error($"Looter: nothing selected");
+                    return;
+                }
+                if (UB.Core.WorldFilter[item.Id].ObjectClass != Decal.Adapter.Wrappers.ObjectClass.Key) {
+                    Logger.Error($"Looter: target is not a key");
+                    return;
+                }
+                //if (!UtilityBeltPlugin.Instance.Looter.Enabled) {
+                //    Logger.Error($"Looter: Enable in settings before use");
+                //    return;
+                //}
+
+                Looter_Key.Text = Util.GetObjectName(item.Id);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+        private void Looter_SetTargetChestButton_Hit(object sender, EventArgs e) {
+            try {
+                var item = UB.Core.WorldFilter[UB.Core.Actions.CurrentSelection];
+
+                if (item == null) {
+                    Logger.Error($"Looter: nothing selected");
+                    return;
+                }
+                if (UB.Core.WorldFilter[item.Id].ObjectClass != Decal.Adapter.Wrappers.ObjectClass.Container) {
+                    Logger.Error($"Looter: target is not a chest");
+                    return;
+                }
+                //if (!UtilityBeltPlugin.Instance.Looter.Enabled) {
+                //    Logger.Error($"Looter: Enable in settings before use");
+                //    return;
+                //}
+
+                Looter_TargetChest.Text = Util.GetObjectName(item.Id);
+                chestID = item.Id;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void Looter_StartButton_Hit(object sender, EventArgs e) {
+            try {
+                //if (!UtilityBeltPlugin.Instance.Looter.Enabled) {
+                //    Logger.Error($"Looter: Enable in settings before use");
+                //    return;
+                //}
+
+                if (!looterRunning) {
+                    UB.Looter.LooterFinished += Looter_LooterFinished;
+                    UB.Looter.LooterFinishedForceStop += Looter_LooterFinishedForceStop;
+                    UB.Looter.StartUI(chestID, Looter_Key.Text);
+                    Looter_StartButton.Text = "Stop";
+                    looterRunning = true;
+                }
+                else {
+                    Logger.WriteToChat("Looter stopped");
+                    UB.Looter.StopLooter();
+                    Looter_StartButton.Text = "Start";
+                    looterRunning = false;
+                }
+
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void Looter_LooterFinishedForceStop(object sender, EventArgs e) {
+            try {
+                Looter_StartButton.Text = "Start";
+                looterRunning = false;
+                UB.Looter.LooterFinished -= Looter_LooterFinished;
+            }
+            catch (Exception ex) {
+                Logger.LogException(ex);
+            }
+        }
+
+        private void Looter_LooterFinished(object sender, EventArgs e) {
+            try {
+                if (Util.GetItemCountInInventoryByName(Looter_Key.Text) > 0) {
+                    Logger.WriteToChat("ItemTool: using next key");
+                    UB.Looter.StartUI(chestID, Looter_Key.Text);
+                }
+                else {
+                    Logger.WriteToChat("no more keys to use");
+                    Logger.WriteToChat("ui - looter finished");
+                    Looter_StartButton.Text = "Start";
+                    looterRunning = false;
+                    UB.Looter.LooterFinished -= Looter_LooterFinished;
+                }
+            }
+            catch (Exception ex) {
+                Logger.LogException(ex);
+            }
         }
 
         ~ItemGiverView() {
             UB.InventoryManager.IGWindowX.Changed -= IGWindow_Changed;
             UB.InventoryManager.IGWindowY.Changed -= IGWindow_Changed;
             UB.InventoryManager.IGUIEnabled.Changed -= InventoryManager_PropertyChanged;
+            UB.Looter.LooterFinished -= Looter_LooterFinished;
             if (timer != null) timer.Dispose();
         }
     }

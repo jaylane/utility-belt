@@ -210,6 +210,7 @@
     <Compile Include="Tools\Aliases.cs" />
     <Compile Include="Tools\Arrow.cs" />
     <Compile Include="Tools\GameEvents.cs" />
+    <Compile Include="Tools\Looter.cs" />
     <Compile Include="Tools\Networking.cs" />
     <Compile Include="Tools\NetworkUI.cs" />
     <Compile Include="Tools\PlayerOptions.cs" />
