@@ -4,6 +4,8 @@
 - Add expression: getcontaineritemcount[WorldObject? container]
 - Add expressions: vtgetsetting[setting], vtsetsetting[setting,value]
 - Fix issue where vTank profiles directory was not being detected properly
+- Add expressions: getcharburden[]
+- Add Looter
 - Fix Nullable settings in settings form (PlayerOptions stuff)
 - Fix issue where dungeonmaps would no longer draw after changing game resolution
 - Fix /ub igp/give commands to be non greedy when matching profile (fixes /ub ig test.utl to char with to in the name)

@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0"?>
-<view icon="24389" title="UtilityBelt: ItemGiver" width="240" height="200">
+<view icon="24389" title="UtilityBelt: ItemTool" width="240" height="200">
   <control progid="DecalControls.Notebook" name="ItemGiverTabs">
 
-    <page label="Give Item  ">
+    <page label="Give Item">
       <control progid="DecalControls.FixedLayout" clipped="">
         <control progid="DecalControls.StaticText" name="Target" left="5" top="5" width="140" height="18" text="[None]" />
         <control progid="DecalControls.PushButton" name="SetTargetButton" left="145" top="5" width="80" height="18" text="Set Target" />
@@ -22,7 +22,7 @@
       </control>
     </page>
 
-    <page label="   Give Loot Profile   ">
+    <page label="Give Loot Profile">
       <control progid="DecalControls.FixedLayout" clipped="">
         <control progid="DecalControls.StaticText" name="LP_Target" left="5" top="5" width="140" height="18" text="[None]" />
         <control progid="DecalControls.PushButton" name="LP_SetTarget" left="145" top="5" width="80" height="18" text="Set Target" />
@@ -34,6 +34,19 @@
         <control progid="DecalControls.Edit" name="LP_GiveItemDelay" left="50" top="55" width="40" height="18" text="200" />
 
         <control progid="DecalControls.PushButton" name="LP_StartGiveItems" left="5" top="80" width="90" height="20" text="Start" />
+      </control>
+    </page>
+
+
+    <page label="Chest Looter">
+      <control progid="DecalControls.FixedLayout" clipped="">
+        <control progid="DecalControls.StaticText" name="Looter_Key" left="5" top="5" width="140" height="18" text="[None]" />
+        <control progid="DecalControls.PushButton" name="Looter_SetKeyButton" left="145" top="5" width="80" height="18" text="Set Key" />
+
+        <control progid="DecalControls.StaticText" name="Looter_TargetChest" left="5" top="35" width="140" height="18" text="[None]" />
+        <control progid="DecalControls.PushButton" name="Looter_SetTargetChestButton" left="145" top="35" width="80" height="18" text="Set Chest" />
+
+        <control progid="DecalControls.PushButton" name="Looter_StartButton" left="5" top="80" width="90" height="20" text="Start" />
       </control>
     </page>
   </control>

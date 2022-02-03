@@ -51,6 +51,13 @@ namespace UtilityBelt.Tools {
                 Logger.WriteToChat($"Requesting id data for {itemsNeedingData} inventory items. This will take approximately {(itemsNeedingData * ((float)assessDelay / 1000f)):n3} seconds.");
             }
         }
+        
+        internal void Request(int items) {
+            var wo = UB.Core.WorldFilter[items];
+            if (wo != null && !wo.HasIdData) {
+                Queue(wo.Id);
+            }
+        }
 
         //
 
