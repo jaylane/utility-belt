@@ -429,7 +429,20 @@ namespace UtilityBelt.Lib.Expressions {
             var inputstr = Visit(context.expression(0)).ToString();
             var matchstr = Visit(context.expression(1)).ToString();
             var re = new Regex(matchstr, RegexOptions.IgnoreCase);
-            return re.IsMatch(inputstr);
+
+            Match match = re.Match(inputstr);
+            if (match.Success) {
+                foreach (string groupName in re.GetGroupNames()) {
+                    Group group = match.Groups[groupName];
+                    string key = "capturegroup_" + groupName;
+                    if (group.Success)
+                        UtilityBeltPlugin.Instance.VTank.Setvar(key, group.Value);
+                    else
+                        UtilityBeltPlugin.Instance.VTank.Clearvar(key);
+                }
+            }
+
+            return match.Success ? 1 : 0;
         }
 
         /// <summary>
