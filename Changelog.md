@@ -30,6 +30,7 @@
 - Fix quoted expression strings that had multiple backticks at the end, which would remove all ending backticks
 - Add expressions: ustadd[wobject], ustopen[], ustsalvage[]
 - Add expression regex operator `#` now supports named group capture, and sets group matches to $capturegroup_groupname
+- Fix /ub bct command now supports surrounding tag names with doubles quotes for tags that contain spaces
 
 ## 0.2.5 (2021-10-06) [UtilityBeltInstaller-0.2.5.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/dd7285b144ef9327bf8041c64841c22f/UtilityBeltInstaller-0.2.5.exe)
 - Add expressions: wobjectgetdoubleprop[], wobjectgetboolprop[], wobjectgetstringprop[], wobjecthasdata[], wobjectrequestdata[]
