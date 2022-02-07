@@ -1478,11 +1478,17 @@ namespace UtilityBelt.Tools {
             var results = new ExpressionList();
             var compiled = UB.VTank.CompileExpression(expression);
             var i = 0;
+            var _0 = UB.VTank.Getvar("0");
+            var _1 = UB.VTank.Getvar("1");
+            var _2 = UB.VTank.Getvar("2");
             foreach (var item in list.Items) {
                 UB.VTank.Setvar("0", i++);
                 UB.VTank.Setvar("1", item);
                 if (ExpressionVisitor.IsTruthy(compiled.Run())) {
                     results.Items.Add(item);
+                    UB.VTank.Setvar("0", _0);
+                    UB.VTank.Setvar("1", _1);
+                    UB.VTank.Setvar("2", _2);
                 }
             }
             return results;
@@ -1499,10 +1505,16 @@ namespace UtilityBelt.Tools {
             var results = new ExpressionList();
             var compiled = UB.VTank.CompileExpression(expression);
             var i = 0;
+            var _0 = UB.VTank.Getvar("0");
+            var _1 = UB.VTank.Getvar("1");
+            var _2 = UB.VTank.Getvar("2");
             foreach (var item in list.Items) {
                 UB.VTank.Setvar("0", i++);
                 UB.VTank.Setvar("1", item);
                 results.Items.Add(compiled.Run());
+                UB.VTank.Setvar("0", _0);
+                UB.VTank.Setvar("1", _1);
+                UB.VTank.Setvar("2", _2);
             }
             return results;
         }
@@ -1514,15 +1526,21 @@ namespace UtilityBelt.Tools {
         [ExpressionReturn(typeof(ExpressionList), "Returns a list reduced to a single value")]
         [Summary("Reduces a list down into a single value")]
         [Example("listreduce[wobjectfindallbyobjectclass[24],`$2+wobjectgetintprop[$1,25]`]", "find the sum of all nearby character levels")]
-        public object ListReduce(ExpressionList list, string expression) {
+        public object ListReduce(ExpressionList list, string expression) { 
             object result = 0;
             var compiled = UB.VTank.CompileExpression(expression);
             var i = 0;
+            var _0 = UB.VTank.Getvar("0");
+            var _1 = UB.VTank.Getvar("1");
+            var _2 = UB.VTank.Getvar("2");
             foreach (var item in list.Items) {
                 UB.VTank.Setvar("0", i++);
                 UB.VTank.Setvar("1", item);
                 UB.VTank.Setvar("2", result);
                 result = compiled.Run();
+                UB.VTank.Setvar("0", _0);
+                UB.VTank.Setvar("1", _1);
+                UB.VTank.Setvar("2", _2);
             }
             return result;
         }
@@ -1534,15 +1552,20 @@ namespace UtilityBelt.Tools {
         [ExpressionReturn(typeof(ExpressionList), "Returns a new list sorted by expression")]
         [Summary("Creates a list from another, sorted by expression")]
         [Example("listsort[wobjectfindallbyobjectclass[24],`setvar[la,wobjectgetintprop[$1,25]];setvar[lb,wobjectgetintprop[$2,25]];iif[$la==$lb,0,iif[$la<$lb,-1,1]]`]", "get a list of all characters sorted by level")]
-        public object ListSort(ExpressionList list, string expression) {
+        public object ListSort(ExpressionList list, string expression="") {
             var results = new ExpressionList();
             var orig = list.Items.ToList();
-            var compiled = UB.VTank.CompileExpression(expression);
-            orig.Sort((a, b) => {
-                UB.VTank.Setvar("1", a);
-                UB.VTank.Setvar("2", b);
-                return Convert.ToInt32(compiled.Run());
-            });
+            if (string.IsNullOrEmpty(expression)) {
+                orig.Sort();
+            }
+            else {
+                var compiled = UB.VTank.CompileExpression(expression);
+                orig.Sort((a, b) => {
+                    UB.VTank.Setvar("1", a);
+                    UB.VTank.Setvar("2", b);
+                    return Convert.ToInt32(compiled.Run());
+                });
+            }
             foreach (var item in orig) {
                 results.Items.Add(item);
             }
