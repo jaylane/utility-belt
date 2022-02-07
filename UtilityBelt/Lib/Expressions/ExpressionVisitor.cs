@@ -547,6 +547,25 @@ namespace UtilityBelt.Lib.Expressions {
 
             return indice;
         }
+
+        /// <summary>
+        /// Handle = operation
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public override object VisitSetVarExp(MetaExpressionsParser.SetVarExpContext context) {
+            var varname = Visit(context.expression(0));
+            object right = Visit(context.expression(1));
+
+            if (context.id.Text == "$")
+                return UtilityBeltPlugin.Instance.VTank.Setvar(varname.ToString(), right);
+            else if (context.id.Text == "@")
+                return UtilityBeltPlugin.Instance.VTank.Setpvar(varname.ToString(), right);
+            else if (context.id.Text == "&")
+                return UtilityBeltPlugin.Instance.VTank.Setgvar(varname.ToString(), right);
+            else
+                return null;
+        }
         #endregion
 
         /// <summary>

@@ -15,6 +15,7 @@ expression          : '(' expression ')'                                        
                     | expression op=( '*' | '/' | '%' ) expression                                #mulDivExp
                     | expression op=( '+' | '-' ) expression                                      #addSubExp
                     | expression '#' expression                                                   #regexExp
+                    | id=( '$' | '@' | '&' ) expression '=' expression                            #setVarExp
                     | expression op=( '>' | '<' | '>=' | '<=' | '==' | '!=' ) expression          #comparisonExp
                     | expression op=( '&&' | '||' ) expression                                    #booleanComparisonExp
                     | BOOL                                                                        #boolAtomExp
