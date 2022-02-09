@@ -99,7 +99,7 @@ namespace UtilityBelt.Tools {
                 int hour = GameHour;
                 if (hour <= 4)
                     hour += 16;
-                return !IsDay ? (int) Math.Round(((20 - hour) * HourLength) - (CurrentTime % HourLength)) : 0;
+                return !IsDay ? (int)Math.Round(((20 - hour) * HourLength) - (CurrentTime % HourLength)) : 0;
             }
         }
 
@@ -154,7 +154,7 @@ namespace UtilityBelt.Tools {
         [ExpressionMethod("getgameday")]
         [ExpressionReturn(typeof(double), "Returns the current ingame day of the month. 1-30")]
         [Summary("Returns the current ingame day of the month. 1-30.")]
-        [Example("getgamemonth[]", "returns the current ingame day of the month, ie 8")]
+        [Example("getgameday[]", "returns the current ingame day of the month, ie 8")]
         public object Getgameday() {
             return GameDay;
         }
@@ -367,7 +367,7 @@ namespace UtilityBelt.Tools {
 
                 var rot = ((((GameHour + 4) * HourLength) % (HourLength * 16)) + (GameMinute * MinuteLength)) / (HourLength * 16) * 360f;
 
-                hud.Texture.DrawTextureRotated(daynightIcon, new Rectangle(0, 0, daynightIcon.Width, daynightIcon.Height), new Point(16, 16), Color.White.ToArgb(), (float)((360-rot) * Math.PI / 180));
+                hud.Texture.DrawTextureRotated(daynightIcon, new Rectangle(0, 0, daynightIcon.Width, daynightIcon.Height), new Point(16, 16), Color.White.ToArgb(), (float)((360 - rot) * Math.PI / 180));
 
                 var arrowSize = 8;
                 hud.Texture.DrawTextureRotated(pointerIcon, new Rectangle(0, 0, 32, arrowSize), new Point(16, arrowSize / 2), Color.White.ToArgb(), (float)(180 * Math.PI / 180));
