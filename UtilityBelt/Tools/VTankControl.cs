@@ -281,8 +281,8 @@ namespace UtilityBelt.Tools {
         [ExpressionMethod("getpvar")]
         [ExpressionParameter(0, typeof(string), "varname", "Variable name to get")]
         [ExpressionReturn(typeof(double), "Returns the value of a variable, or 0 if undefined")]
-        [Summary("Returns the value stored in a variable")]
-        [Example("getpvar[myvar]", "Returns the value stored in `myvar` variable")]
+        [Summary("Returns the value stored in a persistent variable")]
+        [Example("getpvar[myvar]", "Returns the value stored in the persistent `myvar` variable")]
         public object Getpvar(string varname, ExpressionVisitor.ExpressionState state) {
             // ensure we return the same instance of the variable if it has already been used
             if (state.PersistentVariables.ContainsKey(varname))
@@ -472,7 +472,7 @@ namespace UtilityBelt.Tools {
         [ExpressionParameter(1, typeof(object), "value", "Value to store")]
         [ExpressionReturn(typeof(object), "Returns the newly set value")]
         [Summary("Stores a value in a global variable. This variable is shared between all characters on the same server.")]
-        [Example("setgvar[myvar,1]", "Stores the number value `1` inside of `myvar` variable")]
+        [Example("setgvar[myvar,1]", "Stores the number value `1` inside of global `myvar` variable")]
         public object Setgvar(string varname, object value) {
             string serializedValue = "";
             if (!SerializeExpressionValue(value, ref serializedValue))
@@ -542,7 +542,7 @@ namespace UtilityBelt.Tools {
                     LiteDB.Query.And(
                         LiteDB.Query.EQ("Name", varname),
                         LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server)
-                    )    
+                    )
                 );
                 return true;
             }
@@ -819,7 +819,7 @@ namespace UtilityBelt.Tools {
         [Example("getcharattribute_base[1]", "Returns your character's base Strength attribute level")]
         public object Getcharattribute_base(double attributeId) {
             var baseAttribute = (double)UtilityBeltPlugin.Instance.Core.CharacterFilter.Underlying.Attribute[(Decal.Interop.Filters.eAttributeID)Convert.ToInt32(attributeId)].Base;
-            
+
             return baseAttribute;
         }
         #endregion //getcharattribute_base[int attributeId]
@@ -888,7 +888,7 @@ namespace UtilityBelt.Tools {
         [Summary("Gets the Z position of a coordinates object as a number")]
         [Example("coordinategetz[getplayercoordinates[]]", "Returns your character's current Z position")]
         public object Coordinategetz(ExpressionCoordinates coords) {
-            return coords.Z/240;
+            return coords.Z / 240;
         }
         #endregion //coordinategetz[coordinates obj]
         #region coordinatetostring[coordinates obj]
@@ -957,7 +957,7 @@ namespace UtilityBelt.Tools {
         [ExpressionParameter(0, typeof(ExpressionWorldObject), "wo", "world object to get the name of")]
         [ExpressionReturn(typeof(string), "Returns a string of wobject's name")]
         [Summary("Gets the name string of a wobject")]
-        [Example("wobjectgetname[wobjectgetplayer[]]", "Returns a coordinates object representing the current player's position")]
+        [Example("wobjectgetname[wobjectgetplayer[]]", "Returns a string representing the name of the world object")]
         public object ExpressionWorldObjectgetname(ExpressionWorldObject wo) {
             return Util.GetObjectName(wo.Wo.Id);
         }
@@ -1277,7 +1277,7 @@ namespace UtilityBelt.Tools {
             return list;
         }
         #endregion //wobjectfindallinventory[]
-        #region wobjectfindalllandscape[] 
+        #region wobjectfindalllandscape[]
         [ExpressionMethod("wobjectfindalllandscape")]
         [ExpressionReturn(typeof(ExpressionList), "Returns a list of all worldobjects in the landscape")]
         [Summary("Gets a list of all worldobjects in the landscape")]
@@ -1643,8 +1643,8 @@ namespace UtilityBelt.Tools {
             var r = (0xFF0000 & c) >> 0x10;
             var g = (0x00FF00 & c) >> 0x08;
             var b = (0x0000FF & c) >> 0x00;
-            updateKeyMethod.Invoke(null, new object[] { "VTank Meta", key, value, Color.FromArgb(0xFF, r, g, b)});
-            
+            updateKeyMethod.Invoke(null, new object[] { "VTank Meta", key, value, Color.FromArgb(0xFF, r, g, b) });
+
             return 1;
         }
         #endregion //statushudcolored[string key, string value, int color]
@@ -1880,7 +1880,7 @@ namespace UtilityBelt.Tools {
         [Example("cnumber[vtgetsetting[RingDistance]]", "Gets the number value of the vtank RingDistance setting")]
         public object Vtgetsetting(string setting) {
             //try {
-                return UBHelper.vTank.Instance.GetSetting(setting);
+            return UBHelper.vTank.Instance.GetSetting(setting);
             //}
             //catch (Exception ex) {
             //    return string.Empty;
@@ -2094,7 +2094,7 @@ namespace UtilityBelt.Tools {
             }
         }
 
-        public object EvaluateExpression(string expression, bool silent=true) {
+        public object EvaluateExpression(string expression, bool silent = true) {
             try {
                 AntlrInputStream inputStream = new AntlrInputStream(expression);
                 MetaExpressionsLexer spreadsheetLexer = new MetaExpressionsLexer(inputStream);
@@ -2237,7 +2237,7 @@ namespace UtilityBelt.Tools {
                     portalExitCount = 1;
                     lastPortalExitLandcell = UB.Core.Actions.Landcell;
                 }
-                
+
                 if (portalExitCount >= PortalLoopCount) {
                     DoPortalLoopFix();
                     return;
