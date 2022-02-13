@@ -23,7 +23,7 @@ namespace UtilityBelt.Lib {
 
         public uint LandBlock { get => Geometry.GetLandblockFromCoordinates(EW, NS); }
 
-        public static Regex CoordinateRegex = new Regex(@"(?<NSval>\d+.?\d*)\s*(?<NSchr>[ns]),?\s*(?<EWval>\d+.?\d*)(?<EWchr>[ew])(,?\s*(?<Zval>\-?\d+.?\d*)z)?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        public static Regex CoordinateRegex = new Regex(@"(?<NSval>-?\d+.?\d+?)(?<NSchr>[ns])?,\s?(?<EWval>-?\d+.?\d+)(?<EWchr>[ew])?(,?\s*(?<Zval>\-?\d+.?\d+)z)?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         public Coordinates() {
 
@@ -41,9 +41,13 @@ namespace UtilityBelt.Lib {
             if (CoordinateRegex.IsMatch(coordsToParse)) {
                 var m = CoordinateRegex.Match(coordsToParse);
                 coords.NS = double.Parse(m.Groups["NSval"].Value, (IFormatProvider)CultureInfo.InvariantCulture.NumberFormat);
-                coords.NS *= m.Groups["NSchr"].Value.ToLower().Equals("n") ? 1 : -1;
+                if (!string.IsNullOrEmpty(m.Groups["NSchr"].Value.ToLower())) {
+                    coords.NS *= m.Groups["NSchr"].Value.ToLower().Equals("n") ? 1 : -1;
+                }
                 coords.EW = double.Parse(m.Groups["EWval"].Value, (IFormatProvider)CultureInfo.InvariantCulture.NumberFormat);
-                coords.EW *= m.Groups["EWchr"].Value.ToLower().Equals("e") ? 1 : -1;
+                if (!string.IsNullOrEmpty(m.Groups["EWchr"].Value.ToLower())) {
+                    coords.EW *= m.Groups["EWchr"].Value.ToLower().Equals("e") ? 1 : -1;
+                }
                 if (!string.IsNullOrEmpty(m.Groups["Zval"].Value))
                     coords.Z = double.Parse(m.Groups["Zval"].Value, (IFormatProvider)CultureInfo.InvariantCulture.NumberFormat);
             }
