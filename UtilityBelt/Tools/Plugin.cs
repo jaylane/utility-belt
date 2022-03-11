@@ -774,6 +774,15 @@ namespace UtilityBelt.Tools {
             Util.Think($"My vitae is {UB.Core.CharacterFilter.Vitae}%");
         }
         #endregion
+        #region /ub combatstate
+        [Summary("Sets combat state")]
+        [Usage("/ub combatstate (peace|melee|missile|magic)")]
+        [CommandPattern("combatstate", @"^(?<combatState>.+)?$")]
+        public void DoCombatState(string command, Match args) {
+            string combatState = args.Groups["combatState"].Value;
+            setcombatstate(combatState.ToString());
+        }
+        #endregion
         #region /ub swearallegiance[p] <name|id|selected>
         /// <summary>
         /// Temporary Home. TODO: Finish Allegiance.cs
@@ -1169,6 +1178,52 @@ namespace UtilityBelt.Tools {
             return (heading * 180f / Math.PI) % 360 + 180;
         }
         #endregion //getheading[wobject obj]
+        #region getcombatstate[]
+        [ExpressionMethod("getcombatstate")]
+        [ExpressionReturn(typeof(string), "Returns your current combat state")]
+        [Summary("Get the combat state of your character")]
+        [Example("getcombatstate[]", "Returns the string *peace* if you are in peace mode")]
+        public object getcombatstate() {
+            return (string)UB.Core.Actions.CombatMode.ToString();
+        }
+        #endregion getcombatstate[]
+        #region setcombatstate[]
+        [ExpressionMethod("setcombatstate")]
+        [ExpressionParameter(0, typeof(string), "str", "combatstate to set")]
+        [ExpressionReturn(typeof(double), "Returns 1 if executed successfully.")]
+        [Summary("Sets the combat state of your character")]
+        [Example("setcombatstate[peace]", "Sets your combat state to peace mode")]
+        public object setcombatstate(string combatState) {
+            combatState = combatState.ToLower();
+            switch (combatState) {
+               case "peace":
+                   UB.Core.Actions.SetCombatMode(CombatState.Peace);
+                   break;
+               case "melee":
+                   UB.Core.Actions.SetCombatMode(CombatState.Melee);
+                   break;
+               case "missile":
+                   UB.Core.Actions.SetCombatMode(CombatState.Missile);
+                   break;
+               case "magic":
+                   UB.Core.Actions.SetCombatMode(CombatState.Magic);
+                   break;
+                default:
+                    Logger.Error(combatState + " is not a valid option");
+                    return (double)0;
+            }
+            return (double)1;
+        }
+        #endregion //setcombatstate[]
+        #region getbusystate[]
+        [ExpressionMethod("getbusystate")]
+        [ExpressionReturn(typeof(double), "Returns the number corresponding to your busy state (moving an item)")]
+        [Summary("Get the busy state of your character and returns a number for the state (0=idle, 1=combining a stack, 2=splitting a stack, 3=???, 4=picking up an item from the ground, 5=moving or unequipping an item, 6=dropping an item to the ground, 7=equipping an item)")]
+        [Example("getbusystate[]", "Returns 0 if your character is idle, otherwise returns the appropriate value")]
+        public object getbusystate() {
+            return (double)UB.Core.Actions.BusyState;
+        }
+        #endregion //getbusystate[]
         #region hexstr[number d, number h]
         [ExpressionMethod("hexstr")]
         [ExpressionParameter(0, typeof(double), "d", "the number to convert")]
