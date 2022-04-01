@@ -1172,8 +1172,8 @@ namespace UtilityBelt.Tools {
             var rot = PhysicsObject.GetRot(wobject.Wo.Id);
             var heading = Geometry.QuaternionToHeading(rot);
 
-            Logger.WriteToChat(heading.ToString());
-            Logger.WriteToChat(rot.ToString());
+            //Logger.WriteToChat(heading.ToString());
+            //Logger.WriteToChat(rot.ToString());
 
             return (heading * 180f / Math.PI) % 360 + 180;
         }
