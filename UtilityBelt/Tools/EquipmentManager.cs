@@ -379,7 +379,7 @@ When invoked, Equipment Manager will attempt to load a VTank loot profile in one
             writer.Write(sb.ToString());
         }
 
-        private List<WorldObject> GetEquippedItems() {
+        public List<WorldObject> GetEquippedItems() {
             var list = new List<WorldObject>();
             using (var inv = UB.Core.WorldFilter.GetInventory()) {
                 foreach (var item in inv) {

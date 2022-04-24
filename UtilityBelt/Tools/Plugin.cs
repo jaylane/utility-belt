@@ -1162,6 +1162,34 @@ namespace UtilityBelt.Tools {
             return Geometry.CalculateHeading(me, target);
         }
         #endregion //wobjectgetheadingto[wobject obj]
+        #region getequippedweapontype[]
+        [ExpressionMethod("getequippedweapontype")]
+        [ExpressionReturn(typeof(string), "Returns the equipped weapons object class")]
+        [Summary("Returns the equipped weapons object class")]
+        [Example("getequippedweapontype[]", "Returns the equipped weapons object class")]
+        public object getequippedweapontype() {
+            List<WorldObject> equippedList = UB.EquipmentManager.GetEquippedItems();
+            string result = "";
+            foreach (WorldObject item in equippedList) {
+                switch (item.Values(LongValueKey.EquipableSlots)) {
+                    case 4194304:
+                        result = "Missile";
+                        break;
+                    case 16777216:
+                        result = "Wand";
+                        break;
+                    case 1048576:
+                        result = "Melee";
+                        break;
+                    default:
+                        result = "None";
+                        break;
+                }
+                if (result != "None") break;
+            }
+            return result;
+        }
+        #endregion //wobjectgetequippedweapon[worldobject wo]
         #region getheading[wobject obj]
         [ExpressionMethod("getheading")]
         [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to get the heading of")]
