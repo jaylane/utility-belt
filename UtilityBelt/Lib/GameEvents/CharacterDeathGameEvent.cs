@@ -31,6 +31,12 @@ namespace UtilityBelt.Lib.GameEvents {
                 // lost items message comes after CharacterFilter_Death so we fire the event here
                 FireEvent();
             }
+            //Check for no items dropped and PK lite
+            if (e.Text.StartsWith("You have retained all your items.") || 
+                e.Text.StartsWith("You are enveloped in a feeling of warmth")) {
+                DroppedItems = "";
+                FireEvent();
+            }
         }
 
         private void CharacterFilter_Death(object sender, Decal.Adapter.Wrappers.DeathEventArgs e) {
