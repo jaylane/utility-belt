@@ -35,6 +35,7 @@
 - Fix /ub bct command now supports surrounding tag names with doubles quotes for tags that contain spaces
 - Add expression: getequippedweapontype[]
 - Fix Issue 156: shortcut for persistent variables not parsing correctly
+- Add expression: coordinategetheadingto[Coordinates obj]
 
 ## 0.2.5 (2021-10-06) [UtilityBeltInstaller-0.2.5.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/dd7285b144ef9327bf8041c64841c22f/UtilityBeltInstaller-0.2.5.exe)
 - Add expressions: wobjectgetdoubleprop[], wobjectgetboolprop[], wobjectgetstringprop[], wobjecthasdata[], wobjectrequestdata[]
