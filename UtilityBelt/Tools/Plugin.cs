@@ -21,7 +21,6 @@ using System.Collections.ObjectModel;
 using Hellosam.Net.Collections;
 using Exceptionless.Extensions;
 using System.Diagnostics;
-using Microsoft.DirectX;
 
 namespace UtilityBelt.Tools {
     public class DelayedCommand {
@@ -1172,18 +1171,6 @@ namespace UtilityBelt.Tools {
             return Geometry.CalculateHeading(me, target);
         }
         #endregion //wobjectgetheadingto[wobject obj]
-        #region coordinategetheadingto[Coordinates obj]
-        [ExpressionMethod("coordinategetheadingto")]
-        [ExpressionParameter(0, typeof(ExpressionCoordinates), "obj", "Coordinates object to calculate heading towards")]
-        [ExpressionReturn(typeof(double), "Returns the heading in degrees from your player to the target coordinates")]
-        [Summary("Calculates the heading in degrees (0-360 clockwise, 0 is north) from your player to the target coordinates")]
-        [Example("coordinategetheadingto[coordinateparse[`1.2N, 3.4E`]]", "Returns the heading in degrees from your player to the target coordinates")]
-        public object Coordinategetheadingto(ExpressionCoordinates cobject) {
-            Vector3 me = new Vector3((float)Coordinates.Me.EW, (float)Coordinates.Me.NS, (float)Coordinates.Me.Z);
-            Vector3 target = new Vector3((float)cobject.EW, (float)cobject.NS, (float)cobject.Z);
-            return Geometry.CalculateHeading(me, target);
-        }
-        #endregion //coordinategetheadingto[Coordinates obj]
         #region getequippedweapontype[]
         [ExpressionMethod("getequippedweapontype")]
         [ExpressionReturn(typeof(string), "Returns the equipped weapons object class")]
