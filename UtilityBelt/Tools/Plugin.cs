@@ -1013,6 +1013,15 @@ namespace UtilityBelt.Tools {
             return UB.Core.CharacterFilter.Vitae;
         }
         #endregion //vitae[]
+        #region getaccounthash[]
+        [ExpressionMethod("getaccounthash")]
+        [ExpressionReturn(typeof(string), "Returns a hash of the current account name")]
+        [Summary("Returns a hash of the current account name")]
+        [Example("getaccounthash[]", "Returns a hash of the current account name")]
+        public object Getaccounthash() {
+            return $"{CoreManager.Current.CharacterFilter.AccountName.GetHashCode():X}";
+        }
+        #endregion //getaccounthash[]
         #region getworldname[]
         [ExpressionMethod("getworldname")]
         [ExpressionReturn(typeof(string), "Returns the name of the current world/server")]
