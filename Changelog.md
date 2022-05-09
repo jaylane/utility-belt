@@ -1,5 +1,6 @@
 ## 0.2.6 (TBD)
 - Add expression: getaccounthash[]
+- Add expression: wobjectgetspellids[WorldObject]
 - Add expressions: getspellexpiration[id], getspellexpirationbyname[name]
 - Add expressions: getfreeitemslots[WorldObject? container], getfreecontainerslots[WorldObject? container]
 - Add expression: getcontaineritemcount[WorldObject? container]
