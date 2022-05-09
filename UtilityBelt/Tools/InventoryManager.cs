@@ -12,6 +12,7 @@ using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using VTClassic;
 using UBLoader.Lib.Settings;
+using UtilityBelt.Lib.Expressions;
 
 namespace UtilityBelt.Tools {
     [Name("InventoryManager")]
@@ -495,6 +496,22 @@ Provides a command-line interface to inventory management.
             return count;
         }
         #endregion //getitemcountininventorybynamerx[string name]
+        #region getitemspellids[wobject obj]
+        [ExpressionMethod("getitemspellids")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to get spells of")]
+        [ExpressionReturn(typeof(ExpressionList), "List of spell IDs")]
+        [Summary("Returns a list of spells on a World Object.")]
+        [Example("getitemspellids[wobjectgetselection[]]", "Returns a list of spell IDs of the selected item")]
+        public object getitemspellids(ExpressionWorldObject obj) {
+            var list = new ExpressionList();
+
+            for (var i = 0; i < obj.Wo.SpellCount; i++) {
+                list.Items.Add(obj.Wo.Spell(i));
+            }
+
+            return list;
+        }
+        #endregion getitemspellids[wobject obj]
         #region getinventorycountbytemplatetype[string name]
         [ExpressionMethod("getinventorycountbytemplatetype")]
         [ExpressionParameter(0, typeof(double), "templatetype", "templatetype to filter by")]
