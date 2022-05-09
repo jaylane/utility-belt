@@ -10,6 +10,7 @@ Have a feature / suggestion / bug report? Join us in [Discord](https://discord.g
 * Aquafir
 * Brycter
 * Cosmic Jester
+* dpbarrett
 * enknamel
 * Harli
 * Schneebly

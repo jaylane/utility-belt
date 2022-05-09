@@ -281,8 +281,8 @@ namespace UtilityBelt.Tools {
         [ExpressionMethod("getpvar")]
         [ExpressionParameter(0, typeof(string), "varname", "Variable name to get")]
         [ExpressionReturn(typeof(double), "Returns the value of a variable, or 0 if undefined")]
-        [Summary("Returns the value stored in a variable")]
-        [Example("getpvar[myvar]", "Returns the value stored in `myvar` variable")]
+        [Summary("Returns the value stored in a persistent variable")]
+        [Example("getpvar[myvar]", "Returns the value stored in the persistent `myvar` variable")]
         public object Getpvar(string varname, ExpressionVisitor.ExpressionState state) {
             // ensure we return the same instance of the variable if it has already been used
             if (state.PersistentVariables.ContainsKey(varname))
@@ -472,7 +472,7 @@ namespace UtilityBelt.Tools {
         [ExpressionParameter(1, typeof(object), "value", "Value to store")]
         [ExpressionReturn(typeof(object), "Returns the newly set value")]
         [Summary("Stores a value in a global variable. This variable is shared between all characters on the same server.")]
-        [Example("setgvar[myvar,1]", "Stores the number value `1` inside of `myvar` variable")]
+        [Example("setgvar[myvar,1]", "Stores the number value `1` inside of global `myvar` variable")]
         public object Setgvar(string varname, object value) {
             string serializedValue = "";
             if (!SerializeExpressionValue(value, ref serializedValue))
@@ -542,7 +542,7 @@ namespace UtilityBelt.Tools {
                     LiteDB.Query.And(
                         LiteDB.Query.EQ("Name", varname),
                         LiteDB.Query.EQ("Server", UB.Core.CharacterFilter.Server)
-                    )    
+                    )
                 );
                 return true;
             }
@@ -811,7 +811,7 @@ namespace UtilityBelt.Tools {
             return buffedAttribute;
         }
         #endregion //getcharattribute_buffed[int attributeId]
-        #region getcharattribute_buffed[int attributeId]
+        #region getcharattribute_base[int attributeId]
         [ExpressionMethod("getcharattribute_base")]
         [ExpressionParameter(0, typeof(double), "attributeId", "Which attribute to check. 1 = Strength, 2 = Endurance, 3 = Quickness, 4 = Coordination, 5 = Focus, 6 = Self")]
         [ExpressionReturn(typeof(double), "Returns base attribute level of the specified attribute")]
@@ -819,8 +819,17 @@ namespace UtilityBelt.Tools {
         [Example("getcharattribute_base[1]", "Returns your character's base Strength attribute level")]
         public object Getcharattribute_base(double attributeId) {
             var baseAttribute = (double)UtilityBeltPlugin.Instance.Core.CharacterFilter.Underlying.Attribute[(Decal.Interop.Filters.eAttributeID)Convert.ToInt32(attributeId)].Base;
-            
+
             return baseAttribute;
+        }
+        #endregion //getcharattribute_base[int attributeId]
+        #region getcharburden[]
+        [ExpressionMethod("getcharburden")]
+        [ExpressionReturn(typeof(double), "Return current burden shown in character panel")]
+        [Summary("Gets your current burden shown on the character panel")]
+        [Example("getcharburden[0]", "Returns your character's current burden level")]
+        public object Getcharburden() {
+            return Util.GetFriendlyBurden();
         }
         #endregion //getcharattribute_base[int attributeId]
         #region getplayerlandcell[]
@@ -879,7 +888,7 @@ namespace UtilityBelt.Tools {
         [Summary("Gets the Z position of a coordinates object as a number")]
         [Example("coordinategetz[getplayercoordinates[]]", "Returns your character's current Z position")]
         public object Coordinategetz(ExpressionCoordinates coords) {
-            return coords.Z/240;
+            return coords.Z / 240;
         }
         #endregion //coordinategetz[coordinates obj]
         #region coordinatetostring[coordinates obj]
@@ -948,7 +957,7 @@ namespace UtilityBelt.Tools {
         [ExpressionParameter(0, typeof(ExpressionWorldObject), "wo", "world object to get the name of")]
         [ExpressionReturn(typeof(string), "Returns a string of wobject's name")]
         [Summary("Gets the name string of a wobject")]
-        [Example("wobjectgetname[wobjectgetplayer[]]", "Returns a coordinates object representing the current player's position")]
+        [Example("wobjectgetname[wobjectgetplayer[]]", "Returns a string representing the name of the world object")]
         public object ExpressionWorldObjectgetname(ExpressionWorldObject wo) {
             return Util.GetObjectName(wo.Wo.Id);
         }
@@ -1231,6 +1240,262 @@ namespace UtilityBelt.Tools {
             return -1;
         }
         #endregion getcontaineritemcount[worldobject? container]
+        #region wobject find lists
+        #region wobjectfindall[]
+        [ExpressionMethod("wobjectfindall")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of *all* worldobjects")]
+        [Summary("Gets a list of all worldobjects known by the client")]
+        [Example("wobjectfindall[]", "Returns a list of *all* wobjects")]
+        public object ExpressionWorldObjectfindall() {
+            var list = new ExpressionList();
+            var wos = UB.Core.WorldFilter.GetAll();
+            foreach (var wo in wos) {
+                if (UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindall[]
+        #region wobjectfindallinventory[]
+        [ExpressionMethod("wobjectfindallinventory")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all worldobjects in the player inventory")]
+        [Summary("Gets a list of all worldobjects in the players inventory")]
+        [Example("wobjectfindallinventory[]", "Returns a list of all your inventory wobjects")]
+        public object ExpressionWorldObjectfindallinventory() {
+            var list = new ExpressionList();
+            var wos = UB.Core.WorldFilter.GetInventory();
+            foreach (var wo in wos) {
+                if (UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindallinventory[]
+        #region wobjectfindalllandscape[]
+        [ExpressionMethod("wobjectfindalllandscape")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all worldobjects in the landscape")]
+        [Summary("Gets a list of all worldobjects in the landscape")]
+        [Example("wobjectfindalllandscape[]", "Returns a list of all landscape wobjects")]
+        public object ExpressionWorldObjectfindalllandscape() {
+            var list = new ExpressionList();
+            var wos = UB.Core.WorldFilter.GetLandscape();
+            foreach (var wo in wos) {
+                if (UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindalllandscape[]
+        #region wobjectfindallbyobjectclass[int objectclass]
+        [ExpressionMethod("wobjectfindallbyobjectclass")]
+        [ExpressionParameter(0, typeof(double), "objectclass", "objectclass to filter by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching worldobjects")]
+        [Summary("Gets a list of all worldobjects of the passed objectclass")]
+        [Example("wobjectfindallbyobjectclass[24]", "Returns a list of all players the client is aware of")]
+        public object ExpressionWorldObjectfindallbyobjectclass(double objectClass) {
+            var list = new ExpressionList();
+            var wos = UB.Core.WorldFilter.GetByObjectClass((ObjectClass)Convert.ToInt32(objectClass));
+            foreach (var wo in wos) {
+                if (UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindallbyobjectclass[int objectclass]
+        #region wobjectfindallbytemplatetype[int templatetype]
+        [ExpressionMethod("wobjectfindallbytemplatetype")]
+        [ExpressionParameter(0, typeof(double), "templatetype", "templatetype to filter by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching worldobjects")]
+        [Summary("Gets a list of all wobjects matching templatetype")]
+        [Example("wobjectfindallbytemplatetype[9060]", "Returns a list of worldobjects that are a Titan Mana Charge (template type 9060)")]
+        public object ExpressionWorldObjectfindallbytemplatetype(double templateType) {
+            var list = new ExpressionList();
+            var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetAll();
+            var typeInt = Convert.ToInt32(templateType);
+            foreach (var wo in wos) {
+                if (wo.Type == typeInt && UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindallbytemplatetype[int templatetype]
+        #region wobjectfindallbynamerx[string namerx]
+        [ExpressionMethod("wobjectfindallbynamerx")]
+        [ExpressionParameter(0, typeof(string), "namerx", "regular expression to filter name by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching worldobjects")]
+        [Summary("Gets a list of all wobjects matching the passed regular expression")]
+        [Example("wobjectfindallbynamerx[`Crash.*`]", "Returns a list of all worldobjects that match the regex `Crash.*`")]
+        public object ExpressionWorldObjectfindallbynamerx(string namerx) {
+            var re = new Regex(namerx);
+            var list = new ExpressionList();
+            var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetAll();
+            foreach (var wo in wos) {
+                if (re.IsMatch(Util.GetObjectName(wo.Id)) && UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindallbynamerx[string namerx]
+        #region wobjectfindallinventorybyobjectclass[int objectclass]
+        [ExpressionMethod("wobjectfindallinventorybyobjectclass")]
+        [ExpressionParameter(0, typeof(double), "objectclass", "objectclass to filter by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching worldobjects")]
+        [Summary("Gets a list of all inventory worldobjects of the passed objectclass")]
+        [Example("wobjectfindallinventorybyobjectclass[16]", "Returns a list of all mana stones in the players inventory")]
+        public object ExpressionWorldObjectfindallinventorybyobjectclass(double objectClass) {
+            var oc = (ObjectClass)Convert.ToInt32(objectClass);
+            var list = new ExpressionList();
+            var wos = UB.Core.WorldFilter.GetInventory();
+            foreach (var wo in wos) {
+                if (wo.ObjectClass == oc && UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindallinventorybyobjectclass[int objectclass]
+        #region wobjectfindallinventorybytemplatetype[int templatetype]
+        [ExpressionMethod("wobjectfindallinventorybytemplatetype")]
+        [ExpressionParameter(0, typeof(double), "templatetype", "templatetype to filter by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching inventory worldobjects")]
+        [Summary("Gets a list of all inventory items matching templatetype")]
+        [Example("wobjectfindallinventorybytemplatetype[9060]", "Returns a list of inventory worldobjects that are a Titan Mana Charge (template type 9060)")]
+        public object ExpressionWorldObjectfindallininventorybytemplatetype(double templateType) {
+            var list = new ExpressionList();
+            var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetInventory();
+            var typeInt = Convert.ToInt32(templateType);
+            foreach (var wo in wos) {
+                if (wo.Type == typeInt && UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindallinventorybytemplatetype[int templatetype]
+        #region wobjectfindallinventorybynamerx[string namerx]
+        [ExpressionMethod("wobjectfindallinventorybynamerx")]
+        [ExpressionParameter(0, typeof(string), "namerx", "regular expression to filter name by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching worldobjects")]
+        [Summary("Gets a list of all inventory wobjects with name matching the passed regular expression")]
+        [Example("wobjectfindallinventorybynamerx[`Crash.*`]", "Returns a list of all inventory worldobjects that match the regex `Crash.*`")]
+        public object ExpressionWorldObjectfindallinventorybynamerx(string namerx) {
+            var re = new Regex(namerx);
+            var list = new ExpressionList();
+            var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetInventory();
+            foreach (var wo in wos) {
+                if (re.IsMatch(Util.GetObjectName(wo.Id)) && UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindallinventorybynamerx[string namerx]
+        #region wobjectfindalllandscapebyobjectclass[int objectclass]
+        [ExpressionMethod("wobjectfindalllandscapebyobjectclass")]
+        [ExpressionParameter(0, typeof(double), "objectclass", "objectclass to filter by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching worldobjects")]
+        [Summary("Gets a list of all landscape worldobjects of the passed objectclass")]
+        [Example("wobjectfindalllandscapebyobjectclass[16]", "Returns a list of all mana stones in the landscape")]
+        public object ExpressionWorldObjectfindalllandscapebyobjectclass(double objectClass) {
+            var oc = (ObjectClass)Convert.ToInt32(objectClass);
+            var list = new ExpressionList();
+            var wos = UB.Core.WorldFilter.GetLandscape();
+            foreach (var wo in wos) {
+                if (wo.ObjectClass == oc && UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindalllandscapebyobjectclass[int objectclass]
+        #region wobjectfindalllandscapebytemplatetype[int templatetype]
+        [ExpressionMethod("wobjectfindalllandscapebytemplatetype")]
+        [ExpressionParameter(0, typeof(double), "templatetype", "templatetype to filter by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching worldobjects")]
+        [Summary("Gets a list of all landscape items matching templatetype")]
+        [Example("wobjectfindalllandscapebytemplatetype[9060]", "Returns a list of landscape worldobjects that are a Titan Mana Charge (template type 9060)")]
+        public object ExpressionWorldObjectfindalllandscapebytemplatetype(double templateType) {
+            var list = new ExpressionList();
+            var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetLandscape();
+            var typeInt = Convert.ToInt32(templateType);
+            foreach (var wo in wos) {
+                if (wo.Type == typeInt && UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindalllandscapebytemplatetype[int templatetype]
+        #region wobjectfindalllandscapebynamerx[string namerx]
+        [ExpressionMethod("wobjectfindalllandscapebynamerx")]
+        [ExpressionParameter(0, typeof(string), "namerx", "regular expression to filter name by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of all matching worldobjects")]
+        [Summary("Gets a list of all landscape wobjects with name matching the passed regular expression")]
+        [Example("wobjectfindalllandscapebynamerx[`Crash.*`]", "Returns a list of all landscape worldobjects that match the regex `Crash.*`")]
+        public object ExpressionWorldObjectfindalllandscapebynamerx(string namerx) {
+            var re = new Regex(namerx);
+            var list = new ExpressionList();
+            var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetLandscape();
+            foreach (var wo in wos) {
+                if (re.IsMatch(Util.GetObjectName(wo.Id)) && UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindalllandscapebynamerx[string namerx]
+        #region wobjectfindallbycontainer[object container]
+        [ExpressionMethod("wobjectfindallbycontainer")]
+        [ExpressionParameter(0, typeof(object), "container", "container to find objects in. can be an id or a wobject")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of worldobjects")]
+        [Summary("Gets a list of all worldobjects inside the specified container")]
+        [Example("wobjectfindallbycontainer[wobjectgetselection[]]", "Returns a list of all wobjects in the currently selected container")]
+        [Example("wobjectfindallbycontainer[0x1234ABCD]", "Returns a list of all wobjects in the container with id 0x1234ABCD")]
+        public object ExpressionWorldObjectfindallbycontainer(object container) {
+            var list = new ExpressionList();
+            var id = container is ExpressionWorldObject cwo ? cwo.Id : Convert.ToInt32(container);
+            var wos = UB.Core.WorldFilter.GetByContainer(id);
+            foreach (var wo in wos) {
+                if (UB.Core.Actions.IsValidObject(wo.Id)) {
+                    list.Items.Add(new ExpressionWorldObject(wo.Id));
+                }
+            }
+            wos.Dispose();
+
+            return list;
+        }
+        #endregion //wobjectfindallbycontainer[object container]
+        #endregion //wobject find lists
         #endregion //WorldObjects
         #region Actions
         #region actiontryselect[wobject obj]
@@ -1378,8 +1643,8 @@ namespace UtilityBelt.Tools {
             var r = (0xFF0000 & c) >> 0x10;
             var g = (0x00FF00 & c) >> 0x08;
             var b = (0x0000FF & c) >> 0x00;
-            updateKeyMethod.Invoke(null, new object[] { "VTank Meta", key, value, Color.FromArgb(0xFF, r, g, b)});
-            
+            updateKeyMethod.Invoke(null, new object[] { "VTank Meta", key, value, Color.FromArgb(0xFF, r, g, b) });
+
             return 1;
         }
         #endregion //statushudcolored[string key, string value, int color]
@@ -1407,24 +1672,19 @@ namespace UtilityBelt.Tools {
         [Summary("Checks if a value is equal to true (1)")]
         [Example("istrue[1]", "Checks that 0 is true, and returns true because it is")]
         public object Istrue(object value) {
-            if (value.GetType() == typeof(double))
-                return ((double)value).Equals(1);
-            else if (value.GetType() == typeof(Boolean))
-                return ((bool)value).Equals(true);
-
-            return false;
+            return ExpressionVisitor.IsTruthy(value) ? 1 : 0;
         }
         #endregion //istrue[int value]
         #region iif[int value, object truevalue, object falsevalue]
         [ExpressionMethod("iif")]
-        [ExpressionParameter(0, typeof(double), "value", "value to check")]
+        [ExpressionParameter(0, typeof(object), "value", "value to check")]
         [ExpressionParameter(0, typeof(object), "truevalue", "value to return if value is true")]
         [ExpressionParameter(0, typeof(object), "falsevalue", "value to return if value is false")]
         [ExpressionReturn(typeof(double), "Returns 1 if value is true, 0 otherwise")]
-        [Summary("Checks if the first parameter is true, if so returns the second argument.  If the first parameter is false or not a number, returns the second argument")]
+        [Summary("Checks if the first parameter is true, if so returns the second argument.  If the first parameter is false or not a number, returns the third argument.  Both arguments will always be evaluated.  if you want conditional evaluation use `if[]`")]
         [Example("iif[1,2,3]", "Returns 2 (second param) because 1 (first param) is true")]
         public object Iif(object value, object truevalue, object falsevalue) {
-            return (value.GetType() == typeof(double) && value.Equals((double)1)) ? truevalue : falsevalue;
+            return ExpressionVisitor.IsTruthy(value) ? truevalue : falsevalue;
         }
         #endregion //iif[int value, any truevalue, any falsevalue]
         #region randint[int min, int max]
@@ -1620,7 +1880,7 @@ namespace UtilityBelt.Tools {
         [Example("cnumber[vtgetsetting[RingDistance]]", "Gets the number value of the vtank RingDistance setting")]
         public object Vtgetsetting(string setting) {
             //try {
-                return UBHelper.vTank.Instance.GetSetting(setting);
+            return UBHelper.vTank.Instance.GetSetting(setting);
             //}
             //catch (Exception ex) {
             //    return string.Empty;
@@ -1834,7 +2094,7 @@ namespace UtilityBelt.Tools {
             }
         }
 
-        public object EvaluateExpression(string expression, bool silent=true) {
+        public object EvaluateExpression(string expression, bool silent = true) {
             try {
                 AntlrInputStream inputStream = new AntlrInputStream(expression);
                 MetaExpressionsLexer spreadsheetLexer = new MetaExpressionsLexer(inputStream);
@@ -1863,6 +2123,29 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) {
                 if (!silent && expressionExceptions.Contains(ex.ToString()))
                     return null;
+                expressionExceptions.Add(ex.ToString());
+
+                var message = UB.Plugin.Debug ? ex.ToString() : (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+                //expression = expression.Insert(int.Parse(ex.Source, NumberStyles.Integer), "<Tell:IIDString:{Util.GetChatId()}:errorpos>errorpos</Tell>");
+                //UB.Core.Actions.AddChatTextRaw(expression, 1);
+                Logger.Error($"Error in expression: {expression}\n  {message}", false, false);
+                throw ex;
+            }
+        }
+
+        public Lib.Models.CompiledExpression CompileExpression(string expression) {
+            try {
+                AntlrInputStream inputStream = new AntlrInputStream(expression);
+                MetaExpressionsLexer spreadsheetLexer = new MetaExpressionsLexer(inputStream);
+                CommonTokenStream commonTokenStream = new CommonTokenStream(spreadsheetLexer);
+                MetaExpressionsParser expressionParser = new MetaExpressionsParser(commonTokenStream);
+                expressionParser.ErrorHandler = new ExpressionErrorListener();
+                MetaExpressionsParser.ParseContext parseContext = expressionParser.parse();
+                ExpressionVisitor visitor = new ExpressionVisitor();
+
+                return new Lib.Models.CompiledExpression(parseContext, visitor);
+            }
+            catch (Exception ex) {
                 expressionExceptions.Add(ex.ToString());
 
                 var message = UB.Plugin.Debug ? ex.ToString() : (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
@@ -1954,7 +2237,7 @@ namespace UtilityBelt.Tools {
                     portalExitCount = 1;
                     lastPortalExitLandcell = UB.Core.Actions.Landcell;
                 }
-                
+
                 if (portalExitCount >= PortalLoopCount) {
                     DoPortalLoopFix();
                     return;

@@ -28,6 +28,7 @@ namespace UtilityBelt.Lib.Settings {
         public SettingsForm(ISetting setting, HudFixedLayout parentLayout, Type type=null, object value=null) {
             Setting = setting;
             ParentLayout = parentLayout;
+            
             Type = type == null ? Setting.GetValue().GetType() : type;
             Value = value == null ? setting.GetValue() : value;
 
@@ -94,6 +95,9 @@ namespace UtilityBelt.Lib.Settings {
             //todo: fix this
             if (Type == typeof(bool)) {
                 return DrawBooleanSettingsForm(settingsForm);
+            }
+            else if (Type == typeof(Nullable<bool>)) {
+                return DrawNullableBooleanSettingsForm(settingsForm);
             }
             else if (Type.IsEnum) {
                 var supportsFlagsAttributes = Setting.FieldInfo.GetCustomAttributes(typeof(SupportsFlagsAttribute), true);
@@ -478,15 +482,20 @@ namespace UtilityBelt.Lib.Settings {
             var childViews = new List<HudControl>();
 
             enabled.Text = "True";
-            enabled.Checked = (bool)Value;
+            if (Value != null) {
+                enabled.Checked = (bool)Value;
+            }
             enabled.Change += (s, e) => {
                 disabled.Checked = !enabled.Checked;
                 Setting.SetValue(enabled.Checked);
                 Value = enabled.Checked;
                 Changed?.Invoke(this, null);
             };
+
             disabled.Text = "False";
-            disabled.Checked = !(bool)Value;
+            if (Value != null) {
+                disabled.Checked = !(bool)Value;
+            }
             disabled.Change += (s, e) => {
                 enabled.Checked = !disabled.Checked;
                 Setting.SetValue(!disabled.Checked);
@@ -499,6 +508,60 @@ namespace UtilityBelt.Lib.Settings {
 
             settingsForm.AddControl(enabled, new Rectangle(0, 0, 50, 20));
             settingsForm.AddControl(disabled, new Rectangle(55, 0, 50, 20));
+
+            return childViews;
+        }
+
+        private List<HudControl> DrawNullableBooleanSettingsForm(HudFixedLayout settingsForm) {
+            var enabled = new HudCheckBox();
+            var disabled = new HudCheckBox();
+            var undefined = new HudCheckBox();
+            var childViews = new List<HudControl>();
+
+            enabled.Text = "True";
+            if (Value != null) {
+                enabled.Checked = (bool)Value;
+            }
+            enabled.Change += (s, e) => {
+                disabled.Checked = !enabled.Checked;
+                undefined.Checked = !enabled.Checked;
+                Setting.SetValue(enabled.Checked);
+                Value = enabled.Checked;
+                Changed?.Invoke(this, null);
+            };
+
+            disabled.Text = "False";
+            if (Value != null) {
+                disabled.Checked = !(bool)Value;
+            }
+            disabled.Change += (s, e) => {
+                enabled.Checked = !disabled.Checked;
+                undefined.Checked = !disabled.Checked;
+                Setting.SetValue(!disabled.Checked);
+                Value = enabled.Checked;
+                Changed?.Invoke(this, null);
+            };
+
+            undefined.Text = "Null";
+            if (Value == null) {
+                undefined.Checked = true;
+            }
+            undefined.Change += (s, e) => {
+                if (undefined.Checked) {
+                    enabled.Checked = false;
+                    disabled.Checked = false;
+                    Value = null;
+                    Changed?.Invoke(this, null);
+                }
+            };
+
+            childViews.Add(enabled);
+            childViews.Add(disabled);
+            childViews.Add(undefined);
+
+            settingsForm.AddControl(enabled, new Rectangle(0, 0, 50, 20));
+            settingsForm.AddControl(disabled, new Rectangle(55, 0, 50, 20));
+            settingsForm.AddControl(undefined, new Rectangle(110, 0, 50, 20));
 
             return childViews;
         }

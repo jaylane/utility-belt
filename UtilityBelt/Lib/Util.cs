@@ -105,10 +105,12 @@ namespace UtilityBelt
         }
 
         public static void WriteToLogFile(string logName, string message, bool addTimestamp = false) {
-            string logFileName = $"{UBLoader.FilterCore.Global.LogDirectory}\\{logName}.{DateTime.Now.ToString("yyyy-MM-dd")}.txt";
-            string logMessage = $"{(addTimestamp?DateTime.Now.ToString("yy/MM/dd H:mm:ss "):null)}[{UBHelper.Core.WorldName}:{UBHelper.Core.UserName.GetHashCode():X8}] {message}\r\n";
-            UBLoader.Lib.File.TryWrite(logFileName, logMessage);
-            //File.AppendAllText(Path.Combine(Util.GetLogDirectory(), logFileName), message + Environment.NewLine);
+            if (UtilityBeltPlugin.Instance != null && UtilityBeltPlugin.Instance.Plugin.Debug) {
+                string logFileName = $"{UBLoader.FilterCore.Global.LogDirectory}\\{logName}.{DateTime.Now.ToString("yyyy-MM-dd")}.txt";
+                string logMessage = $"{(addTimestamp ? DateTime.Now.ToString("yy/MM/dd H:mm:ss ") : null)}[{UBHelper.Core.WorldName}:{UBHelper.Core.UserName.GetHashCode():X8}] {message}\r\n";
+                UBLoader.Lib.File.TryWrite(logFileName, logMessage);
+                //File.AppendAllText(Path.Combine(Util.GetLogDirectory(), logFileName), message + Environment.NewLine);
+            }
         }
 
         internal static int UnixTimeStamp() {
@@ -201,19 +203,11 @@ namespace UtilityBelt
         internal static string GetVTankProfilesDirectory() {
             var defaultPath = @"C:\Games\VirindiPlugins\VirindiTank\";
             try {
-                var key = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Decal\Plugins\{642F1F48-16BE-48BF-B1D4-286652C4533E}";
-                var path = (string)Registry.GetValue(key, "ProfilePath", "");
+                var path = Registry.LocalMachine.OpenSubKey("Software\\Decal\\Plugins\\{642F1F48-16BE-48BF-B1D4-286652C4533E}").GetValue("ProfilePath").ToString();
 
-                if (string.IsNullOrEmpty(path)) {
-                    key = @"HKEY_CURRENT_USER\Software\Classes\VirtualStore\MACHINE\SOFTWARE\WOW6432Node\Decal\Plugins\{642F1F48-16BE-48BF-B1D4-286652C4533E}";
-                    path = (string)Registry.GetValue(key, "ProfilePath", "");
+                if (!string.IsNullOrEmpty(path)) {
+                    return path;
                 }
-
-                if (string.IsNullOrEmpty(path)) {
-                    return defaultPath;
-                }
-
-                return path;
             }
             catch (Exception ex) { Logger.LogException(ex); }
 
@@ -256,6 +250,15 @@ namespace UtilityBelt
             }
 
             return count;
+        }
+
+        public static double GetFriendlyBurden() {
+            int burdenAugs = CoreManager.Current.CharacterFilter.GetCharProperty((int)Augmentations.MightSeventhMule);
+            int strength = CoreManager.Current.CharacterFilter.EffectiveAttribute[CharFilterAttributeType.Strength];
+            double burdenUnits = CoreManager.Current.CharacterFilter.BurdenUnits;
+            double capacity = (150 * strength) + (strength * burdenAugs * 30);
+            double friendlyBurden = burdenUnits / capacity * 100;
+            return friendlyBurden;
         }
 
         internal static bool IsItemSafeToGetRidOf(int id) {
@@ -387,27 +390,8 @@ namespace UtilityBelt
 
         //Do not use this in a loop, it gets an F for eFFiciency.
         public static WorldObject FindName(string searchname, bool partial, ObjectClass[] oc) {
-
-            //try int id
-            if (int.TryParse(searchname, out int id)) {
-                if (UB.Core.WorldFilter[id] != null && CheckObjectClassArray(UB.Core.WorldFilter[id].ObjectClass, oc)) {
-                    // Util.WriteToChat("Found by id");
-                    return UB.Core.WorldFilter[id];
-                }
-            }
-            //try hex...
-            try {
-                int intValue = Convert.ToInt32(searchname, 16);
-                if (UB.Core.WorldFilter[intValue] != null && CheckObjectClassArray(UB.Core.WorldFilter[intValue].ObjectClass, oc)) {
-                    // Util.WriteToChat("Found vendor by hex");
-                    return UB.Core.WorldFilter[intValue];
-                }
-            }
-            catch { }
-
-            //try "selected"
-            if (searchname.Equals("selected") && UB.Core.Actions.CurrentSelection != 0 && UB.Core.WorldFilter[UB.Core.Actions.CurrentSelection] != null && CheckObjectClassArray(UB.Core.WorldFilter[UB.Core.Actions.CurrentSelection].ObjectClass, oc)) {
-                return UB.Core.WorldFilter[UB.Core.Actions.CurrentSelection];
+            if (TryFindBySpecialName(searchname, oc, out WorldObject wobj)) {
+                return wobj;
             }
 
             searchname = searchname.ToLower();
@@ -434,6 +418,46 @@ namespace UtilityBelt
                 }
             }
             return found;
+        }
+
+        private static bool TryFindBySpecialName(string searchname, ObjectClass[] oc, out WorldObject wobj) {
+            //try int id
+            if (int.TryParse(searchname, out int id)) {
+                if (UB.Core.WorldFilter[id] != null && CheckObjectClassArray(UB.Core.WorldFilter[id].ObjectClass, oc)) {
+                    // Util.WriteToChat("Found by id");
+                    wobj = UB.Core.WorldFilter[id];
+                    return true;
+                }
+            }
+            //try hex...
+            try {
+                int intValue = Convert.ToInt32(searchname, 16);
+                if (UB.Core.WorldFilter[intValue] != null && CheckObjectClassArray(UB.Core.WorldFilter[intValue].ObjectClass, oc)) {
+                    // Util.WriteToChat("Found vendor by hex");
+                    wobj = UB.Core.WorldFilter[intValue];
+                    return true;
+                }
+            }
+            catch { }
+
+            //try "selected"
+            if (searchname.Equals("selected") && UB.Core.Actions.CurrentSelection != 0 && UB.Core.WorldFilter[UB.Core.Actions.CurrentSelection] != null && CheckObjectClassArray(UB.Core.WorldFilter[UB.Core.Actions.CurrentSelection].ObjectClass, oc)) {
+                wobj = UB.Core.WorldFilter[UB.Core.Actions.CurrentSelection];
+                return true;
+            }
+
+            wobj = null;
+            return false;
+        }
+
+        private static bool TryFindBySpecialName(string name, WOSearchFlags flags, WorldObject excludeObject, out WorldObject wobj) {
+            if (TryFindBySpecialName(name, new ObjectClass[] { }, out WorldObject fwobj)) {
+                wobj = fwobj;
+                return true;
+            }
+
+            wobj = null;
+            return false;
         }
 
         public static WorldObject FindClosestByObjectClass(ObjectClass objectclass) {
@@ -508,6 +532,10 @@ namespace UtilityBelt
         public enum WOSearchFlags { Landscape = 0x0001, Inventory = 0x0002, All = 0x0004 }
 
         public static WorldObject FindObjectByName(string name, WOSearchFlags flags, bool partial = false, WorldObject excludeObject = null) {
+            if (TryFindBySpecialName(name, flags, excludeObject, out WorldObject wobj)) {
+                return wobj;
+            }
+
             WorldObject returnWO = null;
             switch (flags) {
                 case WOSearchFlags.Inventory:
@@ -528,8 +556,6 @@ namespace UtilityBelt
             }
             return returnWO;
         }
-
-
 
         private static bool CheckObjectClassArray(ObjectClass needle, ObjectClass[] haystack) {
             if (haystack.Length == 0) return true;

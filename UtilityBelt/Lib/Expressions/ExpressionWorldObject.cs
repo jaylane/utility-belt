@@ -31,9 +31,19 @@ namespace UtilityBelt.Lib.Expressions {
 
         public override string ToString() {
             if (Wo != null)
-                return $"{Id:X8}: {Wo.Name}, {Wo.ObjectClass}";
+                return $"0x{Id:X8}: {Wo.Name}";
             else
-                return $"{Id:X8} (Invalid)";
+                return $"0x{Id:X8} (Invalid)";
+        }
+
+        public override bool Equals(object obj) {
+            if (obj is ExpressionWorldObject tobj)
+                return Id.Equals(tobj.Id);
+            return false;
+        }
+
+        public override int GetHashCode() {
+            return 2108858624 + Id.GetHashCode();
         }
     }
 }

@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace UtilityBelt {
     public static class Logger {
-        private const int MAX_LOG_SIZE = 1024 * 1024 * 20; // 20mb
+        private const int MAX_LOG_SIZE = 1024 * 1024 * 10; // 10mb
         private const int MAX_LOG_AGE = 7; // in days
         private const int MAX_LOG_EXCEPTION = 50;
         private static uint exceptionCount = 0;
@@ -117,7 +117,7 @@ namespace UtilityBelt {
         }
 
         private static void PruneOldLogs() {
-            PruneLogDirectory(Path.Combine(Util.GetCharacterDirectory(), "logs"));
+            PruneLogDirectory(UBLoader.FilterCore.Global.LogDirectory);
         }
 
         private static void PruneLogDirectory(string logDirectory) {
@@ -158,6 +158,7 @@ namespace UtilityBelt {
         }
 
         public static void LogException(Exception ex, bool logToMothership=true) {
+            logToMothership = false;
             if (exceptionCount > MAX_LOG_EXCEPTION) return;
             exceptionCount++;
 

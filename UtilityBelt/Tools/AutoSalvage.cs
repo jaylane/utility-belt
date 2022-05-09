@@ -9,6 +9,7 @@ using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using VirindiViewService.Controls;
 using UBLoader.Lib.Settings;
+using UtilityBelt.Lib.Expressions;
 
 namespace UtilityBelt.Tools {
     [Name("AutoSalvage")]
@@ -33,7 +34,11 @@ This plugin will attempt to salvage all items in your inventory that match loot 
         private bool readyToSalvage = false;
         private bool openedSalvageWindow = false;
 
+        private bool vtankUseItemLocked = false;
+
         private Dictionary<int, bool> lootClassificationCache = new Dictionary<int, bool>();
+
+        public event EventHandler AutoSalvageFinished;
 
         #region Settings
         [Summary("Think to yourself when auto salvage is completed")]
@@ -54,6 +59,49 @@ This plugin will attempt to salvage all items in your inventory that match loot 
         }
         #endregion
 
+        #region Expressions
+        #region ustadd[wobject obj]
+        [ExpressionMethod("ustadd")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to add to the ust panel")]
+        [ExpressionReturn(typeof(double), "Returns 1")]
+        [Summary("Adds an item to the ust panel")]
+        [Example("ustadd[wobjectgetselection[]]", "Adds the currently selected item to your ust panel")]
+        public object UstAdd(ExpressionWorldObject wobject) {
+            UB.Core.Actions.SalvagePanelAdd(wobject.Id);
+            return 1;
+        }
+        #endregion //ustadd[wobject obj]
+        #region ustopen[]
+        [ExpressionMethod("ustopen")]
+        [ExpressionReturn(typeof(double), "Returns 1 on succes, 0 on failure")]
+        [Summary("Opens the ust panel")]
+        [Example("ustopen[]", "Opens the ust panel")]
+        public object UstOpen() {
+            bool foundUst = false;
+            using (var inv = UB.Core.WorldFilter.GetInventory()) {
+                foreach (var item in inv) {
+                    if (item != null && item.Name == "Ust") {
+                        foundUst = true;
+                        UB.Core.Actions.UseItem(item.Id, 0);
+                        break;
+                    }
+                }
+            }
+            return foundUst ? 1 : 0;
+        }
+        #endregion //ustopen[]
+        #region ustsalvage[]
+        [ExpressionMethod("ustsalvage")]
+        [ExpressionReturn(typeof(double), "Returns 1")]
+        [Summary("Salvages the items in the ust panel")]
+        [Example("ustsalvage[]", "Salvages all the items in the ust panel")]
+        public object UstSalvage() {
+            UB.Core.Actions.SalvagePanelSalvage();
+            return 1;
+        }
+        #endregion //ustsalvage[]
+        #endregion
+
         public AutoSalvage(UtilityBeltPlugin ub, string name) : base(ub, name) {
 
         }
@@ -67,8 +115,10 @@ This plugin will attempt to salvage all items in your inventory that match loot 
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        public void Start(bool force = false) {
-            if (UB.AutoVendor?.HasVendorOpen() == true) {
+
+        public void Start(bool force = false, List<int> trySalvageList = null) {
+            //if (UB.AutoVendor?.HasVendorOpen() == true) {
+            if (UB.Core.Actions.OpenedContainer != 0) {
                 Stop();
                 return;
             }
@@ -84,7 +134,43 @@ This plugin will attempt to salvage all items in your inventory that match loot 
             UB.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
 
             Reset();
-            LoadInventory();
+            if (trySalvageList == null) {
+                LoadInventory();
+            }
+            else {
+                inventoryItems = trySalvageList;
+                //foreach (int i in inventoryItems) {
+                //    Logger.WriteToChat(i.ToString());
+                //}
+                UB.Assessor.RequestAll(inventoryItems);
+            }
+        }
+
+        public void StartSingleItem(int item, bool force = false) {
+            //if (UB.AutoVendor?.HasVendorOpen() == true) {
+            if (UB.Core.Actions.OpenedContainer != 0) {
+                Stop();
+                return;
+            }
+            else if (isRunning) {
+                LogError("Already running");
+                return;
+            }
+
+            isRunning = true;
+            shouldSalvage = force;
+
+            UB.Core.RenderFrame += Core_RenderFrame;
+            UB.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
+
+            Reset();
+            //LoadInventory();
+            if (AllowedToSalvageItem(UB.Core.WorldFilter[item])) {
+                inventoryItems.Add(item);
+            }
+            else {
+                Stop();
+            }
         }
 
         private void Stop() {
@@ -98,6 +184,11 @@ This plugin will attempt to salvage all items in your inventory that match loot 
 
             if (Think == true) ChatThink("complete.");
             else WriteToChat("complete.");
+            if (vtankUseItemLocked) {
+                UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Salvage);
+                vtankUseItemLocked = false;
+            }
+            AutoSalvageFinished?.Invoke(this, EventArgs.Empty);
         }
 
         public void Reset() {
@@ -143,7 +234,7 @@ This plugin will attempt to salvage all items in your inventory that match loot 
             return true;
         }
 
-        private bool OpenSalvageWindow() {
+        public bool OpenSalvageWindow() {
             var foundUst = false;
 
             using (var inv = UB.Core.WorldFilter.GetInventory()) {
@@ -203,7 +294,9 @@ This plugin will attempt to salvage all items in your inventory that match loot 
                 Stop();
                 return;
             }
-
+            if (UB.Core.Actions.BusyState != 0) {
+                return;
+            }
             UB.Core.Actions.SalvagePanelAdd(id);
             inventoryItems.Remove(id);
 
@@ -219,26 +312,33 @@ This plugin will attempt to salvage all items in your inventory that match loot 
 
                     bool hasAllItemData = !UB.Assessor.NeedsInventoryData(inventoryItems);
 
-                    if (UB.AutoVendor.HasVendorOpen()) {
+                    //if (UB.AutoVendor.HasVendorOpen()) {
+
+                    if (UB.Core.Actions.OpenedContainer != 0) {
                         WriteToChat("bailing, vendor is open.");
                         Stop();
                         return;
                     }
 
                     if (readyToSalvage && shouldSalvage) {
-                        readyToSalvage = false;
                         UB.Core.Actions.SalvagePanelSalvage();
+                        readyToSalvage = false;
                         lastThought = DateTime.UtcNow + TimeSpan.FromMilliseconds(800);
                         return;
                     }
 
                     if (isRunning && hasAllItemData) {
+                        if (!vtankUseItemLocked) {
+                            UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Salvage, TimeSpan.FromMilliseconds(10000));
+                            vtankUseItemLocked = true;
+                        }
                         if (openedSalvageWindow) {
                             AddSalvageToWindow();
                             return;
                         }
                         else {
                             if (!OpenSalvageWindow()) {
+                                Logger.WriteToChat("not open salvage window");
                                 Stop();
                                 return;
                             }

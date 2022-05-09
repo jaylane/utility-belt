@@ -20,6 +20,7 @@ using UBLoader.Lib.Settings;
 using System.Collections.ObjectModel;
 using Hellosam.Net.Collections;
 using Exceptionless.Extensions;
+using System.Diagnostics;
 
 namespace UtilityBelt.Tools {
     public class DelayedCommand {
@@ -29,6 +30,17 @@ namespace UtilityBelt.Tools {
 
         public DelayedCommand(string command, double delayMilliseconds) {
             Command = command;
+            Delay = delayMilliseconds;
+            RunAt = DateTime.UtcNow.AddMilliseconds(delayMilliseconds);
+        }
+    }
+    public class DelayedExpression {
+        public string Expression;
+        public double Delay;
+        public DateTime RunAt;
+
+        public DelayedExpression(string expression, double delayMilliseconds) {
+            Expression = expression;
             Delay = delayMilliseconds;
             RunAt = DateTime.UtcNow.AddMilliseconds(delayMilliseconds);
         }
@@ -46,7 +58,8 @@ namespace UtilityBelt.Tools {
         private int portalAttempts = 0;
         private static WorldObject portal = null;
         private bool isDelayListening;
-        readonly private List<DelayedCommand> delayedCommands = new List<DelayedCommand>(); 
+        readonly private List<DelayedCommand> delayedCommands = new List<DelayedCommand>();
+        readonly private List<DelayedExpression> delayedExpressions = new List<DelayedExpression>();
 
         /// <summary>
         /// The default character settings path
@@ -332,10 +345,11 @@ namespace UtilityBelt.Tools {
             var command = string.Join(" ", rest.Skip(1).ToArray());
             AddDelayedCommand(command, delay);
         }
+
         public void AddDelayedCommand(string command, double delay) {
             Logger.Debug($"Scheduling command `{command}` with delay of {delay}ms");
 
-            DelayedCommand delayed = new DelayedCommand(command, delay);
+            var delayed = new DelayedCommand(command, delay);
 
             delayedCommands.Add(delayed);
             delayedCommands.Sort((x, y) => x.RunAt.CompareTo(y.RunAt));
@@ -345,6 +359,20 @@ namespace UtilityBelt.Tools {
                 UB.Core.RenderFrame += Core_RenderFrame_Delay;
             }
         }
+        public void AddDelayedExpression(string expression, double delay) {
+            Logger.Debug($"Scheduling expression `{expression}` with delay of {delay}ms");
+
+            var delayed = new DelayedExpression(expression, delay);
+
+            delayedExpressions.Add(delayed);
+            delayedExpressions.Sort((x, y) => x.RunAt.CompareTo(y.RunAt));
+
+            if (!isDelayListening) {
+                isDelayListening = true;
+                UB.Core.RenderFrame += Core_RenderFrame_Delay;
+            }
+        }
+
         public void Core_RenderFrame_Delay(object sender, EventArgs e) {
             try {
                 while (delayedCommands.Count > 0 && delayedCommands[0].RunAt <= DateTime.UtcNow) {
@@ -353,7 +381,13 @@ namespace UtilityBelt.Tools {
                     delayedCommands.RemoveAt(0);
                 }
 
-                if (delayedCommands.Count == 0) {
+                while (delayedExpressions.Count > 0 && delayedExpressions[0].RunAt <= DateTime.UtcNow) {
+                    LogDebug($"Executing expression `{delayedExpressions[0].Expression}` (delay was {delayedExpressions[0].Delay}ms)");
+                    UB.VTank.EvaluateExpression(delayedExpressions[0].Expression, true);
+                    delayedExpressions.RemoveAt(0);
+                }
+
+                if (delayedCommands.Count == 0 && delayedExpressions.Count == 0) {
                     UB.Core.RenderFrame -= Core_RenderFrame_Delay;
                     isDelayListening = false;
                 }
@@ -382,6 +416,7 @@ namespace UtilityBelt.Tools {
         public void UB_portal(string portalName, bool partial) {
             portal = Util.FindName(portalName, partial, new ObjectClass[] { ObjectClass.Portal, ObjectClass.Npc });
             if (portal != null) {
+                Logger.WriteToChat($"Attempting to use portal: {portal.Name}");
                 UsePortal();
                 return;
             }
@@ -542,11 +577,33 @@ namespace UtilityBelt.Tools {
             var d = PhysicsObject.GetDistance(wo.Id);
             var lc = PhysicsObject.GetLandcell(wo.Id);
 
+            Logger.WriteToChat($"Id: {wo.Id} ( 0x{wo.Id:X8} )");
             Logger.WriteToChat($"Offset: {wo.Offset()}");
             Logger.WriteToChat($"Coords: {wo.Coordinates()}");
             Logger.WriteToChat($"RawCoords: {wo.RawCoordinates()}"); //same as offset?
             Logger.WriteToChat($"Phys lb: {lc.ToString("X8")}");
             Logger.WriteToChat($"Phys pos: x:{pos.X} y:{pos.Y} z:{pos.Z}");
+        }
+        #endregion
+        #region /ub id
+        [Summary("Prints object id for the currently selected object")]
+        [Usage("/ub id")]
+        [CommandPattern("id", @"^$")]
+        public void DoId(string _, Match _1) {
+            var selected = UB.Core.Actions.CurrentSelection;
+
+            if (selected == 0 || !UB.Core.Actions.IsValidObject(selected)) {
+                Logger.Error("Id: No object selected");
+                return;
+            }
+
+            var wo = UB.Core.WorldFilter[selected];
+
+            if (wo == null) {
+                Logger.Error("Id: null object selected");
+                return;
+            }
+            Logger.WriteToChat($"Id: {wo.Id} ( 0x{wo.Id:X8} )");
         }
         #endregion
         #region /ub printcolors
@@ -717,6 +774,15 @@ namespace UtilityBelt.Tools {
             Util.Think($"My vitae is {UB.Core.CharacterFilter.Vitae}%");
         }
         #endregion
+        #region /ub combatstate
+        [Summary("Sets combat state")]
+        [Usage("/ub combatstate (peace|melee|missile|magic)")]
+        [CommandPattern("combatstate", @"^(?<combatState>.+)?$")]
+        public void DoCombatState(string command, Match args) {
+            string combatState = args.Groups["combatState"].Value;
+            setcombatstate(combatState.ToString());
+        }
+        #endregion
         #region /ub swearallegiance[p] <name|id|selected>
         /// <summary>
         /// Temporary Home. TODO: Finish Allegiance.cs
@@ -808,6 +874,7 @@ namespace UtilityBelt.Tools {
                     Logger.WriteToChat("using " + woOne.Name);
                     if (woOne.ObjectClass == ObjectClass.Portal) UB_portal(woOne.Name, partial);
                     else if (woOne.ObjectClass == ObjectClass.Vendor) UB.AutoVendor.UB_vendor_open(woOne.Name, partial);
+                    else if (woOne.ObjectClass == ObjectClass.Container || woOne.ObjectClass == ObjectClass.Corpse) UB.Looter.OpenContainer(woOne.Id);
                     else UB.Core.Actions.UseItem(woOne.Id, 0);
                 }
                 else if (!string.IsNullOrEmpty(itemTwo)) {
@@ -825,6 +892,9 @@ namespace UtilityBelt.Tools {
                     }
                     else UB.Core.Actions.ApplyItem(woOne.Id, woTwo.Id);
                 }
+            }
+            else {
+                Logger.Error($"Could not find object: {itemOne}");
             }
         }
         #endregion
@@ -882,6 +952,58 @@ namespace UtilityBelt.Tools {
         #endregion
 
         #region Expressions
+        #region exec[]
+        [ExpressionMethod("exec")]
+        [ExpressionParameter(0, typeof(string), "text", "The expression string to evaluate")]
+        [ExpressionReturn(typeof(object), "Returns the result of evaluating the expression string")]
+        [Summary("Evaluates a string as an expression")]
+        [Example("exec[`1+1`]", "returns 2")]
+        public object Exec(string expression) {
+            return UB.VTank.EvaluateExpression(expression, true);
+        }
+        #endregion //exec[]
+        #region delayexec[]
+        [ExpressionMethod("delayexec")]
+        [ExpressionParameter(0, typeof(double), "delay", "The delay in milliseconds. 1 second = 1000 milliseconds.")]
+        [ExpressionParameter(1, typeof(string), "text", "The expression string to evaluate")]
+        [ExpressionReturn(typeof(object), "Returns 1")]
+        [Summary("Evaluates a string as an expression, after the specified delay")]
+        [Example("delayexec[1000, `1+1`]", "evaluates the expression `1+1` after a 1000ms (1s) delay")]
+        public object DelayExec(double delay, string expression) {
+            AddDelayedExpression(expression, delay);
+            return (double)1;
+        }
+        #endregion //delayexec[]
+        #region ifthen[]
+        [ExpressionMethod("ifthen")]
+        [ExpressionParameter(0, typeof(object), "value", "value to check for truthiness")]
+        [ExpressionParameter(1, typeof(string), "trueexpr", "expression string to evaluate if value is truthy")]
+        [ExpressionParameter(2, typeof(string), "falseexpr", "expression string to evaluate if value is *not* truthy, optional")]
+        [ExpressionReturn(typeof(object), "Returns the result of evaluating the conditional expression string")]
+        [Summary("If value is truthy, will execute the trueexpr string and return the results. If value is *not* truthy it will evaluate falseexpr string and return the results")]
+        [Example("ifthen[1, `chatbox[\\`true\\`]`,`chatbox[\\`false\\`]`]", "writes `true` to the chatbox")]
+        [Example("ifthen[0, `chatbox[\\`true\\`]`,`chatbox[\\`false\\`]`]", "writes `false` to the chatbox")]
+        public object IfThen(object condition, string trueExpression, string falseExpression=null) {
+            if (ExpressionVisitor.IsTruthy(condition)) {
+                return UB.VTank.EvaluateExpression(trueExpression, true);
+            }
+            else if (falseExpression != null) {
+                return UB.VTank.EvaluateExpression(falseExpression, true);
+            }
+
+            return (double)0;
+        }
+        #endregion //ifthen[]
+        #region tostring[object obj]
+        [ExpressionMethod("tostring")]
+        [ExpressionParameter(0, typeof(object), "obj", "The object to convert to a string")]
+        [ExpressionReturn(typeof(object), "Returns the object, converted to a string")]
+        [Summary("Converts an object to a string")]
+        [Example("tostring[2]", "returns the string `2`")]
+        public object ObjToString(object obj) {
+            return obj.ToString();
+        }
+        #endregion //vitae[]
         #region vitae[]
         [ExpressionMethod("vitae")]
         [ExpressionReturn(typeof(double), "Returns a number")]
@@ -1040,6 +1162,34 @@ namespace UtilityBelt.Tools {
             return Geometry.CalculateHeading(me, target);
         }
         #endregion //wobjectgetheadingto[wobject obj]
+        #region getequippedweapontype[]
+        [ExpressionMethod("getequippedweapontype")]
+        [ExpressionReturn(typeof(string), "Returns the equipped weapons object class")]
+        [Summary("Returns the equipped weapons object class")]
+        [Example("getequippedweapontype[]", "Returns the equipped weapons object class")]
+        public object getequippedweapontype() {
+            List<WorldObject> equippedList = UB.EquipmentManager.GetEquippedItems();
+            string result = "";
+            foreach (WorldObject item in equippedList) {
+                switch (item.Values(LongValueKey.EquipableSlots)) {
+                    case 4194304:
+                        result = "Missile";
+                        break;
+                    case 16777216:
+                        result = "Wand";
+                        break;
+                    case 1048576:
+                        result = "Melee";
+                        break;
+                    default:
+                        result = "None";
+                        break;
+                }
+                if (result != "None") break;
+            }
+            return result;
+        }
+        #endregion //wobjectgetequippedweapon[worldobject wo]
         #region getheading[wobject obj]
         [ExpressionMethod("getheading")]
         [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to get the heading of")]
@@ -1050,12 +1200,67 @@ namespace UtilityBelt.Tools {
             var rot = PhysicsObject.GetRot(wobject.Wo.Id);
             var heading = Geometry.QuaternionToHeading(rot);
 
-            Logger.WriteToChat(heading.ToString());
-            Logger.WriteToChat(rot.ToString());
+            //Logger.WriteToChat(heading.ToString());
+            //Logger.WriteToChat(rot.ToString());
 
             return (heading * 180f / Math.PI) % 360 + 180;
         }
         #endregion //getheading[wobject obj]
+        #region getcombatstate[]
+        [ExpressionMethod("getcombatstate")]
+        [ExpressionReturn(typeof(string), "Returns your current combat state")]
+        [Summary("Get the combat state of your character")]
+        [Example("getcombatstate[]", "Returns the string *peace* if you are in peace mode")]
+        public object getcombatstate() {
+            return (string)UB.Core.Actions.CombatMode.ToString();
+        }
+        #endregion getcombatstate[]
+        #region setcombatstate[]
+        [ExpressionMethod("setcombatstate")]
+        [ExpressionParameter(0, typeof(string), "str", "combatstate to set")]
+        [ExpressionReturn(typeof(double), "Returns 1 if executed successfully.")]
+        [Summary("Sets the combat state of your character")]
+        [Example("setcombatstate[peace]", "Sets your combat state to peace mode")]
+        public object setcombatstate(string combatState) {
+            combatState = combatState.ToLower();
+            switch (combatState) {
+               case "peace":
+                   UB.Core.Actions.SetCombatMode(CombatState.Peace);
+                   break;
+               case "melee":
+                   UB.Core.Actions.SetCombatMode(CombatState.Melee);
+                   break;
+               case "missile":
+                   UB.Core.Actions.SetCombatMode(CombatState.Missile);
+                   break;
+               case "magic":
+                   UB.Core.Actions.SetCombatMode(CombatState.Magic);
+                   break;
+                default:
+                    Logger.Error(combatState + " is not a valid option");
+                    return (double)0;
+            }
+            return (double)1;
+        }
+        #endregion //setcombatstate[]
+        #region getbusystate[]
+        [ExpressionMethod("getbusystate")]
+        [ExpressionReturn(typeof(double), "Returns the number corresponding to your busy state (moving an item)")]
+        [Summary("Get the busy state of your character and returns a number for the state (0=idle, 1=combining a stack, 2=splitting a stack, 3=???, 4=picking up an item from the ground, 5=moving or unequipping an item, 6=dropping an item to the ground, 7=equipping an item)")]
+        [Example("getbusystate[]", "Returns 0 if your character is idle, otherwise returns the appropriate value")]
+        public object getbusystate() {
+            return (double)UB.Core.Actions.BusyState;
+        }
+        #endregion //getbusystate[]
+        #region hexstr[number d, number h]
+        [ExpressionMethod("hexstr")]
+        [ExpressionParameter(0, typeof(double), "d", "the number to convert")]
+        [ExpressionReturn(typeof(double), "Returns a string")]
+        [Summary("converts a number to a hexadecimal string")]
+        public object Hexstr(double d) {
+            return $"0x{(int)d:X}";
+        }
+        #endregion //acos[number d]
         #region Math Expressions
         #region acos[number d]
         [ExpressionMethod("acos")]
@@ -1344,7 +1549,127 @@ namespace UtilityBelt.Tools {
             list.Items.Clear();
             return list;
         }
-        #endregion //lsitclear[list]
+        #endregion //lsitclear[list list, string expression]
+        #region listfilter[list list, string expression]
+        [ExpressionMethod("listfilter")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to filter")]
+        [ExpressionParameter(1, typeof(string), "expression", "The expression to use for filtering. $0 (getvar[\\`0\\`]) will be set to the current iteration count, $1 will be set to the current item. return 1 to include, 0 to exclude")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a new filtered list")]
+        [Summary("Creates a new list filtered by the specified expression")]
+        [Example("listfilter[wobjectfindallbyobjectclass[24],`wobjectgetintprop[$1,25]==275`]", "creates a new list with all nearby level 275 characters")]
+        public object ListFilter(ExpressionList list, string expression) {
+            var results = new ExpressionList();
+            var compiled = UB.VTank.CompileExpression(expression);
+            var i = 0;
+            var _0 = UB.VTank.Getvar("0");
+            var _1 = UB.VTank.Getvar("1");
+            var _2 = UB.VTank.Getvar("2");
+            foreach (var item in list.Items) {
+                UB.VTank.Setvar("0", i++);
+                UB.VTank.Setvar("1", item);
+                if (ExpressionVisitor.IsTruthy(compiled.Run())) {
+                    results.Items.Add(item);
+                    UB.VTank.Setvar("0", _0);
+                    UB.VTank.Setvar("1", _1);
+                    UB.VTank.Setvar("2", _2);
+                }
+            }
+            return results;
+        }
+        #endregion //listfilter[list list, string expression]
+        #region listmap[list list, string expression]
+        [ExpressionMethod("listmap")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to map")]
+        [ExpressionParameter(0, typeof(string), "expression", "The expression to use for mapping. $0 (getvar[\\`0\\`]) will be set to the current iteration count, $1 will be set to the current item. return the mapped result")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a new mapped list")]
+        [Summary("Creates a new list mapped by the specified expression")]
+        [Example("listmap[wobjectfindallbyobjectclass[24],`wobjectgetstringprop[$1,5]", "creates a new list with all nearby players titles")]
+        public object ListMap(ExpressionList list, string expression) {
+            var results = new ExpressionList();
+            var compiled = UB.VTank.CompileExpression(expression);
+            var i = 0;
+            var _0 = UB.VTank.Getvar("0");
+            var _1 = UB.VTank.Getvar("1");
+            var _2 = UB.VTank.Getvar("2");
+            foreach (var item in list.Items) {
+                UB.VTank.Setvar("0", i++);
+                UB.VTank.Setvar("1", item);
+                results.Items.Add(compiled.Run());
+                UB.VTank.Setvar("0", _0);
+                UB.VTank.Setvar("1", _1);
+                UB.VTank.Setvar("2", _2);
+            }
+            return results;
+        }
+        #endregion //listmap[list list, string expression]
+        #region listreduce[list list, string expression]
+        [ExpressionMethod("listreduce")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to reduce to a single value")]
+        [ExpressionParameter(1, typeof(string), "expression", "The expression to use for reducing. $0 (getvar[\\`0\\`]) will be set to the current iteration count, $1 will be set to the current item, $2 will be set to the current reduced value, return the modified result")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list reduced to a single value")]
+        [Summary("Reduces a list down into a single value")]
+        [Example("listreduce[wobjectfindallbyobjectclass[24],`$2+wobjectgetintprop[$1,25]`]", "find the sum of all nearby character levels")]
+        public object ListReduce(ExpressionList list, string expression) { 
+            object result = 0;
+            var compiled = UB.VTank.CompileExpression(expression);
+            var i = 0;
+            var _0 = UB.VTank.Getvar("0");
+            var _1 = UB.VTank.Getvar("1");
+            var _2 = UB.VTank.Getvar("2");
+            foreach (var item in list.Items) {
+                UB.VTank.Setvar("0", i++);
+                UB.VTank.Setvar("1", item);
+                UB.VTank.Setvar("2", result);
+                result = compiled.Run();
+                UB.VTank.Setvar("0", _0);
+                UB.VTank.Setvar("1", _1);
+                UB.VTank.Setvar("2", _2);
+            }
+            return result;
+        }
+        #endregion //listreduce[list list, string expression]
+        #region listsort[list list, string expression]
+        [ExpressionMethod("listsort")]
+        [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to sort")]
+        [ExpressionParameter(1, typeof(string), "expression", "The expression to use for sorting. $1 (getvar[\\`1\\`]) will be set to item a, $2 will be set item b, return 0 if they are equal, -1 if $1 is less than $2, and 1 if $1 is greater than $2")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a new list sorted by expression")]
+        [Summary("Creates a list from another, sorted by expression")]
+        [Example("listsort[wobjectfindallbyobjectclass[24],`setvar[la,wobjectgetintprop[$1,25]];setvar[lb,wobjectgetintprop[$2,25]];iif[$la==$lb,0,iif[$la<$lb,-1,1]]`]", "get a list of all characters sorted by level")]
+        public object ListSort(ExpressionList list, string expression="") {
+            var results = new ExpressionList();
+            var orig = list.Items.ToList();
+            if (string.IsNullOrEmpty(expression)) {
+                orig.Sort();
+            }
+            else {
+                var compiled = UB.VTank.CompileExpression(expression);
+                orig.Sort((a, b) => {
+                    UB.VTank.Setvar("1", a);
+                    UB.VTank.Setvar("2", b);
+                    return Convert.ToInt32(compiled.Run());
+                });
+            }
+            foreach (var item in orig) {
+                results.Items.Add(item);
+            }
+            return results;
+        }
+        #endregion //listsort[list list, string expression]
+        #region listfromrange[int start, int end]
+        [ExpressionMethod("listfromrange")]
+        [ExpressionParameter(0, typeof(double), "start", "inclusive start")]
+        [ExpressionParameter(1, typeof(double), "end", "inclusive end")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of numbers between start to end, inclusive")]
+        [Summary("Create a list of numbers between start and end inclusively")]
+        [Example("listfromrange[1,10]", "returns a list with numbers 1-10")]
+        public object ListFromRange(double start, double end) {
+            var results = new ExpressionList();
+            for (var i = (int)start; i <= (int)end; i += (start < end) ? 1 : -1) {
+                results.Items.Add(i);
+            }
+            return results;
+        }
+        #endregion listfromrange[int start, int end]
         #endregion //List Expresions
         #region Dictionary Expressions
 

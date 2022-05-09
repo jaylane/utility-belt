@@ -162,6 +162,7 @@ namespace UtilityBelt {
         public InventoryManager InventoryManager;
         public Jumper Jumper;
         public LandscapeMaps LandscapeMaps;
+        public Looter Looter;
         public LSD LSD;
         public Nametags Nametags;
         public Networking Networking;

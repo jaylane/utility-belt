@@ -116,7 +116,7 @@ namespace UtilityBelt.Lib.Expressions {
         /// <param name="context"></param>
         /// <returns></returns>
         public override object VisitHexNumberAtomExp([NotNull] MetaExpressionsParser.HexNumberAtomExpContext context) {
-            return (double)Convert.ToUInt32(context.HEXNUMBER().GetText(), 16);
+            return (double)Convert.ToInt32(context.HEXNUMBER().GetText(), 16);
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace UtilityBelt.Lib.Expressions {
         public override object VisitStringAtomExp(MetaExpressionsParser.StringAtomExpContext context) {
             var str = context.GetText();
             if (str.StartsWith("`"))
-                return str.Trim('`').Replace("\\`","`");
+                return Regex.Replace(str.Substring(1, str.Length - 2), @"\\(.)", "$1");
             else
                 return Regex.Replace(str, @"\\(.)", "$1");
         }
@@ -226,7 +226,7 @@ namespace UtilityBelt.Lib.Expressions {
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        private bool IsTruthy(object obj) {
+        internal static bool IsTruthy(object obj) {
             if (obj.GetType() == typeof(double))
                 return (double)obj != 0;
             if (obj.GetType() == typeof(string))
@@ -247,14 +247,15 @@ namespace UtilityBelt.Lib.Expressions {
                 if (!IsTruthy(left)) return false;
                 object right = Visit(context.expression(1));
                 if (!IsTruthy(right)) return false;
-                return true;
+                return right;
             }
+
             if (context.op.Text == "||") {
                 object left = Visit(context.expression(0));
                 if (IsTruthy(left)) return true;
                 object right = Visit(context.expression(1));
                 if (IsTruthy(right)) return true;
-                return false;
+                return right;
             }
 
             return false;
@@ -272,25 +273,25 @@ namespace UtilityBelt.Lib.Expressions {
             if (context.op.Text == "==") {
                 if (left.GetType() == typeof(string))
                     return left.ToString().ToLower().Equals(right.ToString().ToLower());
-                return left.Equals(right);
+                return left.Equals(right) ? 1 : 0;
             }
             if (context.op.Text == "!=") {
                 if (left.GetType() == typeof(string))
                     return !left.ToString().ToLower().Equals(right.ToString().ToLower());
-                return !left.Equals(right);
+                return !left.Equals(right) ? 1 : 0;
             }
 
             if (left.GetType() != typeof(double) || right.GetType() != typeof(double))
                 throw new Exception("Invalid comparison of non number types");
 
             if (context.op.Text == "<")
-                return (double)left < (double)right;
+                return (double)left < (double)right ? 1 : 0;
             if (context.op.Text == ">")
-                return (double)left > (double)right;
+                return (double)left > (double)right ? 1 : 0;
             if (context.op.Text == "<=")
-                return (double)left <= (double)right;
+                return (double)left <= (double)right ? 1 : 0;
             if (context.op.Text == ">=")
-                return (double)left >= (double)right;
+                return (double)left >= (double)right ? 1 : 0;
 
             return false;
         }
@@ -362,6 +363,64 @@ namespace UtilityBelt.Lib.Expressions {
         }
 
         /// <summary>
+        /// bitwise complement operator
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public override object VisitBitwiseComplementOp(MetaExpressionsParser.BitwiseComplementOpContext context) {
+            int num = (int)Visit(context.expression());
+
+            return (double)~num;
+        }
+
+        /// <summary>
+        /// bitshift operators
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public override object VisitBitshiftOps(MetaExpressionsParser.BitshiftOpsContext context) {
+            int left = Convert.ToInt32(Visit(context.expression(0)));
+            int right = Convert.ToInt32(Visit(context.expression(1)));
+            int result = 0;
+
+            switch (context.op.Text) {
+                case ">>":
+                    result = left >> right;
+                    break;
+                case "<<":
+                    result = left << right;
+                    break;
+            }
+
+            return (double)result;
+        }
+
+        /// <summary>
+        /// bitshift operators
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public override object VisitBitwiseOps(MetaExpressionsParser.BitwiseOpsContext context) {
+            int left = Convert.ToInt32(Visit(context.expression(0)));
+            int right = Convert.ToInt32(Visit(context.expression(1)));
+            int result = 0;
+
+            switch (context.op.Text) {
+                case "&":
+                    result = left & right;
+                    break;
+                case "|":
+                    result = left | right;
+                    break;
+                case "^":
+                    result = left ^ right;
+                    break;
+            }
+
+            return (double)result;
+        }
+
+        /// <summary>
         /// Handle regex operation, this handles expr#regex format
         /// </summary>
         /// <param name="context"></param>
@@ -370,7 +429,20 @@ namespace UtilityBelt.Lib.Expressions {
             var inputstr = Visit(context.expression(0)).ToString();
             var matchstr = Visit(context.expression(1)).ToString();
             var re = new Regex(matchstr, RegexOptions.IgnoreCase);
-            return re.IsMatch(inputstr);
+
+            Match match = re.Match(inputstr);
+            if (match.Success) {
+                foreach (string groupName in re.GetGroupNames()) {
+                    Group group = match.Groups[groupName];
+                    string key = "capturegroup_" + groupName;
+                    if (group.Success)
+                        UtilityBeltPlugin.Instance.VTank.Setvar(key, group.Value);
+                    else
+                        UtilityBeltPlugin.Instance.VTank.Clearvar(key);
+                }
+            }
+
+            return match.Success ? 1 : 0;
         }
 
         /// <summary>
@@ -390,7 +462,120 @@ namespace UtilityBelt.Lib.Expressions {
             else
                 return null;
         }
+
+        /// <summary>
+        /// Shortcut for list/dict/string indice chunks. $something{0:4}
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public override object VisitGetindexAtomExp([NotNull] MetaExpressionsParser.GetindexAtomExpContext context) {
+            var obj = Visit(context.expression(0));
+
+            if (obj is ExpressionList exprList) {
+                bool isRange = false;
+                var lstart = IndiceFromExpression(context.i1, exprList.Items.Count, 0);
+                var lend = 0;
+
+                if (context.c != null) {
+                    lend = IndiceFromExpression(context.i2, exprList.Items.Count, exprList.Items.Count);
+                    isRange = true;
+                }
+
+                if (isRange) {
+                    var newList = new ExpressionList();
+                    newList.AddRange(exprList.Items.Skip(lstart).Take(lend - lstart));
+                    return newList;
+                }
+                else {
+                    return exprList.Items[lstart];
+                }
+            }
+            else if (obj is string exprString) {
+                bool isRange = false;
+                var lstart = IndiceFromExpression(context.i1, exprString.Length, 0);
+                var lend = 0;
+
+                if (context.c != null) {
+                    lend = IndiceFromExpression(context.i2, exprString.Length, exprString.Length);
+                    isRange = true;
+                }
+
+                if (isRange) {
+                    return exprString.Substring(lstart, lend - lstart < 0 ? 0 : lend - lstart);
+                }
+                else {
+                    return exprString.Substring(lstart, 1);
+                }
+            }
+            else if (obj is ExpressionDictionary exprDict) {
+                if (context.c != null)
+                    throw new Exception($"Range indices not supported with dictionaries");
+                var key = Visit(context.i1);
+
+                if (!(key is string keyString))
+                    throw new Exception($"Dictionary key must be a string, tried to use: {key.GetType()}");
+
+                exprDict.Items.TryGetValue(keyString, out object val);
+
+                return val;
+            }
+
+            throw new Exception($"{obj.GetType()} doest not support indice access");
+        }
+
+        private int IndiceFromExpression(MetaExpressionsParser.ExpressionContext expressionContext, int listLength, int defaultValue=0) {
+            int indice;
+
+            if (expressionContext != null && !string.IsNullOrEmpty(expressionContext.GetText())) {
+                var exprResult = Visit(expressionContext);
+                if (!(exprResult is double dindice))
+                    throw new Exception($"Indice was type {exprResult.GetType()} ({exprResult}). Indices need to be numbers.");
+                indice = (int)dindice;
+            }
+            else {
+                indice = defaultValue;
+            }
+
+            if (indice < 0) {
+                indice = listLength + indice;
+                if (indice < 0)
+                    throw new Exception($"Indice was {indice}. Cannot be less than zero.");
+            }
+
+            if (indice > listLength)
+                throw new Exception($"Indice was {indice}. Cannot be greater than length ({listLength}).");
+
+            return indice;
+        }
+
+        /// <summary>
+        /// Handle = operation
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public override object VisitSetVarExp(MetaExpressionsParser.SetVarExpContext context) {
+            var varname = Visit(context.expression(0));
+            object right = Visit(context.expression(1));
+
+            if (context.id.Text == "$")
+                return UtilityBeltPlugin.Instance.VTank.Setvar(varname.ToString(), right);
+            else if (context.id.Text == "@")
+                return UtilityBeltPlugin.Instance.VTank.Setpvar(varname.ToString(), right);
+            else if (context.id.Text == "&")
+                return UtilityBeltPlugin.Instance.VTank.Setgvar(varname.ToString(), right);
+            else
+                return null;
+        }
         #endregion
+
+        /// <summary>
+        /// Shortcut for list/dict/string indice chunks. $something{0:4}
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public override object VisitCatchallAtomExp([NotNull] MetaExpressionsParser.CatchallAtomExpContext context) {
+            throw new Exception($"Unexpected character: {context.GetText()} @ {context.Start.StartIndex}");
+        }
 
         public override object VisitErrorNode([NotNull] IErrorNode node) {
             Logger.Error($"Some error or something: ({node.Payload}) {node.GetText()}");

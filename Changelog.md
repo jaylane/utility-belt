@@ -4,6 +4,35 @@
 - Add expressions: getfreeitemslots[WorldObject? container], getfreecontainerslots[WorldObject? container]
 - Add expression: getcontaineritemcount[WorldObject? container]
 - Add expressions: vtgetsetting[setting], vtsetsetting[setting,value]
+- Fix issue where vTank profiles directory was not being detected properly
+- Add expressions: getcharburden[]
+- Add Looter
+- Fix Nullable settings in settings form (PlayerOptions stuff)
+- Fix issue where dungeonmaps would no longer draw after changing game resolution
+- Fix /ub igp/give commands to be non greedy when matching profile (fixes /ub ig test.utl to char with to in the name)
+- Add expressions: wobjectfindall[], wobjectfindallinventory[], wobjectfindalllandscape[], wobjectfindallbyobjectclass[objectclass], wobjectfindallbytemplatetype[templatetype], wobjectfindallbynamerx[namerx], wobjectfindallinventorybyobjectclass[objectclass], wobjectfindallinventorybytemplatetype[templatetype], wobjectfindallinventorybynamerx[namerd], wobjectfindalllandscapebyobjectclass[objectclass], wobjectfindalllandscapebytemplatetype[templatetype], wobjectfindalllandscapebynamerx[namerx]
+- Add expressions: listmap[list, expression], listreduce[list, expression], listfilter[list, expression]
+- Add expression: exec[string]
+- Add expression: listfromrange[start, end]
+- Add expression: listsort[list list, string expression]
+- Add expression: tostring[object]
+- Fix issue when comparing worldobjects of different instances but same Id (fixes listcontains when the list is wobjects as well)
+- Add expression: delayexec[number delay, string expression]
+- Add expression: ifthen[object valuetocheck, string trueexpression[, string falseexpression]]
+- Add command: /ub id
+- Fix /ub use|portal|select all take ids in decimal or hex format on top of string names. ie /ub portal 0x733D902D
+- Add expression wobjectfindallbycontainer[object container]
+- Add expression shorthand syntax for list/dict/string indice/slicing. `$list[1:3]`
+- Add support for storing dicts in global/persistent storage
+- Add expression hexstr[]
+- Add expression support for bitwise operators ~, &, |, and ^, and shift operators << and >>.
+- Fix Expression conditions that are "truthy" in vtank will now return true, instead of having to specifically return 1.0 for expression conditions
+- Fix boolean operators now return the right-most executed operand
+- Fix quoted expression strings that had multiple backticks at the end, which would remove all ending backticks
+- Add expressions: ustadd[wobject], ustopen[], ustsalvage[]
+- Add expression regex operator `#` now supports named group capture, and sets group matches to $capturegroup_groupname
+- Fix /ub bct command now supports surrounding tag names with doubles quotes for tags that contain spaces
+- Add expression: getequippedweapontype[]
 
 ## 0.2.5 (2021-10-06) [UtilityBeltInstaller-0.2.5.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/dd7285b144ef9327bf8041c64841c22f/UtilityBeltInstaller-0.2.5.exe)
 - Add expressions: wobjectgetdoubleprop[], wobjectgetboolprop[], wobjectgetstringprop[], wobjecthasdata[], wobjectrequestdata[]

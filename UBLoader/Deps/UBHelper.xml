@@ -30,6 +30,11 @@
             Raised when the jump has been completed, and you hit the ground.
             </summary>
         </member>
+        <member name="E:UBHelper.Jumper.JumpStarted">
+            <summary>
+            Raised when the jump has been completed, and you hit the ground.
+            </summary>
+        </member>
         <member name="T:UBHelper.Allegiance">
             <summary>
             Allegiance Manager Backend
@@ -92,6 +97,13 @@
             EvaluateExpression delegate
             </summary>
             <param name="expressionString">Expression string to evaluate</param>
+        </member>
+        <member name="M:UBHelper.vTank.IsTruthy(System.Object)">
+            <summary>
+            Checks if an object is "truthy"
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
         </member>
         <member name="M:UBHelper.vTank.Decision_Lock(uTank2.ActionLockType,System.TimeSpan)">
             <summary>
@@ -303,6 +315,12 @@
             <summary>
             Save the options to the server
             </summary>
+        </member>
+        <member name="M:UBHelper.Player.SetHeading(System.Single)">
+            <summary>
+            Sets the players heading
+            </summary>
+            <param name="heading">Heading in degrees</param>
         </member>
         <member name="T:UBHelper.ConfirmationRequest">
             <summary>

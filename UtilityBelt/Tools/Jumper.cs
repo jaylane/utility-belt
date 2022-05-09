@@ -35,6 +35,8 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
         private int jumpTries = 0;
         private bool renderFrameSubscribed = false;
 
+        public event EventHandler JumperFinished;
+
         #region Config
         [Summary("Pause Navigation while jumping")]
         public readonly Setting<bool> PauseNav = new Setting<bool>(true);
@@ -72,6 +74,25 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
             if (!renderFrameSubscribed) {
                 UB.Core.RenderFrame += Core_RenderFrame;
             }
+        }
+        #endregion
+
+        #region /ub simplejump
+        [Summary("Face heading commands with built in VTank pausing and retries")]
+        [Usage("/ub face <heading>")]
+        [Example("/ub face 180", "Faces your character towards 180 degrees (south).")]
+        [CommandPattern("simplejump", @"^ *(?<msToHoldDown>\d+)?$", true)]
+        public void DoSimpleJump(string command, Match args) {
+            if (!string.IsNullOrEmpty(args.Groups["msToHoldDown"].Value)) {
+                if (!int.TryParse(args.Groups["msToHoldDown"].Value, out msToHoldDown)) return;
+                if (msToHoldDown < 0 || msToHoldDown > 1000) {  //check jump held for 0-1000 ms
+                    LogError("holdtime should be a number between 0 and 1000");
+                    return;
+                }
+            }
+            else { msToHoldDown = 0; }
+
+            SimpleJump(msToHoldDown);
         }
         #endregion
 
@@ -136,6 +157,34 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
         #endregion
         #endregion
 
+        public void SimpleJump(int holdMS) { //added this for loot jumping
+
+            if (needToJump || waitingForJump) {
+                LogError("You are already jumping. try again later.");
+                return;
+            }
+
+            msToHoldDown = holdMS;
+            needToTurn = false;
+            targetDirection = CoreManager.Current.Actions.Heading;
+
+            if (PauseNav) {
+                UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(20000));
+                UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.CorpseOpenAttempt, TimeSpan.FromMilliseconds(20000));
+            }
+            needToJump = true;
+            //start turning
+            isTurning = needToTurn;
+            if (needToTurn) {
+                turningSeconds = DateTime.UtcNow;
+                needToTurn = false;
+                UBHelper.Core.TurnToHeading((float)targetDirection);
+            }
+            if (!renderFrameSubscribed) {
+                UB.Core.RenderFrame += Core_RenderFrame;
+            }
+        }
+
         public Jumper(UtilityBeltPlugin ub, string name) : base(ub, name) {
 
         }
@@ -186,6 +235,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                     }
                     else {
                         Util.ThinkOrWrite("You have failed to jump too many times.", ThinkFail);
+                        JumperFinished?.Invoke(this, EventArgs.Empty);
                         UBHelper.Jumper.JumpCancel();
                         UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
                         UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.CorpseOpenAttempt);
@@ -200,6 +250,20 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        public void Jumper_CancelJump() {
+            JumperFinished?.Invoke(this, EventArgs.Empty);
+            UBHelper.Jumper.JumpCancel();
+            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.Navigation);
+            UBHelper.vTank.Decision_UnLock(uTank2.ActionLockType.CorpseOpenAttempt);
+            waitingForJump = false;
+            if (renderFrameSubscribed) {
+                UB.Core.RenderFrame -= Core_RenderFrame;
+            }
+            //clear settings
+            addShift = addW = addZ = addX = addC = false;
+            jumpTries = 0;
         }
 
 
@@ -217,6 +281,7 @@ Jumper is used for well... Jumping and turning. These commands will turn off Vta
                 //clear settings
                 addShift = addW = addZ = addX = addC = false;
                 jumpTries = 0;
+                JumperFinished?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

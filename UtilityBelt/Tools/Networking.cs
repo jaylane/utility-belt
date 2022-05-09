@@ -90,10 +90,16 @@ namespace UtilityBelt.Tools {
         [Usage("/ub bct <teamslist> [millisecondDelay] <command>")]
         [Example("/ub bct one,two 5000 /say hello", "Runs \"/say hello\" on every client tagged `one` or `two`, with a 5000ms delay between each")]
         [Example("/ub bct three /say hello", "Runs \"/say hello\" on every client tagged `three`, with no delay")]
-        [CommandPattern("bct", @"^(?<tags>[a-z0-9,]+) (?<delay>\d*) ?(?<command>.*)$")]
+        [Example("/ub bct \"some tag\",\"another tag\" /say hello", "Runs \"/say hello\" on every client tagged `some tag` or `another tag`, with no delay")]
+        [CommandPattern("bct", @"^((?<tags>([^""\s,]+|""[^""]+"")),?)+ (?<delay>\d*) ?(?<command>.*)$")]
         public void DoTaggedBroadcast(string _, Match args) {
             var command = args.Groups["command"].Value;
-            var tags = args.Groups["tags"].Value.Split(',');
+            var tags = new List<string>();
+
+            for (var i = 0; i < args.Groups["tags"].Captures.Count; i++) {
+                tags.Add(args.Groups["tags"].Captures[i].Value.Trim('"'));
+            }
+
             int delay = 0;
 
             if (!string.IsNullOrEmpty(args.Groups["delay"].Value) && !int.TryParse(args.Groups["delay"].Value, out delay)) {
@@ -116,7 +122,7 @@ namespace UtilityBelt.Tools {
                 return false;
             });
 
-            Logger.WriteToChat($"Broadcasting command to clients with tags ({String.Join(",", tags)}): \"{command}\" with delay inbetween of {delay}ms");
+            Logger.WriteToChat($"Broadcasting command to clients with tags ({String.Join(",", tags.ToArray())}): \"{command}\" with delay inbetween of {delay}ms");
             DoBroadcast(clients, command, delay);
             if (UB.Plugin.Debug)
                 Logger.Debug($"Sent to clients: {string.Join(", ", clients.Select(c => c.Name).ToArray())}");

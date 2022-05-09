@@ -247,7 +247,9 @@ namespace UtilityBelt.Views {
             SummaryText.Text += " (" + setting.SettingType.ToString() + "): ";
             SummaryText.Text += setting.Summary;
 
-            currentForm = new SettingsForm(setting, FormLayout, setting.GetValue().GetType());
+            Type t = setting.FieldInfo.FieldType.GetGenericArguments().First();
+
+            currentForm = new SettingsForm(setting, FormLayout, t);
             SummaryText.Text += " (Default: " + setting.DisplayValue(false, true) + ")";
 
             currentForm.Changed += (s, e) => {

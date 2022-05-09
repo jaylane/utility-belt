@@ -14,7 +14,7 @@ namespace UtilityBelt.Tools {
     public class FellowshipManager : ToolBase {
 
         public FellowshipManager(UtilityBeltPlugin ub, string name) : base(ub, name) {
-            
+
         }
 
 
@@ -90,7 +90,7 @@ namespace UtilityBelt.Tools {
         [ExpressionMethod("getfellowshiplocked")]
         [ExpressionReturn(typeof(double), "Returns 1 if your fellowship is Locked, 0 otherwise")]
         [Summary("Returns 1 if your fellowship is Locked")]
-        [Example("getfellowshipmembercount[]", "Returns 1 if your fellowship is Locked")]
+        [Example("getfellowshiplocked[]", "Returns 1 if your fellowship is Locked")]
         public object GetfellowshipLocked() {
             return UBHelper.Fellow.Locked;
         }
@@ -228,10 +228,10 @@ namespace UtilityBelt.Tools {
                 //[Usage("/ub fellow status")]
                 //[CommandPattern("fellow status", @"^$")]
                 case "status":
-                    Logger.WriteToChat($"Your current fellowship, \"{UBHelper.Fellow.Name}\", has {UBHelper.Fellow.MemberCount} member{(UBHelper.Fellow.MemberCount != 1 ? "s" : "")}, {(UBHelper.Fellow.ShareXP?"":"NOT ")}Sharing XP{(UBHelper.Fellow.EvenXPSplit?"":", Uneven Split")}. {(UBHelper.Fellow.Open?"Open":"Closed")}, {(UBHelper.Fellow.Locked?"**LOCKED**":"Not Locked")}.");
+                    Logger.WriteToChat($"Your current fellowship, \"{UBHelper.Fellow.Name}\", has {UBHelper.Fellow.MemberCount} member{(UBHelper.Fellow.MemberCount != 1 ? "s" : "")}, {(UBHelper.Fellow.ShareXP ? "" : "NOT ")}Sharing XP{(UBHelper.Fellow.EvenXPSplit ? "" : ", Uneven Split")}. {(UBHelper.Fellow.Open ? "Open" : "Closed")}, {(UBHelper.Fellow.Locked ? "**LOCKED**" : "Not Locked")}.");
                     Dictionary<int, UBHelper.FellowMember> members = UBHelper.Fellow.Members;
                     int leaderId = UBHelper.Fellow.Leader;
-                    foreach (KeyValuePair<int,UBHelper.FellowMember> thisOne in members) {
+                    foreach (KeyValuePair<int, UBHelper.FellowMember> thisOne in members) {
                         Logger.WriteToChat($" {thisOne.Value.name}[{thisOne.Value.level}] H:{thisOne.Value.cur_health}/{thisOne.Value.max_health}{(leaderId == thisOne.Value.id ? " (Leader) " : "")}");
                     }
                     members.Clear();
@@ -341,7 +341,8 @@ namespace UtilityBelt.Tools {
                 int intValue = Convert.ToInt32(searchname, 16);
                 if (members.Keys.Contains(intValue))
                     return members[intValue];
-            } catch { }
+            }
+            catch { }
             if (searchname.Equals("selected") && CoreManager.Current.Actions.CurrentSelection != 0 && members.Keys.Contains(CoreManager.Current.Actions.CurrentSelection)) {
                 return members[CoreManager.Current.Actions.CurrentSelection];
             }
@@ -349,7 +350,7 @@ namespace UtilityBelt.Tools {
             UBHelper.FellowMember found = null;
             double lastDistance = double.MaxValue;
             double thisDistance;
-            foreach (KeyValuePair<int,UBHelper.FellowMember> thisOne in members) {
+            foreach (KeyValuePair<int, UBHelper.FellowMember> thisOne in members) {
                 thisDistance = UBHelper.Core.DirtyDistance(thisOne.Key);
                 if (thisOne.Key != CoreManager.Current.CharacterFilter.Id && (found == null || lastDistance > thisDistance)) {
                     string thisLowerName = thisOne.Value.name.ToLower();
