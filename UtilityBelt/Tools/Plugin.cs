@@ -1663,8 +1663,16 @@ namespace UtilityBelt.Tools {
         [Summary("Create a list of numbers between start and end inclusively")]
         [Example("listfromrange[1,10]", "returns a list with numbers 1-10")]
         public object ListFromRange(double start, double end) {
+            int iStart = (int)start;
+            int iEnd = (int)end;
             var results = new ExpressionList();
-            for (var i = (int)start; i <= (int)end; i += (start < end) ? 1 : -1) {
+
+            if (iStart.Equals(iEnd)) {
+                results.Items.Add(iStart);
+                return results;
+            }
+
+            for (var i = iStart; i <= iEnd; i += (start < end) ? 1 : -1) {
                 results.Items.Add(i);
             }
             return results;
