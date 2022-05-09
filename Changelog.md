@@ -1,5 +1,5 @@
 ## 0.2.6 (TBD)
-- Add expression: getitemspellids[WorldObject]
+- Add expression: wobjectgetspellids[WorldObject]
 - Add expressions: getspellexpiration[id], getspellexpirationbyname[name]
 - Add expressions: getfreeitemslots[WorldObject? container], getfreecontainerslots[WorldObject? container]
 - Add expression: getcontaineritemcount[WorldObject? container]
