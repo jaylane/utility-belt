@@ -939,7 +939,12 @@ namespace UtilityBelt.Tools {
         public void DoClose(string command, Match args) {
             string objectClass = args.Groups["objectclass"].Value;
             if (objectClass.Length == 0) objectClass = null;
-            int openContainer = UB.Core.Actions.OpenedContainer;
+            int openContainer = 0;
+            openContainer = UB.Core.Actions.OpenedContainer;
+            if (openContainer == 0) {
+                Logger.WriteToChat("No container is currently open.");
+                return;
+            }
             if (objectClass == "corpse" && UB.Core.WorldFilter[openContainer].ObjectClass == ObjectClass.Corpse) {
                 UB.Core.Actions.UseItem(openContainer, 0);
             }
