@@ -170,6 +170,7 @@ namespace UtilityBelt {
         public PlayerOptions PlayerOptions;
         public Professors Professors;
         public QuestTracker QuestTracker;
+        public SpellManager SpellManager;
         //public Tags Tags { get; private set; }
         public VisualNav VisualNav;
         public VTankControl VTank;

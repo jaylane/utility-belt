@@ -16,6 +16,14 @@ namespace UtilityBelt.Lib {
                 return fs.SpellTable;
             }
         }
+        private static ComponentTable ComponentTable {
+            get {
+                if (fs != null)
+                    return fs.ComponentTable;
+                fs = UtilityBeltPlugin.Instance.Core.Filter<FileService>();
+                return fs.ComponentTable;
+            }
+        }
 
         /// <summary>
         /// Checks if spellId is known by the player
@@ -33,7 +41,7 @@ namespace UtilityBelt.Lib {
         /// <param name="spellId">spell id to check</param>
         /// <returns></returns>
         public static bool HasSkillHunt(int spellId) {
-            var spell = SpellTable.GetById(spellId);
+            var spell = GetSpell(spellId);
             var minSkillRequired = spell.Difficulty + (int)UBHelper.vTank.Instance.GetSetting("SpellDiffExcessThreshold-Hunt");
             var effectiveSkill = GetEffectiveSkillForSpell(spell);
 
@@ -49,7 +57,7 @@ namespace UtilityBelt.Lib {
         /// <param name="spellId">spell id to check</param>
         /// <returns></returns>
         public static bool HasSkillBuff(int spellId) {
-            var spell = SpellTable.GetById(spellId);
+            var spell = GetSpell(spellId);
             var minSkillRequired = spell.Difficulty + (int)UBHelper.vTank.Instance.GetSetting("SpellDiffExcessThreshold-Buff");
             var effectiveSkill = GetEffectiveSkillForSpell(spell);
 
@@ -61,13 +69,21 @@ namespace UtilityBelt.Lib {
             return SpellTable.GetById(spellId);
         }
 
+        public static string GetComponentName(int componentId) {
+            return ComponentTable.GetById(componentId).Name;
+        }
+
+        public static Component GetComponent(int componentId) {
+            return ComponentTable.GetById(componentId);
+        }
+
         /// <summary>
         /// Checks if player has scarabs required for a spell (currently does not check tapers)
         /// </summary>
         /// <param name="spellId">id of the spell to check</param>
         /// <returns></returns>
         public static bool HasComponents(int spellId) {
-            var spell = SpellTable.GetById(spellId);
+            var spell = GetSpell(spellId);
             var neededComps = new Dictionary<string, int>();
             for (var i=0; i < spell.ComponentIDs.Length; i++) {
                 var id = spell.ComponentIDs[i];
@@ -93,12 +109,12 @@ namespace UtilityBelt.Lib {
         }
 
         public static string GetName(int spellId) {
-            var spell = SpellTable.GetById(spellId);
+            var spell = GetSpell(spellId);
             return spell == null ? $"UnknownSpell:{spellId}" : spell.Name;
         }
 
         public static int GetEffectiveSkillForSpell(int spellId) {
-            return GetEffectiveSkillForSpell(SpellTable.GetById(spellId));
+            return GetEffectiveSkillForSpell(GetSpell(spellId));
         }
 
         public static int GetEffectiveSkillForSpell(Spell spell) {
@@ -132,7 +148,7 @@ namespace UtilityBelt.Lib {
         }
 
         internal static int GetSpellDuration(int spellId) {
-            return (int)SpellTable.GetById(spellId).Duration;
+            return (int)GetSpell(spellId).Duration;
         }
     }
 }

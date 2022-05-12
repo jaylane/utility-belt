@@ -259,6 +259,7 @@
     <Compile Include="Lib\Logger.cs" />
     <Compile Include="Tools\PrepClick.cs" />
     <Compile Include="Tools\Professors.cs" />
+    <Compile Include="Tools\SpellManager.cs" />
     <Compile Include="UtilityBelt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tools\Assessor.cs" />
