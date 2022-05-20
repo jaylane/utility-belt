@@ -370,7 +370,7 @@ namespace UtilityBelt.Tools {
             UB.Core.Actions.Logout();
         }
         #endregion
-        #region /ub acnavaction <motion> <fOn>
+        #region /ub setmotion <motion> <fOn>
         [Summary("Sets motion, in the client.")]
         [Usage("/ub setmotion <Forward|Backward|TurnRight|TurnLeft|StrafeRight|StrafeLeft> <0|1>")]
         [Example("/ub setmotion Forward 1", "Makes your character run forward forever.")]
