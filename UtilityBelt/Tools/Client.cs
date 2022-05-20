@@ -370,7 +370,43 @@ namespace UtilityBelt.Tools {
             UB.Core.Actions.Logout();
         }
         #endregion
-        
+        #region /ub acnavaction <motion> <fOn>
+        [Summary("Sets motion, in the client.")]
+        [Usage("/ub setmotion <Forward|Backward|TurnRight|TurnLeft|StrafeRight|StrafeLeft> <0|1>")]
+        [Example("/ub setmotion Forward 1", "Makes your character run forward forever.")]
+        [Example("/ub setmotion Forward 0", "Might make your character stop running forward.")]
+        [CommandPattern("setmotion", @"^(?<motion>\w.+) (?<fOn>[01])$", false)]
+
+        public unsafe void acsetmotion(string _, Match args) {
+            int.TryParse(args.Groups["fOn"].Value, out int fOn);
+            Motion motion;
+            try {
+                motion = (Motion)Enum.Parse(typeof(Motion), args.Groups["motion"].Value, true);
+            }
+            catch {
+                Logger.Error($"Invalid option ({args.Groups["motion"].Value}). Valid values are: {string.Join(", ", Enum.GetNames(typeof(Motion)))}");
+                return;
+            }
+            if (motionStatus[motion] != fOn) {
+                motionStatus[motion] = fOn;
+                Client_SetMotion(motion, fOn);
+            }
+        }
+        public Dictionary<Motion, int> motionStatus = new Dictionary<Motion, int> {
+            { Motion.Forward, 0 },
+            { Motion.Backward, 0 },
+            { Motion.TurnRight, 0 },
+            { Motion.TurnLeft, 0 },
+            { Motion.StrafeRight, 0 },
+            { Motion.StrafeLeft, 0 }
+        };
+        public enum Motion { Forward = 0x45000005, Backward = 0x45000006, TurnRight = 0x6500000D, TurnLeft = 0x6500000E, StrafeRight = 0x6500000F, StrafeLeft = 0x65000010 }
+        public static unsafe void Client_SetMotion(Motion motion, int fOn) => ((def_ACCmdInterp__SetMotion)Marshal.GetDelegateForFunctionPointer((IntPtr)0x0058C140, typeof(def_ACCmdInterp__SetMotion)))(*(int*)(*(int*)0x0083DA58 + 0xB8), (int)motion, fOn);
+        [UnmanagedFunctionPointer(CallingConvention.ThisCall)] internal delegate void def_ACCmdInterp__SetMotion(int ACCmdInterp, int motion, int fOn); // void __thiscall ACCmdInterp::SetMotion(ACCmdInterp *this, unsigned int motion, bool fOn)
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)] internal delegate bool c();
+        public static unsafe void Client_GodMode() => ((c)Marshal.GetDelegateForFunctionPointer((IntPtr)0x006A2920, typeof(c)))();
+        #endregion
+
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern bool PostMessage(IntPtr hhwnd, uint msg, IntPtr wparam, UIntPtr lparam);
 
