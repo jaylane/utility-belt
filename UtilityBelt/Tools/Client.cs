@@ -377,20 +377,39 @@ namespace UtilityBelt.Tools {
         [Example("/ub getmotion", "Tells you which way you're going")]
         [CommandPattern("getmotion", @"^$", false)]
         public void getmotion(string _, Match _2) {
+            int phy = get_physics(selectedID);
             WriteToChat($"Current (UB) Held Keys: Forward: {motionStatus[Motion.Forward]}, Backward: {motionStatus[Motion.Backward]}, TurnRight: {motionStatus[Motion.TurnRight]}, TurnLeft: {motionStatus[Motion.TurnLeft]}, StrafeRight: {motionStatus[Motion.StrafeRight]}, StrafeLeft: {motionStatus[Motion.StrafeLeft]}");
-            WriteToChat($"Combat Style: {current_style(player_object)} forward_speed: {(forward_command(player_object)==0x41000003?0:forward_speed(player_object))} sidestep_speed: {(sidestep_command(player_object) == 0?0:sidestep_speed(player_object))} turn_speed: {(turn_command(player_object) == 0?0:turn_speed(player_object))}");
-
-            // unsigned int interpreted_state.current_style = (player_object + 0xC4)
+            if (phy == 0) {
+                WriteToChat($"Your ID: {character_id(player_object):X8} Combat Style: {current_style(player_object)} forward_speed: {(forward_command(player_object) == 0x41000003 ? 0 : forward_speed(player_object))} sidestep_speed: {(sidestep_command(player_object) == 0 ? 0 : sidestep_speed(player_object))} turn_speed: {(turn_command(player_object) == 0 ? 0 : turn_speed(player_object))}");
+                WriteToChat($"State: {state(player_object):X8} Location: 0x{landblock(player_object):X8} [{x(player_object):n6}, {y(player_object):n6}, {z(player_object):n6}] {qw(player_object):n6} {qx(player_object):n6} {qy(player_object):n6} {qz(player_object):n6}");
+            } else {
+                WriteToChat($"Target ID: {character_id(phy):X8} Combat Style: {current_style(phy)} forward_speed: {(forward_command(phy) == 0x41000003 ? 0 : forward_speed(phy))} sidestep_speed: {(sidestep_command(phy) == 0 ? 0 : sidestep_speed(phy))} turn_speed: {(turn_command(phy) == 0 ? 0 : turn_speed(phy))}");
+                WriteToChat($"State: {state(player_object):X8} Location: 0x{landblock(phy):X8} [{x(phy):n6}, {y(phy):n6}, {z(phy):n6}] {qw(phy):n6} {qx(phy):n6} {qy(phy):n6} {qz(phy):n6}");
+            }
         }
 
-        internal static unsafe StanceMode current_style(int physics) { try { return (StanceMode)(*(int*)(*(int*)((*(int*)(*(int*)physics + 0xC4))) + 0x48) & 0xFF); } catch { return 0; } }
-        internal static unsafe int forward_command(int physics) { try { return *(int*)(*(int*)((*(int*)(*(int*)physics + 0xC4))) + 0x4C); } catch { return 0; } }
-        internal static unsafe float forward_speed(int physics) { try { return *(float*)(*(int*)((*(int*)(*(int*)physics + 0xC4))) + 0x50); } catch { return 0; } }
-        internal static unsafe int sidestep_command(int physics) { try { return *(int*)(*(int*)((*(int*)(*(int*)physics + 0xC4))) + 0x54); } catch { return 0; } }
-        internal static unsafe float sidestep_speed(int physics) { try { return *(float*)(*(int*)((*(int*)(*(int*)physics + 0xC4))) + 0x58); } catch { return 0; } }
-        internal static unsafe int turn_command(int physics) { try { return *(int*)(*(int*)((*(int*)(*(int*)physics + 0xC4))) + 0x5C); } catch { return 0; } }
-        internal static unsafe float turn_speed(int physics) { try { return *(float*)(*(int*)((*(int*)(*(int*)physics + 0xC4))) + 0x60); } catch { return 0; } }
-        internal static unsafe int player_object = 0x00844D68;
+        internal static unsafe StanceMode current_style(int physics) { try { return (StanceMode)(*(int*)(*(int*)((*(int*)(physics + 0xC4))) + 0x48) & 0xFF); } catch { return 0; } }
+        internal static unsafe int forward_command(int physics) { try { return *(int*)(*(int*)((*(int*)(physics + 0xC4))) + 0x4C); } catch { return 0; } }
+        internal static unsafe float forward_speed(int physics) { try { return *(float*)(*(int*)((*(int*)(physics + 0xC4))) + 0x50); } catch { return 0; } }
+        internal static unsafe int sidestep_command(int physics) { try { return *(int*)(*(int*)((*(int*)(physics + 0xC4))) + 0x54); } catch { return 0; } }
+        internal static unsafe float sidestep_speed(int physics) { try { return *(float*)(*(int*)((*(int*)(physics + 0xC4))) + 0x58); } catch { return 0; } }
+        internal static unsafe int turn_command(int physics) { try { return *(int*)(*(int*)((*(int*)(physics + 0xC4))) + 0x5C); } catch { return 0; } }
+        internal static unsafe float turn_speed(int physics) { try { return *(float*)(*(int*)((*(int*)(physics + 0xC4))) + 0x60); } catch { return 0; } }
+        internal static unsafe int character_id(int physics) { try { return *(int*)(physics + 0x08); } catch { return 0; } }
+        internal static unsafe int landblock(int physics) { try { return *(int*)(physics + 0x4C); } catch { return 0; } }
+        internal static unsafe float qw(int physics) { try { return *(float*)(physics + 0x50); } catch { return 0; } }
+        internal static unsafe float qx(int physics) { try { return *(float*)(physics + 0x54); } catch { return 0; } }
+        internal static unsafe float qy(int physics) { try { return *(float*)(physics + 0x58); } catch { return 0; } }
+        internal static unsafe float qz(int physics) { try { return *(float*)(physics + 0x5C); } catch { return 0; } }
+        internal static unsafe float x(int physics) { try { return *(float*)(physics + 0x84); } catch { return 0; } }
+        internal static unsafe float y(int physics) { try { return *(float*)(physics + 0x88); } catch { return 0; } }
+        internal static unsafe float z(int physics) { try { return *(float*)(physics + 0x8C); } catch { return 0; } }
+        internal static unsafe int state(int physics) { try { return *(int*)(physics + 0xAC); } catch { return 0; } }
+
+        internal static unsafe int player_object => *(int*)0x00844D68; // this is really a pointer. handled as an int, to keep C#'s pants on.
+
+        internal static unsafe int selectedID => *(int*)0x00871E54;
+
         // ACE.Entity.StanceMode
         public enum StanceMode {
             Invalid = 0x0,
@@ -438,6 +457,11 @@ namespace UtilityBelt.Tools {
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)] internal delegate void def_ACCmdInterp__SetMotion(int ACCmdInterp, int motion, int fOn); // void __thiscall ACCmdInterp::SetMotion(ACCmdInterp *this, unsigned int motion, bool fOn)
         [UnmanagedFunctionPointer(CallingConvention.StdCall)] internal delegate bool c();
         public static unsafe void Client_GodMode() => ((c)Marshal.GetDelegateForFunctionPointer((IntPtr)0x006A2920, typeof(c)))();
+
+        double todo; // this does not belong here. Ultimately we need the equivilant of UBHelper.Core and UBHelper.P, for all of this ugly boilerplate
+        internal static unsafe int get_physics(int object_id) => ((def_CObjectMaint__GetObjectA)Marshal.GetDelegateForFunctionPointer((IntPtr)0x00508890, typeof(def_CObjectMaint__GetObjectA)))(*(int*)0x00842ADC, object_id);
+        [UnmanagedFunctionPointer(CallingConvention.ThisCall)] internal delegate int def_CObjectMaint__GetObjectA(int CObjectMaint, int object_id); // HashBaseData<unsigned long> *__thiscall CObjectMaint::GetObjectA(CObjectMaint *this, unsigned int object_id)
+
         #endregion
 
 
