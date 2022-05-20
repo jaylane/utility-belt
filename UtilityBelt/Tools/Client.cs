@@ -370,14 +370,52 @@ namespace UtilityBelt.Tools {
             UB.Core.Actions.Logout();
         }
         #endregion
+
+        #region /ub getmotion
+        [Summary("Gets motion.")]
+        [Usage("/ub getmotion")]
+        [Example("/ub getmotion", "Tells you which way you're going")]
+        [CommandPattern("getmotion", @"^$", false)]
+        public void getmotion(string _, Match _2) {
+            WriteToChat($"Current (UB) Held Keys: Forward: {motionStatus[Motion.Forward]}, Backward: {motionStatus[Motion.Backward]}, TurnRight: {motionStatus[Motion.TurnRight]}, TurnLeft: {motionStatus[Motion.TurnLeft]}, StrafeRight: {motionStatus[Motion.StrafeRight]}, StrafeLeft: {motionStatus[Motion.StrafeLeft]}");
+            WriteToChat($"Combat Style: {current_style(player_object)} forward_speed: {(forward_command(player_object)==0x41000003?0:forward_speed(player_object))} sidestep_speed: {(sidestep_command(player_object) == 0?0:sidestep_speed(player_object))} turn_speed: {(turn_command(player_object) == 0?0:turn_speed(player_object))}");
+
+            // unsigned int interpreted_state.current_style = (player_object + 0xC4)
+        }
+
+        internal static unsafe StanceMode current_style(int physics) { try { return (StanceMode)(*(int*)(*(int*)((*(int*)(*(int*)physics + 0xC4))) + 0x48) & 0xFF); } catch { return 0; } }
+        internal static unsafe int forward_command(int physics) { try { return *(int*)(*(int*)((*(int*)(*(int*)physics + 0xC4))) + 0x4C); } catch { return 0; } }
+        internal static unsafe float forward_speed(int physics) { try { return *(float*)(*(int*)((*(int*)(*(int*)physics + 0xC4))) + 0x50); } catch { return 0; } }
+        internal static unsafe int sidestep_command(int physics) { try { return *(int*)(*(int*)((*(int*)(*(int*)physics + 0xC4))) + 0x54); } catch { return 0; } }
+        internal static unsafe float sidestep_speed(int physics) { try { return *(float*)(*(int*)((*(int*)(*(int*)physics + 0xC4))) + 0x58); } catch { return 0; } }
+        internal static unsafe int turn_command(int physics) { try { return *(int*)(*(int*)((*(int*)(*(int*)physics + 0xC4))) + 0x5C); } catch { return 0; } }
+        internal static unsafe float turn_speed(int physics) { try { return *(float*)(*(int*)((*(int*)(*(int*)physics + 0xC4))) + 0x60); } catch { return 0; } }
+        internal static unsafe int player_object = 0x00844D68;
+        // ACE.Entity.StanceMode
+        public enum StanceMode {
+            Invalid = 0x0,
+            HandCombat = 0x3c,
+            NonCombat = 0x3d,
+            SwordCombat = 0x3e,
+            BowCombat = 0x3f,
+            SwordShieldCombat = 0x40,
+            CrossbowCombat = 0x41,
+            UnusedCombat = 0x42,
+            SlingCombat = 0x43,
+            TwoHandedSwordCombat = 0x44,
+            TwoHandedStaffCombat = 0x45,
+            DualWieldCombat = 0x46,
+            ThrownWeaponCombat = 0x47,
+            Magic = 0x49,
+        }
+        #endregion
         #region /ub setmotion <motion> <fOn>
         [Summary("Sets motion, in the client.")]
         [Usage("/ub setmotion <Forward|Backward|TurnRight|TurnLeft|StrafeRight|StrafeLeft> <0|1>")]
         [Example("/ub setmotion Forward 1", "Makes your character run forward forever.")]
         [Example("/ub setmotion Forward 0", "Might make your character stop running forward.")]
         [CommandPattern("setmotion", @"^(?<motion>\w.+) (?<fOn>[01])$", false)]
-
-        public unsafe void acsetmotion(string _, Match args) {
+        public void setmotion(string _, Match args) {
             int.TryParse(args.Groups["fOn"].Value, out int fOn);
             Motion motion;
             try {
@@ -387,25 +425,21 @@ namespace UtilityBelt.Tools {
                 Logger.Error($"Invalid option ({args.Groups["motion"].Value}). Valid values are: {string.Join(", ", Enum.GetNames(typeof(Motion)))}");
                 return;
             }
+            SetMotion(motion, fOn);
+        }
+        public static Dictionary<Motion, int> motionStatus = new Dictionary<Motion, int> { { Motion.Forward, 0 }, { Motion.Backward, 0 }, { Motion.TurnRight, 0 }, { Motion.TurnLeft, 0 }, { Motion.StrafeRight, 0 }, { Motion.StrafeLeft, 0 } };
+        public enum Motion { Forward = 0x45000005, Backward = 0x45000006, TurnRight = 0x6500000D, TurnLeft = 0x6500000E, StrafeRight = 0x6500000F, StrafeLeft = 0x65000010 }
+        public static unsafe void SetMotion(Motion motion, int fOn) {
             if (motionStatus[motion] != fOn) {
                 motionStatus[motion] = fOn;
-                Client_SetMotion(motion, fOn);
+                ((def_ACCmdInterp__SetMotion)Marshal.GetDelegateForFunctionPointer((IntPtr)0x0058C140, typeof(def_ACCmdInterp__SetMotion)))(*(int*)(*(int*)0x0083DA58 + 0xB8), (int)motion, fOn);
             }
         }
-        public Dictionary<Motion, int> motionStatus = new Dictionary<Motion, int> {
-            { Motion.Forward, 0 },
-            { Motion.Backward, 0 },
-            { Motion.TurnRight, 0 },
-            { Motion.TurnLeft, 0 },
-            { Motion.StrafeRight, 0 },
-            { Motion.StrafeLeft, 0 }
-        };
-        public enum Motion { Forward = 0x45000005, Backward = 0x45000006, TurnRight = 0x6500000D, TurnLeft = 0x6500000E, StrafeRight = 0x6500000F, StrafeLeft = 0x65000010 }
-        public static unsafe void Client_SetMotion(Motion motion, int fOn) => ((def_ACCmdInterp__SetMotion)Marshal.GetDelegateForFunctionPointer((IntPtr)0x0058C140, typeof(def_ACCmdInterp__SetMotion)))(*(int*)(*(int*)0x0083DA58 + 0xB8), (int)motion, fOn);
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)] internal delegate void def_ACCmdInterp__SetMotion(int ACCmdInterp, int motion, int fOn); // void __thiscall ACCmdInterp::SetMotion(ACCmdInterp *this, unsigned int motion, bool fOn)
         [UnmanagedFunctionPointer(CallingConvention.StdCall)] internal delegate bool c();
         public static unsafe void Client_GodMode() => ((c)Marshal.GetDelegateForFunctionPointer((IntPtr)0x006A2920, typeof(c)))();
         #endregion
+
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern bool PostMessage(IntPtr hhwnd, uint msg, IntPtr wparam, UIntPtr lparam);
