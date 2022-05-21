@@ -29,8 +29,8 @@ namespace UtilityBelt.Tools {
         private TimerClass drawTimer;
         private int LabelFontSize = 12;
 
-        public Dictionary<Motion, bool> WantedMotionStatus = new Dictionary<Motion, bool> { { Motion.Forward, false }, { Motion.Backward, false }, { Motion.TurnRight, false }, { Motion.TurnLeft, false }, { Motion.StrafeRight, false }, { Motion.StrafeLeft, false } };
-        public Dictionary<Motion, bool> CurrentMotionStatus = new Dictionary<Motion, bool> { { Motion.Forward, false }, { Motion.Backward, false }, { Motion.TurnRight, false }, { Motion.TurnLeft, false }, { Motion.StrafeRight, false }, { Motion.StrafeLeft, false } };
+        public Dictionary<Motion, bool> WantedMotionStatus = new Dictionary<Motion, bool> { { Motion.Forward, false }, { Motion.Backward, false }, { Motion.TurnRight, false }, { Motion.TurnLeft, false }, { Motion.StrafeRight, false }, { Motion.StrafeLeft, false }, { Motion.Walk, false } };
+        public Dictionary<Motion, bool> CurrentMotionStatus = new Dictionary<Motion, bool> { { Motion.Forward, false }, { Motion.Backward, false }, { Motion.TurnRight, false }, { Motion.TurnLeft, false }, { Motion.StrafeRight, false }, { Motion.StrafeLeft, false }, { Motion.Walk, false } };
 
         #region Config
         [Summary("Show movement keys debug ui")]
@@ -67,7 +67,7 @@ namespace UtilityBelt.Tools {
         #endregion
         #region /ub setmotion <motion> <fOn>
         [Summary("Sets a wanted motion, in the client.")]
-        [Usage("/ub setmotion <Forward|Backward|TurnRight|TurnLeft|StrafeRight|StrafeLeft> <0|1>")]
+        [Usage("/ub setmotion <Forward|Backward|TurnRight|TurnLeft|StrafeRight|StrafeLeft|Walk> <0|1>")]
         [Example("/ub setmotion Forward 1", "Makes your character run forward forever.")]
         [Example("/ub setmotion Forward 0", "Might make your character stop running forward.")]
         [CommandPattern("setmotion", @"^(?<motion>\w.+) (?<fOn>[01])$", false)]
@@ -98,7 +98,7 @@ namespace UtilityBelt.Tools {
         #region Expressions
         #region setmotion[]
         [ExpressionMethod("setmotion")]
-        [ExpressionParameter(0, typeof(string), "motion", "The motion to set. Valid motions are Forward|Backward|TurnRight|TurnLeft|StrafeRight|StrafeLeft")]
+        [ExpressionParameter(0, typeof(string), "motion", "The motion to set. Valid motions are Forward|Backward|TurnRight|TurnLeft|StrafeRight|StrafeLeft|Walk")]
         [ExpressionParameter(0, typeof(double), "state", "0 = off, 1 = on")]
         [ExpressionReturn(typeof(double), "Returns 1 if successful, 0 otherwise")]
         [Summary("Sets a characters wanted motion state.")]
@@ -113,7 +113,6 @@ namespace UtilityBelt.Tools {
                 Logger.Error($"Invalid motion ({wantedMotion}). Valid values are: {string.Join(", ", Enum.GetNames(typeof(Motion)))}");
                 return 0;
             }
-
             SetMotion(motion, state == 0 ? false : true);
             return 1;
         }
@@ -161,10 +160,25 @@ namespace UtilityBelt.Tools {
         #endregion Expressions
 
         #region ac client fun
-        public enum Motion { Forward = 0x45000005, Backward = 0x45000006, TurnRight = 0x6500000D, TurnLeft = 0x6500000E, StrafeRight = 0x6500000F, StrafeLeft = 0x65000010 }
+        public enum Motion { Forward = 0x45000005, Backward = 0x45000006, TurnRight = 0x6500000D, TurnLeft = 0x6500000E, StrafeRight = 0x6500000F, StrafeLeft = 0x65000010, Walk = 0x11112222 }
         public unsafe void SetMotion(Motion motion, bool fOn) {
-            if (WantedMotionStatus[motion] != fOn) {
-                WantedMotionStatus[motion] = fOn;
+            WantedMotionStatus[motion] = fOn;
+            if (motion == Motion.Walk) {
+                var myPhysics = (int)UB.Core.Actions.PhysicsObject(UB.Core.CharacterFilter.Id);
+                if (*(int*)(*(int*)((*(int*)(myPhysics + 0xC4))) + 0x18) != (fOn ? 1 : 2)) {
+                    *(int*)(*(int*)((*(int*)(myPhysics + 0xC4))) + 0x18) = fOn ? 1 : 2;
+                    var keys = WantedMotionStatus.Keys.ToList();
+                    foreach (var key in keys) {
+                        if (key == Motion.Walk)
+                            continue;
+                        if (WantedMotionStatus[key]) {
+                            SetMotion(key, false);
+                            SetMotion(key, true);
+                        }
+                    }
+                }
+            }
+            else {
                 ((def_ACCmdInterp__SetMotion)Marshal.GetDelegateForFunctionPointer((IntPtr)0x0058C140, typeof(def_ACCmdInterp__SetMotion)))(*(int*)(*(int*)0x0083DA58 + 0xB8), (int)motion, fOn ? 1 : 0);
             }
         }
@@ -279,7 +293,7 @@ namespace UtilityBelt.Tools {
             }
         }
 
-        private void UpdateMovementStatus() {
+        unsafe private void UpdateMovementStatus() {
             var myPhysics = (int)UB.Core.Actions.PhysicsObject(UB.Core.CharacterFilter.Id);
             CurrentMotionStatus[Motion.Forward] = forward_command(myPhysics) != 0x41000003 && forward_speed(myPhysics) > 0;
             CurrentMotionStatus[Motion.Backward] = forward_command(myPhysics) != 0x41000003 && forward_speed(myPhysics) < 0;
@@ -287,6 +301,7 @@ namespace UtilityBelt.Tools {
             CurrentMotionStatus[Motion.TurnRight] = turn_command(myPhysics) != 0 && turn_speed(myPhysics) > 0;
             CurrentMotionStatus[Motion.StrafeLeft] = sidestep_command(myPhysics) != 0 && sidestep_speed(myPhysics) < 0;
             CurrentMotionStatus[Motion.StrafeRight] = sidestep_command(myPhysics) != 0 && sidestep_speed(myPhysics) > 0;
+            CurrentMotionStatus[Motion.Walk] = *(int*)(*(int*)((*(int*)(myPhysics + 0xC4))) + 0x18) == 1;
         }
 
         #region hud
@@ -298,7 +313,7 @@ namespace UtilityBelt.Tools {
                 }
                 if (!ShowMovementKeysDebugUI)
                     return;
-                hud = UB.Huds.CreateHud(HudX, HudY, KeySize * 3, KeySize * 2);
+                hud = UB.Huds.CreateHud(HudX, HudY, KeySize * 3, (KeySize * 2) + 12);
                 hud.OnMove += Hud_OnMove;
                 hud.OnClose += Hud_OnClose;
                 hud.OnRender += Hud_OnRender;
@@ -327,6 +342,12 @@ namespace UtilityBelt.Tools {
                 hud.Texture.BeginRender();
                 hud.Texture.Clear();
                 hud.Texture.Fill(new Rectangle(0, 0, hud.Texture.Width, hud.Texture.Height), Color.FromArgb(0, 0, 0, 0));
+
+                var outerWalkBarColor = CurrentMotionStatus[Motion.Walk] ? Color.Red : Color.White;
+                var innerWalkBarColor = WantedMotionStatus[Motion.Walk] ? Color.Red : Color.White;
+
+                hud.Texture.DrawLine(new PointF(1, hud.Texture.Height - 10), new PointF(hud.Texture.Width - 2, hud.Texture.Height - 10), outerWalkBarColor, 5);
+                hud.Texture.DrawLine(new PointF(3, hud.Texture.Height - 9), new PointF(hud.Texture.Width - 4, hud.Texture.Height - 9), innerWalkBarColor, 2);
 
                 DrawMovementKey(Motion.TurnLeft, 0, 0, KeySize);
                 DrawMovementKey(Motion.Forward, KeySize, 0, KeySize);
