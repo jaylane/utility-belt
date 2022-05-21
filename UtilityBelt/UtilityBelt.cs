@@ -164,6 +164,7 @@ namespace UtilityBelt {
         public LandscapeMaps LandscapeMaps;
         public Looter Looter;
         public LSD LSD;
+        public Movement Movement;
         public Nametags Nametags;
         public Networking Networking;
         public NetworkUI NetworkUI;
