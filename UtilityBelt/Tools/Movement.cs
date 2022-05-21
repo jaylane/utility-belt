@@ -54,8 +54,10 @@ namespace UtilityBelt.Tools {
         [CommandPattern("getmotion", @"^$", false)]
         unsafe public void getmotion(string _, Match _2) {
             int phy = get_physics(selectedID);
-            WriteToChat($"Current (UB) Held Keys: Forward: {WantedMotionStatus[Motion.Forward]}, Backward: {WantedMotionStatus[Motion.Backward]}, TurnRight: {WantedMotionStatus[Motion.TurnRight]}, TurnLeft: {WantedMotionStatus[Motion.TurnLeft]}, StrafeRight: {WantedMotionStatus[Motion.StrafeRight]}, StrafeLeft: {WantedMotionStatus[Motion.StrafeLeft]}");
+
             if (phy == 0) {
+                WriteToChat($"Current (Wanted) Held Keys: Forward: {WantedMotionStatus[Motion.Forward]}, Backward: {WantedMotionStatus[Motion.Backward]}, TurnRight: {WantedMotionStatus[Motion.TurnRight]}, TurnLeft: {WantedMotionStatus[Motion.TurnLeft]}, StrafeRight: {WantedMotionStatus[Motion.StrafeRight]}, StrafeLeft: {WantedMotionStatus[Motion.StrafeLeft]}, Walk: {WantedMotionStatus[Motion.Walk]}");
+                WriteToChat($"Current (Actually) Held Keys: Forward: {CurrentMotionStatus[Motion.Forward]}, Backward: {CurrentMotionStatus[Motion.Backward]}, TurnRight: {CurrentMotionStatus[Motion.TurnRight]}, TurnLeft: {CurrentMotionStatus[Motion.TurnLeft]}, StrafeRight: {CurrentMotionStatus[Motion.StrafeRight]}, StrafeLeft: {CurrentMotionStatus[Motion.StrafeLeft]}, Walk: {CurrentMotionStatus[Motion.Walk]}");
                 WriteToChat($"Your ID: {character_id(player_object):X8} Combat Style: {current_style(player_object)} forward_speed: {(forward_command(player_object) == 0x41000003 ? 0 : forward_speed(player_object))} sidestep_speed: {(sidestep_command(player_object) == 0 ? 0 : sidestep_speed(player_object))} turn_speed: {(turn_command(player_object) == 0 ? 0 : turn_speed(player_object))}");
                 WriteToChat($"State: {state(player_object):X8} Location: 0x{landblock(player_object):X8} [{x(player_object):n6}, {y(player_object):n6}, {z(player_object):n6}] {qw(player_object):n6} {qx(player_object):n6} {qy(player_object):n6} {qz(player_object):n6}");
             }
