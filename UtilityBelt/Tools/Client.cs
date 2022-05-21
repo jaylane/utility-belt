@@ -370,10 +370,6 @@ namespace UtilityBelt.Tools {
             UB.Core.Actions.Logout();
         }
         #endregion
-        
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern bool PostMessage(IntPtr hhwnd, uint msg, IntPtr wparam, UIntPtr lparam);
-
         #region /ub quit
         [Summary("Closes the client")]
         [Usage("/ub quit")]
@@ -384,6 +380,9 @@ namespace UtilityBelt.Tools {
         }
         #endregion
         #endregion Commands
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern bool PostMessage(IntPtr hhwnd, uint msg, IntPtr wparam, UIntPtr lparam);
 
         public Client(UtilityBeltPlugin ub, string name) : base(ub, name) {
 

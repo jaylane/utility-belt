@@ -367,8 +367,10 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
 
         private void DrawClientTextures(DxTexture texture, int offset, ClientInfo client) {
             DrawCharNameBackground(texture, offset, client);
-            DrawRangeIndicator(texture, offset, client);
-            DrawCharTrackedItems(texture, offset, client);
+            if (UB.Core.CharacterFilter.Id != client.PlayerId) { // Don't draw arrow for self
+                DrawRangeIndicator(texture, offset, client);
+                DrawCharTrackedItems(texture, offset, client);
+            }
         }
 
         private void DrawRangeIndicator(DxTexture texture, int offset, ClientInfo client) {
@@ -438,8 +440,8 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
 
             // range
             var c = (int)Math.Max(0, Math.Min(255, 255 - (client.DistanceTo() * 2)));
-            if (UB.Core.Actions.IsValidObject(client.PlayerId) || client.HasPositionInfo) {
-                texture.WriteText(FormatNumberForDisplay(client.DistanceTo()), Color.FromArgb(255, 255, c, c), VirindiViewService.WriteTextFormats.SingleLine, new Rectangle(CHAR_NAME_WIDTH + PADDING + ROW_SIZE - 4, offset + 5, RANGE_WIDTH, 12));
+            if ((UB.Core.CharacterFilter.Id != client.PlayerId) && (UB.Core.Actions.IsValidObject(client.PlayerId) || client.HasPositionInfo)) {
+                    texture.WriteText(FormatNumberForDisplay(client.DistanceTo()), Color.FromArgb(255, 255, c, c), VirindiViewService.WriteTextFormats.SingleLine, new Rectangle(CHAR_NAME_WIDTH + PADDING + ROW_SIZE - 4, offset + 5, RANGE_WIDTH, 12));
             }
             else {
                 texture.WriteText("??", Color.Gray, VirindiViewService.WriteTextFormats.SingleLine, new Rectangle(CHAR_NAME_WIDTH + PADDING + ROW_SIZE - 4, offset + 5, RANGE_WIDTH, 12));
