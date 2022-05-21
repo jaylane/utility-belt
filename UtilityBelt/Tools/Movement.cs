@@ -84,11 +84,11 @@ namespace UtilityBelt.Tools {
             SetMotion(motion, fOn == 1 ? true : false);
         }
         #endregion
-        #region /ub clearmotions
+        #region /ub clearmotion
         [Summary("Clears all wanted motions, in the client.")]
-        [Usage("/ub clearmotions")]
-        [Example("/ub clearmotions", "Clears all wanted motions, in the client.")]
-        [CommandPattern("clearmotions", @"^$", false)]
+        [Usage("/ub clearmotion")]
+        [Example("/ub clearmotion", "Clears all wanted motions, in the client.")]
+        [CommandPattern("clearmotion", @"^$", false)]
         public void clearmotions(string _, Match args) {
             ClearMotions();
         }
@@ -145,11 +145,11 @@ namespace UtilityBelt.Tools {
                 return 2;
         }
         #endregion //getmotion[]
-        #region clearmotions[]
-        [ExpressionMethod("clearmotions")]
+        #region clearmotion[]
+        [ExpressionMethod("clearmotion")]
         [ExpressionReturn(typeof(double), "Returns 1")]
         [Summary("Clears all motion states")]
-        [Example("clearmotions[]", "Clears all motion states")]
+        [Example("clearmotion[]", "Clears all motion states")]
         public object ClearMotions() {
             foreach (Motion motion in Enum.GetValues(typeof(Motion))) {
                 SetMotion(motion, false);
@@ -157,7 +157,7 @@ namespace UtilityBelt.Tools {
 
             return 1;
         }
-        #endregion //clearmotions[]
+        #endregion //clearmotion[]
         #endregion Expressions
 
         #region ac client fun
