@@ -388,6 +388,9 @@ namespace UBLoader.Lib.Settings {
                     foreach (var item in collection) {
                         // ugly... but not sure how else to get type definitions serialized
                         var json = JsonConvert.SerializeObject(item, SerializerSettings);
+                        if (item is ChatLogRule) {
+                            json = JsonConvert.SerializeObject(item);
+                        }
                         jArray.Add(JToken.Parse(json));
                     }
                     jObj.Add(setting.Name, jArray);
