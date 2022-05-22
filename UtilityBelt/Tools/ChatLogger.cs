@@ -16,16 +16,6 @@ using UBLoader.Lib.Settings;
 
 namespace UtilityBelt.Tools {
 
-    public class ChatLogRule {
-        [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
-        public IEnumerable<ChatMessageType> Types { get; set; }
-        public string MessageFilter { get; set; }
-
-        public override string ToString() {
-            return JsonConvert.SerializeObject(this);
-        }
-    }
-
     [Name("ChatLogger")]
     [Summary("Allows you to log chat messages to a file filtered by type / regular expression.")]
     [FullDescription(@"

@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 
-namespace UtilityBelt.Lib.Constants
-{
-    public enum ChatMessageType : uint
-    {
+namespace UBLoader.Lib.Settings {
+    public enum ChatMessageType : uint {
         /// <summary>
         /// allegiance MOTD
         /// 
@@ -297,7 +298,7 @@ namespace UtilityBelt.Lib.Constants
         [ChatColor(0xB4DCEF)]
         Roleplay = 0x1E,
 
-        
+
         /// <summary>
         /// Bright Yellow Text
         /// 
@@ -315,12 +316,19 @@ namespace UtilityBelt.Lib.Constants
         Society = 0x21
     }
 
-    public class ChatColorAttribute : Attribute
-    {
+    public class ChatLogRule {
+        public IEnumerable<ChatMessageType> Types { get; set; }
+        public string MessageFilter { get; set; }
+
+        public override string ToString() {
+            return JsonConvert.SerializeObject(this);
+        }
+    }
+
+    public class ChatColorAttribute : Attribute {
         public System.Drawing.Color Color { get; }
 
-        public ChatColorAttribute(System.Drawing.Color color)
-        {
+        public ChatColorAttribute(System.Drawing.Color color) {
             Color = color;
         }
 
@@ -328,40 +336,32 @@ namespace UtilityBelt.Lib.Constants
             : this(System.Drawing.Color.FromArgb(hexCode / 0x10000, (hexCode % 0x10000) / 0x100, hexCode % 0x100)) { }
     }
 
-    public class ShowInSettingsAttribute : Attribute
-    {
+    public class ShowInSettingsAttribute : Attribute {
         public bool Show { get; }
 
-        public ShowInSettingsAttribute(bool show)
-        {
+        public ShowInSettingsAttribute(bool show) {
             Show = show;
         }
     }
 
-    public class ACIconAttribute : Attribute
-    {
+    public class ACIconAttribute : Attribute {
         public int Icon { get; }
 
-        public ACIconAttribute(int icon)
-        {
+        public ACIconAttribute(int icon) {
             Icon = icon;
         }
     }
 
-    public class ParentAttribute : Attribute
-    {
-        public ParentAttribute(ChatMessageType parentType)
-        {
+    public class ParentAttribute : Attribute {
+        public ParentAttribute(ChatMessageType parentType) {
             ParentType = parentType;
         }
 
         public ChatMessageType ParentType { get; }
     }
 
-    public static class ChatMessageTypeExtensions
-    {
-        public static int GetIcon(this ChatMessageType type)
-        {
+    public static class ChatMessageTypeExtensions {
+        public static int GetIcon(this ChatMessageType type) {
             var memberInfos = typeof(ChatMessageType).GetMember(type.ToString());
             var enumValueMemberInfo = memberInfos.FirstOrDefault(m => m.DeclaringType == typeof(ChatMessageType));
             var valueAttributes =
@@ -369,8 +369,7 @@ namespace UtilityBelt.Lib.Constants
             return ((ACIconAttribute)valueAttributes[0]).Icon;
         }
 
-        public static string GetDescription(this ChatMessageType type)
-        {
+        public static string GetDescription(this ChatMessageType type) {
             var memberInfos = typeof(ChatMessageType).GetMember(type.ToString());
             var enumValueMemberInfo = memberInfos.FirstOrDefault(m => m.DeclaringType == typeof(ChatMessageType));
             var valueAttributes =
@@ -380,8 +379,7 @@ namespace UtilityBelt.Lib.Constants
             return type.ToString();
         }
 
-        public static bool ShowInSettings(this ChatMessageType type)
-        {
+        public static bool ShowInSettings(this ChatMessageType type) {
             var memberInfos = typeof(ChatMessageType).GetMember(type.ToString());
             var enumValueMemberInfo = memberInfos.FirstOrDefault(m => m.DeclaringType == typeof(ChatMessageType));
             var valueAttributes =
@@ -391,8 +389,7 @@ namespace UtilityBelt.Lib.Constants
             return true;
         }
 
-        public static ChatMessageType? GetParent(this ChatMessageType type)
-        {
+        public static ChatMessageType? GetParent(this ChatMessageType type) {
             var memberInfos = typeof(ChatMessageType).GetMember(type.ToString());
             var enumValueMemberInfo = memberInfos.FirstOrDefault(m => m.DeclaringType == typeof(ChatMessageType));
             var valueAttributes =
@@ -402,8 +399,7 @@ namespace UtilityBelt.Lib.Constants
             return null;
         }
 
-        public static System.Drawing.Color GetChatColor(this ChatMessageType type)
-        {
+        public static System.Drawing.Color GetChatColor(this ChatMessageType type) {
             var memberInfos = typeof(ChatMessageType).GetMember(type.ToString());
             var enumValueMemberInfo = memberInfos.FirstOrDefault(m => m.DeclaringType == typeof(ChatMessageType));
             var valueAttributes =

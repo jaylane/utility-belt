@@ -1176,6 +1176,16 @@ namespace UtilityBelt.Tools {
             return Geometry.CalculateHeading(me, target);
         }
         #endregion //wobjectgetheadingto[wobject obj]
+        #region wobjecthasvalidphysics[wobject obj]
+        [ExpressionMethod("wobjectisvalid")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to calculate heading towards")]
+        [ExpressionReturn(typeof(double), "Returns the heading in degrees from your player to the target object")]
+        [Summary("Calculates the heading in degrees (0-360 clockwise, 0 is north) from your player to the target object")]
+        [Example("wobjectisvalid[wobjectgetselection[]]", "Returns the heading in degrees from your player to the target object")]
+        public object wobjectisvalid(ExpressionWorldObject wobject) {
+            return UB.Core.Actions.IsValidObject(wobject.Id) && UB.Core.Actions.Underlying.GetPhysicsObjectPtr(wobject.Id) != 0 ? 1 : 0;
+        }
+        #endregion //wobjectgetheadingto[wobject obj]
         #region getequippedweapontype[]
         [ExpressionMethod("getequippedweapontype")]
         [ExpressionReturn(typeof(string), "Returns the equipped weapons object class")]

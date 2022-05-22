@@ -225,7 +225,6 @@
     <Compile Include="Tools\Nametags.cs" />
     <Compile Include="Lib\ChatLog\ChatLog.cs" />
     <Compile Include="Lib\ChatLog\ChatLogWriter.cs" />
-    <Compile Include="Lib\Constants\ChatMessageType.cs" />
     <Compile Include="Lib\Constants\BehaviorFlags.cs" />
     <Compile Include="Lib\Constants\DamageTypes.cs" />
     <Compile Include="Lib\Constants\PhysicsState.cs" />
