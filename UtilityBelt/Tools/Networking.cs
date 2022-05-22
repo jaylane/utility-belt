@@ -20,6 +20,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using System.Reflection;
+using UtilityBelt.Lib.Expressions;
 
 namespace UtilityBelt.Tools {
     [Name("Networking")]
@@ -155,6 +156,43 @@ namespace UtilityBelt.Tools {
         }
         #endregion /ub bc <millisecondDelay> <command>
         #endregion Commands
+
+        #region Expressions
+        #region netclients[number spellid]
+        [ExpressionMethod("netclients")]
+        [ExpressionParameter(0, typeof(string), "tag", "Optional network tag to filter by")]
+        [ExpressionReturn(typeof(ExpressionList), "Returns a list of network client data, optionally filtered by tag")]
+        [Summary("Gets a list of network clients, optionally filtered by tag")]
+        [Example("netclients[]", "returns a list of all network clients")]
+        [Example("netclients[test]", "returns a list of all network clients with the tag `test`")]
+        public object netclients(string tag = null) {
+            var clients = new ExpressionList();
+            foreach (var kv in Clients) {
+                if (string.IsNullOrEmpty(tag) || kv.Value.HasTags(new List<string>() { tag })) {
+                    var clientTags = new ExpressionList();
+                    clientTags.AddRange(kv.Value.Tags.Select(x => (object)x));
+                    var clientData = new ExpressionDictionary();
+                    clientData.Items.Add("ClientId", kv.Value.ClientId);
+                    clientData.Items.Add("PlayerId", kv.Value.PlayerId);
+                    clientData.Items.Add("Position", new ExpressionCoordinates(kv.Value.EW, kv.Value.NS, kv.Value.Z));
+                    clientData.Items.Add("Name", kv.Value.Name);
+                    clientData.Items.Add("Tags", clientTags);
+                    clientData.Items.Add("WorldName", kv.Value.WorldName);
+                    clientData.Items.Add("CurrentHealth", kv.Value.CurrentHealth);
+                    clientData.Items.Add("CurrentMana", kv.Value.CurrentMana);
+                    clientData.Items.Add("CurrentStamina", kv.Value.CurrentStamina);
+                    clientData.Items.Add("MaxHealth", kv.Value.MaxHealth);
+                    clientData.Items.Add("MaxMana", kv.Value.MaxMana);
+                    clientData.Items.Add("MaxStamina", kv.Value.MaxStamina);
+                    clientData.Items.Add("Heading", kv.Value.Heading);
+                    clients.Items.Add(clientData);
+                }
+            }
+
+            return clients;
+        }
+        #endregion //netclients[number spellid]
+        #endregion Expressions
 
         public Networking(UtilityBeltPlugin ub, string name) : base(ub, name) {
 
