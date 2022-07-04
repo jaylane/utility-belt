@@ -1068,6 +1068,15 @@ namespace UtilityBelt.Tools {
             return "";
         }
         #endregion //getdatetimeutc[string format]
+        #region getunixtime[]
+        [ExpressionMethod("getunixtime")]
+        [ExpressionReturn(typeof(string), "Returns the number of seconds since the unix epoch")]
+        [Summary("Gets the total number of seconds since the unix epoch (jan 1, 1970)")]
+        [Example("getunixtime[]", "Returns the number of seconds since the unix epoch")]
+        public double Getunixtime() {
+            return (double)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+        }
+        #endregion //getunixtime[]
 
         #region wobjectfindnearestbytemplatetype[int templatetype]
         [ExpressionMethod("wobjectfindnearestbytemplatetype")]
@@ -1163,6 +1172,16 @@ namespace UtilityBelt.Tools {
             return 1;
         }
         #endregion //wobjectrequestdata[wobject obj]
+        #region wobjectlastidtime[wobject obj]
+        [ExpressionMethod("wobjectlastidtime")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to check")]
+        [ExpressionReturn(typeof(double), "Returns 1")]
+        [Summary("Gets the last time a wobjects data was recieved from the server")]
+        [Example("wobjectlastidtime[wobjectgetselection[]]", "Checks the last time the server sent id data for the currently selected object")]
+        public object wobjectlastidtime(ExpressionWorldObject wobject) {
+            return wobject.Wo.LastIdTime;
+        }
+        #endregion //wobjectlastidtime[wobject obj]
         #region wobjectgetheadingto[wobject obj]
         [ExpressionMethod("getheadingto")]
         [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to calculate heading towards")]
