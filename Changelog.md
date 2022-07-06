@@ -41,6 +41,7 @@
 - Add expressions: setmotion[motions, state], getmotion[motion], clearmotion[]
 - Add expression: netclients[string tag?]
 - Add expression: wobjectlastidtime[wobject], getunixtime[]
+- Add expression: isportaling[]
 
 ## 0.2.5 (2021-10-06) [UtilityBeltInstaller-0.2.5.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/dd7285b144ef9327bf8041c64841c22f/UtilityBeltInstaller-0.2.5.exe)
 - Add expressions: wobjectgetdoubleprop[], wobjectgetboolprop[], wobjectgetstringprop[], wobjecthasdata[], wobjectrequestdata[]

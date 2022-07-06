@@ -58,6 +58,7 @@ namespace UtilityBelt.Tools {
         private int portalAttempts = 0;
         private static WorldObject portal = null;
         private bool isDelayListening;
+        private bool inPortal;
         readonly private List<DelayedCommand> delayedCommands = new List<DelayedCommand>();
         readonly private List<DelayedExpression> delayedExpressions = new List<DelayedExpression>();
 
@@ -2010,6 +2011,15 @@ namespace UtilityBelt.Tools {
             return 0;
         }
         #endregion //uboptset[string name, object value]
+        #region isportaling[]
+        [ExpressionMethod("isportaling")]
+        [ExpressionReturn(typeof(double), "Returns the number corresponding to your busy state (moving an item)")]
+        [Summary("Get the busy state of your character and returns a number for the state (0=idle, 1=combining a stack, 2=splitting a stack, 3=???, 4=picking up an item from the ground, 5=moving or unequipping an item, 6=dropping an item to the ground, 7=equipping an item)")]
+        [Example("getbusystate[]", "Returns 0 if your character is idle, otherwise returns the appropriate value")]
+        public object isportaling() {
+            return (double)(inPortal ? 1 : 0);
+        }
+        #endregion //getbusystate[]
 
         #endregion //Expressions
 
@@ -2021,6 +2031,7 @@ namespace UtilityBelt.Tools {
             base.Init();
 
             UBHelper.Core.GameStateChanged += Core_GameStateChanged;
+            UB.Core.CharacterFilter.ChangePortalMode += CharacterFilter_ChangePortalMode;
             if (UBHelper.Core.GameState == UBHelper.GameState.In_Game) UB_Follow_Clear();
             else UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete_Follow;
 
@@ -2042,6 +2053,10 @@ namespace UtilityBelt.Tools {
                 UBHelper.PCap.Enable(PCapBufferDepth);
             if (!BackgroundFrameLimit.IsDefault)
                 UBHelper.SimpleFrameLimiter.bgMax = BackgroundFrameLimit;
+        }
+
+        private void CharacterFilter_ChangePortalMode(object sender, ChangePortalModeEventArgs e) {
+            inPortal = e.Type == PortalEventType.EnterPortal;
         }
 
         private void VideoPatchFocus_Changed(object sender, SettingChangedEventArgs e) {
@@ -2090,6 +2105,7 @@ namespace UtilityBelt.Tools {
                     UB.Core.RenderFrame -= Core_RenderFrame_Delay;
                     UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch_PortalOpen;
                     UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete_Follow;
+                    UB.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
                 }
                 disposedValue = true;
             }
