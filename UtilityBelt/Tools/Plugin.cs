@@ -2013,13 +2013,15 @@ namespace UtilityBelt.Tools {
         #endregion //uboptset[string name, object value]
         #region isportaling[]
         [ExpressionMethod("isportaling")]
-        [ExpressionReturn(typeof(double), "Returns the number corresponding to your busy state (moving an item)")]
-        [Summary("Get the busy state of your character and returns a number for the state (0=idle, 1=combining a stack, 2=splitting a stack, 3=???, 4=picking up an item from the ground, 5=moving or unequipping an item, 6=dropping an item to the ground, 7=equipping an item)")]
-        [Example("getbusystate[]", "Returns 0 if your character is idle, otherwise returns the appropriate value")]
+        [ExpressionReturn(typeof(double), "Returns 1 if in portalspace, 0 otherwise")]
+        [Summary("Checks if your character is currently in portalspace")]
+        [Example("isportaling[]", "Returns 1 if in portalspace, 0 otherwise")]
         public object isportaling() {
+            if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
+                return (double)1;
             return (double)(inPortal ? 1 : 0);
         }
-        #endregion //getbusystate[]
+        #endregion //isportaling[]
 
         #endregion //Expressions
 
