@@ -49,10 +49,6 @@ namespace UtilityBelt.Tools {
 
         [Summary("Number of portal loops to the same location to trigger portal loop fix")]
         public readonly Setting<int> PortalLoopCount = new Setting<int>(3);
-
-        [Summary("PatchForClassic")]
-        [Hotkey("PatchForClassic", "Patch vtank spells/skills for use on classic (pre-tod) servers.")]
-        public readonly Setting<bool> PatchForClassic = new Setting<bool>(false);
         #endregion
 
         #region Commands
@@ -570,7 +566,7 @@ namespace UtilityBelt.Tools {
         [Summary("Pastes a message to the chatbox, leaving focus, so that the user can complete typing it")]
         [Example("chatboxpaste[test]", "pastes `test` to the chatbox, without sending")]
         public object Chatboxpaste(string text) {
-            return UBHelper.vTank.ChatboxPaste(text);
+            return VTankExtensions.ChatboxPaste(text);
         }
         #endregion //chatboxpaste[string message]
         #region echo[string message, number color]
@@ -1560,7 +1556,7 @@ namespace UtilityBelt.Tools {
         [Summary("Attempts to take one step towards equipping any wand from the current profile's items list")]
         [Example("actiontryequipanywand[]", "Attempts to equip any wand")]
         public object Actiontryequipanywand() {
-            return UBHelper.vTank.TryEquipAnyWand();
+            return VTankExtensions.TryEquipAnyWand();
         }
         #endregion //actiontryequipanywand[]
         #region actiontrycastbyid[int spellId]
@@ -1573,7 +1569,7 @@ namespace UtilityBelt.Tools {
             var id = Convert.ToInt32(spellId);
             if (!Spells.IsKnown(id) || !Spells.HasSkillHunt(id))
                 return 2;
-            if (!UBHelper.vTank.TryEquipAnyWand())
+            if (!VTankExtensions.TryEquipAnyWand())
                 return 0;
 
             // this uses vtanks spell casting system so that peace while idle registers the action properly
@@ -1597,7 +1593,7 @@ namespace UtilityBelt.Tools {
             var id = Convert.ToInt32(spellId);
             if (!Spells.HasSkillHunt(id))
                 return 2;
-            if (!UBHelper.vTank.TryEquipAnyWand())
+            if (!VTankExtensions.TryEquipAnyWand())
                 return 0;
 
             // this uses vtanks spell casting system so that peace while idle registers the action properly
@@ -1960,7 +1956,7 @@ namespace UtilityBelt.Tools {
         [Summary("Gets a reference to the named control in the named window")]
         [Example("uigetcontrol[myWindow, myControl]", "Gets a reference to the control `myControl` in the view `myWindow`")]
         public object uigetcontrol(string windowName, string controlName) {
-            if (!UBHelper.vTank.UIControlExists(windowName, controlName, out string error)) {
+            if (!VTankExtensions.UIControlExists(windowName, controlName, out string error)) {
                 Logger.Error($"uigetcontrol: {error}");
                 return 0;
             }
@@ -1976,7 +1972,7 @@ namespace UtilityBelt.Tools {
         [Summary("Changes the label text for the given UIControl. Currently only supports buttons.")]
         [Example("uisetlabel[uigetcontrol[myWindow, myControl], new label]", "Changes the control `myControl` label in the view `myWindow` to `new label`")]
         public object uisetlabel(ExpressionUIControl control, string text) {
-            if (!UBHelper.vTank.UISetLabel(control.WindowName, control.ControlName, text, out string error)) {
+            if (!VTankExtensions.UISetLabel(control.WindowName, control.ControlName, text, out string error)) {
                 Logger.Error($"uisetlabel: {error}");
                 return 0;
             }
@@ -1992,7 +1988,7 @@ namespace UtilityBelt.Tools {
         [Summary("Changes the visibility for the given UIControl. Currently only supports buttons.")]
         [Example("uisetvisible[uigetcontrol[myWindow, myControl], 0]", "Changes the control `myControl` visibility in the view `myWindow` to hidden")]
         public object uisetvisible(ExpressionUIControl control, double visible) {
-            if (!UBHelper.vTank.UISetVisible(control.WindowName, control.ControlName, visible >= 1, out string error)) {
+            if (!VTankExtensions.UISetVisible(control.WindowName, control.ControlName, visible >= 1, out string error)) {
                 Logger.Error($"uisetvisible: {error}");
                 return 0;
             }
@@ -2007,7 +2003,7 @@ namespace UtilityBelt.Tools {
         [Summary("Checks if a meta view exists")]
         [Example("uiviewexists[myWindow]", "returns true if a view with the title `myWindow` exists")]
         public object uiviewexists(string windowName) {
-            return UBHelper.vTank.UIMetaViewExists(windowName);
+            return VTankExtensions.UIMetaViewExists(windowName);
         }
         #endregion //uiviewexists[string windowName]
         #region uiviewvisible[string windowName]
@@ -2017,7 +2013,7 @@ namespace UtilityBelt.Tools {
         [Summary("Checks if a meta view is visible")]
         [Example("uiviewvisible[myWindow]", "returns true if a view with the title `myWindow` is visible")]
         public object uiviewvisible(string windowName) {
-            return UBHelper.vTank.UIMetaViewIsVisible(windowName);
+            return VTankExtensions.UIMetaViewIsVisible(windowName);
         }
         #endregion //uiviewvisible[string windowName]
         #endregion //VVS UI
@@ -2035,54 +2031,17 @@ namespace UtilityBelt.Tools {
 
         public override void Init() {
             base.Init();
-            DoVTankExpressionPatches();
-            DoVTankClassicPatches();
 
             if (UBHelper.Core.GameState == UBHelper.GameState.In_Game) Enable();
             else UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
 
             FixPortalLoops.Changed += VTankControl_PropertyChanged;
             PatchExpressionEngine.Changed += VTankControl_PropertyChanged;
-            PatchForClassic.Changed += VTankControl_PropertyChanged;
 
             if (FixPortalLoops) {
                 UB.Core.CharacterFilter.ChangePortalMode += CharacterFilter_ChangePortalMode;
                 isFixingPortalLoops = true;
             }
-        }
-
-        private void EchoFilter_ServerDispatch(object sender, NetworkMessageEventArgs e) {
-            try {
-                if (e.Message.Type == 0x02DD) {
-                    var key = e.Message.Value<int>("key");
-                    var skill = e.Message.Struct("value");
-                    var state = skill.Value<int>("state");
-                    if (PlayerDescSkillState.ContainsKey(key))
-                        PlayerDescSkillState[key] = state;
-                    else
-                        PlayerDescSkillState.Add(key, state);
-                    UBHelper.vTank.UpdateVTankClassicSkills(PlayerDescSkillState);
-                }
-                else if (e.Message.Type == 0xF7B0 && e.Message.Value<int>("event") == 0x0013) {
-                    var vectors = e.Message.Struct("vectors");
-                    var flags = vectors.Value<int>("flags");
-                    if ((flags & 0x00000002) != 0) {
-                        var skillCount = vectors.Value<short>("skillCount");
-                        var skills = vectors.Struct("skills");
-                        for (var i = 0; i < skillCount; i++) {
-                            var key = skills.Struct(i).Value<short>("key");
-                            var skill = skills.Struct(i).Struct("value");
-                            var state = skill.Value<int>("state");
-                            if (PlayerDescSkillState.ContainsKey(key))
-                                PlayerDescSkillState[key] = state;
-                            else
-                                PlayerDescSkillState.Add(key, state);
-                        }
-                        UBHelper.vTank.UpdateVTankClassicSkills(PlayerDescSkillState);
-                    }
-                }
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         class ExpressionErrorListener : DefaultErrorStrategy {
@@ -2159,26 +2118,10 @@ namespace UtilityBelt.Tools {
         #region VTank Patches
         private void DoVTankExpressionPatches() {
             try {
-                UBHelper.vTank.UnpatchVTankExpressions();
+                VTankExtensions.UnpatchVTankExpressions();
                 if (!PatchExpressionEngine)
                     return;
-                UBHelper.vTank.PatchVTankExpressions(new UBHelper.vTank.Del_EvaluateExpression(EvaluateExpression));
-            }
-            catch (Exception ex) { Logger.LogException(ex); Logger.Error(ex.ToString()); }
-        }
-
-        private void DoVTankClassicPatches() {
-            try {
-                if (PatchForClassic && !isClassicPatched) {
-                    UBHelper.vTank.PatchVTankClassic();
-                    UB.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
-                    isClassicPatched = true;
-                }
-                else if (!PatchForClassic && isClassicPatched) {
-                    UBHelper.vTank.UnpatchVTankClassic();
-                    UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
-                    isClassicPatched = false;
-                }
+                VTankExtensions.PatchVTankExpressions(new VTankExtensions.Del_EvaluateExpression(EvaluateExpression));
             }
             catch (Exception ex) { Logger.LogException(ex); Logger.Error(ex.ToString()); }
         }
@@ -2220,9 +2163,6 @@ namespace UtilityBelt.Tools {
             else if (e.PropertyName.Equals("PatchExpressionEngine")) {
                 DoVTankExpressionPatches();
             }
-            else if (e.PropertyName.Equals("PatchForClassic")) {
-                DoVTankClassicPatches();
-            }
         }
 
         private void CharacterFilter_ChangePortalMode(object sender, Decal.Adapter.Wrappers.ChangePortalModeEventArgs e) {
@@ -2249,6 +2189,7 @@ namespace UtilityBelt.Tools {
         private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
             try {
                 UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
+                DoVTankExpressionPatches();
                 Enable();
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -2280,15 +2221,14 @@ namespace UtilityBelt.Tools {
                 if (disposing) {
                     FixPortalLoops.Changed -= VTankControl_PropertyChanged;
                     PatchExpressionEngine.Changed -= VTankControl_PropertyChanged;
-                    PatchForClassic.Changed -= VTankControl_PropertyChanged;
                     UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
                     UB.Core.CharacterFilter.Logoff -= CharacterFilter_Logoff;
-                    UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
+                    //UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
 
                     if (isFixingPortalLoops)
                         UB.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
                     if (PatchExpressionEngine)
-                        UBHelper.vTank.UnpatchVTankExpressions();
+                        VTankExtensions.UnpatchVTankExpressions();
 
                     base.Dispose(disposing);
                 }

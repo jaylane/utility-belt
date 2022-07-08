@@ -92,19 +92,6 @@
             Disables VTank helper functionality
             </summary>
         </member>
-        <member name="T:UBHelper.vTank.Del_EvaluateExpression">
-            <summary>
-            EvaluateExpression delegate
-            </summary>
-            <param name="expressionString">Expression string to evaluate</param>
-        </member>
-        <member name="M:UBHelper.vTank.IsTruthy(System.Object)">
-            <summary>
-            Checks if an object is "truthy"
-            </summary>
-            <param name="obj"></param>
-            <returns></returns>
-        </member>
         <member name="M:UBHelper.vTank.Decision_Lock(uTank2.ActionLockType,System.TimeSpan)">
             <summary>
             Lock VTank from performing actions. Use Decision_UnLock to cancel.

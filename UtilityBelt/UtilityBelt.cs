@@ -175,6 +175,7 @@ namespace UtilityBelt {
         //public Tags Tags { get; private set; }
         public VisualNav VisualNav;
         public VTankControl VTank;
+        public VTankExtensions VTankExtensions;
         public VTankFellowHeals VTankFellowHeals;
         public PrepClick PrepClick;
         #endregion
