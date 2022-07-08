@@ -173,7 +173,18 @@ namespace UtilityBelt.Tools {
 
                 #region patch AddSpellsBySkillId
                 Type vtankBuffing = typeof(uTank2.PluginCore).Assembly.GetType("eq");
+
+                if (vtankBuffing == null) {
+                    Logger.Error("Error applying classic patch.  Could not find type 'eq'. Reinstall vtank to ensure you are running the correct version.");
+                    return;
+                }
+
                 MethodInfo addSpellsBySkillId_original = vtankBuffing.GetMethod("a", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(int), typeof(string), typeof(uTank2.MyList<int>).MakeByRefType() }, null);
+
+                if (addSpellsBySkillId_original == null) {
+                    Logger.Error("Error applying classic patch.  Could not find type 'eq.a'. Reinstall vtank to ensure you are running the correct version.");
+                    return;
+                }
                 MethodInfo addSpellsBySkillId_Prefix = typeof(VTankExtensions).GetMethod("AddSpellsBySkillId_Prefix");
                 harmonyClassic.Patch(addSpellsBySkillId_original, new Harmony.HarmonyMethod(addSpellsBySkillId_Prefix));
                 #endregion patch AddSpellsBySkillId
