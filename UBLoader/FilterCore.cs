@@ -29,6 +29,9 @@ namespace UBLoader {
         private DateTime lastFileChange = DateTime.UtcNow;
         private static bool hasLoaded = false;
 
+        // we store player skills from PlayerDesc message because decal doesn't like old skills
+        public static Dictionary<int, int> PlayerDescSkillState = new Dictionary<int, int>();
+
         public static string PluginName { get { return "UtilityBelt"; } }
         public static string PluginAssemblyNamespace { get { return "UtilityBelt.UtilityBeltPlugin"; } }
         public static string PluginAssemblyName { get { return "UtilityBelt.dll"; } }
@@ -118,6 +121,7 @@ namespace UBLoader {
                     case UBHelper.GameState.Character_Select_Screen:
                         VersionWatermark.Display(Host, $"{PluginName} v{FileVersionInfo.GetVersionInfo(PluginAssemblyPath).ProductVersion}");
                         UnloadPluginAssembly();
+                        Decal.Adapter.CoreManager.Current.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
                         break;
                     case UBHelper.GameState.Creating_Character:
                         VersionWatermark.Destroy();
@@ -130,6 +134,8 @@ namespace UBLoader {
                     case UBHelper.GameState.Logging_Out:
                         PluginsReady = false;
                         UnloadPluginAssembly();
+                        PlayerDescSkillState.Clear();
+                        Decal.Adapter.CoreManager.Current.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
                         break;
                 }
             }
@@ -174,6 +180,39 @@ namespace UBLoader {
                     catch { }
                     UnloadPluginAssembly();
                     LoadPluginAssembly();
+                }
+            }
+            catch (Exception ex) { LogException(ex); }
+        }
+
+        private static void EchoFilter_ServerDispatch(object sender, NetworkMessageEventArgs e) {
+            try {
+                if (e.Message.Type == 0x02DD) {
+                    var key = e.Message.Value<int>("key");
+                    var skill = e.Message.Struct("value");
+                    var state = skill.Value<int>("state");
+                    if (PlayerDescSkillState.ContainsKey(key))
+                        PlayerDescSkillState[key] = state;
+                    else
+                        PlayerDescSkillState.Add(key, state);
+                }
+                else if (e.Message.Type == 0xF7B0 && e.Message.Value<int>("event") == 0x0013) {
+                    var vectors = e.Message.Struct("vectors");
+                    var flags = vectors.Value<int>("flags");
+                    if ((flags & 0x00000002) != 0) {
+                        var skillCount = vectors.Value<short>("skillCount");
+                        var skills = vectors.Struct("skills");
+                        PlayerDescSkillState.Clear();
+                        for (var i = 0; i < skillCount; i++) {
+                            var key = skills.Struct(i).Value<short>("key");
+                            var skill = skills.Struct(i).Struct("value");
+                            var state = skill.Value<int>("state");
+                            if (PlayerDescSkillState.ContainsKey(key))
+                                PlayerDescSkillState[key] = state;
+                            else
+                                PlayerDescSkillState.Add(key, state);
+                        }
+                    }
                 }
             }
             catch (Exception ex) { LogException(ex); }
