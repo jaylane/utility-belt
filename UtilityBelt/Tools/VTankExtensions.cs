@@ -411,7 +411,10 @@ namespace UtilityBelt.Tools {
                     }
                 }
             }
-            catch (Exception ex) { Logger.LogException(ex); }
+            catch (Exception ex) {
+                Logger.Error($"Error applying classic patch. {ex}"); 
+                Logger.LogException(ex);
+            }
         }
 
         public static void UnpatchVTankClassic() {
