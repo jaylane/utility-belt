@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -414,9 +414,10 @@ namespace UtilityBelt {
             }
         }
 
+        private readonly Regex slashUB = new Regex(@"^[/@]+ub( |$)");
         private void Core_CommandLineText(object sender, ChatParserInterceptEventArgs e) {
             try {
-                if (e.Text.StartsWith("/ub ") || e.Text.StartsWith("@ub ") || e.Text == "/ub") {
+                if (slashUB.IsMatch(e.Text)) {
                     e.Eat = true;
 
                     var parts = e.Text.Split(' ');
