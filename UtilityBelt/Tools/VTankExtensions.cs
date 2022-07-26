@@ -20,11 +20,11 @@ namespace UtilityBelt.Tools {
         private struct CastReplacementInfo {
             public string Name { get; set; }
             public int FallbackId { get; set; }
-            public uTank2.MySpell Spell { get; set; }
+            public object Spell { get; set; }
             public int Family { get; set; }
         }
 
-        private static Dictionary<string, uTank2.MySpell> PatchedAuraSpells = new Dictionary<string, uTank2.MySpell>();
+        private static Dictionary<string, object> PatchedAuraSpells = new Dictionary<string, object>();
         private static Dictionary<int, CastReplacementInfo> CastReplacements = new Dictionary<int, CastReplacementInfo>();
         private static Dictionary<int, int> LevelSevenLookup = new Dictionary<int, int>();
 
@@ -464,24 +464,24 @@ namespace UtilityBelt.Tools {
                 while (key >= A_0.Id) {
                     if (!CastReplacements.ContainsKey(key))
                         break;
-                    var spell = CastReplacements[key].Spell;
+                    var spell = (uTank2.MySpell)CastReplacements[key].Spell;
                     if (CoreManager.Current.CharacterFilter.IsSpellKnown(key) && spell.HasScarabsInInventory)
                         break;
                     key = CastReplacements[key].FallbackId;
                 }
-                if (key == 0 || !CastReplacements.ContainsKey(key) || !CoreManager.Current.CharacterFilter.IsSpellKnown(key) || !CastReplacements[key].Spell.HasScarabsInInventory) {
-                    Logger.Debug($"Spell failed: key:{key} isKnown:{CoreManager.Current.CharacterFilter.IsSpellKnown(key)} hasScarabs:{CastReplacements[key].Spell.HasScarabsInInventory}");
+                if (key == 0 || !CastReplacements.ContainsKey(key) || !CoreManager.Current.CharacterFilter.IsSpellKnown(key) || !((uTank2.MySpell)CastReplacements[key].Spell).HasScarabsInInventory) {
+                    Logger.Debug($"Spell failed: key:{key} isKnown:{CoreManager.Current.CharacterFilter.IsSpellKnown(key)} hasScarabs:{((uTank2.MySpell)CastReplacements[key].Spell).HasScarabsInInventory}");
                     __result = uTank2.MySpell.InvalidSpell;
                     return;
                 }
                 var actualSpell = CastReplacements[key];
-                var a = actualSpell.Spell.GetType().GetField("a", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(actualSpell.Spell);
+                var a = ((uTank2.MySpell)actualSpell.Spell).GetType().GetField("a", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(actualSpell.Spell);
                 a.GetType().GetField("c", BindingFlags.Public | BindingFlags.Instance).SetValue(a, key);
                 a.GetType().GetField("e", BindingFlags.Public | BindingFlags.Instance).SetValue(a, actualSpell.Family);
                 a.GetType().GetField("d", BindingFlags.Public | BindingFlags.Instance).SetValue(a, actualSpell.Family);
 
-                Logger.Debug($"TranslateSpell_Postfix 2: {A_0.Id} {A_0.Name} // {A_1} -- real: {actualSpell.Spell.Id} {actualSpell.Name} {actualSpell.Spell.RealFamily} {actualSpell.Family}");
-                __result = actualSpell.Spell;
+                Logger.Debug($"TranslateSpell_Postfix 2: {A_0.Id} {A_0.Name} // {A_1} -- real: {((uTank2.MySpell)actualSpell.Spell).Id} {actualSpell.Name} {((uTank2.MySpell)actualSpell.Spell).RealFamily} {actualSpell.Family}");
+                __result = ((uTank2.MySpell)actualSpell.Spell);
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

@@ -3,6 +3,7 @@
 - build release
 - build installer
 - upload to gitlab
+- update changelog header for current release by adding download link from above
 - push branch to gitlab
 - make new tag with release notes
 - update changelog / ub / ubloader versions in sln

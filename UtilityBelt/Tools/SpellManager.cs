@@ -16,8 +16,7 @@ using UBLoader.Lib.Settings;
 using UtilityBelt.Lib.Expressions;
 
 namespace UtilityBelt.Tools {
-    [Name("Spells")]
-    [Summary("Spell Stuff")]
+    [Name("SpellManager")]
     public class SpellManager : ToolBase {
         #region Expressions
         #region spellnamefromid[number spellid]
