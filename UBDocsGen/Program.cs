@@ -328,12 +328,17 @@ namespace UBDocsGen {
 
         private static List<SettingInfo> GetSettings(object parent, string history="") {
             var settings = new List<SettingInfo>();
-            var children = parent.GetType().GetFields(Settings.BindingFlags)
-                .Where(f => typeof(ISetting).IsAssignableFrom(f.FieldType));
-            foreach (var field in children) {
-                var settingInfo = RegisterSetting(field, parent, history);
-                if (settingInfo != null)
-                    settings.Add(settingInfo);
+            if (parent == null)
+                return settings;
+
+            var children = parent.GetType().GetFields(Settings.BindingFlags);
+            if (children != null && children.Length > 0) {
+                var childrenSettings = children.ToList().Where(f => typeof(ISetting).IsAssignableFrom(f.FieldType));
+                foreach (var field in childrenSettings) {
+                    var settingInfo = RegisterSetting(field, parent, history);
+                    if (settingInfo != null)
+                        settings.Add(settingInfo);
+                }
             }
             return settings;
         }
