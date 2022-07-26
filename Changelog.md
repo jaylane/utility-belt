@@ -1,7 +1,7 @@
 ## 0.2.7 (TBD)
 - Changes go here
 
-## 0.2.6(2021-10-06) [UtilityBeltInstaller-0.2.6.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/da5dc28fa4ee3b092f706c99498100cd/UtilityBeltInstaller-0.2.6.exe)
+## 0.2.6(2022-07-26) [UtilityBeltInstaller-0.2.6.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/da5dc28fa4ee3b092f706c99498100cd/UtilityBeltInstaller-0.2.6.exe)
 - Add expression: getaccounthash[]
 - Add expression: wobjectgetspellids[WorldObject]
 - Add expressions: getspellexpiration[id], getspellexpirationbyname[name]
