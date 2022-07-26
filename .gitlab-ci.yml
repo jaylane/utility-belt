@@ -57,7 +57,7 @@ pages:
   stage: .post
   script:
   - 'Remove-Item -Force ".\public" -Recurse -ErrorAction Ignore; echo 1'
-  - '& "$env:BUILD_PATH\ubdocsgen\UBDocsGen.exe"'
+  - '& "$env:BUILD_PATH\ubdocsgen\UBDocsGen.exe" "$env:CI_COMMIT_REF_NAME"'
   - '& "$env:HUGO_PATH" --themesDir .\Site\themes\'
   artifacts:
     paths:
