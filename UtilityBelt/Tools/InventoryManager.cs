@@ -512,6 +512,22 @@ Provides a command-line interface to inventory management.
             return list;
         }
         #endregion wobjectgetspellids[wobject obj]
+        #region wobjectgetactivespellids[wobject obj]
+        [ExpressionMethod("wobjectgetactivespellids")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "World object to get spells of")]
+        [ExpressionReturn(typeof(ExpressionList), "List of spell IDs")]
+        [Summary("Returns a list of *active* spells on a World Object.")]
+        [Example("wobjectgetactivespellids[wobjectgetselection[]]", "Returns a list of *active* spell IDs of the selected item")]
+        public object Wobjectgetactivespellids(ExpressionWorldObject obj) {
+            var list = new ExpressionList();
+
+            for (var i = 0; i < obj.Wo.ActiveSpellCount; i++) {
+                list.Items.Add(obj.Wo.ActiveSpell(i));
+            }
+
+            return list;
+        }
+        #endregion wobjectgetactivespellids[wobject obj]
         #region getinventorycountbytemplatetype[string name]
         [ExpressionMethod("getinventorycountbytemplatetype")]
         [ExpressionParameter(0, typeof(double), "templatetype", "templatetype to filter by")]

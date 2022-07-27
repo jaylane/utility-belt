@@ -1,5 +1,5 @@
 ## 0.2.7 (TBD)
-- Changes go here
+- Add expression: wobjectgetactivespellids[WorldObject]
 
 ## 0.2.6(2022-07-26) [UtilityBeltInstaller-0.2.6.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/da5dc28fa4ee3b092f706c99498100cd/UtilityBeltInstaller-0.2.6.exe)
 - Add expression: getaccounthash[]
