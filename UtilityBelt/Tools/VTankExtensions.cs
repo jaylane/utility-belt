@@ -7,7 +7,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using UBLoader.Lib.Settings;
 using UtilityBelt.Lib;
+using UtilityBelt.Lib.Constants;
 using VirindiViewService;
 using static uTank2.PluginCore;
 
@@ -23,6 +25,29 @@ namespace UtilityBelt.Tools {
             public object Spell { get; set; }
             public int Family { get; set; }
         }
+
+        #region config
+        [Summary("Enable automatically attempting to detect classic servers and patching vtank to support old skills.")]
+        public readonly Setting<bool> EnableAutoClassicPatch = new Setting<bool>(true);
+        #endregion // config
+
+        #region Commands
+        #region /ub dumpskills
+        [Summary("Prints all skills and training levels contained in Login_PlayerDesc (0x0013) to chat")]
+        [Usage("/ub dumpskills")]
+        [Example("/ub dumpskills", "Prints all skills and training levels to chat")]
+        [CommandPattern("dumpskills", @"^$")]
+        public void DumpSkills(string _, Match _1) {
+            var skillIds = UBLoader.FilterCore.PlayerDescSkillState.Keys.ToList();
+            skillIds.Sort();
+            Logger.WriteToChat($"Login_PlayerDesc (0x0013) Skills:");
+            foreach (var skillId in skillIds) {
+                var skillTraining = UBLoader.FilterCore.PlayerDescSkillState[skillId];
+                Logger.WriteToChat($"  {(Skills)skillId} ({skillId}) = {(TrainingType)skillTraining} ({skillTraining})");
+            }
+        }
+        #endregion
+        #endregion // Commands
 
         private static Dictionary<string, object> PatchedAuraSpells = new Dictionary<string, object>();
         private static Dictionary<int, CastReplacementInfo> CastReplacements = new Dictionary<int, CastReplacementInfo>();
@@ -55,13 +80,10 @@ namespace UtilityBelt.Tools {
         }
 
         private void CheckForClassic() {
-            var classicSkills = new int[] { 1, 2, 3, 4, 5, 9, 10, 11, 12, 13 };
-
-            for (var i = 0; i < classicSkills.Length; i++) {
-                if (UBLoader.FilterCore.PlayerDescSkillState.ContainsKey(classicSkills[i])) {
-                    PatchVTankClassic();
-                    return;
-                }
+            if (!EnableAutoClassicPatch)
+                return;
+            if (!UBLoader.FilterCore.PlayerDescSkillState.ContainsKey(54)) {
+                PatchVTankClassic();
             }
         }
 
