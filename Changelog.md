@@ -1,3 +1,6 @@
+## 0.2.8 (TBD)
+- Changes go here
+
 ## 0.2.7 (2022-07-27) [UtilityBeltInstaller-0.2.7.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/f24f9359893592252815818da7b3b7ba/UtilityBeltInstaller-0.2.7.exe)
 - Add expression: wobjectgetactivespellids[WorldObject]
 - Fix Classic Server VTank patch to *hopefully* not enable itself on retail servers...
