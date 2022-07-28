@@ -1,3 +1,7 @@
+## 0.2.7 (2022-07-27) [UtilityBeltInstaller-0.2.7.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/f24f9359893592252815818da7b3b7ba/UtilityBeltInstaller-0.2.7.exe)
+- Add expression: wobjectgetactivespellids[WorldObject]
+- Fix Classic Server VTank patch to *hopefully* not enable itself on retail servers...
+
 ## 0.2.6(2022-07-26) [UtilityBeltInstaller-0.2.6.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/da5dc28fa4ee3b092f706c99498100cd/UtilityBeltInstaller-0.2.6.exe)
 - Add expression: getaccounthash[]
 - Add expression: wobjectgetspellids[WorldObject]
