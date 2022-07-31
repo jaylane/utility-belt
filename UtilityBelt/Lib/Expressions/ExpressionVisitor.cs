@@ -180,10 +180,6 @@ namespace UtilityBelt.Lib.Expressions {
                         continue;
                     }
 
-                    // object type means allow anything
-                    if (argTypes[i] == typeof(object))
-                        continue;
-
                     // ParamArrayAttribute means params keyword for this argument
                     if (argTypes[i] == typeof(ParamArrayAttribute)) {
                         var paramArgs = arguments.Skip(i).ToArray();
@@ -198,7 +194,20 @@ namespace UtilityBelt.Lib.Expressions {
                         continue;
                     }
 
-                    if (i < arguments.Count && arguments[i].GetType() != argTypes[i]) {
+                    // object type means allow anything
+                    if (argTypes[i] == typeof(object))
+                        continue;
+
+                    // try and convert ids to worldobjects
+                    if (argTypes[i] == typeof(ExpressionWorldObject) && arguments[i].GetType() == typeof(double)) {
+                        if (UtilityBeltPlugin.Instance.Core.Actions.IsValidObject(Convert.ToInt32(arguments[i]))) {
+                            arguments[i] = new ExpressionWorldObject(Convert.ToInt32(arguments[i]));
+                        }
+                        else {
+                            throw new Exception($"{expressionMethod.Signature} expects argument #{i + 1}/{argTypes.Length} to be a {GetFriendlyType(argTypes[i])} but an invalid (number)id was passed instead. Passed value: {arguments[i].ToString()}");
+                        }
+                    }
+                    else if (i < arguments.Count && arguments[i].GetType() != argTypes[i]) {
                         throw new Exception($"{expressionMethod.Signature} expects argument #{i + 1}/{argTypes.Length} to be a {GetFriendlyType(argTypes[i])} but a {GetFriendlyType(arguments[i].GetType())} was passed instead. Passed value: {arguments[i].ToString()}");
                     }
                 }

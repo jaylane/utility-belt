@@ -575,41 +575,16 @@ Provides a command-line interface to inventory management.
         #endregion //actiontrygiveprofile[string lootprofile, string target]
         #region actiontrymove[objectId, destinationId, slot, addToStack]
         [ExpressionMethod("actiontrymove")]
-        [ExpressionParameter(0, typeof(object), "object", "The id/wobject of the object to move.")]
-        [ExpressionParameter(0, typeof(object), "destination", "The id/wobject of the destination container.")]
-        [ExpressionParameter(0, typeof(double), "slot", "The slot within the container, where 0 is the first slot. If this number is greater than the number of items in the container, the object will be placed in the first unused slot in the container.")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "object", "The id/wobject of the object to move.")]
+        [ExpressionParameter(1, typeof(ExpressionWorldObject), "destination", "The id/wobject of the destination container.")]
+        [ExpressionParameter(2, typeof(double), "slot", "The slot within the container, where 0 is the first slot. If this number is greater than the number of items in the container, the object will be placed in the first unused slot in the container.")]
         [ExpressionParameter(0, typeof(double), "addToStack", "A flag indicating whether to add the object to a stack in the pack, if one exists. (1 is add to stack, 0 dont)")]
         [ExpressionReturn(typeof(double), "Returns 1 if it attempted to move the item, 0 if you were too busy.")]
         [Summary("Moves an item to a container")]
         [Example("actiontrymove[wobjectgetselection[],wobjectgetplayer[]]", "Moves the selected item to your main pack")]
-        public object Actiontrymove(object item, object destination, double slot=0, double addToStack=1) {
-            int objectId = 0;
-            int destinationId = 0;
-
-            if (item is ExpressionWorldObject itemWO) {
-                objectId = itemWO.Id;
-            }
-            else if (item is Double itemDouble) {
-                objectId = (int)itemDouble;
-            }
-            else {
-                LogError($"actiontrymove[] expected object to be number or worldobject, got {item} instead.");
-                return 0;
-            }
-
-            if (destination is ExpressionWorldObject destinationWO) {
-                destinationId = destinationWO.Id;
-            }
-            else if (destination is Double destinationDouble) {
-                destinationId = (int)destinationDouble;
-            }
-            else {
-                LogError($"actiontrymove[] expected object to be number or worldobject, got {destination} instead.");
-                return 0;
-            }
-
+        public object Actiontrymove(ExpressionWorldObject item, ExpressionWorldObject destination, double slot=0, double addToStack=1) {
             if (UB.Core.Actions.BusyState == 0) {
-                UB.Core.Actions.MoveItem(objectId, destinationId, (int)slot, addToStack != 0);
+                UB.Core.Actions.MoveItem(item.Id, destination.Id, (int)slot, addToStack != 0);
                 return 1;
             }
             return 0;
@@ -617,31 +592,42 @@ Provides a command-line interface to inventory management.
         #endregion //actiontrymove[string name]
         #region actiontrydrop[objectId]
         [ExpressionMethod("actiontrydrop")]
-        [ExpressionParameter(0, typeof(object), "object", "The id/wobject of the object to drop.")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "object", "The id/wobject of the object to drop.")]
         [ExpressionReturn(typeof(double), "Returns 1 if it attempted to drop the item, 0 if you were too busy.")]
         [Summary("Drops an item")]
         [Example("actiontrydrop[wobjectgetselection[]]", "Attempts to drop your current selection")]
-        public object Actiontrydrop(object item) {
-            int objectId = 0;
-
-            if (item is ExpressionWorldObject itemWO) {
-                objectId = itemWO.Id;
-            }
-            else if (item is Double itemDouble) {
-                objectId = (int)itemDouble;
-            }
-            else {
-                LogError($"actiontrydrop[] expected object to be number or worldobject, got {item} instead.");
-                return 0;
-            }
-
+        public object Actiontrydrop(ExpressionWorldObject item) {
             if (UB.Core.Actions.BusyState == 0) {
-                UB.Core.Actions.DropItem(objectId);
+                UB.Core.Actions.DropItem(item.Id);
                 return 1;
             }
             return 0;
         }
         #endregion //actiontrydrop[objectId]
+        #region actiontrysplit[objectId]
+        [ExpressionMethod("actiontrysplit")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "object", "The id/wobject of the object to split.")]
+        [ExpressionParameter(1, typeof(double), "newStackSize", "The new stack size.")]
+        [ExpressionParameter(2, typeof(ExpressionWorldObject), "destination", "Optional id/wobject of the destination container. If not specified defaults to your main pack.")]
+        [ExpressionParameter(3, typeof(double), "destinationSlot", "Optional slot position in the destination container. If not specified defaults to 0.")]
+        [ExpressionReturn(typeof(double), "Returns 1 if it attempted to split the item, 0 if you were too busy.")]
+        [Summary("Splits an item into a new stack. This expression will cause you to select the newly created stack.")]
+        [Example("actiontrysplit[wobjectgetselection[], 10]", "Attempts to split your current selection into a new stack of 10.")]
+        public object Actiontrysplit(ExpressionWorldObject item, double newStackSize, ExpressionWorldObject destination=null, double destinationSlot=0) {
+            int objectId = item.Id;
+            int destinationId = (destination == null) ? UB.Core.CharacterFilter.Id : destination.Id;
+
+            if (UB.Core.Actions.BusyState == 0) {
+                var originalSelection = UB.Core.Actions.CurrentSelection;
+                UB.Core.Actions.SelectItem(objectId);
+                UB.Core.Actions.SelectedStackCount = (int)newStackSize;
+                UB.Core.Actions.MoveItem(objectId, destinationId, 0, false);
+                return 1;
+            }
+
+            return 0;
+        }
+        #endregion //actiontrysplit[objectId]
         #endregion //Expressions
 
         // TODO: support AutoPack profiles when cramming
