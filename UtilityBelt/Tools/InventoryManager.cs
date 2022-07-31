@@ -610,10 +610,11 @@ Provides a command-line interface to inventory management.
         [ExpressionParameter(1, typeof(double), "newStackSize", "The new stack size.")]
         [ExpressionParameter(2, typeof(ExpressionWorldObject), "destination", "Optional id/wobject of the destination container. If not specified defaults to your main pack.")]
         [ExpressionParameter(3, typeof(double), "destinationSlot", "Optional slot position in the destination container. If not specified defaults to 0.")]
+        [ExpressionParameter(3, typeof(double), "doMerge", "Optionally merge into existing stacks. 1 will merge to existing stacks, 0 creates a new stack. If not specified defaults to 0.")]
         [ExpressionReturn(typeof(double), "Returns 1 if it attempted to split the item, 0 if you were too busy.")]
         [Summary("Splits an item into a new stack. This expression will cause you to select the newly created stack.")]
         [Example("actiontrysplit[wobjectgetselection[], 10]", "Attempts to split your current selection into a new stack of 10.")]
-        public object Actiontrysplit(ExpressionWorldObject item, double newStackSize, ExpressionWorldObject destination=null, double destinationSlot=0) {
+        public object Actiontrysplit(ExpressionWorldObject item, double newStackSize, ExpressionWorldObject destination=null, double destinationSlot = 0, double doMerge = 0) {
             int objectId = item.Id;
             int destinationId = (destination == null) ? UB.Core.CharacterFilter.Id : destination.Id;
 
@@ -621,7 +622,7 @@ Provides a command-line interface to inventory management.
                 var originalSelection = UB.Core.Actions.CurrentSelection;
                 UB.Core.Actions.SelectItem(objectId);
                 UB.Core.Actions.SelectedStackCount = (int)newStackSize;
-                UB.Core.Actions.MoveItem(objectId, destinationId, 0, false);
+                UB.Core.Actions.MoveItem(objectId, destinationId, (int)destinationSlot, doMerge != 0);
                 return 1;
             }
 
