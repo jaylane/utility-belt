@@ -573,11 +573,80 @@ Provides a command-line interface to inventory management.
             return 1;
         }
         #endregion //actiontrygiveprofile[string lootprofile, string target]
+        #region actiontrymove[objectId, destinationId, slot, addToStack]
+        [ExpressionMethod("actiontrymove")]
+        [ExpressionParameter(0, typeof(object), "object", "The id/wobject of the object to move.")]
+        [ExpressionParameter(0, typeof(object), "destination", "The id/wobject of the destination container.")]
+        [ExpressionParameter(0, typeof(double), "slot", "The slot within the container, where 0 is the first slot. If this number is greater than the number of items in the container, the object will be placed in the first unused slot in the container.")]
+        [ExpressionParameter(0, typeof(double), "addToStack", "A flag indicating whether to add the object to a stack in the pack, if one exists. (1 is add to stack, 0 dont)")]
+        [ExpressionReturn(typeof(double), "Returns 1 if it attempted to move the item, 0 if you were too busy.")]
+        [Summary("Moves an item to a container")]
+        [Example("actiontrymove[wobjectgetselection[],wobjectgetplayer[]]", "Moves the selected item to your main pack")]
+        public object Actiontrymove(object item, object destination, double slot=0, double addToStack=1) {
+            int objectId = 0;
+            int destinationId = 0;
+
+            if (item is ExpressionWorldObject itemWO) {
+                objectId = itemWO.Id;
+            }
+            else if (item is Double itemDouble) {
+                objectId = (int)itemDouble;
+            }
+            else {
+                LogError($"actiontrymove[] expected object to be number or worldobject, got {item} instead.");
+                return 0;
+            }
+
+            if (destination is ExpressionWorldObject destinationWO) {
+                destinationId = destinationWO.Id;
+            }
+            else if (destination is Double destinationDouble) {
+                destinationId = (int)destinationDouble;
+            }
+            else {
+                LogError($"actiontrymove[] expected object to be number or worldobject, got {destination} instead.");
+                return 0;
+            }
+
+            if (UB.Core.Actions.BusyState == 0) {
+                UB.Core.Actions.MoveItem(objectId, destinationId, (int)slot, addToStack != 0);
+                return 1;
+            }
+            return 0;
+        }
+        #endregion //actiontrymove[string name]
+        #region actiontrydrop[objectId]
+        [ExpressionMethod("actiontrydrop")]
+        [ExpressionParameter(0, typeof(object), "object", "The id/wobject of the object to drop.")]
+        [ExpressionReturn(typeof(double), "Returns 1 if it attempted to drop the item, 0 if you were too busy.")]
+        [Summary("Drops an item")]
+        [Example("actiontrydrop[wobjectgetselection[]]", "Attempts to drop your current selection")]
+        public object Actiontrydrop(object item) {
+            int objectId = 0;
+
+            if (item is ExpressionWorldObject itemWO) {
+                objectId = itemWO.Id;
+            }
+            else if (item is Double itemDouble) {
+                objectId = (int)itemDouble;
+            }
+            else {
+                LogError($"actiontrydrop[] expected object to be number or worldobject, got {item} instead.");
+                return 0;
+            }
+
+            if (UB.Core.Actions.BusyState == 0) {
+                UB.Core.Actions.DropItem(objectId);
+                return 1;
+            }
+            return 0;
+        }
+        #endregion //actiontrydrop[objectId]
         #endregion //Expressions
 
         // TODO: support AutoPack profiles when cramming
         public InventoryManager(UtilityBeltPlugin ub, string name) : base(ub, name) {
-            
+
         }
 
         public override void Init() {

@@ -34,12 +34,18 @@ namespace UtilityBelt.Tools {
             RunAt = DateTime.UtcNow.AddMilliseconds(delayMilliseconds);
         }
     }
+
     public class DelayedExpression {
+
+        private static int _nextId = 1;
+
+        public int Id;
         public string Expression;
         public double Delay;
         public DateTime RunAt;
 
         public DelayedExpression(string expression, double delayMilliseconds) {
+            Id = _nextId++;
             Expression = expression;
             Delay = delayMilliseconds;
             RunAt = DateTime.UtcNow.AddMilliseconds(delayMilliseconds);
@@ -360,10 +366,9 @@ namespace UtilityBelt.Tools {
                 UB.Core.RenderFrame += Core_RenderFrame_Delay;
             }
         }
-        public void AddDelayedExpression(string expression, double delay) {
-            Logger.Debug($"Scheduling expression `{expression}` with delay of {delay}ms");
-
+        public DelayedExpression AddDelayedExpression(string expression, double delay) {
             var delayed = new DelayedExpression(expression, delay);
+            Logger.Debug($"Scheduling expression `{expression}` (id {delayed.Id}) with delay of {delay}ms. Clear with clearexec[{delayed.Id}]");
 
             delayedExpressions.Add(delayed);
             delayedExpressions.Sort((x, y) => x.RunAt.CompareTo(y.RunAt));
@@ -372,6 +377,8 @@ namespace UtilityBelt.Tools {
                 isDelayListening = true;
                 UB.Core.RenderFrame += Core_RenderFrame_Delay;
             }
+
+            return delayed;
         }
 
         public void Core_RenderFrame_Delay(object sender, EventArgs e) {
@@ -972,14 +979,33 @@ namespace UtilityBelt.Tools {
         [ExpressionMethod("delayexec")]
         [ExpressionParameter(0, typeof(double), "delay", "The delay in milliseconds. 1 second = 1000 milliseconds.")]
         [ExpressionParameter(1, typeof(string), "text", "The expression string to evaluate")]
-        [ExpressionReturn(typeof(object), "Returns 1")]
+        [ExpressionReturn(typeof(object), "Returns the id of the delayexec")]
         [Summary("Evaluates a string as an expression, after the specified delay")]
         [Example("delayexec[1000, `1+1`]", "evaluates the expression `1+1` after a 1000ms (1s) delay")]
         public object DelayExec(double delay, string expression) {
-            AddDelayedExpression(expression, delay);
-            return (double)1;
+            var delayed = AddDelayedExpression(expression, delay);
+            return (double)delayed.Id;
         }
         #endregion //delayexec[]
+        #region clearexec[]
+        [ExpressionMethod("clearexec")]
+        [ExpressionParameter(0, typeof(double), "id", "The delayexec id to clear")]
+        [ExpressionReturn(typeof(object), "Returns 1 if successful, 0 if delayexec with that id was not found")]
+        [Summary("Cancels the delayexec with the specified id")]
+        [Example("clearexec[delayexec[1000, `1+1`]]", "Creates a delayed exec statement and immediately cancels it.")]
+        public object Clearexec(double id) {
+            var intId = (int)id;
+            DelayedExpression exp = delayedExpressions.Find(e => e.Id == intId);
+
+            if (exp == null) {
+                return 0;
+            }
+            else {
+                delayedExpressions.Remove(exp);
+                return 1;
+            }
+        }
+        #endregion //clearexec[]
         #region ifthen[]
         [ExpressionMethod("ifthen")]
         [ExpressionParameter(0, typeof(object), "value", "value to check for truthiness")]
