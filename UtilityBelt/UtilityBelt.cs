@@ -523,7 +523,7 @@ namespace UtilityBelt {
 
         private static List<string> expressionExceptions = new List<string>();
 
-
+        private Dictionary<ExpressionMethod, object> _expressionMethodInstanceLookup = new Dictionary<ExpressionMethod, object>();
         /// <summary>
         /// Runs a registered expression method
         /// </summary>
@@ -531,7 +531,11 @@ namespace UtilityBelt {
         /// <param name="args">method arguments</param>
         /// <returns></returns>
         public object RunExpressionMethod(ExpressionMethod expressionMethod, object[] args) {
-            var instance = expressionMethod.FieldInfo.GetValue(this);
+            if (_expressionMethodInstanceLookup.TryGetValue(expressionMethod, out object instance)) {
+                return expressionMethod.Method.Invoke(instance, args);
+            }
+            instance = expressionMethod.FieldInfo.GetValue(this);
+            _expressionMethodInstanceLookup.Add(expressionMethod, instance);
             return expressionMethod.Method.Invoke(instance, args);
         }
         #endregion

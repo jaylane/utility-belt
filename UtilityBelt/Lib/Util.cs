@@ -465,9 +465,10 @@ namespace UtilityBelt
             var wos = UtilityBeltPlugin.Instance.Core.WorldFilter.GetByObjectClass(objectclass);
             var closestDistance = double.MaxValue;
             foreach (var wo in wos) {
-                if (PhysicsObject.GetDistance(wo.Id) < closestDistance) {
+                var d = PhysicsObject.GetDistance(wo.Id);
+                if (d < closestDistance) {
                     closest = wo;
-                    closestDistance = PhysicsObject.GetDistance(wo.Id);
+                    closestDistance = d;
                 }
             }
             wos.Dispose();
