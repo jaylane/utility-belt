@@ -188,8 +188,9 @@ namespace UtilityBelt.Tools {
         [Summary("Returns the value stored in a variable")]
         [Example("getvar[myvar]", "Returns the value stored in `myvar` variable")]
         public object Getvar(string varname) {
-            if (ExpressionVariables.ContainsKey(varname))
-                return ExpressionVariables[varname];
+            if (ExpressionVariables.TryGetValue(varname, out object value)) {
+                return value;
+            }
 
             return 0;
         }
@@ -2032,7 +2033,10 @@ namespace UtilityBelt.Tools {
         public override void Init() {
             base.Init();
 
-            if (UBHelper.Core.GameState == UBHelper.GameState.In_Game) Enable();
+            if (UBHelper.Core.GameState == UBHelper.GameState.In_Game) {
+                Enable();
+                DoVTankExpressionPatches();
+            }
             else UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
 
             FixPortalLoops.Changed += VTankControl_PropertyChanged;
@@ -2055,29 +2059,7 @@ namespace UtilityBelt.Tools {
 
         public object EvaluateExpression(string expression, bool silent = true) {
             try {
-                AntlrInputStream inputStream = new AntlrInputStream(expression);
-                MetaExpressionsLexer spreadsheetLexer = new MetaExpressionsLexer(inputStream);
-                CommonTokenStream commonTokenStream = new CommonTokenStream(spreadsheetLexer);
-                MetaExpressionsParser expressionParser = new MetaExpressionsParser(commonTokenStream);
-                expressionParser.ErrorHandler = new ExpressionErrorListener();
-                MetaExpressionsParser.ParseContext parseContext = expressionParser.parse();
-                ExpressionVisitor visitor = new ExpressionVisitor();
-
-                var result = visitor.Visit(parseContext);
-
-                // check for any modifications to global/persistent variables that were accessed,
-                // and save them to the database
-                foreach (var kv in visitor.State.GlobalVariables) {
-                    if (kv.Value is ExpressionObjectBase obj && obj.HasChanges)
-                        Setgvar(kv.Key, kv.Value);
-                }
-
-                foreach (var kv in visitor.State.PersistentVariables) {
-                    if (kv.Value is ExpressionObjectBase obj && obj.HasChanges)
-                        Setpvar(kv.Key, kv.Value);
-                }
-
-                return result;
+                return CompileExpression(expression).Run();
             }
             catch (Exception ex) {
                 if (!silent && expressionExceptions.Contains(ex.ToString()))
@@ -2092,7 +2074,15 @@ namespace UtilityBelt.Tools {
             }
         }
 
+        Dictionary<string, Lib.Models.CompiledExpression> _compiledExpressions = new Dictionary<string, Lib.Models.CompiledExpression>();
+        ExpressionVisitor visitor = new ExpressionVisitor();
         public Lib.Models.CompiledExpression CompileExpression(string expression) {
+            Lib.Models.CompiledExpression compiledExpression = null;
+            if (_compiledExpressions.TryGetValue(expression, out compiledExpression)) {
+                return compiledExpression;
+                //_compiledExpressions.Remove()
+            }
+
             try {
                 AntlrInputStream inputStream = new AntlrInputStream(expression);
                 MetaExpressionsLexer spreadsheetLexer = new MetaExpressionsLexer(inputStream);
@@ -2100,9 +2090,10 @@ namespace UtilityBelt.Tools {
                 MetaExpressionsParser expressionParser = new MetaExpressionsParser(commonTokenStream);
                 expressionParser.ErrorHandler = new ExpressionErrorListener();
                 MetaExpressionsParser.ParseContext parseContext = expressionParser.parse();
-                ExpressionVisitor visitor = new ExpressionVisitor();
+                compiledExpression = new Lib.Models.CompiledExpression(parseContext, visitor);
+                _compiledExpressions.Add(expression, compiledExpression);
 
-                return new Lib.Models.CompiledExpression(parseContext, visitor);
+                return compiledExpression;
             }
             catch (Exception ex) {
                 expressionExceptions.Add(ex.ToString());

@@ -3,6 +3,7 @@
 - Modified expression delayexec[] to return an identifier that can be used to clear the exec with cleardelay[]
 - Add expression: actiontrysplit[]
 - All expressions that accept WorldObjects now also accept ids
+- Improve overall expression performance
 
 ## 0.2.7 (2022-07-27) [UtilityBeltInstaller-0.2.7.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/f24f9359893592252815818da7b3b7ba/UtilityBeltInstaller-0.2.7.exe)
 - Add expression: wobjectgetactivespellids[WorldObject]
