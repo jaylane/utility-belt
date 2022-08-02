@@ -1,4 +1,6 @@
 ## 0.2.8 (TBD)
+- Add test mode to Looter to describe items to be looted without looting
+- Add MagTools-style ItemDescriptions
 - Add expressions: actiontrymove[], actiontrydrop[]
 - Modified expression delayexec[] to return an identifier that can be used to clear the exec with cleardelay[]
 - Add expression: actiontrysplit[]
