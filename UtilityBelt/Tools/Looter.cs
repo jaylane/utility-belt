@@ -48,7 +48,7 @@ namespace UtilityBelt.Tools {
 
     public class Looter : ToolBase {
 
-        private enum itemstate {None = 0x0001, InContainer = 0x0002, RequestingInfo = 0x0004, NeedsToBeLooted = 0x0008, Ignore = 0x0016, Looted = 0x0032, Blacklisted = 0x0064 }
+        private enum itemstate { None = 0x0001, InContainer = 0x0002, RequestingInfo = 0x0004, NeedsToBeLooted = 0x0008, Ignore = 0x0016, Looted = 0x0032, Blacklisted = 0x0064 }
 
         private enum looterstate { Closed = 0x0001, Unlocking = 0x0002, Locked = 0x0004, Unlocked = 0x0008, Opening = 0x00016, Open = 0x0032, Looting = 0x0064, Closing = 0x0128, Salvaging = 0x0256, Done = 0x0512 }
 
@@ -129,12 +129,15 @@ namespace UtilityBelt.Tools {
         [Summary("Overall speed of looter in milliseconds (approximate)")]
         public Setting<int> OverallSpeed = new Setting<int>(60);
 
+        [Summary("Test mode")]
+        public Setting<bool> TestMode = new Setting<bool>(true);
+
         public Looter(UtilityBeltPlugin ub, string name) : base(ub, name) {
 
         }
 
         private void EnableBaseTimer() {
-            try { 
+            try {
                 if (baseTimer == null) {
                     baseTimer = new TimerClass();
                     baseTimer.Timeout += BaseTimer_Timeout;
@@ -194,7 +197,7 @@ namespace UtilityBelt.Tools {
             if (UtilityBeltPlugin.Instance.Looter.Enabled) {
                 EnableDispatch();
             }
-                UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
+            UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
         }
 
         private void Looter_Changed(object sender, SettingChangedEventArgs e) {
@@ -386,7 +389,7 @@ namespace UtilityBelt.Tools {
 
                 needToSalvage = false;
 
-                
+
                 unlockAttempt = 0;
                 openAttempt = 0;
 
@@ -465,14 +468,14 @@ namespace UtilityBelt.Tools {
             return true;
         }
         private bool IsContainerPlayer(int container) {
-                if (container == 0) return false;
-                if (UB.Core.WorldFilter[container].Id == UB.Core.CharacterFilter.Id) { // main pack
-                    return true;
-                }
-                if (UB.Core.WorldFilter[container].Container == UB.Core.CharacterFilter.Id) { // side pack
-                    return true;
-                }
-                return false;
+            if (container == 0) return false;
+            if (UB.Core.WorldFilter[container].Id == UB.Core.CharacterFilter.Id) { // main pack
+                return true;
+            }
+            if (UB.Core.WorldFilter[container].Container == UB.Core.CharacterFilter.Id) { // side pack
+                return true;
+            }
+            return false;
         }
 
         private void UpdateContainerItems(int item, itemstate state) {
@@ -563,6 +566,12 @@ namespace UtilityBelt.Tools {
                 if (result.IsNoLoot) {
                     containerItems[item] = itemstate.Ignore;
                 }
+
+                if (containerItems[item] == itemstate.NeedsToBeLooted && UtilityBeltPlugin.Instance.ItemDescriptions.DescribeOnLoot)
+                    UtilityBeltPlugin.Instance.ItemDescriptions.DisplayItem(item, itemInfo, result.RuleName, true);
+
+                if (TestMode)
+                    containerItems[item] = itemstate.Looted;
             }
             else {
                 if (containerItems[item] != itemstate.RequestingInfo) {
@@ -852,7 +861,7 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) {
                 Logger.LogException(ex);
             }
-}
+        }
 
         private void Jumper_JumperFinished(object sender, EventArgs e) {
             try {
@@ -866,12 +875,12 @@ namespace UtilityBelt.Tools {
         }
 
         protected override void Dispose(bool disposing) {
-            try { 
+            try {
                 if (!disposedValue) {
                     if (disposing) {
                         UB.Core.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
                         UB.Core.EchoFilter.ClientDispatch -= EchoFilter_ClientDispatch;
-                        UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete; 
+                        UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
                         UB.Jumper.JumperFinished -= Jumper_JumperFinished;
                         if (baseTimer != null) baseTimer.Timeout -= BaseTimer_Timeout;
                         base.Dispose(disposing);

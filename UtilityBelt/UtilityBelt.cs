@@ -160,6 +160,7 @@ namespace UtilityBelt {
         public GameEvents GameEvents;
         public HealthTracker HealthTracker;
         public InventoryManager InventoryManager;
+        public ItemDescriptions ItemDescriptions;
         public Jumper Jumper;
         public LandscapeMaps LandscapeMaps;
         public Looter Looter;
