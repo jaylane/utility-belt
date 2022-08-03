@@ -159,7 +159,7 @@ namespace UtilityBelt.Lib.Tinker {
 
                     Regex CraftSuccess = new Regex("^" + characterName + @" successfully applies the (?<salvage>[\w\s\-]+?)(\sSalvage.*)(\s?\(100\))?\s\(workmanship (?<workmanship>\d+\.\d+)\) to the (?<item>[\w\s\'\-]+)\.$");
                     Regex CraftFailure = new Regex("^" + characterName + @" fails to apply the (?<salvage>[\w\s\-]+?)(\sSalvage.*)(\s?\(100\))?\s\(workmanship (?<workmanship>\d+\.\d+)\) to the (?<item>[\w\s\'\-]+)\..*$");
-
+                    Regex foolproofMessage = new Regex(@"^You apply the (?<salvage>.*)\.$");
 
                     if (CraftSuccess.IsMatch(e.Text.Trim())) {
                         CoreManager.Current.ChatBoxMessage -= Current_ChatBoxMessage;
@@ -173,20 +173,35 @@ namespace UtilityBelt.Lib.Tinker {
                             Logger.Debug("sending tinkerjob changed event " + tinkeringSalvage.Id);
                             SendTinkerJobEvent(tinkeringSalvage.Id, true);
                             tinking = false;
-                            //Logger.WriteToChat("succeeded job and have " + activeJob.salvageToBeApplied.Count() + " remaining");
                             if (activeJob.salvageToBeApplied.Count > 0) {
                                 DoNextTink();
                             }
                             else {
                                 TinkerJobFinished?.Invoke(this, EventArgs.Empty);
-                                //Stop();
                             }
                         }
                         else {
-                            //Logger.WriteToChat(chatcapSalvage.ToString());
-                            //Logger.WriteToChat(chatcapWK.ToString());
-                            //Logger.WriteToChat(chatcapItem.ToString());
                             Logger.Debug("AutoTinker: did not match success" + "chat salvageWK: " + chatcapWK.ToString() + "real salvageWK: " + tinkeringSalvageWorkmanship.ToString("0.00") + "chat item name: " + chatcapItem + "real item name: " + tinkeringItemName + "chat salv name: " + chatcapSalvage + "real salv name: " + tinkeringSalvageName.Trim());
+                        }
+                    }
+                    else if (foolproofMessage.IsMatch(e.Text.Trim())) {
+                        var match = foolproofMessage.Match(e.Text.Trim());
+                        string chatcapSalvage = match.Groups["salvage"].Value;
+                        string result = "foolproof success";
+                        if (chatcapSalvage.ToLower().Replace("foolproof", "").Trim() == tinkeringSalvageName.ToLower().Replace("foolproof", "").Trim()) {
+                            Logger.Debug(result + ": " + chatcapSalvage + " on " + tinkeringItemName);
+                            Logger.Debug("sending tinkerjob changed event " + tinkeringSalvage.Id);
+                            SendTinkerJobEvent(tinkeringSalvage.Id, true);
+                            tinking = false;
+                            if (activeJob.salvageToBeApplied.Count > 0) {
+                                DoNextTink();
+                            }
+                            else {
+                                TinkerJobFinished?.Invoke(this, EventArgs.Empty);
+                            }
+                        }
+                        else {
+                            Logger.Debug("AutoTinker: did not match success... " + "real item name: " + tinkeringItemName.ToLower() + " --- chat salv name: " + chatcapSalvage.ToLower().Replace("foolproof", "").Trim() + " == real salv name: " + tinkeringSalvageName.ToLower().Replace("foolproof", "").Trim());
                         }
                     }
 
