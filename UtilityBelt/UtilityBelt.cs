@@ -163,6 +163,7 @@ namespace UtilityBelt {
         public ItemDescriptions ItemDescriptions;
         public Jumper Jumper;
         public LandscapeMaps LandscapeMaps;
+        public LoginManager LoginManager;
         public Looter Looter;
         public LSD LSD;
         public Movement Movement;

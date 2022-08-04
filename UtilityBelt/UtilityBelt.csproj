@@ -146,6 +146,7 @@
     <Compile Include="Lib\Expressions\ExpressionUIControl.cs" />
     <Compile Include="Lib\Expressions\ExpressionVisitor.cs" />
     <Compile Include="Lib\Expressions\ExpressionWorldObject.cs" />
+    <Compile Include="Lib\Extensions.cs" />
     <Compile Include="Lib\GameEvents\BaseGameEvent.cs" />
     <Compile Include="Lib\GameEvents\CharacterDeathGameEvent.cs" />
     <Compile Include="Lib\GameEvents\LoginCompleteGameEvent.cs" />
@@ -211,6 +212,7 @@
     <Compile Include="Tools\Arrow.cs" />
     <Compile Include="Tools\GameEvents.cs" />
     <Compile Include="Tools\ItemDescriptions.cs" />
+    <Compile Include="Tools\LoginManager.cs" />
     <Compile Include="Tools\Looter.cs" />
     <Compile Include="Tools\Movement.cs" />
     <Compile Include="Tools\Networking.cs" />

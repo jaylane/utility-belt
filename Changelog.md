@@ -1,4 +1,6 @@
 ## 0.2.8 (TBD)
+- Add functionality of MagFilter to login as a substring or index after logging out with `/ub login` tool
+- Add expressions getcharacterindex[string name], setnextlogin[string nameOrIndex], clearnextlogin[]
 - Add test mode to Looter to describe items to be looted without looting
 - Add MagTools-style ItemDescriptions
 - Add expressions: actiontrymove[], actiontrydrop[]
