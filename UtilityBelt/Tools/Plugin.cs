@@ -647,86 +647,71 @@ namespace UtilityBelt.Tools {
                 return;
             }
 
-            Logger.WriteToChat($"Property Dump for {wo.Name}");
+            var output = new StringBuilder();
 
-            Logger.WriteToChat($"Id = {wo.Id} (0x{wo.Id.ToString("X8")})");
-            Logger.WriteToChat($"Name = {wo.Name}");
-            Logger.WriteToChat($"ActiveSpellCount = {wo.ActiveSpellCount}");
-            Logger.WriteToChat($"Category = {wo.Category}");
-            Logger.WriteToChat($"Coordinates = {wo.Coordinates()}");
-            Logger.WriteToChat($"GameDataFlags1 = {wo.GameDataFlags1}");
-            Logger.WriteToChat($"HasIdData = {wo.HasIdData}");
-            Logger.WriteToChat($"LastIdTime = {wo.LastIdTime}");
-            Logger.WriteToChat($"ObjectClass = {wo.ObjectClass} ({(int)wo.ObjectClass})");
-            Logger.WriteToChat($"Offset = {wo.Offset()}");
-            Logger.WriteToChat($"Orientation = {wo.Orientation()}");
-            Logger.WriteToChat($"RawCoordinates = {wo.RawCoordinates()}");
-            Logger.WriteToChat($"SpellCount = {wo.SpellCount}");
+            output.AppendLine($"Property Dump for {wo.Name}");
 
-            Logger.WriteToChat("String Values:");
-            foreach (var sk in wo.StringKeys) {
-                Logger.WriteToChat($"  {(StringValueKey)sk}({sk}) = {wo.Values((StringValueKey)sk)}");
-            }
+            output.AppendLine($"Id = {wo.Id} (0x{wo.Id.ToString("X8")})");
+            output.AppendLine($"PhysicsId = {UB.Core.Actions.PhysicsObject(wo.Id)} (0x{UB.Core.Actions.PhysicsObject(wo.Id).ToString("X8")})");
+            output.AppendLine($"Type = {wo.Type} (0x{wo.Type.ToString("X8")})");
+            output.AppendLine($"Name = {wo.Name}");
+            output.AppendLine($"ActiveSpellCount = {wo.ActiveSpellCount}");
+            output.AppendLine($"Category = {wo.Category}");
+            output.AppendLine($"Coordinates = {wo.Coordinates()}");
+            output.AppendLine($"GameDataFlags1 = {wo.GameDataFlags1}");
+            output.AppendLine($"HasIdData = {wo.HasIdData}");
+            output.AppendLine($"LastIdTime = {wo.LastIdTime}");
+            output.AppendLine($"ObjectClass = {wo.ObjectClass} ({(int)wo.ObjectClass})");
+            output.AppendLine($"Offset = {wo.Offset()}");
+            output.AppendLine($"Orientation = {wo.Orientation()}");
+            output.AppendLine($"RawCoordinates = {wo.RawCoordinates()}");
 
-            Logger.WriteToChat("Long Values:");
-            foreach (var sk in wo.LongKeys) {
-                switch ((LongValueKey)sk) {
-                    case LongValueKey.Behavior:
-                        Logger.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)}");
-                        foreach (BehaviorFlag v in Enum.GetValues(typeof(BehaviorFlag))) {
-                            if ((wo.Values(LongValueKey.DescriptionFormat) & (int)v) != 0) {
-                                Logger.WriteToChat($"    Has Flag: {v.ToString()}");
-                            }
-                        }
-                        break;
-
-                    case LongValueKey.Unknown10:
-                        Logger.WriteToChat($"  UseablityFlags({sk}) = {wo.Values((LongValueKey)sk)}");
-                        foreach (UseFlag v in Enum.GetValues(typeof(UseFlag))) {
-                            if ((wo.Values(LongValueKey.Flags) & (int)v) != 0) {
-                                Logger.WriteToChat($"    Has Flag: {v.ToString()}");
-                            }
-                        }
-                        break;
-
-                    case LongValueKey.PhysicsDataFlags:
-                        foreach (PhysicsState v in Enum.GetValues(typeof(PhysicsState))) {
-                            if ((wo.PhysicsDataFlags & (int)v) != 0) {
-                                Logger.WriteToChat($"    Has Flag: {v.ToString()}");
-                            }
-                        }
-                        break;
-
-                    case LongValueKey.Landblock:
-                        Logger.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)} ({wo.Values((LongValueKey)sk).ToString("X8")})");
-                        break;
-
-                    case LongValueKey.Icon:
-                        Logger.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)} (0x{(0x06000000 + wo.Values((LongValueKey)sk)).ToString("X8")})");
-                        break;
-
-                    default:
-                        Logger.WriteToChat($"  {(LongValueKey)sk}({sk}) = {wo.Values((LongValueKey)sk)}");
-                        break;
+            var stringKeys = wo.StringKeys.ToList();
+            if (stringKeys.Count > 0) {
+                stringKeys.Sort((a, b) => ((ACE.Entity.Enum.Properties.PropertyString)a).ToString().CompareTo(((ACE.Entity.Enum.Properties.PropertyString)b).ToString()));
+                output.AppendLine("String Values:");
+                foreach (var sk in stringKeys) {
+                    output.AppendLine($"  {(ACE.Entity.Enum.Properties.PropertyString)sk}({sk}) = {wo.Values((StringValueKey)sk)}");
                 }
             }
 
-            Logger.WriteToChat("Bool Values:");
-            foreach (var sk in wo.BoolKeys) {
-                Logger.WriteToChat($"  {(BoolValueKey)sk}({sk}) = {wo.Values((BoolValueKey)sk)}");
+            var intKeys = wo.LongKeys.ToList();
+            if (intKeys.Count > 0) {
+                intKeys.Sort((a, b) => ((ACE.Entity.Enum.Properties.PropertyInt)a).ToString().CompareTo(((ACE.Entity.Enum.Properties.PropertyInt)b).ToString()));
+                output.AppendLine("Int Values:");
+                foreach (var sk in intKeys) {
+                    output.AppendLine($"  {(ACE.Entity.Enum.Properties.PropertyInt)sk}({sk}) = {wo.Values((LongValueKey)sk)}");
+                }
             }
 
-            Logger.WriteToChat("Double Values:");
-            foreach (var sk in wo.DoubleKeys) {
-                Logger.WriteToChat($"  {(DoubleValueKey)sk}({sk}) = {wo.Values((DoubleValueKey)sk)}");
+            var boolKeys = wo.BoolKeys.ToList();
+            if (boolKeys.Count > 0) {
+                boolKeys.Sort((a, b) => ((ACE.Entity.Enum.Properties.PropertyBool)a).ToString().CompareTo(((ACE.Entity.Enum.Properties.PropertyBool)b).ToString()));
+                output.AppendLine("Bool Values:");
+                foreach (var sk in boolKeys) {
+                    output.AppendLine($"  {(ACE.Entity.Enum.Properties.PropertyBool)sk}({sk}) = {wo.Values((BoolValueKey)sk)}");
+                }
             }
 
-            Logger.WriteToChat("Spells:");
-            FileService service = UB.Core.Filter<FileService>();
-            for (var i = 0; i < wo.SpellCount; i++) {
-                var spell = service.SpellTable.GetById(wo.Spell(i));
-                Logger.WriteToChat($"  {spell.Name} ({wo.Spell(i)})");
+            var floatKeys = wo.DoubleKeys.ToList();
+            if (floatKeys.Count > 0) {
+                floatKeys.Sort((a, b) => ((ACE.Entity.Enum.Properties.PropertyFloat)a).ToString().CompareTo(((ACE.Entity.Enum.Properties.PropertyFloat)b).ToString()));
+                output.AppendLine("Float Values:");
+                foreach (var sk in floatKeys) {
+                    output.AppendLine($"  {(ACE.Entity.Enum.Properties.PropertyFloat)sk}({sk}) = {wo.Values((DoubleValueKey)sk)}");
+                }
             }
+
+            if (wo.SpellCount > 0) {
+                output.AppendLine($"Spells ({wo.SpellCount}):");
+                FileService service = UB.Core.Filter<FileService>();
+                for (var i = 0; i < wo.SpellCount; i++) {
+                    var spell = service.SpellTable.GetById(wo.Spell(i));
+                    output.AppendLine($"  {spell.Name} ({wo.Spell(i)})");
+                }
+            }
+
+            Logger.WriteToChat(output.ToString().Replace("\r", ""));
         }
         #endregion
         #region /ub playsound [volume] <filepath>

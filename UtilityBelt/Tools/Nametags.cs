@@ -87,7 +87,7 @@ For portals, it will show the destination.
         }
 
         private void VideoPatch_Changed() {
-            if (UBHelper.VideoPatch.Enabled && !(UBHelper.VideoPatch.bgOnly && UBHelper.Core.isFocused)) DisableInternal();
+            if (!UB.OverlayMap.Enabled && UBHelper.VideoPatch.Enabled && !(UBHelper.VideoPatch.bgOnly && UBHelper.Core.isFocused)) DisableInternal();
             else EnableInternal();
         }
 

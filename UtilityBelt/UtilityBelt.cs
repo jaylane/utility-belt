@@ -13,6 +13,11 @@ using UtilityBelt.Tools;
 using UtilityBelt.Views;
 using UBLoader.Lib.Settings;
 using UtilityBelt.Lib.Expressions;
+using System.Threading;
+using ACE.DatLoader;
+using System.IO;
+using Microsoft.DirectX.Direct3D;
+using System.Runtime.InteropServices;
 
 namespace UtilityBelt {
 
@@ -135,7 +140,14 @@ namespace UtilityBelt {
         internal Database Database;
         internal UBHudManager Huds;
 
+        private static Guid IID_IDirect3DDevice9 = new Guid("{D0223B96-BF7A-43fd-92BD-A43B0D82B9EB}");
+        private IntPtr unmanagedD3dPtr;
+        internal Device D3Ddevice;
+
         internal List<ToolBase> LoadedTools = new List<ToolBase>();
+        private static List<string> expressionExceptions = new List<string>();
+        public CellDatDatabase CellDat { get; private set; }
+        public PortalDatDatabase PortalDat { get; private set; }
 
         #region Tools
         public Plugin Plugin;
@@ -170,6 +182,7 @@ namespace UtilityBelt {
         public Nametags Nametags;
         public Networking Networking;
         public NetworkUI NetworkUI;
+        public OverlayMap OverlayMap;
         public PlayerOptions PlayerOptions;
         public Professors Professors;
         public QuestTracker QuestTracker;
@@ -213,6 +226,10 @@ namespace UtilityBelt {
                 DatabaseFile = databaseFile;
                 WorldName = UBHelper.Core.WorldName;
                 CharacterName = UBHelper.Core.CharacterSet[UBHelper.Core.LoginCharacterID];
+
+                object a = CoreManager.Current.Decal.Underlying.GetD3DDevice(ref IID_IDirect3DDevice9);
+                Marshal.QueryInterface(Marshal.GetIUnknownForObject(a), ref IID_IDirect3DDevice9, out unmanagedD3dPtr);
+                D3Ddevice = new Device(unmanagedD3dPtr);
 
                 Util.Init(this, assemblyLocation, storagePath); //static classes can not have constructors, but still need to init variables.
                 UBHelper.Core.Startup(CharacterName);
@@ -297,6 +314,26 @@ namespace UtilityBelt {
             Settings.Changed += Settings_Changed;
             State.Changed += State_Changed;
             UBLoader.FilterCore.Settings.Changed += FilterSettings_Changed;
+
+            LoadDats();
+        }
+
+        private void LoadDats() {
+            var datDirectory = "";
+            var cellDatPath = Path.Combine(datDirectory, "client_cell_1.dat");
+            var portalDatPath = Path.Combine(datDirectory, "client_portal.dat");
+
+            if (!File.Exists(cellDatPath)) {
+                Logger.Error($"Unable to load cellDat: {cellDatPath}");
+                return;
+            }
+            if (!File.Exists(portalDatPath)) {
+                Logger.Error($"Unable to load portalDat: {portalDatPath}");
+                return;
+            }
+
+            CellDat = new CellDatDatabase(cellDatPath, true);
+            PortalDat = new PortalDatDatabase(portalDatPath, true);
         }
 
         private void InitSettings() {
@@ -522,8 +559,6 @@ namespace UtilityBelt {
                 }
             }
         }
-
-        private static List<string> expressionExceptions = new List<string>();
 
         private Dictionary<ExpressionMethod, object> _expressionMethodInstanceLookup = new Dictionary<ExpressionMethod, object>();
         /// <summary>
