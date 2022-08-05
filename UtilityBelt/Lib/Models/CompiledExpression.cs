@@ -7,15 +7,14 @@ using UtilityBelt.Lib.Expressions;
 namespace UtilityBelt.Lib.Models {
     public class CompiledExpression {
         MetaExpressionsParser.ParseContext Context { get; set; }
-        ExpressionVisitor Visitor { get; set; }
 
-        public CompiledExpression(MetaExpressionsParser.ParseContext context, ExpressionVisitor visitor) {
+        public CompiledExpression(MetaExpressionsParser.ParseContext context) {
             Context = context;
-            Visitor = visitor;
         }
 
         public object Run() {
             try {
+                var Visitor = new ExpressionVisitor();
                 var result = Visitor.Visit(Context);
 
                 // check for any modifications to global/persistent variables that were accessed,

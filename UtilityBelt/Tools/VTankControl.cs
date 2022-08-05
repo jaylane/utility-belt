@@ -2075,7 +2075,6 @@ namespace UtilityBelt.Tools {
         }
 
         Dictionary<string, Lib.Models.CompiledExpression> _compiledExpressions = new Dictionary<string, Lib.Models.CompiledExpression>();
-        ExpressionVisitor visitor = new ExpressionVisitor();
         public Lib.Models.CompiledExpression CompileExpression(string expression) {
             Lib.Models.CompiledExpression compiledExpression = null;
             if (_compiledExpressions.TryGetValue(expression, out compiledExpression)) {
@@ -2090,7 +2089,7 @@ namespace UtilityBelt.Tools {
                 MetaExpressionsParser expressionParser = new MetaExpressionsParser(commonTokenStream);
                 expressionParser.ErrorHandler = new ExpressionErrorListener();
                 MetaExpressionsParser.ParseContext parseContext = expressionParser.parse();
-                compiledExpression = new Lib.Models.CompiledExpression(parseContext, visitor);
+                compiledExpression = new Lib.Models.CompiledExpression(parseContext);
                 _compiledExpressions.Add(expression, compiledExpression);
 
                 return compiledExpression;
