@@ -120,6 +120,7 @@
     <None Include="Resources\UBNetworking.dll" />
     <None Include="Deps\Newtonsoft.Json.dll" />
     <Content Include="Deps\0Harmony.dll" />
+    <Content Include="Deps\ACE.DatLoader.dll" />
     <Content Include="Deps\Antlr4.Runtime.dll" />
     <Content Include="Deps\LiteDB.dll" />
     <Content Include="Deps\System.Threading.dll" />

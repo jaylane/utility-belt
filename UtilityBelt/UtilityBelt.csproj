@@ -42,6 +42,11 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\UBLoader\Deps\0Harmony.dll</HintPath>
     </Reference>
+    <Reference Include="ACE.DatLoader, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\UBLoader\Deps\ACE.DatLoader.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Antlr4.Runtime, Version=4.6.0.0, Culture=neutral, PublicKeyToken=09abb75b9ed49849, processorArchitecture=MSIL">
       <HintPath>..\packages\Antlr4.Runtime.4.6.6\lib\net35-client\Antlr4.Runtime.dll</HintPath>
       <Private>False</Private>
@@ -84,6 +89,11 @@
     <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.DirectX.Direct3D, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2902.0\Microsoft.DirectX.Direct3D.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualC" />
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\UBLoader\Deps\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
@@ -131,6 +141,7 @@
     <Compile Include="Lib\Actions\ChatExpressionAction.cs" />
     <Compile Include="Lib\Actions\ExpressionAction.cs" />
     <Compile Include="Lib\Attributes.cs" />
+    <Compile Include="Lib\Camera.cs" />
     <Compile Include="Lib\Chat\ChatType.cs" />
     <Compile Include="Lib\Constants\WeenieType.cs" />
     <Compile Include="Lib\Coordinate.cs" />
@@ -138,6 +149,7 @@
     <Compile Include="Lib\Dungeon\DungeonCell.cs" />
     <Compile Include="Lib\Dungeon\DungeonLayer.cs" />
     <Compile Include="Lib\Dungeon\IsDungeon.cs" />
+    <Compile Include="Lib\LandblockGeometry.cs" />
     <Compile Include="Lib\Expressions\ExpressionCoordinates.cs" />
     <Compile Include="Lib\Expressions\ExpressionList.cs" />
     <Compile Include="Lib\Expressions\ExpressionDictionary.cs" />
@@ -178,6 +190,7 @@
     <Compile Include="Lib\Networking\Messages\CharacterPositionMessage.cs" />
     <Compile Include="Lib\Networking\Messages\TrackedItemUpdateMessage.cs" />
     <Compile Include="Lib\Networking\TrackedItemStatus.cs" />
+    <Compile Include="Lib\DynamicObjectGeometry.cs" />
     <Compile Include="Lib\Settings\Chat\AttackOnTargetOption.cs" />
     <Compile Include="Lib\Networking\Messages\CastAttemptMessage.cs" />
     <Compile Include="Lib\Networking\Messages\CastSuccessMessage.cs" />
@@ -189,6 +202,7 @@
     <Compile Include="Lib\Settings\Chat\OthersCastOption.cs" />
     <Compile Include="Lib\Settings\Chat\RechargeOptions.cs" />
     <Compile Include="Lib\Settings\Chat\YouCastOption.cs" />
+    <Compile Include="Lib\Settings\ColorToggleRenderOption.cs" />
     <Compile Include="Lib\Settings\NametagDisplay.cs" />
     <Compile Include="Lib\Settings\PluginMessageDisplay.cs" />
     <Compile Include="Lib\Settings\TrackedItem.cs" />
@@ -205,6 +219,7 @@
     <Compile Include="Lib\UBHudManager.cs" />
     <Compile Include="Lib\VCS_Connector.cs" />
     <Compile Include="Lib\VHS_Connector.cs" />
+    <Compile Include="Tools\OverlayMap.cs" />
     <Compile Include="Tools\AutoXp.cs" />
     <Compile Include="Tools\ChatFilter.cs" />
     <Compile Include="Tools\ChatHandler.cs" />

@@ -63,6 +63,16 @@ namespace UBLoader.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] ACE_DatLoader {
+            get {
+                object obj = ResourceManager.GetObject("ACE_DatLoader", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] Antlr4_Runtime {
             get {
                 object obj = ResourceManager.GetObject("Antlr4_Runtime", resourceCulture);

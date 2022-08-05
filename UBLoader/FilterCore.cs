@@ -84,6 +84,7 @@ namespace UBLoader {
             System.Reflection.Assembly.Load((byte[])rm.GetObject("Newtonsoft_Json"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("Antlr4_Runtime"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("UBHelper"));
+            System.Reflection.Assembly.Load((byte[])rm.GetObject("ACE_DatLoader"));
         }
 
         /// <summary>

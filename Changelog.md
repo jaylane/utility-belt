@@ -9,6 +9,8 @@
 - All expressions that accept WorldObjects now also accept ids
 - Improve overall expression performance
 - Add support for foolproof imbues within autotinker
+- Added previously unknown `/ub propertydump` property names
+- Added new [Overlay Maps](/docs/tools/OverlayMaps/)
 
 ## 0.2.7 (2022-07-27) [UtilityBeltInstaller-0.2.7.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/f24f9359893592252815818da7b3b7ba/UtilityBeltInstaller-0.2.7.exe)
 - Add expression: wobjectgetactivespellids[WorldObject]
