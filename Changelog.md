@@ -13,6 +13,22 @@
 - Added new [Overlay Maps](/docs/tools/OverlayMaps/)
 - Added settings `Global.KillDisconnectedClients` to automatically close disconnected client windows
 - Fix actiontryapplyitem[] support for casting wand spells
+- Update C# LangVersion to 10, build env to VS 2022
+- (****) changes to FilterCore.cs
+- Add Lib/AcClient library to UBLoader
+- (****) changes to UBLoader/Lib/SSLProtocolExtensions.cs
+- rewrite UBLoader/LoaderLogin.cs to use AcClient
+- several minor bug fixes (compiler warning maintenanace)
+- add Spellbar management, and automatic additions to spellbar
+- rewrite UBHud class
+- (****) changes to UtilityBelt/Lib/UpdateChecker.cs
+- (****) changes to UtilityBelt/Lib/Spells.cs
+- Add Util.formatExperience, Util.formatDuration
+- Rewrite FellowshipManager to use AcClient
+- Re-work Movement to use AcClient
+- add UtilityBelt/Tools/Player.cs - "/ub player (aug|int|int64|bool|float|did|iid|str|pos|skill)" to display various character data
+- add UBHudDemo as a WIP test ground for UI development
+- add 275+ xp meter, with hud- meta expressions xp*[] and lum*[], no CLI
 
 ## 0.2.7 (2022-07-27) [UtilityBeltInstaller-0.2.7.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/f24f9359893592252815818da7b3b7ba/UtilityBeltInstaller-0.2.7.exe)
 - Add expression: wobjectgetactivespellids[WorldObject]

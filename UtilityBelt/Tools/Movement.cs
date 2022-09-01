@@ -17,17 +17,19 @@ using System.Runtime.InteropServices;
 using Decal.Interop.Input;
 using VirindiViewService;
 using UtilityBelt.Lib.Dungeon;
+using AcClient;
+using Timer = Decal.Interop.Input.Timer;
 
 namespace UtilityBelt.Tools {
     [Name("Movement")]
     public class Movement : ToolBase {
-        private DxTexture arrowTexture = null;
-        private DxTexture arrowMapTexture = null;
+        //private DxTexture arrowTexture = null;
+        //private DxTexture arrowMapTexture = null;
         private UBHud hud = null;
         private string fontFace;
         private int fontWeight;
         private TimerClass drawTimer;
-        private int LabelFontSize = 12;
+        //private int LabelFontSize = 12;
 
         public Dictionary<Motion, bool> WantedMotionStatus = new Dictionary<Motion, bool> { { Motion.Forward, false }, { Motion.Backward, false }, { Motion.TurnRight, false }, { Motion.TurnLeft, false }, { Motion.StrafeRight, false }, { Motion.StrafeLeft, false }, { Motion.Walk, false } };
         public Dictionary<Motion, bool> CurrentMotionStatus = new Dictionary<Motion, bool> { { Motion.Forward, false }, { Motion.Backward, false }, { Motion.TurnRight, false }, { Motion.TurnLeft, false }, { Motion.StrafeRight, false }, { Motion.StrafeLeft, false }, { Motion.Walk, false } };
@@ -53,17 +55,24 @@ namespace UtilityBelt.Tools {
         [Example("/ub getmotion", "Tells you which way you're going")]
         [CommandPattern("getmotion", @"^$", false)]
         unsafe public void getmotion(string _, Match _2) {
-            int phy = get_physics(selectedID);
 
-            if (phy == 0) {
-                WriteToChat($"Current (Wanted) Held Keys: Forward: {WantedMotionStatus[Motion.Forward]}, Backward: {WantedMotionStatus[Motion.Backward]}, TurnRight: {WantedMotionStatus[Motion.TurnRight]}, TurnLeft: {WantedMotionStatus[Motion.TurnLeft]}, StrafeRight: {WantedMotionStatus[Motion.StrafeRight]}, StrafeLeft: {WantedMotionStatus[Motion.StrafeLeft]}, Walk: {WantedMotionStatus[Motion.Walk]}");
-                WriteToChat($"Current (Actually) Held Keys: Forward: {CurrentMotionStatus[Motion.Forward]}, Backward: {CurrentMotionStatus[Motion.Backward]}, TurnRight: {CurrentMotionStatus[Motion.TurnRight]}, TurnLeft: {CurrentMotionStatus[Motion.TurnLeft]}, StrafeRight: {CurrentMotionStatus[Motion.StrafeRight]}, StrafeLeft: {CurrentMotionStatus[Motion.StrafeLeft]}, Walk: {CurrentMotionStatus[Motion.Walk]}");
-                WriteToChat($"Your ID: {character_id(player_object):X8} Combat Style: {current_style(player_object)} forward_speed: {(forward_command(player_object) == 0x41000003 ? 0 : forward_speed(player_object))} sidestep_speed: {(sidestep_command(player_object) == 0 ? 0 : sidestep_speed(player_object))} turn_speed: {(turn_command(player_object) == 0 ? 0 : turn_speed(player_object))}");
-                WriteToChat($"State: {state(player_object):X8} Location: 0x{landblock(player_object):X8} [{x(player_object):n6}, {y(player_object):n6}, {z(player_object):n6}] {qw(player_object):n6} {qx(player_object):n6} {qy(player_object):n6} {qz(player_object):n6}");
+            CPhysicsObj* phy;
+
+            if (*ACCWeenieObject.selectedID == 0) {
+                phy = *CPhysicsObj.player_object;
+                CMotionInterp* cmi = phy->movement_manager->motion_interpreter;
+
+                WriteToChat($"Your ID: {phy->a0.a0.id:X8} Combat Style: {(StanceMode)cmi->interpreted_state.current_style} forward_speed: {(cmi->interpreted_state.forward_command == 0x41000003 ? 0 : cmi->interpreted_state.forward_speed)} sidestep_speed: {(cmi->interpreted_state.sidestep_command == 0 ? 0 : cmi->interpreted_state.sidestep_speed)} turn_speed: {(cmi->interpreted_state.turn_command == 0 ? 0 : cmi->interpreted_state.turn_speed)}");
+                WriteToChat($"State: {phy->state:X8} Location: 0x{phy->m_position.objcell_id:X8} [{phy->m_position.frame.m_fOrigin.x:n6}, {phy->m_position.frame.m_fOrigin.y:n6}, {phy->m_position.frame.m_fOrigin.z:n6}] {phy->m_position.frame.qw:n6} {phy->m_position.frame.qx:n6} {phy->m_position.frame.qy:n6} {phy->m_position.frame.qz:n6}");
+
             }
             else {
-                WriteToChat($"Target ID: {character_id(phy):X8} Combat Style: {current_style(phy)} forward_speed: {(forward_command(phy) == 0x41000003 ? 0 : forward_speed(phy))} sidestep_speed: {(sidestep_command(phy) == 0 ? 0 : sidestep_speed(phy))} turn_speed: {(turn_command(phy) == 0 ? 0 : turn_speed(phy))}");
-                WriteToChat($"State: {state(player_object):X8} Location: 0x{landblock(phy):X8} [{x(phy):n6}, {y(phy):n6}, {z(phy):n6}] {qw(phy):n6} {qx(phy):n6} {qy(phy):n6} {qz(phy):n6}");
+                phy = CObjectMaint.s_pcInstance->GetObjectA(*ACCWeenieObject.selectedID);
+                CMotionInterp* cmi = phy->movement_manager->motion_interpreter;
+                WriteToChat($"Current (Wanted) Held Keys: Forward: {WantedMotionStatus[Motion.Forward]}, Backward: {WantedMotionStatus[Motion.Backward]}, TurnRight: {WantedMotionStatus[Motion.TurnRight]}, TurnLeft: {WantedMotionStatus[Motion.TurnLeft]}, StrafeRight: {WantedMotionStatus[Motion.StrafeRight]}, StrafeLeft: {WantedMotionStatus[Motion.StrafeLeft]}, Walk: {WantedMotionStatus[Motion.Walk]}");
+                WriteToChat($"Current (Actually) Held Keys: Forward: {CurrentMotionStatus[Motion.Forward]}, Backward: {CurrentMotionStatus[Motion.Backward]}, TurnRight: {CurrentMotionStatus[Motion.TurnRight]}, TurnLeft: {CurrentMotionStatus[Motion.TurnLeft]}, StrafeRight: {CurrentMotionStatus[Motion.StrafeRight]}, StrafeLeft: {CurrentMotionStatus[Motion.StrafeLeft]}, Walk: {CurrentMotionStatus[Motion.Walk]}");
+                WriteToChat($"Selected ID: {phy->a0.a0.id:X8} Combat Style: {(StanceMode)cmi->interpreted_state.current_style} forward_speed: {(cmi->interpreted_state.forward_command == 0x41000003 ? 0 : cmi->interpreted_state.forward_speed)} sidestep_speed: {(cmi->interpreted_state.sidestep_command == 0 ? 0 : cmi->interpreted_state.sidestep_speed)} turn_speed: {(cmi->interpreted_state.turn_command == 0 ? 0 : cmi->interpreted_state.turn_speed)}");
+                WriteToChat($"State: {phy->state:X8} Location: 0x{phy->m_position.objcell_id:X8} [{phy->m_position.frame.m_fOrigin.x:n6}, {phy->m_position.frame.m_fOrigin.y:n6}, {phy->m_position.frame.m_fOrigin.z:n6}] {phy->m_position.frame.qw:n6} {phy->m_position.frame.qx:n6} {phy->m_position.frame.qy:n6} {phy->m_position.frame.qz:n6}");
             }
         }
         #endregion
@@ -162,13 +171,13 @@ namespace UtilityBelt.Tools {
         #endregion Expressions
 
         #region ac client fun
-        public enum Motion { Forward = 0x45000005, Backward = 0x45000006, TurnRight = 0x6500000D, TurnLeft = 0x6500000E, StrafeRight = 0x6500000F, StrafeLeft = 0x65000010, Walk = 0x11112222 }
         public unsafe void SetMotion(Motion motion, bool fOn) {
             WantedMotionStatus[motion] = fOn;
             if (motion == Motion.Walk) {
-                var myPhysics = (int)UB.Core.Actions.PhysicsObject(UB.Core.CharacterFilter.Id);
-                if (*(int*)(*(int*)((*(int*)(myPhysics + 0xC4))) + 0x18) != (fOn ? 1 : 2)) {
-                    *(int*)(*(int*)((*(int*)(myPhysics + 0xC4))) + 0x18) = fOn ? 1 : 2;
+                CPhysicsObj* phy = *CPhysicsObj.player_object;
+                CMotionInterp* cmi = phy->movement_manager->motion_interpreter;
+                if (cmi->raw_state.current_holdkey != (fOn ? HoldKey.HoldKey_None : HoldKey.HoldKey_Run)) {
+                    cmi->raw_state.current_holdkey = fOn ? HoldKey.HoldKey_None : HoldKey.HoldKey_Run;
                     var keys = WantedMotionStatus.Keys.ToList();
                     foreach (var key in keys) {
                         if (key == Motion.Walk)
@@ -181,39 +190,12 @@ namespace UtilityBelt.Tools {
                 }
             }
             else {
-                ((def_ACCmdInterp__SetMotion)Marshal.GetDelegateForFunctionPointer((IntPtr)0x0058C140, typeof(def_ACCmdInterp__SetMotion)))(*(int*)(*(int*)0x0083DA58 + 0xB8), (int)motion, fOn ? 1 : 0);
+                ((ACCmdInterp*)(*SmartBox.smartbox)->cmdinterp)->SetMotion((uint)motion, fOn);
             }
         }
-        [UnmanagedFunctionPointer(CallingConvention.ThisCall)] internal delegate void def_ACCmdInterp__SetMotion(int ACCmdInterp, int motion, int fOn); // void __thiscall ACCmdInterp::SetMotion(ACCmdInterp *this, unsigned int motion, bool fOn)
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)] internal delegate bool c();
-        public static unsafe void Client_GodMode() => ((c)Marshal.GetDelegateForFunctionPointer((IntPtr)0x006A2920, typeof(c)))();
-
-        double todo; // this does not belong here. Ultimately we need the equivilant of UBHelper.Core and UBHelper.P, for all of this ugly boilerplate
-        internal static unsafe int get_physics(int object_id) => ((def_CObjectMaint__GetObjectA)Marshal.GetDelegateForFunctionPointer((IntPtr)0x00508890, typeof(def_CObjectMaint__GetObjectA)))(*(int*)0x00842ADC, object_id);
-        [UnmanagedFunctionPointer(CallingConvention.ThisCall)] internal delegate int def_CObjectMaint__GetObjectA(int CObjectMaint, int object_id); // HashBaseData<unsigned long> *__thiscall CObjectMaint::GetObjectA(CObjectMaint *this, unsigned int object_id)
 
 
-        internal static unsafe StanceMode current_style(int physics) { try { return (StanceMode)(*(int*)(*(int*)((*(int*)(physics + 0xC4))) + 0x48) & 0xFF); } catch { return 0; } }
-        internal static unsafe int forward_command(int physics) { try { return *(int*)(*(int*)((*(int*)(physics + 0xC4))) + 0x4C); } catch { return 0; } }
-        internal static unsafe float forward_speed(int physics) { try { return *(float*)(*(int*)((*(int*)(physics + 0xC4))) + 0x50); } catch { return 0; } }
-        internal static unsafe int sidestep_command(int physics) { try { return *(int*)(*(int*)((*(int*)(physics + 0xC4))) + 0x54); } catch { return 0; } }
-        internal static unsafe float sidestep_speed(int physics) { try { return *(float*)(*(int*)((*(int*)(physics + 0xC4))) + 0x58); } catch { return 0; } }
-        internal static unsafe int turn_command(int physics) { try { return *(int*)(*(int*)((*(int*)(physics + 0xC4))) + 0x5C); } catch { return 0; } }
-        internal static unsafe float turn_speed(int physics) { try { return *(float*)(*(int*)((*(int*)(physics + 0xC4))) + 0x60); } catch { return 0; } }
-        internal static unsafe int character_id(int physics) { try { return *(int*)(physics + 0x08); } catch { return 0; } }
-        internal static unsafe int landblock(int physics) { try { return *(int*)(physics + 0x4C); } catch { return 0; } }
-        internal static unsafe float qw(int physics) { try { return *(float*)(physics + 0x50); } catch { return 0; } }
-        internal static unsafe float qx(int physics) { try { return *(float*)(physics + 0x54); } catch { return 0; } }
-        internal static unsafe float qy(int physics) { try { return *(float*)(physics + 0x58); } catch { return 0; } }
-        internal static unsafe float qz(int physics) { try { return *(float*)(physics + 0x5C); } catch { return 0; } }
-        internal static unsafe float x(int physics) { try { return *(float*)(physics + 0x84); } catch { return 0; } }
-        internal static unsafe float y(int physics) { try { return *(float*)(physics + 0x88); } catch { return 0; } }
-        internal static unsafe float z(int physics) { try { return *(float*)(physics + 0x8C); } catch { return 0; } }
-        internal static unsafe int state(int physics) { try { return *(int*)(physics + 0xAC); } catch { return 0; } }
-
-        internal static unsafe int player_object => *(int*)0x00844D68; // this is really a pointer. handled as an int, to keep C#'s pants on.
-
-        internal static unsafe int selectedID => *(int*)0x00871E54;
+        public enum Motion { Forward = 0x45000005, Backward = 0x45000006, TurnRight = 0x6500000D, TurnLeft = 0x6500000E, StrafeRight = 0x6500000F, StrafeLeft = 0x65000010, Walk = 0x11112222 }
 
         // ACE.Entity.StanceMode
         public enum StanceMode {
@@ -296,14 +278,16 @@ namespace UtilityBelt.Tools {
         }
 
         unsafe private void UpdateMovementStatus() {
-            var myPhysics = (int)UB.Core.Actions.PhysicsObject(UB.Core.CharacterFilter.Id);
-            CurrentMotionStatus[Motion.Forward] = forward_command(myPhysics) != 0x41000003 && forward_speed(myPhysics) > 0;
-            CurrentMotionStatus[Motion.Backward] = forward_command(myPhysics) != 0x41000003 && forward_speed(myPhysics) < 0;
-            CurrentMotionStatus[Motion.TurnLeft] = turn_command(myPhysics) != 0 && turn_speed(myPhysics) < 0;
-            CurrentMotionStatus[Motion.TurnRight] = turn_command(myPhysics) != 0 && turn_speed(myPhysics) > 0;
-            CurrentMotionStatus[Motion.StrafeLeft] = sidestep_command(myPhysics) != 0 && sidestep_speed(myPhysics) < 0;
-            CurrentMotionStatus[Motion.StrafeRight] = sidestep_command(myPhysics) != 0 && sidestep_speed(myPhysics) > 0;
-            CurrentMotionStatus[Motion.Walk] = *(int*)(*(int*)((*(int*)(myPhysics + 0xC4))) + 0x18) == 1;
+            CPhysicsObj* phy = *CPhysicsObj.player_object;
+            CMotionInterp* cmi = phy->movement_manager->motion_interpreter;
+
+            CurrentMotionStatus[Motion.Forward] = cmi->interpreted_state.forward_command != 0x41000003 && cmi->interpreted_state.forward_speed > 0;
+            CurrentMotionStatus[Motion.Backward] = cmi->interpreted_state.forward_command != 0x41000003 && cmi->interpreted_state.forward_speed < 0;
+            CurrentMotionStatus[Motion.TurnLeft] = cmi->interpreted_state.turn_command != 0 && cmi->interpreted_state.turn_speed < 0;
+            CurrentMotionStatus[Motion.TurnRight] = cmi->interpreted_state.turn_command != 0 && cmi->interpreted_state.turn_speed > 0;
+            CurrentMotionStatus[Motion.StrafeLeft] = cmi->interpreted_state.sidestep_command != 0 && cmi->interpreted_state.sidestep_speed < 0;
+            CurrentMotionStatus[Motion.StrafeRight] = cmi->interpreted_state.sidestep_command != 0 && cmi->interpreted_state.sidestep_speed > 0;
+            CurrentMotionStatus[Motion.Walk] = cmi->raw_state.current_holdkey == HoldKey.HoldKey_None;
         }
 
         #region hud
@@ -336,7 +320,7 @@ namespace UtilityBelt.Tools {
             hud = null;
         }
 
-        private void Hud_OnRender(object sender, EventArgs e) {
+        private void Hud_OnRender() {
             if (hud == null || hud.Texture == null)
                 return;
 
@@ -388,16 +372,16 @@ namespace UtilityBelt.Tools {
             hud.Texture.EndText();
         }
 
-        private void Hud_OnClose(object sender, EventArgs e) {
+        private void Hud_OnClose() {
             ShowMovementKeysDebugUI.Value = false;
         }
 
-        private void Hud_OnMove(object sender, EventArgs e) {
-            HudX.Value = hud.X;
-            HudY.Value = hud.Y;
+        private void Hud_OnMove() {
+            HudX.Value = hud.BBox.X;
+            HudY.Value = hud.BBox.Y;
         }
 
-        private void Hud_OnReMake(object sender, EventArgs e) {
+        private void Hud_OnReMake() {
 
         }
         #endregion hud

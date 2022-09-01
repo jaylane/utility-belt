@@ -302,16 +302,16 @@ namespace UtilityBelt.Tools {
             hud.Render();
         }
 
-        private void Hud_OnMove(object sender, EventArgs e) {
-            HudX.Value = hud.X;
-            HudY.Value = hud.Y;
+        private void Hud_OnMove() {
+            HudX.Value = hud.BBox.X;
+            HudY.Value = hud.BBox.Y;
         }
 
-        private void Hud_OnClose(object sender, EventArgs e) {
+        private void Hud_OnClose() {
             Enabled.Value = false;
         }
 
-        private void Hud_OnReMake(object sender, EventArgs e) {
+        private void Hud_OnReMake() {
             CreateTextures();
         }
         #endregion // Event Handlers
@@ -356,7 +356,7 @@ namespace UtilityBelt.Tools {
         }
 
 
-        private void Hud_OnRender(object sender, EventArgs e) {
+        private void Hud_OnRender() {
             if (!Enabled || hud == null || hud.Texture == null || hud.Texture.IsDisposed)
                 return;
 
@@ -393,7 +393,7 @@ namespace UtilityBelt.Tools {
                         labelColor = Color.Orange;
 
                     hud.Texture.BeginText(fontFace, LabelFontSize, 200, false);
-                    hud.DrawShadowText(text, 34, 8, hud.Width - 32, hud.Height - 32, labelColor, Color.Black);
+                    hud.DrawShadowText(text, 34, 8, hud.BBox.Width - 32, hud.BBox.Height - 32, labelColor, Color.Black);
                     hud.Texture.EndText();
                 }
             }

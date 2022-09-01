@@ -18,8 +18,7 @@ using UtilityBelt.Lib;
 using uTank2;
 using Harmony;
 
-namespace UtilityBelt
-{
+namespace UtilityBelt {
     public static class Util {
         private static string pluginDirectory;
         private static UtilityBeltPlugin UB;
@@ -44,7 +43,7 @@ namespace UtilityBelt
         }
 
         private static readonly Regex releaseBranchVersion = new Regex(@"^\d+\.\d+.\d+\.release");
-        public static string GetVersion(bool includeGitExtras=false) {
+        public static string GetVersion(bool includeGitExtras = false) {
             try {
                 var productVersion = FileVersionInfo.GetVersionInfo(AssemblyLocation).ProductVersion;
 
@@ -350,7 +349,7 @@ namespace UtilityBelt
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        internal static void ThinkOrWrite(string message, bool think=false) {
+        internal static void ThinkOrWrite(string message, bool think = false) {
             try {
                 if (think) {
                     DispatchChatToBoxWithPluginIntercept(string.Format("/tell {0}, {1}", UB.Core.CharacterFilter.Name, message));
@@ -691,6 +690,20 @@ namespace UtilityBelt
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
         #endregion
-
+        public static string formatExperience(double value) {
+            string[] sizes = { "", "k", "m", "b" };
+            int order = 0;
+            while (value >= 1000 && order < sizes.Length - 1) {
+                order++;
+                value /= 1000;
+            }
+            return String.Format("{0:0.##}{1}", value, sizes[order]);
+        }
+        public static string formatDuration(double value) {
+            if (value < 60) return $"{value:n0}s";
+            if (value < 60 * 60) return $"{(int)(value/60):n0}m{(int)(value %60):n0}s";
+            if (value < 24 * 60 * 60) return $"{(int)((value / 3600) % 24):n0}h{(int)((value / 60) % 60):n0}m{(int)(value % 60):n0}s";
+            return $"{(int)(value / 86400):n0}d{(int)((value / 3600) % 24):n0}h{(int)((value / 60) % 60):n0}m{(int)(value % 60):n0}s";
+        }
     }
 }

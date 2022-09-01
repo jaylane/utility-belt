@@ -74,7 +74,7 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
                 var ew = Geometry.LandblockToEW((uint)PhysicsObject.GetLandcell(me), PhysicsObject.GetPosition(me).X);
                 var ns = Geometry.LandblockToNS((uint)PhysicsObject.GetLandcell(me), PhysicsObject.GetPosition(me).Y);
 
-                var heading  = (270 + 180 -(Math.Atan2(TargetNS - ns, TargetEW - ew) * 180 / Math.PI)) % 360;
+                var heading = (270 + 180 - (Math.Atan2(TargetNS - ns, TargetEW - ew) * 180 / Math.PI)) % 360;
                 UBHelper.Core.TurnToHeading((float)heading);
                 Logger.WriteToChat($"Turning to face towards {heading:N2} degrees");
             }
@@ -212,16 +212,16 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
                 hud.Render();
         }
 
-        private void Hud_OnClose(object sender, EventArgs e) {
+        private void Hud_OnClose() {
             Visible.Value = false;
         }
 
-        private void Hud_OnMove(object sender, EventArgs e) {
-            HudX.Value = hud.X;
-            HudY.Value = hud.Y;
+        private void Hud_OnMove() {
+            HudX.Value = hud.BBox.X;
+            HudY.Value = hud.BBox.Y;
         }
 
-        private void Hud_OnReMake(object sender, EventArgs e) {
+        private void Hud_OnReMake() {
             CreateTextures();
         }
         #endregion
@@ -241,7 +241,7 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
         /// <param name="ns"></param>
         /// <param name="text">currently unused</param>
         /// <returns></returns>
-        public void PointTo(double ew, double ns, string text="") {
+        public void PointTo(double ew, double ns, string text = "") {
             if (!Enabled)
                 return;
 
@@ -329,7 +329,7 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
             hud = null;
         }
 
-        private void Hud_OnRender(object sender, EventArgs e) {
+        private void Hud_OnRender() {
             if (hud == null || hud.Texture == null)
                 return;
 
@@ -361,8 +361,8 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
                 var coordsText = $"{Math.Abs(TargetNS).ToString("F2")}{(TargetNS >= 0 ? "N" : "S")}, {Math.Abs(TargetEW).ToString("F2")}{(TargetEW >= 0 ? "E" : "W")}";
                 var distanceText = $"{DistanceToTarget:N2}m";
 
-                hud.DrawShadowText(coordsText, leftOffset, 1, hud.Width - leftOffset, LabelFontSize, Color.White, Color.Black);
-                hud.DrawShadowText(distanceText, leftOffset, LabelFontSize + 4, hud.Width - leftOffset, LabelFontSize, Color.White, Color.Black);
+                hud.DrawShadowText(coordsText, leftOffset, 1, hud.BBox.Width - leftOffset, LabelFontSize, Color.White, Color.Black);
+                hud.DrawShadowText(distanceText, leftOffset, LabelFontSize + 4, hud.BBox.Width - leftOffset, LabelFontSize, Color.White, Color.Black);
                 hud.Texture.EndText();
             }
             catch (Exception ex) { Logger.LogException(ex); }

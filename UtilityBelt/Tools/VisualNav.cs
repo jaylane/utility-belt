@@ -32,7 +32,7 @@ namespace UtilityBelt.Tools {
                 "FollowArrow"
             };
 
-        public event EventHandler<SettingChangedEventArgs> Changed;
+        //public event EventHandler<SettingChangedEventArgs> Changed;
 
         [Summary("Point to point lines")]
         public readonly ColorToggleOption Lines = new ColorToggleOption(true, -65281);

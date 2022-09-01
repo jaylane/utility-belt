@@ -92,7 +92,7 @@ namespace UBNetworking {
                         WriteOutgoing();
                     }
                 }
-                catch (SocketException ex) {
+                catch (SocketException) {
                     //LogAction?.Invoke(ex.ToString());
                     TryLaunchServer();
                 }

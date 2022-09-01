@@ -183,15 +183,18 @@ namespace UtilityBelt {
         public Networking Networking;
         public NetworkUI NetworkUI;
         public OverlayMap OverlayMap;
+        public Player Player;
         public PlayerOptions PlayerOptions;
         public Professors Professors;
         public QuestTracker QuestTracker;
         public SpellManager SpellManager;
+        public UBHudDemo UBHudDemo;
         //public Tags Tags { get; private set; }
         public VisualNav VisualNav;
         public VTankControl VTank;
         public VTankExtensions VTankExtensions;
         public VTankFellowHeals VTankFellowHeals;
+        public XPMeter XPMeter;
         public PrepClick PrepClick;
         #endregion
 
@@ -671,6 +674,7 @@ namespace UtilityBelt {
                 PlayerOptionsSettings?.Dispose();
                 AliasSettings?.Dispose();
                 GameEventsSettings?.Dispose();
+                Huds?.Dispose();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }

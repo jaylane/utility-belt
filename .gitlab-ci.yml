@@ -1,7 +1,7 @@
 variables:
   NUGET_PATH: 'C:\Tools\nuget.exe'
-  MSBUILD_PATH: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\msbuild.exe'
-  VSTEST_PATH: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\Extensions\TestPlatform\vstest.console.exe'
+  MSBUILD_PATH: 'C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\msbuild.exe'
+  VSTEST_PATH: 'C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\TestPlatform\vstest.console.exe'
   NSIS_PATH: 'C:\Program Files (x86)\NSIS\makensis.exe'
   HUGO_PATH: 'C:\Tools\hugo.exe'
   CURL_PATH: 'C:\Tools\curl.exe'

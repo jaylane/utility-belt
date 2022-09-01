@@ -29,9 +29,6 @@ namespace UBLoader {
         private DateTime lastFileChange = DateTime.UtcNow;
         private static bool hasLoaded = false;
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern bool PostMessage(IntPtr hhwnd, uint msg, IntPtr wparam, UIntPtr lparam);
-
         // we store player skills from PlayerDesc message because decal doesn't like old skills
         public static Dictionary<int, int> PlayerDescSkillState = new Dictionary<int, int>();
 
@@ -77,9 +74,6 @@ namespace UBLoader {
 
             [Summary("Upload exceptions to the mothership")]
             public Setting<bool> UploadExceptions = new Setting<bool>(true);
-
-            [Summary("Kill clients when they reach the disconnect screen")]
-            public Setting<bool> KillDisconnectedClients = new Setting<bool>(false);
         }
         public static GlobalSettings Global = new GlobalSettings();
         #endregion Global Settings
@@ -130,7 +124,7 @@ namespace UBLoader {
                         UnloadPluginAssembly();
                         Decal.Adapter.CoreManager.Current.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
 
-                        if (previous == UBHelper.GameState.Logging_Out) 
+                        if (previous == UBHelper.GameState.Logging_Out)
                             LoaderLogin.Login();
                         break;
                     case UBHelper.GameState.In_Game:
@@ -150,14 +144,9 @@ namespace UBLoader {
                         PlayerDescSkillState.Clear();
                         Decal.Adapter.CoreManager.Current.EchoFilter.ServerDispatch -= EchoFilter_ServerDispatch;
                         break;
-                    case UBHelper.GameState.Disconnected:
-                        if (Global.KillDisconnectedClients) {
-                            PostMessage(Core.Decal.Hwnd, 0x0002 /* WM_DESTROY */, (IntPtr)0, (UIntPtr)0);
-                        }
-                        break;
                 }
             }
-            catch(Exception e) { LogException(e); }
+            catch (Exception e) { LogException(e); }
         }
 
         private void LoadAssemblyConfig() {
@@ -205,10 +194,6 @@ namespace UBLoader {
 
         private static void EchoFilter_ServerDispatch(object sender, NetworkMessageEventArgs e) {
             try {
-                //Find number of character slots.  Todo: remove this if Yonneh implements a direct approach
-                if(e.Message.Type == 0xF658) {
-                    LoaderLogin.SetSlots(Convert.ToInt32(e.Message["slotCount"]));
-                }
                 if (e.Message.Type == 0x02DD) {
                     var key = e.Message.Value<int>("key");
                     var skill = e.Message.Struct("value");
