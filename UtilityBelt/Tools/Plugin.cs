@@ -2019,7 +2019,7 @@ namespace UtilityBelt.Tools {
                 }
             }
 
-            return 0;
+            //return 0;
         }
         #endregion //uboptset[string name, object value]
         #region isportaling[]

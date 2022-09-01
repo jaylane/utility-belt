@@ -34,7 +34,7 @@ namespace UtilityBelt.Lib {
         public static string FetchGitlabData() {
             // no tls 1.2 in dotnet 3.5???
             try {
-                var url = string.Format(@"http://http.haxit.org/ubupdatecheck.php");
+                var url = string.Format(@"https://gitlab.com/api/v4/projects/10819053/releases");
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                 request.Timeout = 30000;

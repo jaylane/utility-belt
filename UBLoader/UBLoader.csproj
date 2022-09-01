@@ -28,9 +28,10 @@
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>10.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=1.2.0.1, Culture=neutral, processorArchitecture=MSIL">
@@ -89,6 +90,37 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Lib\AcClient\Allegiance.cs" />
+    <Compile Include="Lib\AcClient\Array.cs" />
+    <Compile Include="Lib\AcClient\CharGen.cs" />
+    <Compile Include="Lib\AcClient\Client.cs" />
+    <Compile Include="Lib\AcClient\CM.cs" />
+    <Compile Include="Lib\AcClient\Combat.cs" />
+    <Compile Include="Lib\AcClient\Communication.cs" />
+    <Compile Include="Lib\AcClient\DB.cs" />
+    <Compile Include="Lib\AcClient\enum.cs" />
+    <Compile Include="Lib\AcClient\Fellow.cs" />
+    <Compile Include="Lib\AcClient\Hash.cs" />
+    <Compile Include="Lib\AcClient\Input.cs" />
+    <Compile Include="Lib\AcClient\Inventory.cs" />
+    <Compile Include="Lib\AcClient\List.cs" />
+    <Compile Include="Lib\AcClient\Magic.cs" />
+    <Compile Include="Lib\AcClient\Maint.cs" />
+    <Compile Include="Lib\AcClient\Movement.cs" />
+    <Compile Include="Lib\AcClient\Net.cs" />
+    <Compile Include="Lib\AcClient\Physics.cs" />
+    <Compile Include="Lib\AcClient\Player.cs" />
+    <Compile Include="Lib\AcClient\PString.cs" />
+    <Compile Include="Lib\AcClient\SmartBox.cs" />
+    <Compile Include="Lib\AcClient\STypes.cs" />
+    <Compile Include="Lib\AcClient\Trade.cs" />
+    <Compile Include="Lib\AcClient\UIFlow.cs" />
+    <Compile Include="Lib\AcClient\UIRegion.cs" />
+    <Compile Include="Lib\AcClient\Vendor.cs" />
+    <Compile Include="Lib\AcClient\Weenie.cs" />
+    <Compile Include="Lib\AcClient\_AcClient.cs" />
+    <Compile Include="Lib\AcClient\_Hook.cs" />
+    <Compile Include="Lib\AcClient\_Todo.cs" />
     <Compile Include="Lib\File.cs" />
     <Compile Include="FilterCore.cs" />
     <Compile Include="Lib\ObservableDictionary.cs" />
@@ -103,6 +135,7 @@
     <Compile Include="Lib\Settings\SettingAttributes.cs" />
     <Compile Include="Lib\Settings\SettingChangedEventArgs.cs" />
     <Compile Include="Lib\Settings\Settings.cs" />
+    <Compile Include="Lib\SSLProtocolExtensions.cs" />
     <Compile Include="Lib\XPHelper.cs" />
     <Compile Include="LoaderLogin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

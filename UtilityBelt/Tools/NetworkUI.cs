@@ -162,16 +162,16 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
             }
         }
 
-        private void Hud_OnClose(object sender, EventArgs e) {
+        private void Hud_OnClose() {
             //Visible.Value = false;
         }
 
-        private void Hud_OnMove(object sender, EventArgs e) {
-            clientsView.view.Location = new Point(hud.X - HUD_X_OFFSET, hud.Y - HUD_Y_OFFSET);
+        private void Hud_OnMove() {
+            clientsView.view.Location = new Point(hud.BBox.X - HUD_X_OFFSET, hud.BBox.Y - HUD_Y_OFFSET);
             hud.Hud.ZPriority = clientsView.view.ForcedZOrder + 1;
         }
 
-        private void Hud_OnReMake(object sender, EventArgs e) {
+        private void Hud_OnReMake() {
             CreateTextures();
             hud.Hud.ZPriority = clientsView.view.ForcedZOrder + 1;
         }
@@ -179,8 +179,8 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
         private void Hud_OnWindowMessage(object sender, Decal.Adapter.WindowMessageEventArgs e) {
             var isShift = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
             var mousePos = new Point(e.LParam);
-            var x = mousePos.X - hud.X;
-            var y = mousePos.Y - hud.Y;
+            var x = mousePos.X - hud.BBox.X;
+            var y = mousePos.Y - hud.BBox.Y;
             if (!isShift || e.Msg == WM_MOUSEMOVE || clients == null || x > CHAR_NAME_WIDTH || y > ROW_SIZE * clients.Count())
                 return;
             var offset = (int)Math.Floor((double)y / ROW_SIZE);
@@ -298,12 +298,12 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
             hud.OnClose -= Hud_OnClose;
             hud.OnRender -= Hud_OnRender;
             hud.OnReMake -= Hud_OnReMake;
-            hud.OnWindowMessage += Hud_OnWindowMessage;
+            hud.OnWindowMessage -= Hud_OnWindowMessage;
             hud.Dispose();
             hud = null;
         }
 
-        private void Hud_OnRender(object sender, EventArgs e) {
+        private void Hud_OnRender() {
             try {
                 var tag = GetActiveTab();
                 clients = UB.Networking.Clients.Where((c) => {

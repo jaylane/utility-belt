@@ -1858,13 +1858,13 @@ namespace UtilityBelt.Tools {
                 }
             }
             //Known failures
-            catch (FormatException ex) {
+            catch (FormatException) {
                 return 0;
             }
-            catch (InvalidCastException ex) {
+            catch (InvalidCastException) {
                 return 0;
             }
-            catch (Exception ex) {
+            catch (Exception) {
                 //Eat the error thrown even on successes
             }
             return 1;
@@ -2026,7 +2026,7 @@ namespace UtilityBelt.Tools {
         private int portalExitCount = 0;
         private int lastPortalExitLandcell = 0;
         private List<string> expressionExceptions = new List<string>();
-        private bool isClassicPatched;
+        //private bool isClassicPatched;
 
         public VTankControl(UtilityBeltPlugin ub, string name) : base(ub, name) {
 
@@ -2203,9 +2203,9 @@ namespace UtilityBelt.Tools {
         private void DoPortalLoopFix() {
             // TODO: fixy
             return;
-            Logger.WriteToChat($"Nav: {UBHelper.vTank.Instance.NavCurrent}");
-            Util.DispatchChatToBoxWithPluginIntercept($"/vt nav save {VTNavRoute.NoneNavName}");
-            UBHelper.vTank.Instance.NavDeletePoint(0);
+            //Logger.WriteToChat($"Nav: {UBHelper.vTank.Instance.NavCurrent}");
+            //Util.DispatchChatToBoxWithPluginIntercept($"/vt nav save {VTNavRoute.NoneNavName}");
+            //UBHelper.vTank.Instance.NavDeletePoint(0);
         }
 
         protected override void Dispose(bool disposing) {

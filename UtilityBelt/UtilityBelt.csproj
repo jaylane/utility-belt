@@ -34,6 +34,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>10</LangVersion>
     <DebugSymbols>true</DebugSymbols>
     <CodeAnalysisIgnoreGeneratedCode>true</CodeAnalysisIgnoreGeneratedCode>
   </PropertyGroup>
@@ -215,10 +216,20 @@
     <Compile Include="Lib\ToolBase.cs" />
     <Compile Include="Lib\Database.cs" />
     <Compile Include="Lib\Actions\BaseAction.cs" />
-    <Compile Include="Lib\UBHud.cs" />
-    <Compile Include="Lib\UBHudManager.cs" />
+    <Compile Include="Lib\UBHud\UBHud.Block.cs" />
+    <Compile Include="Lib\UBHud\UBHud.Button.cs" />
+    <Compile Include="Lib\UBHud\UBHud.cs" />
+    <Compile Include="Lib\UBHud\UBHud.Element.cs" />
+    <Compile Include="Lib\UBHud\UBHud.Enums.cs" />
+    <Compile Include="Lib\UBHud\UBHud.Image.cs" />
+    <Compile Include="Lib\UBHud\UBHud.Label.cs" />
+    <Compile Include="Lib\UBHud\UBHud.Titlebar.cs" />
+    <Compile Include="Lib\UBHud\UBHudManager.cs" />
     <Compile Include="Lib\VCS_Connector.cs" />
     <Compile Include="Lib\VHS_Connector.cs" />
+    <Compile Include="Tools\Player.cs" />
+    <Compile Include="Tools\UBHudDemo.cs" />
+    <Compile Include="Tools\XPMeter.cs" />
     <Compile Include="Tools\OverlayMap.cs" />
     <Compile Include="Tools\AutoXp.cs" />
     <Compile Include="Tools\ChatFilter.cs" />

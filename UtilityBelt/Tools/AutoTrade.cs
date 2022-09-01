@@ -301,7 +301,7 @@ AutoTrade supports a list of patterns you want to auto-accept any incoming trade
             try {
                 ((VTClassic.LootCore)lootProfile).LoadProfile(profilePath, false);
             }
-            catch (Exception ex) {
+            catch (Exception) {
                 LogError("Unable to load loot profile. Ensure that no profile is loaded in Virindi Item Tool.");
                 Stop();
                 return;

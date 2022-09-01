@@ -1,32 +1,17 @@
 ﻿using Decal.Adapter;
-using Decal.Adapter.Wrappers;
-using Decal.Interop.Input;
-using Microsoft.DirectX;
 using System;
-using System.ComponentModel;
-using System.Drawing;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
-using UtilityBelt.Lib.Dungeon;
-using UtilityBelt.Lib.Maps.Markers;
-using UtilityBelt.Lib.Settings;
-using VirindiViewService;
-using static UtilityBelt.Tools.VTankControl;
 using UBLoader.Lib.Settings;
-using UtilityBelt.Lib.Expressions;
-using Antlr4.Runtime.Misc;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Reflection;
 
 namespace UtilityBelt.Tools {
-    /// <summary>
-    /// Helper for using Mag-Filter: https://github.com/Mag-nus/Mag-Plugins/wiki/Mag%E2%80%90Filter
-    /// </summary>
     [Name("LoginManagerCommand")]
+    [Summary("Set a character to automatically login as by part of name of relative index.")]
     public class LoginManager : ToolBase {
-    
+
         #region Expressions
         #region getcharacterindex[string name]
         [ExpressionMethod("getcharacterindex")]
@@ -36,11 +21,11 @@ namespace UtilityBelt.Tools {
         [Example("getcharacterindex[``]", "Get index of the current character")]
         [Example("getcharacterindex[`mule`]", "Get index the first character with `mule` in the name")]
         public object Getcharacterindex(string name) {
-            var names = GetSortedCharacterNames();
+            var names = GetSortedCharacters();
             if (String.IsNullOrEmpty(name))
                 name = CoreManager.Current.CharacterFilter.Name;
             Logger.WriteToChat($"Check name of {names}");
-            return names.FindIndex(x => x.ContainsCaseInsensitive(name));
+            return names.FindIndex(x => x.Name.ContainsCaseInsensitive(name));
         }
         #endregion getcharacterindex[string name]
         #region setnextlogin[string nameOrIndex]
@@ -81,7 +66,6 @@ namespace UtilityBelt.Tools {
         [Example("/ub login next salv", "Logs in the first character with 'salv' as part of their name")]
         [Example("/ub login clear", "Clears the next login.")]
         [Example("/ub login list", "Lists the characters and indices for this account.")]
-        //[Example("/ub autosalvage", "Adds all matching items to your salvage window")]
         [CommandPattern("login", CommandPattern)]
         public void HandleLoginCommand(string command, Match args) {
             if (!args.Groups["command"].Value.EnumTryParse<LoginManagerCommand>(out var cmd)) {
@@ -136,27 +120,39 @@ namespace UtilityBelt.Tools {
 
         public LoginManager(UtilityBeltPlugin ub, string name) : base(ub, name) { }
 
-        //LINQ causes errors with Characters?
-        private List<string> GetSortedCharacterNames() {
-            var names = new List<string>();
-            var chars = CoreManager.Current.CharacterFilter.Characters;
-            for (var i = 0; i < chars.Count; i++)
-                names.Add(chars[i].Name);
+        struct CharInfo {
+            public string Name;
+            public int Id;
+            public int Index;
 
-            names.Sort();
-            return names;
+            public CharInfo(string name, int id, int index) {
+                Name = name;
+                Id = id;
+                Index = index;
+            }
+        }
+        private List<CharInfo> GetSortedCharacters() {
+            var sortedChars = new List<CharInfo>();
+            var chars = CoreManager.Current.CharacterFilter.Characters;
+
+            for (var i = 0; i < chars.Count; i++)
+                sortedChars.Add(new CharInfo(chars[i].Name, chars[i].Id, chars[i].Index));
+
+            sortedChars = sortedChars.OrderBy(x => x.Name).ToList();
+
+            return sortedChars;
         }
 
         public void ClearLogin(bool silent = false) {
-            if(!silent)
-            Logger.WriteToChat("Next login cleared.");
+            if (!silent)
+                Logger.WriteToChat("Next login cleared.");
             UBLoader.LoaderLogin.ClearNextLogin();
         }
 
         public bool SetNextLoginByName(string name, bool silent = false) {
-            var chars = GetSortedCharacterNames();
+            var chars = GetSortedCharacters();
 
-            var index = chars.FindIndex(x => x.Contains(name, StringComparison.InvariantCultureIgnoreCase));
+            var index = chars.FindIndex(x => x.Name.Contains(name, StringComparison.InvariantCultureIgnoreCase));
             if (index < 0) {
                 if (!silent)
                     Logger.WriteToChat($"No character found with name {name}.  Clearing next login.");
@@ -172,16 +168,16 @@ namespace UtilityBelt.Tools {
         /// </summary>
         public bool SetNextLogin(int index, bool relative = false, bool looping = false, bool silent = false) {
             //Get a sorted list of characters
-            var chars = GetSortedCharacterNames();
+            var chars = GetSortedCharacters();
             var currentName = CoreManager.Current.CharacterFilter.Name;
 
             if (relative) {
                 //Find current login to offset
-                var currentIndex = chars.FindIndex(x => x.Contains(currentName, StringComparison.InvariantCultureIgnoreCase));
+                var currentIndex = chars.FindIndex(x => x.Name.Contains(currentName, StringComparison.InvariantCultureIgnoreCase));
 
                 if (currentIndex < 0) {
-                    if(!silent)
-                    Logger.WriteToChat("Unable to login relative to newly created characters.");
+                    if (!silent)
+                        Logger.WriteToChat("Unable to login relative to newly created characters.");
                     ClearLogin(silent);
                     return false;
                 }
@@ -200,21 +196,23 @@ namespace UtilityBelt.Tools {
             }
 
             if (!silent)
-                Logger.WriteToChat($"Logging in as {chars[index]} next at index {index}");
-            return UBLoader.LoaderLogin.SetNextLogin(index, chars[index]);
+                Logger.WriteToChat($"Logging in as {chars[index].Name} next at index {index}");
+
+            UBLoader.LoaderLogin.SetNextLogin((uint)chars[index].Id);
+            return true;
         }
 
         public void PrintLogins() {
-            var chars = GetSortedCharacterNames();
+            var chars = GetSortedCharacters();
             var currentName = CoreManager.Current.CharacterFilter.Name;
 
             var sb = new StringBuilder();
 
             sb.Append($"Listing {chars.Count} logins.\n");
-            sb.Append($"{"Index",-10}{"Name"}\n");
+            sb.Append($"{"Index",-10}{"Name",-30}{"ID",-20}Filter Index\n");
 
             for (var i = 0; i < chars.Count; i++)
-                sb.Append($"{i,-10}{(chars[i] == currentName ? $"**{chars[i]}**" : chars[i])}\n");
+                sb.Append($"{i,-10}{(chars[i].Name == currentName ? $"**{chars[i].Name}**" : chars[i].Name),-30}{chars[i].Id,-20}{chars[i].Index}\n");
 
             Logger.WriteToChat(sb.ToString());
         }

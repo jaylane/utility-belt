@@ -89,7 +89,7 @@ The Rend All button will automatically do the following:
         internal DataTable tinkerDT = new DataTable();
         internal DataTable TinkerList = new DataTable();
 
-        private bool waitingForIds = false;
+        //private bool waitingForIds = false;
         private List<int> itemsToId = new List<int>();
         private readonly List<int> salvageToBeApplied = new List<int>();
         private readonly List<int> PossibleMaterialList = new List<int>();

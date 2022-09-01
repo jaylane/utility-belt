@@ -70,7 +70,7 @@ namespace UtilityBelt.Tools {
         private DateTime lastAttempt = DateTime.UtcNow;
         private DateTime salvageDelay = DateTime.UtcNow;
 
-        private int lastOpenContainer = 0;
+        //private int lastOpenContainer = 0;
 
         private int unlockAttempt = 0;
         private int openAttempt = 0;
@@ -78,7 +78,7 @@ namespace UtilityBelt.Tools {
 
         private DateTime startTime = DateTime.MinValue;
 
-        private looterstate lastLooterState = looterstate.Closed;
+        //private looterstate lastLooterState = looterstate.Closed;
 
         private List<int> containerItemsList = new List<int>();
 
@@ -377,13 +377,13 @@ namespace UtilityBelt.Tools {
                 }
                 UnLockVtankSettings();
 
-                lastOpenContainer = 0;
+                //lastOpenContainer = 0;
 
                 containerItems.Clear();
                 containerItemsList.Clear();
 
                 looterState = looterstate.Done;
-                lastLooterState = looterstate.Done;
+                //lastLooterState = looterstate.Done;
                 UbOwnedContainer = false;
                 lootAttemptCount = 0;
 
