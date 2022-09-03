@@ -130,7 +130,7 @@ namespace UBLoader {
                         UnloadPluginAssembly();
                         Decal.Adapter.CoreManager.Current.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
 
-                        if (previous == UBHelper.GameState.Logging_Out) 
+                        if (previous == UBHelper.GameState.Logging_Out)
                             LoaderLogin.Login();
                         break;
                     case UBHelper.GameState.In_Game:
@@ -157,7 +157,7 @@ namespace UBLoader {
                         break;
                 }
             }
-            catch(Exception e) { LogException(e); }
+            catch (Exception e) { LogException(e); }
         }
 
         private void LoadAssemblyConfig() {
@@ -205,10 +205,6 @@ namespace UBLoader {
 
         private static void EchoFilter_ServerDispatch(object sender, NetworkMessageEventArgs e) {
             try {
-                //Find number of character slots.  Todo: remove this if Yonneh implements a direct approach
-                if(e.Message.Type == 0xF658) {
-                    LoaderLogin.SetSlots(Convert.ToInt32(e.Message["slotCount"]));
-                }
                 if (e.Message.Type == 0x02DD) {
                     var key = e.Message.Value<int>("key");
                     var skill = e.Message.Struct("value");

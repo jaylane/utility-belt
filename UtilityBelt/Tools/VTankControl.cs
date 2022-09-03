@@ -1522,8 +1522,10 @@ namespace UtilityBelt.Tools {
         [ExpressionParameter(0, typeof(ExpressionWorldObject), "useObj", "wobject to use first")]
         [ExpressionParameter(0, typeof(ExpressionWorldObject), "onObj", "wobject to be used on")]
         [ExpressionReturn(typeof(double), "Returns 0 if failed, and 1 if it *could* succeed")]
-        [Summary("Attempts to use a worldobject on another worldobject")]
+        [Summary("Attempts to use a worldobject on another worldobject. You can use this to cast wand spells by passing the wand as the useObj and the target as onObj (must be in magic mode and have the wand equipped).")]
         [Example("actiontryapplyitem[wobjectfindininventorybynamerx[`.* Healing Kit`],wobjectwobjectgetplayer[]]", "Attempts to use any healing kit in your inventory, on yourself")]
+        [Example("actiontryapplyitem[wobjectfindininventorybyname[`Glenden Wood Recall Orb`], wobjectgetplayer[]]", "Attempts to use the Glended Wood Recall Orb spell Glenden Wood Recall (on yourself)")]
+        [Example("actiontryapplyitem[wobjectfindininventorybyname[`Ice Wand`], wobjectgetselection[]]", "Attempts to use the Ice Wand spell Avalanche on your currently selected target")]
         public object Actiontryapplyitem(ExpressionWorldObject useObj, ExpressionWorldObject onObj) {
             if (UtilityBeltPlugin.Instance.Core.Actions.BusyState != 0)
                 return 0;
@@ -1531,7 +1533,7 @@ namespace UtilityBelt.Tools {
                 return 0;
             UtilityBeltPlugin.Instance.Core.Actions.SelectItem(onObj.Id);
             if (useObj.Wo.ObjectClass == ObjectClass.WandStaffOrb)
-                UtilityBeltPlugin.Instance.Core.Actions.UseItem(useObj.Wo.Id, onObj.Wo.Id);
+                UtilityBeltPlugin.Instance.Core.Actions.UseItem(useObj.Wo.Id, 1, onObj.Wo.Id);
             else
                 UtilityBeltPlugin.Instance.Core.Actions.ApplyItem(useObj.Wo.Id, onObj.Wo.Id);
             return 1;
@@ -1856,13 +1858,13 @@ namespace UtilityBelt.Tools {
                 }
             }
             //Known failures
-            catch (FormatException ex) {
+            catch (FormatException) {
                 return 0;
             }
-            catch (InvalidCastException ex) {
+            catch (InvalidCastException) {
                 return 0;
             }
-            catch (Exception ex) {
+            catch (Exception) {
                 //Eat the error thrown even on successes
             }
             return 1;
@@ -2024,7 +2026,7 @@ namespace UtilityBelt.Tools {
         private int portalExitCount = 0;
         private int lastPortalExitLandcell = 0;
         private List<string> expressionExceptions = new List<string>();
-        private bool isClassicPatched;
+        //private bool isClassicPatched;
 
         public VTankControl(UtilityBeltPlugin ub, string name) : base(ub, name) {
 
@@ -2201,9 +2203,9 @@ namespace UtilityBelt.Tools {
         private void DoPortalLoopFix() {
             // TODO: fixy
             return;
-            Logger.WriteToChat($"Nav: {UBHelper.vTank.Instance.NavCurrent}");
-            Util.DispatchChatToBoxWithPluginIntercept($"/vt nav save {VTNavRoute.NoneNavName}");
-            UBHelper.vTank.Instance.NavDeletePoint(0);
+            //Logger.WriteToChat($"Nav: {UBHelper.vTank.Instance.NavCurrent}");
+            //Util.DispatchChatToBoxWithPluginIntercept($"/vt nav save {VTNavRoute.NoneNavName}");
+            //UBHelper.vTank.Instance.NavDeletePoint(0);
         }
 
         protected override void Dispose(bool disposing) {

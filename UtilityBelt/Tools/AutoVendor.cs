@@ -752,7 +752,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             try {
                 lootProfile.LoadProfile(profilePath, false);
             }
-            catch (Exception ex) {
+            catch (Exception) {
                 LogError("Unable to load loot profile. Ensure that no profile is loaded in Virindi Item Tool.");
                 Stop();
                 return;

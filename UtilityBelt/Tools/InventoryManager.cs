@@ -44,7 +44,7 @@ Provides a command-line interface to inventory management.
         private static DateTime lastIdSpam = DateTime.MinValue, bailTimer = DateTime.MinValue, reloadLootProfileTS = DateTime.MinValue, lastAction = DateTime.MinValue;
         internal bool IGRunning = false;
         private static bool givePartialItem, isRegex = false;
-        private static int currentItem, retryCount, destinationId, failedItems, totalFailures, maxGive, itemsGiven, lastIdCount, pendingGiveCount, giveDelay;
+        private static int currentItem, retryCount, destinationId, failedItems, totalFailures, maxGive, itemsGiven, pendingGiveCount, giveDelay; // lastIdCount
         private LootCore lootProfile = null;
         private static string utlProfile = "", targetPlayer="", profilePath = "";
         private static readonly Dictionary<string, int> poorlyNamedKeepUptoDictionary = new Dictionary<string, int>();
@@ -171,7 +171,7 @@ Provides a command-line interface to inventory management.
             IGRunning = true;
             GetGiveItems();
 
-            lastIdCount = int.MaxValue;
+            // lastIdCount = int.MaxValue;
             bailTimer = DateTime.UtcNow;
             giveTimer = Stopwatch.StartNew();
             UB.Core.RenderFrame += Core_RenderFrame_ig;
@@ -289,14 +289,14 @@ Provides a command-line interface to inventory management.
             try {
                 lootProfile.LoadProfile(Path.Combine(profilePath, utlProfile), false);
             }
-            catch (Exception ex) {
+            catch (Exception) {
                 LogError("Unable to load loot profile. Ensure that no profile is loaded in Virindi Item Tool.");
                 return;
             }
 
             UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.Navigation, TimeSpan.FromMilliseconds(30000));
             UBHelper.vTank.Decision_Lock(uTank2.ActionLockType.ItemUse, TimeSpan.FromMilliseconds(30000));
-            lastIdCount = int.MaxValue;
+            //lastIdCount = int.MaxValue;
             IGRunning = true;
             GetIGItems();
 

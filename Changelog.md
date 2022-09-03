@@ -12,6 +12,9 @@
 - Added previously unknown `/ub propertydump` property names
 - Added new [Overlay Maps](/docs/tools/OverlayMaps/)
 - Added settings `Global.KillDisconnectedClients` to automatically close disconnected client windows
+- Fix actiontryapplyitem[] support for casting wand spells
+- add UBHudDemo as a WIP test ground for UI development
+- add 275+ xp meter, with hud- meta expressions xp*[] and lum*[], no CLI
 
 ## 0.2.7 (2022-07-27) [UtilityBeltInstaller-0.2.7.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/f24f9359893592252815818da7b3b7ba/UtilityBeltInstaller-0.2.7.exe)
 - Add expression: wobjectgetactivespellids[WorldObject]

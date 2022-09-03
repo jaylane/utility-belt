@@ -39,7 +39,7 @@ namespace UtilityBelt.Lib.Tinker {
             isRunning = true;
             activeJob = job;
             Logger.Debug("Autotinker: " + Util.GetObjectName(activeJob.itemID));
-            int i = 0;
+            //int i = 0;
             Logger.Debug("Autotinker: " + activeJob.salvageToBeApplied.Count.ToString());
             //salvagesto.First();
             //foreach (int s in activeJob.salvageToBeApplied) {
