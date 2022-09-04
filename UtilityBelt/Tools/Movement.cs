@@ -67,7 +67,7 @@ namespace UtilityBelt.Tools {
 
             }
             else {
-                phy = CObjectMaint.s_pcInstance->GetObjectA(*ACCWeenieObject.selectedID);
+                phy = (*CObjectMaint.s_pcInstance)->GetObjectA(*ACCWeenieObject.selectedID);
                 CMotionInterp* cmi = phy->movement_manager->motion_interpreter;
                 WriteToChat($"Current (Wanted) Held Keys: Forward: {WantedMotionStatus[Motion.Forward]}, Backward: {WantedMotionStatus[Motion.Backward]}, TurnRight: {WantedMotionStatus[Motion.TurnRight]}, TurnLeft: {WantedMotionStatus[Motion.TurnLeft]}, StrafeRight: {WantedMotionStatus[Motion.StrafeRight]}, StrafeLeft: {WantedMotionStatus[Motion.StrafeLeft]}, Walk: {WantedMotionStatus[Motion.Walk]}");
                 WriteToChat($"Current (Actually) Held Keys: Forward: {CurrentMotionStatus[Motion.Forward]}, Backward: {CurrentMotionStatus[Motion.Backward]}, TurnRight: {CurrentMotionStatus[Motion.TurnRight]}, TurnLeft: {CurrentMotionStatus[Motion.TurnLeft]}, StrafeRight: {CurrentMotionStatus[Motion.StrafeRight]}, StrafeLeft: {CurrentMotionStatus[Motion.StrafeLeft]}, Walk: {CurrentMotionStatus[Motion.Walk]}");

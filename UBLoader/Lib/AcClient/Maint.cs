@@ -113,7 +113,7 @@ namespace AcClient {
         public void UseTime() => ((delegate* unmanaged[Thiscall]<ref CObjectMaint, void>)0x00509480)(ref this); // .text:005089B0 ; void __thiscall CObjectMaint::UseTime(CObjectMaint *this) .text:005089B0 ?UseTime@CObjectMaint@@QAEXXZ
 
         // Globals:
-        public static CObjectMaint* s_pcInstance = *(CObjectMaint**)0x00842ADC; // .data:00841ACC ; CObjectMaint *CObjectMaint::s_pcInstance .data:00841ACC ?s_pcInstance@CObjectMaint@@1PAV1@A
+        public static CObjectMaint** s_pcInstance = (CObjectMaint**)0x00842ADC; // .data:00841ACC ; CObjectMaint *CObjectMaint::s_pcInstance .data:00841ACC ?s_pcInstance@CObjectMaint@@1PAV1@A
     }
     public unsafe struct ACCObjectMaint {
         // Struct:

@@ -331,7 +331,7 @@ namespace AcClient {
         public UInt32 context_id;
         public HoldKey hold_key_to_apply;
         public UInt32 action_stamp;
-        public override string ToString() => $"a0(PackObj):{a0}, bitfield:{bitfield:X8}, distance_to_object:{distance_to_object:n5}, min_distance:{min_distance:n5}, desired_heading:{desired_heading:n5}, speed:{speed:n5}, fail_distance:{fail_distance:n5}, walk_run_threshhold:{walk_run_threshhold:n5}, context_id:{context_id:X8}, hold_key_to_apply(HoldKey):{hold_key_to_apply}, action_stamp:{action_stamp:X8}";
+        public override string ToString() => $"bitfield:{bitfield:X8}, distance_to_object:{distance_to_object:n5}, min_distance:{min_distance:n5}, desired_heading:{desired_heading:n5}, speed:{speed:n5}, fail_distance:{fail_distance:n5}, walk_run_threshhold:{walk_run_threshhold:n5}, context_id:{context_id:X8}, hold_key_to_apply:{hold_key_to_apply}, action_stamp:{action_stamp:X8}";
 
         // Functions:
 

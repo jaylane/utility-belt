@@ -336,6 +336,75 @@ namespace AcClient {
     }
 
 
+    public unsafe struct Matrix4 {
+        // Struct:
+        public Single _11;
+        public Single _12;
+        public Single _13;
+        public Single _14;
+        public Single _21;
+        public Single _22;
+        public Single _23;
+        public Single _24;
+        public Single _31;
+        public Single _32;
+        public Single _33;
+        public Single _34;
+        public Single _41;
+        public Single _42;
+        public Single _43;
+        public Single _44;
+        public override string ToString() => $"_11:{_11:n5}, _12:{_12:n5}, _13:{_13:n5}, _14:{_14:n5}, _21:{_21:n5}, _22:{_22:n5}, _23:{_23:n5}, _24:{_24:n5}, _31:{_31:n5}, _32:{_32:n5}, _33:{_33:n5}, _34:{_34:n5}, _41:{_41:n5}, _42:{_42:n5}, _43:{_43:n5}, _44:{_44:n5}";
+
+        // Functions:
+
+        // Matrix4.Adjoint:
+        // public void Adjoint(Matrix4* src) => ((delegate* unmanaged[Thiscall]<ref Matrix4, Matrix4*, void>)0xDEADBEEF)(ref this, src); // .text:0065D210 ; void __thiscall Matrix4::Adjoint(Matrix4 *this, Matrix4 *src) .text:0065D210 ?Adjoint@Matrix4@@QAEXABV1@@Z
+
+        // Matrix4.AreEqual:
+        // public static Byte AreEqual(Matrix4* _mA, Matrix4* _mB) => ((delegate* unmanaged[Cdecl]<Matrix4*, Matrix4*, Byte>)0xDEADBEEF)(_mA, _mB); // .text:0065D5A0 ; bool __cdecl Matrix4::AreEqual(Matrix4 *_mA, Matrix4 *_mB) .text:0065D5A0 ?AreEqual@Matrix4@@SA_NABV1@0@Z
+
+        // Matrix4.CalcDeterminant:
+        // public Single CalcDeterminant() => ((delegate* unmanaged[Thiscall]<ref Matrix4, Single>)0xDEADBEEF)(ref this); // .text:0065CE70 ; float __thiscall Matrix4::CalcDeterminant(Matrix4 *this) .text:0065CE70 ?CalcDeterminant@Matrix4@@QBEMXZ
+
+        // Matrix4.Inverse:
+        // public Single Inverse(Matrix4* src) => ((delegate* unmanaged[Thiscall]<ref Matrix4, Matrix4*, Single>)0xDEADBEEF)(ref this, src); // .text:0065D760 ; float __thiscall Matrix4::Inverse(Matrix4 *this, Matrix4 *src) .text:0065D760 ?Inverse@Matrix4@@QAEMABV1@@Z
+
+        // Matrix4.Multiply_C:
+        public void Multiply_C(Matrix4* a, Matrix4* b) => ((delegate* unmanaged[Thiscall]<ref Matrix4, Matrix4*, Matrix4*, void>)0x0043D9C0)(ref this, a, b); // .text:0043D820 ; void __thiscall Matrix4::Multiply_C(Matrix4 *this, Matrix4 *a, Matrix4 *b) .text:0043D820 ?Multiply_C@Matrix4@@QAEXABV1@0@Z
+
+        // Matrix4.RotateX:
+        // public void RotateX(Single radians) => ((delegate* unmanaged[Thiscall]<ref Matrix4, Single, void>)0xDEADBEEF)(ref this, radians); // .text:0065D0D0 ; void __thiscall Matrix4::RotateX(Matrix4 *this, float radians) .text:0065D0D0 ?RotateX@Matrix4@@QAEXM@Z
+
+        // Matrix4.RotateY:
+        // public void RotateY(Single radians) => ((delegate* unmanaged[Thiscall]<ref Matrix4, Single, void>)0xDEADBEEF)(ref this, radians); // .text:0065D120 ; void __thiscall Matrix4::RotateY(Matrix4 *this, float radians) .text:0065D120 ?RotateY@Matrix4@@QAEXM@Z
+
+        // Matrix4.RotateZ:
+        // public void RotateZ(Single radians) => ((delegate* unmanaged[Thiscall]<ref Matrix4, Single, void>)0xDEADBEEF)(ref this, radians); // .text:0065D170 ; void __thiscall Matrix4::RotateZ(Matrix4 *this, float radians) .text:0065D170 ?RotateZ@Matrix4@@QAEXM@Z
+
+        // Matrix4.Scale:
+        // public void Scale(Single x, Single y, Single z) => ((delegate* unmanaged[Thiscall]<ref Matrix4, Single, Single, Single, void>)0xDEADBEEF)(ref this, x, y, z); // .text:0065D1C0 ; void __thiscall Matrix4::Scale(Matrix4 *this, float x, float y, float z) .text:0065D1C0 ?Scale@Matrix4@@QAEXMMM@Z
+
+        // Matrix4.TransformVector_C:
+        public void TransformVector_C(Vector3* src, Vector3* dst) => ((delegate* unmanaged[Thiscall]<ref Matrix4, Vector3*, Vector3*, void>)0x0043D940)(ref this, src, dst); // .text:0043D7A0 ; void __thiscall Matrix4::TransformVector_C(Matrix4 *this, Vector3 *src, Vector3 *dst) .text:0043D7A0 ?TransformVector_C@Matrix4@@QBEXABVVector3@@AAV2@@Z
+
+        // Matrix4.Translate3:
+        // public void Translate3(Single x, Single y) => ((delegate* unmanaged[Thiscall]<ref Matrix4, Single, Single, void>)0xDEADBEEF)(ref this, x, y); // .text:0065D080 ; void __thiscall Matrix4::Translate3(Matrix4 *this, float x, float y) .text:0065D080 ?Translate3@Matrix4@@QAEXMM@Z
+
+        // Matrix4.Translate:
+        // public void Translate(Single x, Single y, Single z) => ((delegate* unmanaged[Thiscall]<ref Matrix4, Single, Single, Single, void>)0xDEADBEEF)(ref this, x, y, z); // .text:0065D030 ; void __thiscall Matrix4::Translate(Matrix4 *this, float x, float y, float z) .text:0065D030 ?Translate@Matrix4@@QAEXMMM@Z
+
+        // Globals:
+        // public static Matrix4* NULL_MATRIX4 = (Matrix4*)0xDEADBEEF; // .data:008F7650 ; Matrix4 Matrix4::NULL_MATRIX4 .data:008F7650 ?NULL_MATRIX4@Matrix4@@2V1@B
+    }
+    public unsafe struct Vector4 {
+        // Struct:
+        public Single x;
+        public Single y;
+        public Single z;
+        public Single w;
+        public override string ToString() => $"x:{x:n5}, y:{y:n5}, z:{z:n5}, w:{w:n5}";
+    }
 
 
     public unsafe struct CTimestamp<T> where T : unmanaged {

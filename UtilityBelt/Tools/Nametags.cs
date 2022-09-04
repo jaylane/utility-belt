@@ -6,6 +6,8 @@ using System.ComponentModel;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using UBLoader.Lib.Settings;
+using AcClient;
+using System.Runtime.InteropServices;
 
 namespace UtilityBelt.Tools {
     [Name("Nametags")]
@@ -34,6 +36,9 @@ For portals, it will show the destination.
         [Summary("Player Nametag")]
         public readonly NametagDisplay Player = new NametagDisplay(true, -16711681, 0.15f, -16711681, 0.1f);
 
+        [Summary("Pet Nametag")]
+        public readonly NametagDisplay Pet = new NametagDisplay(true, -16711681, 0.15f, -16711681, 0.1f);
+
         [Summary("Allegiance Player Nametag")]
         public readonly NametagDisplay AllegiancePlayer = new NametagDisplay(true, -16711936, 0.15f, -16711936, 0.1f);
 
@@ -57,7 +62,7 @@ For portals, it will show the destination.
         public override void Init() {
             base.Init();
             Changed += Nametags_PropertyChanged;
-            
+
             if (Enabled) Enable();
         }
 
@@ -94,9 +99,15 @@ For portals, it will show the destination.
         /// <summary>
         /// Internal Enable function- for enabling internally, without affecting user preference
         /// </summary>
-        private void EnableInternal() {
+        private unsafe void EnableInternal() {
             if (!enabled) {
                 enabled = true;
+                //if (!CPhysicsObj__TurnToObject_hook.Setup(new CPhysicsObj__TurnToObject_def(CPhysicsObj__TurnToObject)))
+                //    LogError($"HOOK>CPhysicsObj__TurnToObject instaill falure");
+                //if (!CPhysicsObj__MoveToObject_hook.Setup(new CPhysicsObj__MoveToObject_def(CPhysicsObj__MoveToObject)))
+                //    LogError($"HOOK>CPhysicsObj__MoveToObject instaill falure");
+                //if (!H__remove_hook.Setup(new H__remove_def(H__remove)))
+                //    LogError($"HOOK>H__remove instaill falure");
                 UB.Core.WorldFilter.CreateObject += WorldFilter_CreateObject;
                 UB.Core.WorldFilter.ChangeObject += WorldFilter_ChangeObject;
                 UB.Core.RenderFrame += Core_RenderFrame;
@@ -109,6 +120,12 @@ For portals, it will show the destination.
         /// </summary>
         public void DisableInternal() {
             if (enabled) {
+                //if (!CPhysicsObj__TurnToObject_hook.Remove())
+                //    LogError($"HOOK>CPhysicsObj__TurnToObject removal failure");
+                //if (!CPhysicsObj__MoveToObject_hook.Remove())
+                //    LogError($"HOOK>CPhysicsObj__MoveToObject removal failure");
+                //if (!H__remove_hook.Remove())
+                //    LogError($"HOOK>H__remove removal failure");
                 enabled = false;
                 UB.Core.WorldFilter.CreateObject -= WorldFilter_CreateObject;
                 UB.Core.WorldFilter.ChangeObject -= WorldFilter_ChangeObject;
@@ -184,6 +201,67 @@ For portals, it will show the destination.
                 }
             } catch (Exception ex) { Logger.LogException(ex); }
         }
+
+        //WIP code for tracking targets of targets
+
+        //internal Hook CPhysicsObj__TurnToObject_hook = new AcClient.Hook(0x00513440, 0x005252D0);
+        //// .text:005252D0                 call    ?TurnToObject@CPhysicsObj@@QAEXKABVMovementParameters@@@Z ; CPhysicsObj::TurnToObject(ulong,MovementParameters const &)
+        //// .text:00513440 ; public: void __thiscall CPhysicsObj::TurnToObject(unsigned long,class MovementParameters const &)
+        //[UnmanagedFunctionPointer(CallingConvention.ThisCall)] internal unsafe delegate void CPhysicsObj__TurnToObject_def(CPhysicsObj* This, UInt32 object_id, MovementParameters* _params);
+
+        ///// <summary>
+        ///// Detour function- the client thinks this is CPhysicsObj::TurnToObject, so make sure you call the real thing
+        ///// </summary>
+        //private unsafe void CPhysicsObj__TurnToObject(CPhysicsObj* This, UInt32 object_id, MovementParameters* _params) {
+        //    //WriteToChat($"HOOK>CPhysicsObj__TurnToObject({This->a0.a0.id:X8}, {object_id:X8}, {*_params})");
+        //    AddUpdate_Object(This->a0.a0.id, object_id);
+        //    This->TurnToObject(object_id, _params);
+        //}
+
+
+        //internal Hook CPhysicsObj__MoveToObject_hook = new AcClient.Hook(0x00513360, 0x00525204);
+        //// .text:00525204                 call    ?MoveToObject@CPhysicsObj@@QAEXKABVMovementParameters@@@Z ; CPhysicsObj::MoveToObject(ulong,MovementParameters const &)
+        //// .text:00513360 ; public: void __thiscall CPhysicsObj::MoveToObject(unsigned long,class MovementParameters const &)
+        //[UnmanagedFunctionPointer(CallingConvention.ThisCall)] internal unsafe delegate void CPhysicsObj__MoveToObject_def(CPhysicsObj* This, UInt32 object_id, MovementParameters* _params);
+
+        ///// <summary>
+        ///// Detour function- the client thinks this is CPhysicsObj::TurnToObject, so make sure you call the real thing
+        ///// </summary>
+        //private unsafe void CPhysicsObj__MoveToObject(CPhysicsObj* This, UInt32 object_id, MovementParameters* _params) {
+        //    //WriteToChat($"HOOK>CPhysicsObj__MoveToObject({This->a0.a0.id:X8}, {object_id:X8}, {*_params})");
+        //    AddUpdate_Object(This->a0.a0.id, object_id);
+        //    This->MoveToObject(object_id, _params);
+        //}
+
+
+        ////not all of these are pretty.
+        //internal Hook H__remove_hook = new AcClient.Hook(0x004171E0, 0x00509576);
+        //// .text:00509576                 call    ?remove@?$IntrusiveHashTable@V?$IDClass@U_tagDataID@@$0CA@$0A@@@PAV?$HashSetData@V?$IDClass@U_tagDataID@@$0CA@$0A@@@@@$00@@QAEPAV?$HashSetData@V?$IDClass@U_tagDataID@@$0CA@$0A@@@@@ABV?$IDClass@U_tagDataID@@$0CA@$0A@@@@Z ; IntrusiveHashTable<IDClass<_tagDataID,32,0>,HashSetData<IDClass<_tagDataID,32,0>> *,1>::remove(IDClass<_tagDataID,32,0> const &)
+        //// .text:004171E0 ; public: class HashSetData<class IDClass<struct _tagDataID,32,0>> * __thiscall IntrusiveHashTable<class IDClass<struct _tagDataID,32,0>,class HashSetData<class IDClass<struct _tagDataID,32,0>> *,1>::remove(class IDClass<struct _tagDataID,32,0> const &)
+        //[UnmanagedFunctionPointer(CallingConvention.ThisCall)] internal unsafe delegate int H__remove_def(int This, UInt32* object_id);
+        //private unsafe int H__remove(int This, UInt32* object_id) {
+        //    //WriteToChat($"HOOK>H__remove({*object_id:X8}");
+        //    Purge_Object(*object_id);
+        //    return ((delegate* unmanaged[Thiscall]<int, UInt32*, int>)0x004171E0)(This, object_id);
+        //}
+        //public void Purge_Object(UInt32 object_id) {
+        //    if (Targets.ContainsKey(object_id)) {
+        //        Logger.WriteToChat($"Weenie {object_id:X8} has left us, and is no longer targetting {Targets[object_id]:X8}");
+        //        Targets.Remove(object_id);
+        //    }
+        //}
+        //public unsafe void AddUpdate_Object(UInt32 object_id, UInt32 target_id) {
+        //    if (object_id == *CPhysicsPart.player_iid) return; // short-circuit if we're the one doing the targetting
+        //    if (Targets.ContainsKey(object_id)) {
+        //        if (Targets[object_id] == target_id) return;
+        //        Logger.WriteToChat($"Weenie {object_id:X8} is now targetting {target_id:X8}, instead of {Targets[object_id]:X8}");
+        //        Targets[object_id] = target_id;
+        //        return;
+        //    }
+        //    Logger.WriteToChat($"Weenie {object_id:X8} is now targetting {target_id:X8}");
+        //    Targets[object_id] = target_id;
+        //}
+        //System.Collections.Generic.Dictionary<UInt32, UInt32> Targets = new System.Collections.Generic.Dictionary<UInt32, UInt32>();
 
     }
     internal class BitcoinMiner {
@@ -289,6 +367,18 @@ For portals, it will show the destination.
                         } else TryAssess(physics, wo);
                         break;
                     case ObjectClass.Monster:
+                        var weenie = (*CObjectMaint.s_pcInstance)->GetWeenieObject((uint)wo.Id);
+                        if (weenie != null && weenie->pwd._pet_owner != 0) {
+                            tagType = "Pet";
+                            // nicity- but `Conjur's Angel of Death - (Conjur's pet)` seems redundant.
+                            //var weenieOwner = (*CObjectMaint.s_pcInstance)->GetWeenieObject(weenie->pwd._pet_owner);
+                            //if (weenieOwner != null) {
+                            //    ticker.SetText(D3DTextType.Text3D, $"({weenieOwner->pwd._name}'s pet)", "Arial", 0);
+                            //    showTicker = true;
+                            //}
+                            needsProcess = false;
+                            break;
+                        }
                         if (wo.Values(LongValueKey.CreatureLevel, -1) > 0) {
                             needsProcess = false;
                             int level = wo.Values(LongValueKey.CreatureLevel, 1);

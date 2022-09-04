@@ -173,18 +173,18 @@ namespace UtilityBelt.Tools {
         #region Wrappers to AcClient
         #region bool InFellowship { get; } // Returns true if the the player is in a fellowship
         public unsafe bool InFellowship {
-            get => (ClientFellowshipSystem.s_pFellowshipSystem->m_pFellowship != null);
+            get => ((*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship != null);
         }
         #endregion
         #region string Name { get; } // Returns the name of the current fellowship
         public unsafe new string Name {
-            get => (InFellowship ? ClientFellowshipSystem.s_pFellowshipSystem->m_pFellowship->a0._name.ToString() : "");
+            get => (InFellowship ? (*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0._name.ToString() : "");
         }
         #endregion
         #region uint Leader { get; set; } // get: Returns the current fellowship leader's character id
         // set: Give the leader position of the current fellowship to character_id. This only works if you are the fellowship leader.
         public unsafe uint Leader {
-            get => (InFellowship ? ClientFellowshipSystem.s_pFellowshipSystem->m_pFellowship->a0._leader : 0);
+            get => (InFellowship ? (*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0._leader : 0);
             set {
                 if (!InFellowship) {
                     return;
@@ -195,7 +195,7 @@ namespace UtilityBelt.Tools {
                 if (*CPhysicsPart.player_iid == value) {
                     return;
                 }
-                if (ClientFellowshipSystem.s_pFellowshipSystem->m_pFellowship->a0.IsFellow(value) == 0) {
+                if ((*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0.IsFellow(value) == 0) {
                     return;
                 }
                 CM_Fellowship.Event_AssignNewLeader(value);
@@ -206,17 +206,17 @@ namespace UtilityBelt.Tools {
         public unsafe bool IsLeader { get => Leader == *CPhysicsPart.player_iid; }
         #endregion
         #region uint MemberCount { get; } // Returns the number of players in the current fellowship (very cheap)
-        public unsafe uint MemberCount { get => (InFellowship ? ClientFellowshipSystem.s_pFellowshipSystem->m_pFellowship->a0._fellowship_table._currNum : 0); }
+        public unsafe uint MemberCount { get => (InFellowship ? (*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0._fellowship_table._currNum : 0); }
         #endregion
         #region bool ShareXP { get; } // Returns true if the current fellowship is sharing xp
-        public unsafe bool ShareXP { get => !InFellowship || ClientFellowshipSystem.s_pFellowshipSystem->m_pFellowship->a0._share_xp == 1; }
+        public unsafe bool ShareXP { get => !InFellowship || (*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0._share_xp == 1; }
         #endregion
         #region bool EvenXPSplit { get; } //  Returns true if the current fellowship is evenly splitting xp
-        public unsafe bool EvenXPSplit { get => !InFellowship || ClientFellowshipSystem.s_pFellowshipSystem->m_pFellowship->a0._even_xp_split == 1; }
+        public unsafe bool EvenXPSplit { get => !InFellowship || (*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0._even_xp_split == 1; }
         #endregion
         #region bool Open { get; set; } // Gets or Sets the current fellowship Openess. Set only works if you are the fellowship leader.
         public unsafe bool Open {
-            get => !InFellowship || ClientFellowshipSystem.s_pFellowshipSystem->m_pFellowship->a0._open_fellow == 1;
+            get => !InFellowship || (*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0._open_fellow == 1;
             set {
                 if (!InFellowship) return;
                 if (!IsLeader) return;
@@ -232,13 +232,13 @@ namespace UtilityBelt.Tools {
         }
         #endregion
         #region bool Locked { get; } // Returns true if the current fellowship is Locked.
-        public unsafe bool Locked { get => !InFellowship || ClientFellowshipSystem.s_pFellowshipSystem->m_pFellowship->a0._locked == 1; }
+        public unsafe bool Locked { get => !InFellowship || (*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0._locked == 1; }
         #endregion
         #region bool IsInFellowship(uint character_id) // Returns true if character_id is in your fellowship
         public unsafe bool IsInFellowship(uint character_id) {
             if (!InFellowship) return false;
 
-            return ClientFellowshipSystem.s_pFellowshipSystem->m_pFellowship->a0.IsFellow(character_id) != 0;
+            return (*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0.IsFellow(character_id) != 0;
         }
         #endregion
         #region void Disband() // Disband the current ac fellowship
@@ -272,7 +272,7 @@ namespace UtilityBelt.Tools {
             if ((!IsLeader && !Open)) return;
             if (IsInFellowship(character_id)) return;
 
-            var physics = CObjectMaint.s_pcInstance->GetObjectA(character_id);
+            var physics = (*CObjectMaint.s_pcInstance)->GetObjectA(character_id);
             if (physics == null) return;
 
 
@@ -351,7 +351,7 @@ namespace UtilityBelt.Tools {
         [Example("getfellowid[0]", "Returns the id of the first Fellowship Member")]
         public unsafe object GetfellowID(double value) {
             if (value < MemberCount)
-                return ClientFellowshipSystem.s_pFellowshipSystem->m_pFellowship->a0._fellowship_table.GetByIndex((int)value)->_key;
+                return (*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0._fellowship_table.GetByIndex((int)value)->_key;
             return 0;
         }
         #endregion
@@ -363,7 +363,7 @@ namespace UtilityBelt.Tools {
         [Example("getfellowname[0]", "Returns the name of the first Fellowship Member")]
         public unsafe object GetfellowName(double value) {
             if (value < MemberCount)
-                return ClientFellowshipSystem.s_pFellowshipSystem->m_pFellowship->a0._fellowship_table.GetByIndex((int)value)->_data._name.ToString();
+                return (*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0._fellowship_table.GetByIndex((int)value)->_data._name.ToString();
             return "";
         }
         #endregion
@@ -421,7 +421,7 @@ namespace UtilityBelt.Tools {
             var list = new ExpressionList();
             if (MemberCount > 0) {
                 List<string> members = new List<string>();
-                var table = ClientFellowshipSystem.s_pFellowshipSystem->m_pFellowship->a0._fellowship_table;
+                var table = (*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0._fellowship_table;
                 for (int i = 0; i < MemberCount; i++) members.Add(table[i]->_data._name.ToString());
                 members.Sort();
                 foreach (var member in members)
@@ -438,7 +438,7 @@ namespace UtilityBelt.Tools {
         public unsafe object GetfellowIds() {
             var list = new ExpressionList();
             if (MemberCount > 0) {
-                var table = ClientFellowshipSystem.s_pFellowshipSystem->m_pFellowship->a0._fellowship_table;
+                var table = (*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0._fellowship_table;
                 for (int i = 0; i < MemberCount; i++) list.Items.Add(table[i]->_key);
             }
             return list;
@@ -498,12 +498,13 @@ namespace UtilityBelt.Tools {
                     Open = false;
                     break;
 
+
                 //[Summary("Shows the status, and a list of the members in your current fellowship")]
                 //[Usage("/ub fellow status")]
                 //[CommandPattern("fellow status", @"^$")]
                 case "status":
-                    var c = &ClientFellowshipSystem.s_pFellowshipSystem->m_pFellowship->a0;
-                    Logger.WriteToChat($"{Leader:X8} {(*(CPhysicsPart.player_iid)):X8} Your current fellowship, \"{Name}\", has {MemberCount} member{(MemberCount != 1 ? "s" : "")}, {(ShareXP ? "" : "NOT ")}Sharing XP{(EvenXPSplit ? "" : ", Uneven Split")}. {(Open ? "Open" : "Closed")}, {(Locked ? "**LOCKED**" : "Not Locked")}.");
+                    var c = &(*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0;
+                    Logger.WriteToChat($"{Leader:X8} {(*(CPhysicsPart.player_iid)):X8} Your current fellowship, \"{this.Name}\", has {MemberCount} member{(MemberCount != 1 ? "s" : "")}, {(ShareXP ? "" : "NOT ")}Sharing XP{(EvenXPSplit ? "" : ", Uneven Split")}. {(Open ? "Open" : "Closed")}, {(Locked ? "**LOCKED**" : "Not Locked")}.");
                     uint leaderId = Leader;
                     for (int i = 0; i < MemberCount; i++) {
                         var thisOne = c->_fellowship_table.GetByIndex(i);
@@ -606,7 +607,7 @@ namespace UtilityBelt.Tools {
         /// <returns></returns>
         public unsafe PackableHashData<uint, Fellow>? FindName(string searchname, bool partial) {
             if (!InFellowship) return null;
-            var table = ClientFellowshipSystem.s_pFellowshipSystem->m_pFellowship->a0._fellowship_table;
+            var table = (*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0._fellowship_table;
             if (uint.TryParse(searchname, out uint id))
                 if (table.Contains(id))
                     return *table.lookup(id);
@@ -625,7 +626,7 @@ namespace UtilityBelt.Tools {
             double thisDistance;
             for (int i = 0; i < MemberCount; i++) {
                 var thisOne = table.GetByIndex(i);
-                thisDistance = CObjectMaint.s_pcInstance->GetObjectA(thisOne->_key)->player_distance;
+                thisDistance = (*CObjectMaint.s_pcInstance)->GetObjectA(thisOne->_key)->player_distance;
                 if (thisOne->_key != *CPhysicsPart.player_iid && (found == null || lastDistance > thisDistance)) {
                     string thisLowerName = thisOne->_data._name.ToString().ToLower();
                     if (partial && (searchname.Length == 0 || thisLowerName.Contains(searchname))) {

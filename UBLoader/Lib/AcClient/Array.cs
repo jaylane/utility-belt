@@ -53,6 +53,20 @@ void __thiscall SArray<CPhysicsObj *>::shrink(SArray<CPhysicsObj *> *this, const
         */
     };
 
+
+    public unsafe struct FixedArray<T> where T : unmanaged {
+        // Struct:
+        public T* m_data;
+        public UInt32 m_num;
+        public override string ToString() => $"m_data:->({typeof(T)}*)0x{(int)m_data:X8}, m_num:{m_num:X8}";
+
+        // Functions:
+
+        // FixedArray.Create<PStringBase<char>>:
+        // public void Create(UInt32 i_numElements) => ((delegate* unmanaged[Thiscall]<ref FixedArray<T>, UInt32, void>)0xDEADBEEF)(ref this, i_numElements); // .text:00435090 ; void __thiscall FixedArray<PStringBase<char>>::Create(FixedArray<PStringBase<char> > *this, unsigned int i_numElements) .text:00435090 ?Create@?$FixedArray@V?$PStringBase@D@@@@QAEXI@Z
+    }
+
+
     public unsafe struct PQueueArray<T, U> where T : unmanaged where U : unmanaged {
         public _Vtbl* vfptr;
         public PQueueNode<T, U>* A;
