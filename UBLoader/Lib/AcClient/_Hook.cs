@@ -18,32 +18,37 @@ namespace AcClient {
             call = call_location;
             hookers.Add(this);
         }
-        public void Setup(Delegate del) {
+        public bool Setup(Delegate del) {
             if (!Hooked) {
                 Hooked = true;
                 if (ReadCall(call) != (int)Entrypoint) {
                     // WriteToDebugLog($"Failed to detour 0x{call:X8}. expected 0x{(int)Entrypoint:X8}, received 0x{ReadCall(call):X8}");
-                    return;
+                    return false;
                 }
                 Del = del;
                 if (!PatchCall(call, Marshal.GetFunctionPointerForDelegate(Del))) {
                     Del = null;
                     Hooked = false;
+                    return false;
                 }
                 else {
+                    return true;
                     // WriteToDebugLog($"Hooking {(int)Entrypoint:X8}");
                 }
             }
+            return false;
         }
-        public void Remove() {
+        public bool Remove() {
             if (Hooked) {
                 if (PatchCall(call, Entrypoint)) {
                     Del = null;
                     hookers.Remove(this);
+                    return true;
                     // WriteToDebugLog($"Un-Hooking {(int)Entrypoint:X8}");
                 }
                 Hooked = false;
             }
+            return false;
         }
 
 

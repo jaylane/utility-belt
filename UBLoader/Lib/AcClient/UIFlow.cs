@@ -494,8 +494,64 @@ namespace AcClient {
         // Globals:
         public static ClientUISystem** s_pUISystem = (ClientUISystem**)0x00871354; // .data:00870344 ; ClientUISystem *ClientUISystem::s_pUISystem .data:00870344 ?s_pUISystem@ClientUISystem@@1PAV1@A
     }
+    public unsafe struct Proto_UI {
 
+        // Functions:
 
+        // Proto_UI.GetNextUICounter:
+        public static UInt32 GetNextUICounter() => ((delegate* unmanaged[Cdecl]<UInt32>)0x005473A0)(); // .text:005467E0 ; unsigned int __cdecl Proto_UI::GetNextUICounter() .text:005467E0 ?GetNextUICounter@Proto_UI@@YAIXZ
 
+        // Proto_UI.LogOffCharacter:
+        public static int LogOffCharacter(UInt32 gid) => ((delegate* unmanaged[Cdecl]<UInt32, int>)0x005475E0)(gid); // .text:00546A20 ; int __cdecl Proto_UI::LogOffCharacter(unsigned int gid) .text:00546A20 ?LogOffCharacter@Proto_UI@@YAHK@Z
+
+        // Proto_UI.SendAdminGetServerVersion:
+        public static int SendAdminGetServerVersion() => ((delegate* unmanaged[Cdecl]<int>)0x00547610)(); // .text:00546A50 ; int __cdecl Proto_UI::SendAdminGetServerVersion() .text:00546A50 ?SendAdminGetServerVersion@Proto_UI@@YAHXZ
+
+        // Proto_UI.SendAdminRestoreCharacter:
+        public static int SendAdminRestoreCharacter(UInt32 iid, PStringBase<char>* i_restoredCharName, PStringBase<char>* i_acctToRestoreTo) => ((delegate* unmanaged[Cdecl]<UInt32, PStringBase<char>*, PStringBase<char>*, int>)0x005478B0)(iid, i_restoredCharName, i_acctToRestoreTo); // .text:00546CF0 ; int __cdecl Proto_UI::SendAdminRestoreCharacter(unsigned int iid, PStringBase<char> *i_restoredCharName, PStringBase<char> *i_acctToRestoreTo) .text:00546CF0 ?SendAdminRestoreCharacter@Proto_UI@@YAHKABV?$PStringBase@D@@0@Z
+
+        // Proto_UI.SendBlob:
+        public static int SendBlob(NetBlob* pBlob) => ((delegate* unmanaged[Cdecl]<NetBlob*, int>)0x00547300)(pBlob); // .text:00546740 ; int __cdecl Proto_UI::SendBlob(NetBlob *pBlob) .text:00546740 ?SendBlob@Proto_UI@@YAHPAVNetBlob@@@Z
+
+        // Proto_UI.SendCharGenResult:
+        public static int SendCharGenResult(CharGenResult* _charGenResult, accountID account, int _secure) => ((delegate* unmanaged[Cdecl]<CharGenResult*, accountID, int, int>)0x00547630)(_charGenResult, account, _secure); // .text:00546A70 ; int __cdecl Proto_UI::SendCharGenResult(CharGenResult *_charGenResult, accountID account, int _secure) .text:00546A70 ?SendCharGenResult@Proto_UI@@YAHPAVCharGenResult@@VaccountID@@H@Z
+
+        // Proto_UI.SendDeleteCharacter:
+        public static int SendDeleteCharacter(accountID account, int slot) => ((delegate* unmanaged[Cdecl]<accountID, int, int>)0x005476F0)(account, slot); // .text:00546B30 ; int __cdecl Proto_UI::SendDeleteCharacter(accountID account, int slot) .text:00546B30 ?SendDeleteCharacter@Proto_UI@@YAHVaccountID@@H@Z
+
+        // Proto_UI.SendEnterWorld:
+        public static int SendEnterWorld(UInt32 gid, accountID account) => ((delegate* unmanaged[Cdecl]<UInt32, accountID, int>)0x00547780)(gid, account); // .text:00546BC0 ; int __cdecl Proto_UI::SendEnterWorld(unsigned int gid, accountID account) .text:00546BC0 ?SendEnterWorld@Proto_UI@@YAHKVaccountID@@@Z
+
+        // Proto_UI.SendEnterWorldRequest:
+        public static int SendEnterWorldRequest() => ((delegate* unmanaged[Cdecl]<int>)0x005475C0)(); // .text:00546A00 ; int __cdecl Proto_UI::SendEnterWorldRequest() .text:00546A00 ?SendEnterWorldRequest@Proto_UI@@YAHXZ
+
+        // Proto_UI.SendForceObjdesc:
+        public static int SendForceObjdesc(UInt32 object_id) => ((delegate* unmanaged[Cdecl]<UInt32, int>)0x00547590)(object_id); // .text:005469D0 ; int __cdecl Proto_UI::SendForceObjdesc(unsigned int object_id) .text:005469D0 ?SendForceObjdesc@Proto_UI@@YAHK@Z
+
+        // Proto_UI.SendFriendsCommand:
+        public static int SendFriendsCommand(UInt32 cmd, PStringBase<char>* i_player) => ((delegate* unmanaged[Cdecl]<UInt32, PStringBase<char>*, int>)0x00547810)(cmd, i_player); // .text:00546C50 ; int __cdecl Proto_UI::SendFriendsCommand(unsigned int cmd, PStringBase<char> *i_player) .text:00546C50 ?SendFriendsCommand@Proto_UI@@YAHIABV?$PStringBase@D@@@Z
+
+        // Proto_UI.SendToControl:
+        public static Byte SendToControl(char* buf, int size) => ((delegate* unmanaged[Cdecl]<char*, int, Byte>)0x00547440)(buf, size); // .text:00546880 ; bool __cdecl Proto_UI::SendToControl(char *buf, int size) .text:00546880 ?SendToControl@Proto_UI@@YA_NPAEH@Z
+
+        // Proto_UI.SendToDatabase:
+        public static Byte SendToDatabase(char* buf, int size) => ((delegate* unmanaged[Cdecl]<char*, int, Byte>)0x00547520)(buf, size); // .text:00546960 ; bool __cdecl Proto_UI::SendToDatabase(char *buf, int size) .text:00546960 ?SendToDatabase@Proto_UI@@YA_NPAEH@Z
+
+        // Proto_UI.SendToLogon:
+        public static Byte SendToLogon(char* buf, int size) => ((delegate* unmanaged[Cdecl]<char*, int, Byte>)0x005474B0)(buf, size); // .text:005468F0 ; bool __cdecl Proto_UI::SendToLogon(char *buf, int size) .text:005468F0 ?SendToLogon@Proto_UI@@YA_NPAEH@Z
+
+        // Proto_UI.SendToWeenie:
+        public static Byte SendToWeenie(char* buf, int size) => ((delegate* unmanaged[Cdecl]<char*, int, Byte>)0x005473D0)(buf, size); // .text:00546810 ; bool __cdecl Proto_UI::SendToWeenie(char *buf, int size) .text:00546810 ?SendToWeenie@Proto_UI@@YA_NPAEH@Z
+
+        // Proto_UI.SetEventCounter:
+        public static void SetEventCounter(UInt32 tsVal) => ((delegate* unmanaged[Cdecl]<UInt32, void>)0x005473C0)(tsVal); // .text:00546800 ; void __cdecl Proto_UI::SetEventCounter(unsigned int tsVal) .text:00546800 ?SetEventCounter@Proto_UI@@YAXI@Z
+
+        // Proto_UI.UICounterFailedSend:
+        public static void UICounterFailedSend(UInt32 in_value) => ((delegate* unmanaged[Cdecl]<UInt32, void>)0x005473B0)(in_value); // .text:005467F0 ; void __cdecl Proto_UI::UICounterFailedSend(unsigned int in_value) .text:005467F0 ?UICounterFailedSend@Proto_UI@@YAXI@Z
+
+        // Globals:
+        public static UInt32* eventCounter_ = (UInt32*)0x00846F38; // .data:00845F28 ; unsigned int Proto_UI::eventCounter_ .data:00845F28 ?eventCounter_@Proto_UI@@3IA
+        public static UInt16* m_UnorderedStamp = (UInt16*)0x00846F3C; // .data:00845F2C ; unsigned __int16 Proto_UI::m_UnorderedStamp .data:00845F2C ?m_UnorderedStamp@Proto_UI@@3GA
+    }
 
 }

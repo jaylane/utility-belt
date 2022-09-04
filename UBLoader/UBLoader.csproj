@@ -111,6 +111,7 @@
     <Compile Include="Lib\AcClient\Physics.cs" />
     <Compile Include="Lib\AcClient\Player.cs" />
     <Compile Include="Lib\AcClient\PString.cs" />
+    <Compile Include="Lib\AcClient\Render.cs" />
     <Compile Include="Lib\AcClient\SmartBox.cs" />
     <Compile Include="Lib\AcClient\STypes.cs" />
     <Compile Include="Lib\AcClient\Trade.cs" />

@@ -64,7 +64,7 @@ namespace AcClient {
         public void SelectPreviousFellow() => ((delegate* unmanaged[Thiscall]<ref ClientFellowshipSystem, void>)0x0056A360)(ref this); // .text:005695C0 ; void __thiscall ClientFellowshipSystem::SelectPreviousFellow(ClientFellowshipSystem *this) .text:005695C0 ?SelectPreviousFellow@ClientFellowshipSystem@@QAEXXZ
 
         // Globals:
-        public static ClientFellowshipSystem* s_pFellowshipSystem = *(ClientFellowshipSystem**)0x0087150C; // .data:008704FC ; ClientFellowshipSystem *ClientFellowshipSystem::s_pFellowshipSystem .data:008704FC ?s_pFellowshipSystem@ClientFellowshipSystem@@1PAV1@A
+        public static ClientFellowshipSystem** s_pFellowshipSystem = (ClientFellowshipSystem**)0x0087150C; // .data:008704FC ; ClientFellowshipSystem *ClientFellowshipSystem::s_pFellowshipSystem .data:008704FC ?s_pFellowshipSystem@ClientFellowshipSystem@@1PAV1@A
     }
     public unsafe struct CFellowship {
         // Struct:

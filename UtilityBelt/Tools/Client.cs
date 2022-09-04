@@ -149,6 +149,7 @@ namespace UtilityBelt.Tools {
         #region /ub setui <value>
         [Summary("Sets the client window positions, based on a base64 string")]
         [Usage("/ub setui UI:<string from getui>")]
+        //                  UI:igAAAJYBzgIAABEAigChAZEAAABoAPoA/wAAAGgA+gA2AqIAkAAWAoQAmQHKATYBHQCsAToAoACqARQAeAC6AgAAygKBAjYBHQIAAOMAzwJ8AsoChAA2AQAAtwEeAJYAkAFfABkAKgPIARQAWgC7AgMATAKMAHgAAAA0AhoAzAE=
         [Example("/ub setui UI:UI:AAAAAMkBzgKLAA0BbgDCAZEAAABoAPoA8wANAWgAwwFVAQ0BaADCAWwAmQGTAjYBAACwAToAoABSAQAAeADPAgAAygKhAjYBxgEAADoB0AKcAsoCZAA2AQAAAAAeAJYAkAFfABkAKgNxAQAAWgDOAhoAJgKMAHgAAACXABoAzAE=", "Sets the UI to a pretty standard 1024x768 layout")]
         [CommandPattern("setui", @"^UI:(?<ui>[A-Za-z0-9\+/=]{172,172})$", true)]
         public void DoSetUI(string _, Match args) {

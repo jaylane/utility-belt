@@ -1034,6 +1034,18 @@ namespace AcClient {
         public UInt32 num_strips;
         public CTriangleStrip* strips;
     };
+    public unsafe struct CPortalPoly {
+        // Struct:
+        public UInt32 portal_index;
+        public CPolygon* portal;
+        public override string ToString() => $"portal_index:{portal_index:X8}, portal:->(CPolygon*)0x{(int)portal:X8}";
+
+        // Functions:
+
+        // CPortalPoly.__Ctor:
+        public void __Ctor() => ((delegate* unmanaged[Thiscall]<ref CPortalPoly, void>)0x0053ECD0)(ref this); // .text:0053DF70 ; void __thiscall CPortalPoly::CPortalPoly(CPortalPoly *this) .text:0053DF70 ??0CPortalPoly@@QAE@XZ
+    }
+
     public unsafe struct CSortCell {
         public CObjCell cObjCell;
         public CBuildingObj* building;

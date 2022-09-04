@@ -19,7 +19,10 @@ namespace AcClient {
                 bool fEnd_ = false;
 
                 while (true) {
-                    if (curPtr_ != null) curPtr_ = curPtr_->hash_next;
+                    if (curPtr_ != null) {
+                        curPtr_ = curPtr_->hash_next;
+                        curIndex++;
+                    }
                     if (curPtr_ == null) {
                         while (true) {
                             curBucket_++;
@@ -32,7 +35,6 @@ namespace AcClient {
                         }
                     }
                     if (fEnd_) break;
-                    curIndex++;
                 }
                 return curIndex;
             }
@@ -48,7 +50,10 @@ namespace AcClient {
             HashBaseData<T>* curPtr_ = buckets[curBucket_];
             bool fEnd_ = false;
             while (true) {
-                if (curPtr_ != null) curPtr_ = curPtr_->hash_next;
+                if (curPtr_ != null) {
+                    curPtr_ = curPtr_->hash_next;
+                    curIndex++;
+                }
                 if (curPtr_ == null) {
                     while (true) {
                         curBucket_++;
@@ -62,7 +67,6 @@ namespace AcClient {
                 }
                 if (fEnd_) break;
                 if (curIndex == index) return curPtr_;
-                curIndex++;
             }
             return null;
         }
@@ -173,6 +177,7 @@ namespace AcClient {
                 if (curPtr_ != null) {
                     lastThisChain_ = curPtr_;
                     curPtr_ = curPtr_->hash_next;
+                    curIndex++;
                 }
                 if (curPtr_ == null) {
                     while (true) {
@@ -192,7 +197,6 @@ namespace AcClient {
 
                 if (curIndex >= arrayIndex)
                     array[curIndex - arrayIndex] = curPtr_->id;
-                curIndex++;
             }
         }
     }
@@ -418,6 +422,7 @@ namespace AcClient {
                 if (curPtr_ != null) {
                     if (curIndex == _index) return curPtr_;
                     curPtr_ = curPtr_->_next;
+                    curIndex++;
                 }
                 if (curPtr_ == null) {
                     while (true) {
@@ -431,7 +436,6 @@ namespace AcClient {
                     }
                 }
                 if (fEnd_) break;
-                curIndex++;
             }
             return null;
         }
@@ -465,6 +469,7 @@ namespace AcClient {
                         lastIdx++;
                     }
                     curPtr_ = curPtr_->_next;
+                    curIndex++;
                 }
                 if (curPtr_ == null) {
                     while (true) {
@@ -478,7 +483,6 @@ namespace AcClient {
                     }
                 }
                 if (fEnd_) break;
-                curIndex++;
             }
             return;
         }
