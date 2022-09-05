@@ -17,6 +17,7 @@
 - add UBHudDemo as a WIP test ground for UI development
 - add 275+ xp meter, with hud- meta expressions xp*[] and lum*[], no CLI
 - add NameTags.Pet color setting, that defaults to default Player setting, and code to apply.
+- Add UBService decal service, with new view system. Demo with `/ub opt set gui.showdemoui true`
 
 ## 0.2.7 (2022-07-27) [UtilityBeltInstaller-0.2.7.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/f24f9359893592252815818da7b3b7ba/UtilityBeltInstaller-0.2.7.exe)
 - Add expression: wobjectgetactivespellids[WorldObject]

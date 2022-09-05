@@ -140,14 +140,14 @@ namespace UtilityBelt {
         internal Database Database;
         internal UBHudManager Huds;
 
-        private static Guid IID_IDirect3DDevice9 = new Guid("{D0223B96-BF7A-43fd-92BD-A43B0D82B9EB}");
-        private IntPtr unmanagedD3dPtr;
+        internal static Guid IID_IDirect3DDevice9 = new Guid("{D0223B96-BF7A-43fd-92BD-A43B0D82B9EB}");
+        internal IntPtr unmanagedD3dPtr;
         internal Device D3Ddevice;
 
         internal List<ToolBase> LoadedTools = new List<ToolBase>();
         private static List<string> expressionExceptions = new List<string>();
-        public CellDatDatabase CellDat { get; private set; }
-        public PortalDatDatabase PortalDat { get; private set; }
+        public CellDatDatabase CellDat => UBLoader.FilterCore.CellDat;
+        public PortalDatDatabase PortalDat => UBLoader.FilterCore.PortalDat;
 
         #region Tools
         public Plugin Plugin;
@@ -170,6 +170,7 @@ namespace UtilityBelt {
         public EquipmentManager EquipmentManager;
         public FellowshipManager FellowshipManager;
         public GameEvents GameEvents;
+        public GUI GUI;
         public HealthTracker HealthTracker;
         public InventoryManager InventoryManager;
         public ItemDescriptions ItemDescriptions;
@@ -317,26 +318,6 @@ namespace UtilityBelt {
             Settings.Changed += Settings_Changed;
             State.Changed += State_Changed;
             UBLoader.FilterCore.Settings.Changed += FilterSettings_Changed;
-
-            LoadDats();
-        }
-
-        private void LoadDats() {
-            var datDirectory = "";
-            var cellDatPath = Path.Combine(datDirectory, "client_cell_1.dat");
-            var portalDatPath = Path.Combine(datDirectory, "client_portal.dat");
-
-            if (!File.Exists(cellDatPath)) {
-                Logger.Error($"Unable to load cellDat: {cellDatPath}");
-                return;
-            }
-            if (!File.Exists(portalDatPath)) {
-                Logger.Error($"Unable to load portalDat: {portalDatPath}");
-                return;
-            }
-
-            CellDat = new CellDatDatabase(cellDatPath, true);
-            PortalDat = new PortalDatDatabase(portalDatPath, true);
         }
 
         private void InitSettings() {

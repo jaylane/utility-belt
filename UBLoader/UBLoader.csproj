@@ -38,6 +38,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Deps\0Harmony.dll</HintPath>
     </Reference>
+    <Reference Include="ACE.DatLoader, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Decal.Adapter">
       <HintPath>C:\Program Files (x86)\Decal 3.0\Decal.Adapter.dll</HintPath>
       <Private>False</Private>
@@ -68,6 +71,16 @@
       <HintPath>..\packages\Exceptionless.1.5.2121\lib\net35\Exceptionless.Models.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Windows\assembly\GAC\Microsoft.DirectX\1.0.2902.0__31bf3856ad364e35\Microsoft.DirectX.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.DirectX.Direct3D, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2902.0\Microsoft.DirectX.Direct3D.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net35\Newtonsoft.Json.dll</HintPath>
@@ -80,6 +93,8 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Runtime.Remoting" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="UBHelper, Version=0.0.0.1, Culture=neutral, processorArchitecture=x86">
@@ -122,6 +137,8 @@
     <Compile Include="Lib\AcClient\_AcClient.cs" />
     <Compile Include="Lib\AcClient\_Hook.cs" />
     <Compile Include="Lib\AcClient\_Todo.cs" />
+    <Compile Include="Lib\CharacterCreation.cs" />
+    <Compile Include="Lib\CharacterCreator.cs" />
     <Compile Include="Lib\File.cs" />
     <Compile Include="FilterCore.cs" />
     <Compile Include="Lib\ObservableDictionary.cs" />
@@ -148,14 +165,21 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="build\net40\DearImguiSharp.targets" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\acmap-small.png" />
+    <EmbeddedResource Include="Resources\outline-arrow-down-round.png" />
+    <EmbeddedResource Include="Resources\outline-arrow-up-round.png" />
+    <EmbeddedResource Include="Resources\outline-lock-off.png" />
+    <EmbeddedResource Include="Resources\outline-lock-on.png" />
     <None Include="Resources\UBNetworking.dll" />
     <None Include="Deps\Newtonsoft.Json.dll" />
     <Content Include="Deps\0Harmony.dll" />
     <Content Include="Deps\ACE.DatLoader.dll" />
     <Content Include="Deps\Antlr4.Runtime.dll" />
+    <None Include="Deps\DearImguiSharp.dll" />
     <Content Include="Deps\LiteDB.dll" />
     <Content Include="Deps\System.Threading.dll" />
     <Content Include="Deps\UBHelper.dll" />
@@ -164,7 +188,15 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UBService\UBService.csproj">
+      <Project>{8adc5729-db1a-4e28-9475-c4eafae1e6e7}</Project>
+      <Name>UBService</Name>
+      <Private>False</Private>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

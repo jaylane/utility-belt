@@ -14,6 +14,10 @@ using UBLoader.Lib.Settings;
 using Exceptionless;
 using System.Text;
 using System.Text.RegularExpressions;
+using AcClient;
+using ACE.DatLoader;
+using Microsoft.DirectX.Direct3D;
+using UBLoader.Lib;
 
 namespace UBLoader {
     [FriendlyName("UtilityBelt")]
@@ -29,6 +33,9 @@ namespace UBLoader {
         private DateTime lastFileChange = DateTime.UtcNow;
         private static bool hasLoaded = false;
 
+        internal static Guid IID_IDirect3DDevice9 = new Guid("{D0223B96-BF7A-43fd-92BD-A43B0D82B9EB}");
+        internal IntPtr unmanagedD3dPtr;
+        internal static Device D3Ddevice;
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern bool PostMessage(IntPtr hhwnd, uint msg, IntPtr wparam, UIntPtr lparam);
 
@@ -58,6 +65,10 @@ namespace UBLoader {
             }
         }
 
+        public static CellDatDatabase CellDat { get; private set; }
+        public static PortalDatDatabase PortalDat { get; private set; }
+        public static LanguageDatDatabase LanguageDat { get; private set; }
+
         #region Global Settings
         public class GlobalSettings : ISetting {
             [Summary("Plugin storage directory path")]
@@ -76,12 +87,16 @@ namespace UBLoader {
             public Setting<int> FrameRate = new Setting<int>(0);
 
             [Summary("Upload exceptions to the mothership")]
-            public Setting<bool> UploadExceptions = new Setting<bool>(true);
+            public Setting<bool> UploadExceptions = new Setting<bool>(false);
+
+            [Summary("Show Character Creation UI")]
+            public Setting<bool> ShowCharacterCreationUI = new Setting<bool>(true);
 
             [Summary("Kill clients when they reach the disconnect screen")]
             public Setting<bool> KillDisconnectedClients = new Setting<bool>(false);
         }
         public static GlobalSettings Global = new GlobalSettings();
+        private Lib.CharacterCreation characterCreationUI;
         #endregion Global Settings
 
         public FilterCore() {
@@ -91,6 +106,7 @@ namespace UBLoader {
             System.Reflection.Assembly.Load((byte[])rm.GetObject("Antlr4_Runtime"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("UBHelper"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("ACE_DatLoader"));
+            System.Reflection.Assembly.Load((byte[])rm.GetObject("DearImguiSharp"));
         }
 
         /// <summary>
@@ -108,6 +124,7 @@ namespace UBLoader {
 
                 Global.FrameRate.Changed += FrameRate_Changed;
                 LoadAssemblyConfig();
+                LoadDats();
                 UBHelper.Core.GameStateChanged += Core_GameStateChanged;
 
                 UBHelper.Core.FilterStartup(PluginAssemblyPath, Global.PluginStorageDirectory);
@@ -116,6 +133,29 @@ namespace UBLoader {
                     UBHelper.SimpleFrameLimiter.globalMax = Global.FrameRate;
             }
             catch (Exception ex) { LogException(ex); }
+        }
+
+        private void CreateCharacterCreateUI() {
+            if (Global.ShowCharacterCreationUI && characterCreationUI == null) {
+                object a = CoreManager.Current.Decal.Underlying.GetD3DDevice(ref IID_IDirect3DDevice9);
+                Marshal.QueryInterface(Marshal.GetIUnknownForObject(a), ref IID_IDirect3DDevice9, out unmanagedD3dPtr);
+                D3Ddevice = new Device(unmanagedD3dPtr);
+
+                characterCreationUI = new UBLoader.Lib.CharacterCreation();
+                characterCreationUI.OnFinished += CharacterCreationUI_OnFinished;
+            }
+        }
+
+        private void DestroyCharacterCreateUI() {
+            if (characterCreationUI != null) {
+                characterCreationUI.OnFinished -= CharacterCreationUI_OnFinished;
+                characterCreationUI.Dispose();
+                characterCreationUI = null;
+            }
+        }
+
+        private void CharacterCreationUI_OnFinished(object sender, CharacterCreation.FinishedEventArgs e) {
+            LogError($"Character Creation Result: {e.CharGenState}");
         }
 
         private void FrameRate_Changed(object sender, SettingChangedEventArgs e) {
@@ -127,6 +167,7 @@ namespace UBLoader {
                 switch (new_state) {
                     case UBHelper.GameState.Character_Select_Screen:
                         VersionWatermark.Display(Host, $"{PluginName} v{FileVersionInfo.GetVersionInfo(PluginAssemblyPath).ProductVersion}");
+                        CreateCharacterCreateUI();
                         UnloadPluginAssembly();
                         Decal.Adapter.CoreManager.Current.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
 
@@ -140,6 +181,7 @@ namespace UBLoader {
                         VersionWatermark.Destroy();
                         break;
                     case UBHelper.GameState.Entering_Game:
+                        DestroyCharacterCreateUI();
                         VersionWatermark.Destroy();
                         PluginsReady = true;
                         LoadPluginAssembly();
@@ -185,6 +227,30 @@ namespace UBLoader {
                 System.IO.File.Delete(DllConfigPath);
             }
             catch { }
+        }
+
+        private void LoadDats() {
+            var datDirectory = "";
+            var cellDatPath = System.IO.Path.Combine(datDirectory, "client_cell_1.dat");
+            var portalDatPath = System.IO.Path.Combine(datDirectory, "client_portal.dat");
+            var languageDatPath = System.IO.Path.Combine(datDirectory, "client_local_English.dat");
+
+            if (!System.IO.File.Exists(cellDatPath)) {
+                LogError($"Unable to load cellDat: {cellDatPath}");
+                return;
+            }
+            if (!System.IO.File.Exists(portalDatPath)) {
+                LogError($"Unable to load portalDat: {portalDatPath}");
+                return;
+            }
+            if (!System.IO.File.Exists(languageDatPath)) {
+                LogError($"Unable to load languageDat: {portalDatPath}");
+                return;
+            }
+
+            CellDat = new CellDatDatabase(cellDatPath, true);
+            PortalDat = new PortalDatDatabase(portalDatPath, true);
+            LanguageDat = new LanguageDatDatabase(languageDatPath, true);
         }
 
         private void Core_RenderFrame(object sender, EventArgs e) {
@@ -307,6 +373,7 @@ namespace UBLoader {
                 Settings.Dispose();
                 UBHelper.Core.GameStateChanged -= Core_GameStateChanged;
                 UnloadPluginAssembly();
+                DestroyCharacterCreateUI();
                 UBHelper.Core.FilterShutdown();
             }
             catch (Exception ex) { LogException(ex); }

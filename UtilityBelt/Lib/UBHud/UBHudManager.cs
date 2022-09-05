@@ -301,14 +301,10 @@ namespace UtilityBelt.Lib {
                         Keys = null;
                         isHandlingEvents = false;
                     }
-                    if (Huds != null) {
-                        for (int i = Huds.Count - 1; i >= 0; i--) {
-                            if (Huds[i] != null) {
-                                Huds[i].Dispose();
-                            }
-                        }
-                        Huds = null;
+                    foreach (var hud in Huds) {
+                        hud.Dispose();
                     }
+                    Huds.Clear();
                 }
                 disposedValue = true;
             }

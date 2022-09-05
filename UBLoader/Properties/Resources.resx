@@ -124,6 +124,9 @@
   <data name="Antlr4_Runtime" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\deps\antlr4.runtime.dll;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="DearImguiSharp" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Deps\DearImguiSharp.dll;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="LiteDB" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\deps\litedb.dll;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>

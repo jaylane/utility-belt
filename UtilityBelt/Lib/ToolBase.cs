@@ -35,6 +35,10 @@ namespace UtilityBelt.Lib {
             Logger.WriteToChat(Name + ": " + message, logMessageType);
         }
 
+        internal virtual void RenderUI() {
+        
+        }
+
         #region IDisposable Support
         protected bool disposedValue = false; // To detect redundant calls
 

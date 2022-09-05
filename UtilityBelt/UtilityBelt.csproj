@@ -227,6 +227,7 @@
     <Compile Include="Lib\UBHud\UBHudManager.cs" />
     <Compile Include="Lib\VCS_Connector.cs" />
     <Compile Include="Lib\VHS_Connector.cs" />
+    <Compile Include="Tools\GUI.cs" />
     <Compile Include="Tools\Player.cs" />
     <Compile Include="Tools\UBHudDemo.cs" />
     <Compile Include="Tools\XPMeter.cs" />
@@ -1065,6 +1066,11 @@
     <ProjectReference Include="..\UBNetworking\UBNetworking.csproj">
       <Project>{2829fc6e-2bec-4259-aa51-6cc180d3834b}</Project>
       <Name>UBNetworking</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\UBService\UBService.csproj">
+      <Project>{8adc5729-db1a-4e28-9475-c4eafae1e6e7}</Project>
+      <Name>UBService</Name>
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
