@@ -1,0 +1,159 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8ADC5729-DB1A-4E28-9475-C4EAFAE1E6E7}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>UBService</RootNamespace>
+    <AssemblyName>UBService</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>..\bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>..\bin\UBService.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>10.0</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Decal.Adapter">
+      <HintPath>C:\Program Files (x86)\Decal 3.0\Decal.Adapter.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Decal.Interop.Core, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>C:\Program Files (x86)\Decal 3.0\.NET 2.0 PIA\Decal.Interop.Core.DLL</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Windows\assembly\GAC\Microsoft.DirectX\1.0.2902.0__31bf3856ad364e35\Microsoft.DirectX.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.DirectX.Direct3D, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2902.0\Microsoft.DirectX.Direct3D.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualC" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ImGuiNet\CppSharp.cs" />
+    <Compile Include="Hud.cs" />
+    <Compile Include="HudManager.cs" />
+    <Compile Include="ImGuiController.cs" />
+    <Compile Include="ImGuiNet\ImColor.gen.cs" />
+    <Compile Include="ImGuiNet\ImDrawChannel.gen.cs" />
+    <Compile Include="ImGuiNet\ImDrawCmd.gen.cs" />
+    <Compile Include="ImGuiNet\ImDrawCmdHeader.gen.cs" />
+    <Compile Include="ImGuiNet\ImDrawData.gen.cs" />
+    <Compile Include="ImGuiNet\ImDrawData.Manual.cs" />
+    <Compile Include="ImGuiNet\ImDrawFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImDrawList.gen.cs" />
+    <Compile Include="ImGuiNet\ImDrawList.Manual.cs" />
+    <Compile Include="ImGuiNet\ImDrawListFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImDrawListSplitter.gen.cs" />
+    <Compile Include="ImGuiNet\ImDrawVert.gen.cs" />
+    <Compile Include="ImGuiNet\ImFont.gen.cs" />
+    <Compile Include="ImGuiNet\ImFontAtlas.gen.cs" />
+    <Compile Include="ImGuiNet\ImFontAtlasCustomRect.gen.cs" />
+    <Compile Include="ImGuiNet\ImFontAtlasFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImFontConfig.gen.cs" />
+    <Compile Include="ImGuiNet\ImFontGlyph.gen.cs" />
+    <Compile Include="ImGuiNet\ImFontGlyphRangesBuilder.gen.cs" />
+    <Compile Include="ImGuiNet\ImGui.Ext.cs" />
+    <Compile Include="ImGuiNet\ImGui.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiImpl.cs" />
+    <Compile Include="ImGuiNet\ImGui.Manual.cs" />
+    <Compile Include="ImGuiNet\ImGuiBackendFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiButtonFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiCol.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiColorEditFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiComboFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiCond.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiConfigFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiDataType.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiDir.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiDockNodeFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiDragDropFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiFocusedFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiHoveredFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiInputTextCallbackData.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiInputTextFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiIO.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiKey.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiKeyData.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiKeyModFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiListClipper.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiMouseButton.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiMouseCursor.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiNative.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiNavInput.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiOnceUponAFrame.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiPayload.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiPlatformImeData.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiPlatformIO.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiPlatformMonitor.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiPopupFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiSelectableFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiSizeCallback.cs" />
+    <Compile Include="ImGuiNet\ImGuiSizeCallbackData.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiSliderFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiSortDirection.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiStorage.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiStyle.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiStyleVar.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiTabBarFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiTabItemFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiTableBgTarget.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiTableColumnFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiTableColumnSortSpecs.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiTableFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiTableRowFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiTableSortSpecs.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiTextBuffer.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiTextEditCallback.cs" />
+    <Compile Include="ImGuiNet\ImGuiTextFilter.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiTextRange.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiTreeNodeFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiViewport.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiViewportFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiWindowClass.gen.cs" />
+    <Compile Include="ImGuiNet\ImGuiWindowFlags.gen.cs" />
+    <Compile Include="ImGuiNet\ImVector.cs" />
+    <Compile Include="ImGuiNet\NullTerminatedString.cs" />
+    <Compile Include="ImGuiNet\Pair.cs" />
+    <Compile Include="ImGuiNet\RangeAccessor.cs" />
+    <Compile Include="ImGuiNet\StbTexteditRow.gen.cs" />
+    <Compile Include="ImGuiNet\StbUndoRecord.gen.cs" />
+    <Compile Include="ImGuiNet\StbUndoState.gen.cs" />
+    <Compile Include="ImGuiNet\STB_TexteditState.gen.cs" />
+    <Compile Include="ImGuiNet\Util.cs" />
+    <Compile Include="UBService.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="cimgui.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

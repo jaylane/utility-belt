@@ -5,6 +5,9 @@ using AcClient;
 using System.Runtime.InteropServices;
 using System.Drawing;
 using System.Collections.Generic;
+using static System.Net.Mime.MediaTypeNames;
+using System.Windows;
+using ImGuiNET;
 
 namespace UtilityBelt.Tools {
     [Name("XPMeter")]
@@ -46,7 +49,7 @@ namespace UtilityBelt.Tools {
         /// </summary>
         public unsafe Double RunTime() => *Timer.cur_time - start_time;
 
-        private UBHud hud;
+        private UBService.Hud hud;
         private UBHud.Button ResetBtn;
         private UBHud.Label XPLabel;
 
@@ -89,7 +92,7 @@ namespace UtilityBelt.Tools {
         [Summary("Resets the XP Meter")]
         [Example("xpreset[]", "1")]
         public object resetxp() {
-            ResetBtn_OnClick();
+            Reset();
             return (double)1;
         }
         #endregion //resetxp[]
@@ -180,7 +183,6 @@ namespace UtilityBelt.Tools {
             accum_XP = 0;
             accum_LUM = 0;
             start_time = *Timer.cur_time;
-            hud.Render();
 
         }
 
@@ -241,92 +243,79 @@ namespace UtilityBelt.Tools {
             return This->Handle_Qualities__PrivateUpdateInt64(wts, stype, val);
         }
 
-        private void DrawTimer_Timeout(Decal.Interop.Input.Timer Source) {
-
-            hud.Render();
-        }
-
-        private void Hud_OnMove() {
-            int hud_y = hud.BBox.Y;
-            HudX.Value = hud.BBox.X;
-            HudY.Value = hud_y;
-        }
-
-        private void Hud_OnClose() {
-            WriteToChat("XP Meter closed. It can be re-opened in the UtilityBelt Settings, under XPMeter, or with the command:  /ub opt set XPMeter.Enabled true");
-            Enabled.Value = false;
-        }
-
-        internal void CreateHud() {
-            if (drawTimer == null) {
-                drawTimer = new Decal.Interop.Input.TimerClass();
-                drawTimer.Timeout += DrawTimer_Timeout;
-                drawTimer.Start(1000 * 5); // 0.2 fps max
-            }
-            if (hud == null) {
-                Size size = new Size(61 * HudFontSize, HudFontSize + 6);
-                hud = UB.Huds.CreateHud(HudX, HudY, size.Width, size.Height);
-                hud.BackgroundColor = BackgroundColor;
-                ResetBtn = new UBHud.Button(hud, new Rectangle(0, 0, 80, size.Height), "Reset", ResetBtn_OnClick, true);
-                XPLabel = new UBHud.Label(hud, new Rectangle(0, 0, size.Width, size.Height), "... 275+ XP Meter - UtilityBelt ...", null);
-                XPLabel.FontColor = TextColor;
-                XPLabel.FontFace = HudFont;
-                XPLabel.FontSize = HudFontSize;
-
-                hud.OnRender += Hud_OnRender;
-                hud.OnMove += Hud_OnMove;
-                hud.OnClose += Hud_OnClose;
-                hud.OnKey += Hud_OnKey;
-            }
-        }
-        private bool isShiftHeld = false;
-        private void Hud_OnKey(UBHud.WinKeys _key, bool isDown, double holdTime) {
-            if (_key == UBHud.WinKeys.VK_SHIFT && isDown != isShiftHeld) {
-                isShiftHeld = isDown;
-                hud.Render();
-            }
-        }
-
-        private unsafe void ResetBtn_OnClick() {
+        private unsafe void Reset() {
             Logger.WriteToChat($"Resetting XP Meter after {*Timer.cur_time - start_time:n0} seconds, {accum_XP:n0} XP, and {accum_LUM:n0} LUM");
             accum_XP = 0;
             accum_LUM = 0;
             start_time = *Timer.cur_time;
-            hud.Render();
         }
+
+        internal void CreateHud() {
+            hud = UBService.HudManager.CreateHud("XP Meter");
+            hud.ShowInBar = false;
+            hud.ShouldHide += Hud_ShouldHide;
+            hud.Render += Hud_Render;
+            hud.PreRender += Hud_PreRender;
+
+            hud.WindowSettings |= ImGuiWindowFlags.AlwaysAutoResize;
+            hud.WindowSettings |= ImGuiWindowFlags.NoResize;
+            hud.WindowSettings |= ImGuiWindowFlags.NoScrollbar;
+        }
+
+        private string hudText = "";
+        private bool showButtons = false;
+        private float targetHeight = 0;
+        private float currentHeight = 0;
+        private void Hud_PreRender(object sender, EventArgs e) {
+            try {
+                if (hasLuminance)
+                    hudText = $"Gained {Util.formatExperience(accum_XP):n0} XP and {Util.formatExperience(accum_LUM):n0} LUM over {Util.formatDuration(RunTime()):n0}, for {Util.formatExperience(XP()):n0} XP/hr and {Util.formatExperience(LUM()):n0} LUM/hr";
+                else
+                    hudText = $"Gained {accum_XP:n0} XP over {RunTime():n0} seconds, for {XP():n0} XP/hr";
+
+                showButtons = ImGui.GetIO().KeyShift > 0;
+
+                if (showButtons && currentHeight < 32) {
+                        currentHeight += 0.3f;
+                }
+                else if (currentHeight > 0) {
+                        currentHeight -= 0.3f;
+                }
+
+                hud.Title = hudText;
+                var size = new Vector2(-1, 20 + currentHeight);
+                ImGui.SetNextWindowCollapsed(currentHeight == 0, ImGuiCond.Always);
+                ImGui.SetNextWindowSize(size, ImGuiCond.Always);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private unsafe void Hud_Render(object sender, EventArgs e) {
+            try {
+                // since we are after the title, we add a little padding to the body to get the window
+                // to auto resize correctly... kinda hacky
+                var paddedText = $"{hudText} +++";
+                var size = new Vector2(100, 20);
+                if (ImGui.Button("Reset", size)) {
+                    Reset();
+                }
+                ImGui.Text(paddedText);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void Hud_ShouldHide(object sender, EventArgs e) {
+            WriteToChat("XP Meter closed. It can be re-opened in the UtilityBelt Settings, under XPMeter, or with the command:  /ub opt set XPMeter.Enabled true");
+            Enabled.Value = false;
+        }
+
         public void ClearHud() {
             if (hud != null) {
                 ResetBtn = null;
                 XPLabel = null;
-                hud.OnRender -= Hud_OnRender;
-                hud.OnMove -= Hud_OnMove;
-                hud.OnClose -= Hud_OnClose;
                 hud.Dispose();
                 hud = null;
             }
-            if (drawTimer != null) {
-                drawTimer.Timeout -= DrawTimer_Timeout;
-                drawTimer.Stop();
-                drawTimer = null;
-            }
-        }
-        private void Hud_OnRender() {
-            // also hud.HudManager.Keys[UBHud.WinKeys.VK_SHIFT]
-            if (isShiftHeld) {
-                ResetBtn.Visible = true;
-                XPLabel.Text = "";
-                XPLabel.BBox = new Rectangle(ResetBtn.BBox.Width, 0, hud.BBox.Width - ResetBtn.BBox.Width, hud.BBox.Height);
-            }
-            else {
-                ResetBtn.Visible = false;
-                XPLabel.BBox = new Rectangle(0, 0, hud.BBox.Width, hud.BBox.Height);
-                if (hasLuminance)
-                    XPLabel.Text = $"Gained {Util.formatExperience(accum_XP):n0} XP and {Util.formatExperience(accum_LUM):n0} LUM over {Util.formatDuration(RunTime()):n0}, for {Util.formatExperience(XP()):n0} XP/hr and {Util.formatExperience(LUM()):n0} LUM/hr";
-                else
-                    XPLabel.Text = $"Gained {accum_XP:n0} XP over {RunTime():n0} seconds, for {XP():n0} XP/hr";
-            }
-            //}
-
         }
 
         protected override void Dispose(bool disposing) {

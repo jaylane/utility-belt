@@ -58,6 +58,7 @@ Section "" CoreSection
 	File "${BUILDPATH}\UBNetworking.pdb"
 	File "${BUILDPATH}\UBNetServer.exe"
 	File "${BUILDPATH}\0Harmony.dll"
+	File "${BUILDPATH}\cimgui.dll"
 	File "${BUILDPATH}\Exceptionless.dll"
 	File "${BUILDPATH}\Exceptionless.Models.dll"
 
@@ -86,6 +87,14 @@ Section -FinishSection
 		WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Path" "$INSTDIR"
 		WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Surrogate" "{71A69713-6593-47EC-0002-0000000DECA1}"
 		WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Uninstaller" "${APPNAME}"
+
+		WriteRegStr HKLM "Software\Decal\Services\${SERVICEGUID}" "" "UBService"
+		WriteRegDWORD HKLM "Software\Decal\Services\${SERVICEGUID}" "Enabled" "1"
+		WriteRegStr HKLM "Software\Decal\Services\${SERVICEGUID}" "Object" "UBService.UBService"
+		WriteRegStr HKLM "Software\Decal\Services\${SERVICEGUID}" "Assembly" "UBService"
+		WriteRegStr HKLM "Software\Decal\Services\${SERVICEGUID}" "Path" "$INSTDIR"
+		WriteRegStr HKLM "Software\Decal\Services\${SERVICEGUID}" "Surrogate" "{71A69713-6593-47EC-0002-0000000DECA1}"
+		WriteRegStr HKLM "Software\Decal\Services\${SERVICEGUID}" "Uninstaller" "${APPNAME}"
 	${Else}
 		${IF} $0 != "${APPNAME}"
 			MESSAGEBOX MB_OK|MB_ICONSTOP "Skipped decal registration. A decal filter with this GUID already exists ($0), and is not ${APPNAME}.  This should not happen, but report it on gitlab or discord if you are seeing this."
@@ -117,7 +126,8 @@ Section Uninstall
 
 	;Remove from registry...
 	DeleteRegKey HKLM "Software\${SOFTWARECOMPANY}\${APPNAME}"
-	DeleteRegKey HKLM "Software\Decal\Filters\${APPGUID}"
+	DeleteRegKey HKLM "Software\Decal\NetworkFilters\${APPGUID}"
+	DeleteRegKey HKLM "Software\Decal\Services\${SERVICEGUID}"
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}"
 
 	; Delete self
@@ -132,6 +142,8 @@ Section Uninstall
 	Delete "$$INSTDIR\UBNetworking.pdb"
 	Delete "$$INSTDIR\UBNetServer.exe"
 	Delete "$INSTDIR\0Harmony.dll"
+	Delete "$$INSTDIR\UBService.dll"
+	Delete "$INSTDIR\cimgui.dll"
 	Delete "$INSTDIR\SharedMemory.dll"
 	Delete "$INSTDIR\Newtonsoft.Json.dll"
 	Delete "$INSTDIR\Exceptionless.dll"
