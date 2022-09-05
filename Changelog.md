@@ -1,4 +1,5 @@
 ## 0.2.8 (TBD)
+- Add `/ub xp export` to write a string version of the current experience policy to use with `/ub xp import <policy>`
 - Add functionality of MagFilter to login as a substring or index after logging out with `/ub login` tool
 - Add expressions getcharacterindex[string name], setnextlogin[string nameOrIndex], clearnextlogin[]
 - Add test mode to Looter to describe items to be looted without looting

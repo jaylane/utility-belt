@@ -8,6 +8,7 @@ using UtilityBelt.Lib;
 using UBLoader.Lib.Settings;
 using Hellosam.Net.Collections;
 using UBLoader.Lib;
+using Newtonsoft.Json;
 
 namespace UtilityBelt.Tools {
     [Name("AutoXp")]
@@ -99,12 +100,14 @@ You can tell the plugin to stop a specified number of levels before the max, but
         #region Commands
         #region /ub xp <level|slow|test>
         [Summary("Automatically spend experience according to a policy.")]
-        [Usage("/ub xp [level|test|slow]")]
+        [Usage("/ub xp [level|test|slow|export|import]")]
         [Example("/ub xp", "Displays the weights of the current xp policy.")]
         [Example("/ub xp test", "Displays the way current experience would be spent with the current policy")]
         [Example("/ub xp level", "Begins (or halts) quickly spending experience with up to MaxXpChunk.")]
         [Example("/ub xp slow", "Begins (or halts) spending experience one level at a time.")]
-        [CommandPattern("xp", @"^ *(?<Verb>.*)$")]
+        [Example("/ub xp export", "Writes the current policy out to chat in a format that can be imported.")]
+        [Example("/ub xp import Alchemy=1;Cooking=1;...", "Imports any valid key-weight pairs to your policy, overriding existing and adding missing values.")]
+        [CommandPattern("xp", @"^\s*(?<Verb>(level|slow|test|export|import))(\s+(?<Import>.*)\s*)?$")]
         public void DoAutoXp(string _, Match args) {
             switch (args.Groups["Verb"].Value) {
                 case "level":
@@ -115,6 +118,36 @@ You can tell the plugin to stop a specified number of levels before the max, but
                     break;
                 case "test":
                     PrintExperiencePlan();
+                    break;
+                case "export":
+                    //ObservableDictionaries are weird with KVPs and Zip isn't in so this is a dumb approach
+                    var keys = Policy.Value.Keys.ToList();
+                    var vals = Policy.Value.Values.ToList();
+                    var policy = String.Join(";", keys.Select((k, i) => $"{k}={vals[i]}").ToArray());
+                    Logger.WriteToChat(policy);
+                    break;
+                case "import":
+                    //Format: XpTarget=Val;
+                    var policyString = args.Groups["Import"].Value;
+
+                    foreach (var pair in policyString.Split(';')) {
+                        var splitPair = pair.Split('=');
+                        if (splitPair.Length != 2) continue;
+
+                        if (!Enum.IsDefined(typeof(XpTarget), splitPair[0])) {
+                            Logger.WriteToChat($"Unable to parse XpTarget {splitPair[0]}");
+                            continue;
+                        }
+                        var target = (XpTarget)Enum.Parse(typeof(XpTarget), splitPair[0]);
+
+                        if (!double.TryParse(splitPair[1], out var weight)) {
+                            Logger.WriteToChat($"Unable to parse {splitPair[1]} for {target}");
+                            continue;
+                        }
+
+                        //Logger.WriteToChat($"Setting weight {target} to {weight}");
+                        Policy.Value[target] = weight;
+                    }
                     break;
                 default:
                     PrintPolicy();
@@ -301,7 +334,7 @@ You can tell the plugin to stop a specified number of levels before the max, but
                 Logger.WriteToChat(description.ToString());
             }
         }
-        
+
         private void PrintPolicy() {
             Logger.WriteToChat("Current experience policy weights:");
             foreach (var key in Policy.Value.Keys) {
@@ -334,5 +367,5 @@ You can tell the plugin to stop a specified number of levels before the max, but
                 disposed = true;
             }
         }
-    }   
+    }
 }
