@@ -33,6 +33,7 @@ namespace UBService {
         private static bool _barIsHorizontal = true;
         private static bool _barIsOpen = true;
         private static bool needsTextures = true;
+        private static bool isResetting;
 
         /// <summary>
         /// Create a new hud
@@ -74,7 +75,8 @@ namespace UBService {
 
         private unsafe static void RenderHudBar() {
             try {
-                if (!huds.Any(h => h.ShowInBar)) {
+                var _huds = huds.ToList();
+                if (!_huds.Any(h => h != null && h.ShowInBar)) {
                     return;
                 }
 
@@ -106,8 +108,8 @@ namespace UBService {
                 ImGui.PopID(); // pop button id
                 if (_barIsHorizontal) ImGui.SameLine(0, 2);
 
-                foreach (var hud in huds) {
-                    if (!hud.ShowInBar)
+                foreach (var hud in _huds) {
+                    if (hud == null || !hud.ShowInBar)
                         continue;
 
                     ImGui.PushID($"hudIcon_{i}"); // need to give each image button a unique id (why?) and pop it later
@@ -180,10 +182,11 @@ namespace UBService {
         }
 
         internal static unsafe void DoRender() {
-            if (!didInit)
+            if (!didInit || isResetting)
                 return;
 
             if (needsTextures) {
+                UBService.WriteLog("Making textures");
                 ImGuiImpl.ImGui_ImplDX9_CreateDeviceObjects();
                 var _huds = huds.ToArray();
                 foreach (var hud in _huds) {
@@ -193,6 +196,7 @@ namespace UBService {
                     catch (Exception ex) { UBService.LogException(ex); }
                 }
                 needsTextures = false;
+                UBService.WriteLog("done Making textures");
             }
 
             // limit uis to MaxFramerate
@@ -224,6 +228,7 @@ namespace UBService {
         }
 
         internal static void PreReset() {
+            isResetting = true;
             ImGuiImpl.ImGui_ImplDX9_InvalidateDeviceObjects();
 
             var _huds = huds.ToArray();
@@ -238,6 +243,7 @@ namespace UBService {
         }
 
         internal static void PostReset() {
+            isResetting = false;
         }
     }
 }

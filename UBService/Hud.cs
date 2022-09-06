@@ -142,6 +142,7 @@ namespace UBService {
         }
 
         internal void CallDestroyTextures() {
+            UBService.WriteLog($"{Name}: CallDestroyTextures");
             // need to recreate textures when the device is reset
             if (iconTexture != null) {
                 iconTexture.Dispose();
@@ -161,9 +162,12 @@ namespace UBService {
         /// Destroy the hud
         /// </summary>
         public void Dispose() {
-            iconTexture?.Dispose();
-            iconBitmap?.Dispose();
-            HudManager.RemoveHud(this);
+            try {
+                iconTexture?.Dispose();
+                iconBitmap?.Dispose();
+                HudManager.RemoveHud(this);
+            }
+            catch (Exception ex) { UBService.LogException(ex); }
         }
     }
 }

@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using Microsoft.DirectX.PrivateImplementationDetails;
 using System.Linq;
 using Decal.Adapter;
+using static System.Net.Mime.MediaTypeNames;
+using System.Threading;
 
 namespace UBService {
     /// <summary>
@@ -21,6 +23,7 @@ namespace UBService {
     [ComDefaultInterface(typeof(IDecalService))]
     public sealed class UBService : MarshalByRefObject, IDecalService, IDecalRender, IDecalWindowsMessageSink {
         internal static DecalCore iDecal;
+        internal static bool DEBUG = false;
 
         unsafe void IDecalService.Initialize(DecalCore pDecal) {
             //WriteLog($"IDecalService.Initialize");
@@ -53,22 +56,21 @@ namespace UBService {
         }
 
         void IDecalService.AfterPlugins() {
-            //WriteLog($"AfterPlugins");
+            WriteLog($"AfterPlugins");
         }
 
         void IDecalService.BeforePlugins() {
-            //WriteLog($"BeforePlugins");
+            WriteLog($"BeforePlugins");
         }
 
         void IDecalService.Terminate() {
-            //WriteLog($"Terminate");
-            //imguiController.Dispose();
+            WriteLog($"Terminate");
         }
 
 
 #pragma warning disable 1591
         public unsafe void ChangeDirectX() {
-            //WriteLog($"ChangeDirectX");
+            WriteLog($"ChangeDirectX");
             try {
                 HudManager.ChangeDirectX();
             }
@@ -79,12 +81,12 @@ namespace UBService {
 
 #pragma warning disable 1591
         public void ChangeHWND() {
-            //WriteLog($"ChangeHWND");
+            WriteLog($"ChangeHWND");
         }
 
 #pragma warning disable 1591
-        public unsafe void PostReset() {
-           // WriteLog($"PreReset");
+        public void PostReset() {
+            WriteLog($"PostReset");
             try {
                 HudManager.PostReset();
             }
@@ -95,7 +97,7 @@ namespace UBService {
 
 #pragma warning disable 1591
         public void PreReset() {
-            //WriteLog($"PreReset");
+            WriteLog($"PreReset");
             try {
                 HudManager.PreReset();
             }
@@ -125,7 +127,8 @@ namespace UBService {
 
         internal static void WriteLog(string text) {
             //File.AppendAllText(@"ubservice.exceptions.txt", text + "\n");
-            File.AppendAllText(@"C:\Users\trevis\Documents\Decal Plugins\UtilityBelt\exceptions.txt", text + "\n");
+            if (DEBUG)
+                File.AppendAllText(@"C:\Users\trevis\Documents\Decal Plugins\UtilityBelt\exceptions.txt", text + "\n");
         }
     }
 }

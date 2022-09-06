@@ -279,6 +279,8 @@ namespace UtilityBelt.Tools {
 
         unsafe private void UpdateMovementStatus() {
             CPhysicsObj* phy = *CPhysicsObj.player_object;
+            if (phy == null || phy->movement_manager == null || phy->movement_manager->motion_interpreter == null)
+                return;
             CMotionInterp* cmi = phy->movement_manager->motion_interpreter;
 
             CurrentMotionStatus[Motion.Forward] = cmi->interpreted_state.forward_command != 0x41000003 && cmi->interpreted_state.forward_speed > 0;

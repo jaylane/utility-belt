@@ -90,7 +90,7 @@ namespace UBLoader {
             public Setting<bool> UploadExceptions = new Setting<bool>(false);
 
             [Summary("Show Character Creation UI")]
-            public Setting<bool> ShowCharacterCreationUI = new Setting<bool>(true);
+            public Setting<bool> ShowCharacterCreationUI = new Setting<bool>(false);
 
             [Summary("Kill clients when they reach the disconnect screen")]
             public Setting<bool> KillDisconnectedClients = new Setting<bool>(false);
@@ -170,7 +170,6 @@ namespace UBLoader {
                         CreateCharacterCreateUI();
                         UnloadPluginAssembly();
                         Decal.Adapter.CoreManager.Current.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
-
                         if (previous == UBHelper.GameState.Logging_Out)
                             LoaderLogin.Login();
                         break;
@@ -178,6 +177,7 @@ namespace UBLoader {
                         LoaderLogin.ClearNextLogin();
                         break;
                     case UBHelper.GameState.Creating_Character:
+                        DestroyCharacterCreateUI();
                         VersionWatermark.Destroy();
                         break;
                     case UBHelper.GameState.Entering_Game:
