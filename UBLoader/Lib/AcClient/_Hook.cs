@@ -9,29 +9,23 @@ namespace AcClient {
     /// </summary>
     public class Hook {
         internal IntPtr Entrypoint;
-        internal Delegate Del;
         internal int call;
-        internal bool Hooked = false;
 
         public Hook(int entrypoint, int call_location) {
             Entrypoint = (IntPtr)entrypoint;
             call = call_location;
-            hookers.Add(this);
         }
         public bool Setup(Delegate del) {
-            if (!Hooked) {
-                Hooked = true;
+            if (!hookers.Contains(this)) {
                 if (ReadCall(call) != (int)Entrypoint) {
                     // WriteToDebugLog($"Failed to detour 0x{call:X8}. expected 0x{(int)Entrypoint:X8}, received 0x{ReadCall(call):X8}");
                     return false;
                 }
-                Del = del;
-                if (!PatchCall(call, Marshal.GetFunctionPointerForDelegate(Del))) {
-                    Del = null;
-                    Hooked = false;
+                if (!PatchCall(call, Marshal.GetFunctionPointerForDelegate(del))) {
                     return false;
                 }
                 else {
+                    hookers.Add(this);
                     return true;
                     // WriteToDebugLog($"Hooking {(int)Entrypoint:X8}");
                 }
@@ -39,14 +33,12 @@ namespace AcClient {
             return false;
         }
         public bool Remove() {
-            if (Hooked) {
+            if (hookers.Contains(this)) {
+                hookers.Remove(this);
                 if (PatchCall(call, Entrypoint)) {
-                    Del = null;
-                    hookers.Remove(this);
                     return true;
                     // WriteToDebugLog($"Un-Hooking {(int)Entrypoint:X8}");
                 }
-                Hooked = false;
             }
             return false;
         }
@@ -88,7 +80,4 @@ namespace AcClient {
                 hookers[i].Remove();
         }
     }
-
-
-
 }
