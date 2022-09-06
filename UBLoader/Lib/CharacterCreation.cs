@@ -1202,22 +1202,33 @@ namespace UBLoader.Lib {
         }
 
         private void CreateTextures() {
-            LockOnTexture = LoadTextureFromResouce("UBLoader.Resources.outline-lock-on.png");
-            LockOffTexture = LoadTextureFromResouce("UBLoader.Resources.outline-lock-off.png");
-            ArrowUpTexture = LoadTextureFromResouce("UBLoader.Resources.outline-arrow-up-round.png");
-            ArrowDownTexture = LoadTextureFromResouce("UBLoader.Resources.outline-arrow-down-round.png");
-            ACMapTexture = LoadTextureFromResouce("UBLoader.Resources.acmap-small.png");
+            try {
+                CreateTextureFromResource(ref LockOnTexture, "UBLoader.Resources.outline-lock-on.png");
+                CreateTextureFromResource(ref LockOffTexture, "UBLoader.Resources.outline-lock-off.png");
+                CreateTextureFromResource(ref ArrowUpTexture, "UBLoader.Resources.outline-arrow-up-round.png");
+                CreateTextureFromResource(ref ArrowDownTexture, "UBLoader.Resources.outline-arrow-down-round.png");
+                CreateTextureFromResource(ref ACMapTexture, "UBLoader.Resources.acmap-small.png");
+            }
+            catch (Exception ex) { UBLoader.FilterCore.LogException(ex); }
+        }
+
+        private void CreateTextureFromResource(ref Microsoft.DirectX.Direct3D.Texture lockOnTexture, string v) {
+            if (lockOnTexture == null)
+                lockOnTexture = LoadTextureFromResouce(v);
         }
 
         private void DestroyTextures() {
-            DestroyTexture(LockOnTexture);
-            DestroyTexture(LockOffTexture);
-            DestroyTexture(ArrowUpTexture);
-            DestroyTexture(ArrowDownTexture);
-            DestroyTexture(ACMapTexture);
-        }
+            try {
+                DestroyTexture(ref LockOnTexture);
+                DestroyTexture(ref LockOffTexture);
+                DestroyTexture(ref ArrowUpTexture);
+                DestroyTexture(ref ArrowDownTexture);
+                DestroyTexture(ref ACMapTexture);
+            }
+            catch (Exception ex) { UBLoader.FilterCore.LogException(ex); }
+}
 
-        private void DestroyTexture(Microsoft.DirectX.Direct3D.Texture texture) {
+        private void DestroyTexture(ref Microsoft.DirectX.Direct3D.Texture texture) {
             texture?.Dispose();
             texture = null;
         }
@@ -1385,8 +1396,8 @@ namespace UBLoader.Lib {
             if (hud != null) {
                 hud.Render -= Hud_Render;
                 hud.PreRender -= Hud_PreRender;
-                hud.DestroyTextures += Hud_DestroyTextures;
-                hud.CreateTextures += Hud_CreateTextures;
+                hud.DestroyTextures -= Hud_DestroyTextures;
+                hud.CreateTextures -= Hud_CreateTextures;
                 hud.Dispose();
                 hud = null;
             }

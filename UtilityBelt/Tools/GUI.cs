@@ -27,7 +27,7 @@ namespace UtilityBelt.Tools {
         public Setting<uint> MaxFramerate = new Setting<uint>(60);
 
         [Summary("Show Demo UI")]
-        public Setting<bool> ShowDemoUI = new Setting<bool>(true);
+        public Setting<bool> ShowDemoUI = new Setting<bool>(false);
         #endregion // Config
 
         #region Commands
