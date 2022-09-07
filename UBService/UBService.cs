@@ -126,9 +126,7 @@ namespace UBService {
         }
 
         internal static void WriteLog(string text) {
-            //File.AppendAllText(@"ubservice.exceptions.txt", text + "\n");
-            if (DEBUG)
-                File.AppendAllText(@"C:\Users\trevis\Documents\Decal Plugins\UtilityBelt\exceptions.txt", text + "\n");
+            File.AppendAllText(@"ubservice.exceptions.txt", text + "\n");
         }
     }
 }
