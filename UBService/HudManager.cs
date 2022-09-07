@@ -56,9 +56,12 @@ namespace UBService {
         internal static void ChangeDirectX() {
             //UBService.WriteLog($"ChangeDirectX: {didInit}");
             if (!didInit) {
-                _context = ImGui.CreateContext(null);
+                _context = ImGui.CreateContext();
                 ImGui.SetCurrentContext(_context);
                 ImGui.GetIO().ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
+                ImGui.GetIO().IniSavingRate = float.MinValue;
+                //var nullString = Encoding.UTF8.GetBytes("\0");
+                //ImGui.GetIO().IniFilename = new NullTerminatedString(); // no ini saving
 
                 // todo: themes
                 ImGui.StyleColorsDark(null);

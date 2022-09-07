@@ -316,6 +316,10 @@
     <Compile Include="Views\ConfirmationDialog.cs" />
     <Compile Include="Views\DictionaryEditor.cs" />
     <Compile Include="Views\EnumFlagEditor.cs" />
+    <Compile Include="Views\Inspector\DynamicEventHandler.cs" />
+    <Compile Include="Views\Inspector\EventMonitor.cs" />
+    <Compile Include="Views\Inspector\Inspector.cs" />
+    <Compile Include="Views\Inspector\MethodInspector.cs" />
     <Compile Include="Views\KeyValueTreeView.cs" />
     <Compile Include="Views\ItemGiver.cs" />
     <Compile Include="Views\LandscapeMapsView.cs" />
@@ -1095,6 +1099,10 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\NetworkClientsView.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\icons\eye.png" />
+    <EmbeddedResource Include="Resources\icons\inspector.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

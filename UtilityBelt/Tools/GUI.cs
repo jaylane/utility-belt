@@ -4,13 +4,13 @@ using UBLoader.Lib.Settings;
 using System.Drawing;
 using System.Linq;
 using UBService;
-using System.IO;
-using UtilityBelt.Views;
 using ImGuiNET;
 using System.Collections.Generic;
 using ACE.DatLoader.FileTypes;
 using ACE.DatLoader.Entity;
 using Decal.Filters;
+using UtilityBelt.Views.Inspector;
+using AcClient;
 
 namespace UtilityBelt.Tools {
     [Name("GUI")]
@@ -18,6 +18,7 @@ namespace UtilityBelt.Tools {
     public class GUI : ToolBase {
         private bool demoIsOpen;
         private Hud demoHudWithCustomWindow;
+        private Inspector gameStateInspector;
 
         #region Config
         [Summary("Enabled")]
@@ -26,8 +27,11 @@ namespace UtilityBelt.Tools {
         [Summary("UI max framerate")]
         public Setting<uint> MaxFramerate = new Setting<uint>(60);
 
-        [Summary("Show Demo UI")]
-        public Setting<bool> ShowDemoUI = new Setting<bool>(false);
+        [Summary("Enable Demo UI")]
+        public Setting<bool> EnableDemoUI = new Setting<bool>(false);
+
+        [Summary("Enable GameState Inspector")]
+        public Setting<bool> EnableGameStateInspector = new Setting<bool>(false);
         #endregion // Config
 
         #region Commands
@@ -41,22 +45,11 @@ namespace UtilityBelt.Tools {
         public override void Init() {
             base.Init();
 
-            ShowDemoUI.Changed += ShowDemoUI_Changed; 
-            demoIsOpen = ShowDemoUI.Value;
+            EnableDemoUI.Changed += ShowHud_Changed;
+            EnableGameStateInspector.Changed += ShowHud_Changed;
+            demoIsOpen = EnableDemoUI.Value;
 
-            if (ShowDemoUI) {
-                CreateHuds();
-            }
-        }
-
-        private void CreateHuds() {
-            if (demoHudWithCustomWindow == null) {
-                demoHudWithCustomWindow = HudManager.CreateHud("Demo Hud (Custom Window)");
-                demoHudWithCustomWindow.CustomWindowDrawing = true;
-                demoHudWithCustomWindow.Render += DemoHudWithCustomWindow_Render;
-                demoHudWithCustomWindow.ShouldHide += DemoHudWithCustomWindow_ShouldHide;
-                demoHudWithCustomWindow.ShouldShow += DemoHudWithCustomWindow_ShouldShow;
-            }
+            CreateHuds();
         }
 
         private void DemoHudWithCustomWindow_ShouldShow(object sender, EventArgs e) {
@@ -73,29 +66,53 @@ namespace UtilityBelt.Tools {
                 ImGui.ShowDemoWindow(ref demoIsOpen);
         }
 
-        private void ShowDemoUI_Changed(object sender, SettingChangedEventArgs e) {
-            if (ShowDemoUI)
-                CreateHuds();
-            else
-                DestroyHuds();
+        private void ShowHud_Changed(object sender, SettingChangedEventArgs e) {
+            RefreshHuds();
         }
 
         private void DestroyHuds() {
-            if (demoHudWithCustomWindow != null) {
+            if ((!EnableDemoUI || disposedValue) && demoHudWithCustomWindow != null) {
                 demoHudWithCustomWindow.Render -= DemoHudWithCustomWindow_Render;
                 demoHudWithCustomWindow.ShouldHide -= DemoHudWithCustomWindow_ShouldHide;
                 demoHudWithCustomWindow.ShouldShow -= DemoHudWithCustomWindow_ShouldShow;
                 demoHudWithCustomWindow.Dispose();
                 demoHudWithCustomWindow = null;
             }
+            if ((!EnableGameStateInspector || disposedValue) && gameStateInspector != null) {
+                gameStateInspector.Dispose();
+                gameStateInspector = null;
+            }
+        }
+
+        private unsafe void CreateHuds() {
+            if (EnableDemoUI && demoHudWithCustomWindow == null) {
+                demoHudWithCustomWindow = HudManager.CreateHud("Demo Hud (Custom Window)");
+                demoHudWithCustomWindow.CustomWindowDrawing = true;
+                demoHudWithCustomWindow.Render += DemoHudWithCustomWindow_Render;
+                demoHudWithCustomWindow.ShouldHide += DemoHudWithCustomWindow_ShouldHide;
+                demoHudWithCustomWindow.ShouldShow += DemoHudWithCustomWindow_ShouldShow;
+            }
+
+            if (EnableGameStateInspector && gameStateInspector == null) {
+                gameStateInspector = new Inspector("UB", UB);
+                //gameStateInspector = new Inspector("GameState", **CObjectMaint.s_pcInstance);
+            }
+        }
+
+        private void RefreshHuds() {
+            DestroyHuds();
+            CreateHuds();
         }
 
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
+                    EnableDemoUI.Changed += ShowHud_Changed;
+                    EnableGameStateInspector.Changed += ShowHud_Changed;
+
+                    disposedValue = true;
                     DestroyHuds();
                 }
-                disposedValue = true;
             }
         }
     }
