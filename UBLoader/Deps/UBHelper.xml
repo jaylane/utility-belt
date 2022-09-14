@@ -403,6 +403,16 @@
             </summary>
             <param name="uptime">AC client uptime in seconds</param>
         </member>
+        <member name="E:UBHelper.Core.Kevorkian">
+            <summary>
+            Kevorkian Event
+            </summary>
+        </member>
+        <member name="T:UBHelper.Core.Del_Kevorkian">
+            <summary>
+            The esteemed Dr. Kevorkian
+            </summary>
+        </member>
         <member name="P:UBHelper.Core.isFocused">
             <summary>
             Returns true if the client currently has focus.

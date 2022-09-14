@@ -189,7 +189,6 @@ namespace UtilityBelt {
         public Professors Professors;
         public QuestTracker QuestTracker;
         public SpellManager SpellManager;
-        public UBHudDemo UBHudDemo;
         //public Tags Tags { get; private set; }
         public VisualNav VisualNav;
         public VTankControl VTank;
@@ -228,9 +227,11 @@ namespace UtilityBelt {
                 Core = core;
                 Host = host;
                 DatabaseFile = databaseFile;
-                WorldName = UBHelper.Core.WorldName;
-                CharacterName = UBHelper.Core.CharacterSet[UBHelper.Core.LoginCharacterID];
-
+                unsafe {
+                    WorldName = (*AcClient.Client.m_instance)->m_worldName.ToString();
+                    CharacterName = UBHelper.Core.CharacterSet[UBHelper.Core.LoginCharacterID];
+                }
+                // throw new Exception($"{WorldName} {CharacterName}"); // can't log here.
                 object a = CoreManager.Current.Decal.Underlying.GetD3DDevice(ref IID_IDirect3DDevice9);
                 Marshal.QueryInterface(Marshal.GetIUnknownForObject(a), ref IID_IDirect3DDevice9, out unmanagedD3dPtr);
                 D3Ddevice = new Device(unmanagedD3dPtr);

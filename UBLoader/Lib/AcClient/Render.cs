@@ -1003,7 +1003,7 @@ namespace AcClient {
         public LayerModifier.Vtbl* vfptr;
         public override string ToString() => $"vfptr:->(LayerModifier.Vtbl*)0x{(int)vfptr:X8}";
         public unsafe struct Vtbl {
-            public static delegate* unmanaged[Thiscall]<LayerModifier*, LayerModType> GetType; // LayerModType (__thiscall *GetType)(LayerModifier *this);
+            public static delegate* unmanaged[Thiscall]<LayerModifier*, LayerModType> _GetType; // LayerModType (__thiscall *GetType)(LayerModifier *this);
             public static delegate* unmanaged[Thiscall]<LayerModifier*, UInt32> GetSize; // unsigned int (__thiscall *GetSize)(LayerModifier *this) __declspec(align(8));
             public static delegate* unmanaged[Thiscall]<LayerModifier*, Byte> DoesModifyVertex; // bool (__thiscall *DoesModifyVertex)(LayerModifier *this);
             public static delegate* unmanaged[Thiscall]<LayerModifier*, LayerModifier*> Copy; // LayerModifier *(__thiscall *Copy)(LayerModifier *this);

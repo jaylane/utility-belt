@@ -4,10 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Decal.Adapter;
-using Decal.Adapter.Wrappers;
-using Decal.Interop.Core;
-using Decal.Interop.Render;
-using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using UBLoader.Lib.Settings;
@@ -126,6 +122,7 @@ namespace UBLoader {
                 LoadAssemblyConfig();
                 LoadDats();
                 UBHelper.Core.GameStateChanged += Core_GameStateChanged;
+                UBHelper.Core.Kevorkian += Core_Kevorkian;
 
                 UBHelper.Core.FilterStartup(PluginAssemblyPath, Global.PluginStorageDirectory);
 
@@ -154,14 +151,40 @@ namespace UBLoader {
             }
         }
 
-        private void CharacterCreationUI_OnFinished(object sender, CharacterCreation.FinishedEventArgs e) {
-            LogError($"Character Creation Result: {e.CharGenState}");
+        private unsafe void CharacterCreationUI_OnFinished(object sender, CharacterCreation.FinishedEventArgs e) {
+            try {
+                //LogError($"Character Creation Result: {e.ACCharGenResult}");
+                LogError($"Creating Character: {e.ACCharGenResult.name}");
+                ACCharGenResult res = e.ACCharGenResult;
+                accountID account = new accountID();
+                account.__Ctor(&(*CPlayerSystem.s_pPlayerSystem)->account_);
+                (*CPlayerSystem.s_pPlayerSystem)->m_pCharGenState->CharGenState.verificationState = CG_VERIFICATION_RESPONSE.CG_VERIFICATION_RESPONSE_PENDING;
+                (*CPlayerSystem.s_pPlayerSystem)->m_pCharGenState->CharGenState.slot = -1;
+                CharacterCreation.CPlayerSystem__Handle_CharGenVerificationResponse_hook.Setup(new CharacterCreation.CPlayerSystem__Handle_CharGenVerificationResponse_def(CharacterCreation.CPlayerSystem__Handle_CharGenVerificationResponse));
+                Proto_UI.SendCharGenResult(&res, account);
+            }
+            catch (Exception ex) { LogException(ex); }
         }
 
         private void FrameRate_Changed(object sender, SettingChangedEventArgs e) {
             UBHelper.SimpleFrameLimiter.globalMax = Global.FrameRate;
         }
 
+        /// <summary>
+        /// This event is triggered in UBHelper, when an inventory request hangs for over 30 seconds.
+        /// </summary>
+        /// <param name="prevRequest">request type (AcClient.InventoryRequest)</param>
+        /// <param name="prevRequestTime">request time</param>
+        /// <param name="curTime">current (ac) time in seconds</param>
+        /// <param name="objectID">the ID of the object that the request was performed on</param>
+        private void Core_Kevorkian(int prevRequest, double prevRequestTime, double curTime, int objectID) {
+            if (Global.KillDisconnectedClients) {
+                LogError($"AC Server Request {(InventoryRequest)prevRequest} on objectID 0x{objectID:X8} timeout!");
+                PostMessage(Core.Decal.Hwnd, 0x0002 /* WM_DESTROY */, (IntPtr)0, (UIntPtr)0);
+            }
+            else
+                LogError($"AC Server Request {(InventoryRequest)prevRequest} on objectID 0x{objectID:X8} timeout! (enable Global.KillDisconnectedClients to kill client when this happens)");
+        }
         private void Core_GameStateChanged(UBHelper.GameState previous, UBHelper.GameState new_state) {
             try {
                 switch (new_state) {
@@ -372,6 +395,7 @@ namespace UBLoader {
                 Global.FrameRate.Changed -= FrameRate_Changed;
                 Settings.Dispose();
                 UBHelper.Core.GameStateChanged -= Core_GameStateChanged;
+                UBHelper.Core.Kevorkian -= Core_Kevorkian;
                 UnloadPluginAssembly();
                 DestroyCharacterCreateUI();
                 UBHelper.Core.FilterShutdown();

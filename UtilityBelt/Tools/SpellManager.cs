@@ -148,7 +148,7 @@ When loading you can use the best version of a spell available, determined by yo
         public Setting<bool> AddSpellsOnCast = new Setting<bool>(false);
 
         [Summary("Don't generate messages when automatically adding spells.")]
-        public Setting<bool> AddSpellsOnCastQuiet = new Setting<bool>(false);
+        public Setting<bool> Quiet = new Setting<bool>(false);
 
         [Summary("Saved spelltabs.")]
         public Setting<ObservableDictionary<string, string>> Tabs = new Setting<ObservableDictionary<string, string>>(
@@ -398,14 +398,14 @@ When loading you can use the best version of a spell available, determined by yo
         /// </summary>
         /// <param name="tab"></param>
         /// <returns></returns>
-        public unsafe string Export(int tab) => $"{tab}:{CPlayerSystem.s_pPlayerSystem->playerModule.PlayerModule.GetFavoriteSpellsList(tab - 1)->GetList()};";
+        public unsafe string Export(int tab) => $"{tab}:{(*CPlayerSystem.s_pPlayerSystem)->playerModule.PlayerModule.GetFavoriteSpellsList(tab - 1)->GetList()};";
 
         /// <summary>
         /// export tab into a string array of ids
         /// </summary>
         /// <param name="tab"></param>
         /// <returns></returns>
-        public unsafe string[] ExportTab(int tab) => CPlayerSystem.s_pPlayerSystem->playerModule.PlayerModule.GetFavoriteSpellsList(tab - 1)->GetList().Split(',');
+        public unsafe string[] ExportTab(int tab) => (*CPlayerSystem.s_pPlayerSystem)->playerModule.PlayerModule.GetFavoriteSpellsList(tab - 1)->GetList().Split(',');
 
         /// <summary>
         /// Import a comma-separated string of spell ids into the given tab
@@ -419,8 +419,8 @@ When loading you can use the best version of a spell available, determined by yo
             if (ids.Length == 0) return 0;
             var ret = 0;
             foreach (string d in ids) {
-                if(!uint.TryParse(d, out uint spellID)) {
-                    if(loud)
+                if (!uint.TryParse(d, out uint spellID)) {
+                    if (loud)
                         Logger.WriteToChat($"Failed to parse: {d}");
                     continue;
                 }
@@ -445,7 +445,7 @@ When loading you can use the best version of a spell available, determined by yo
         public unsafe void Wipe(int tab) {
             tab--;  //Adjust for zero-index
             // I see you looking at this, but.... sigh
-            var favs = CPlayerSystem.s_pPlayerSystem->playerModule.PlayerModule.GetFavoriteSpellsList(tab);
+            var favs = (*CPlayerSystem.s_pPlayerSystem)->playerModule.PlayerModule.GetFavoriteSpellsList(tab);
             var myUI = (gmSpellcastingUI*)GlobalEventHandler.geh->ResolveHandler(5100110);
             SpellCastSubMenu* menu = (SpellCastSubMenu*)((&(myUI->m_subMenus)) + ((tab) * (sizeof(SpellCastSubMenu) / 4)));
             while (menu->m_numSpells > 0) menu->RemoveSpellFromMenu(favs->tail->data);
@@ -464,14 +464,14 @@ When loading you can use the best version of a spell available, determined by yo
                 }
             }
             // update selected icon
-            //myUI->UpdateEndowmentIcon(); //throws AccessViolation when tab is active
+            myUI->UpdateEndowmentIcon(); //throws AccessViolation when tab is active
             // update selected spell name
             myUI->UpdateCastButtonTooltip();
         }
         public System.Collections.Generic.List<UInt32> SpellTabElements = new System.Collections.Generic.List<uint> { 0x100000A3, 0x100000A4, 0x100000A5, 0x100000A6, 0x100000A7, 0x100000A8, 0x100000A9, 0x100005C2 };
 
         public unsafe void populate_tabbedSpells() {
-            var pm = CPlayerSystem.s_pPlayerSystem->playerModule.PlayerModule;
+            var pm = (*CPlayerSystem.s_pPlayerSystem)->playerModule.PlayerModule;
             System.Collections.Generic.Dictionary<UInt32, UInt16[]> ret = new System.Collections.Generic.Dictionary<UInt32, UInt16[]>();
             ushort index = 0;
             for (sbyte tab = 0; tab < 8; tab++) {
@@ -491,11 +491,9 @@ When loading you can use the best version of a spell available, determined by yo
                 }
                 index = 0;
             }
-            tabbedSpells_next_populate = *Timer.cur_time + 120;
             tabbedSpells = ret;
         }
         public System.Collections.Generic.Dictionary<UInt32, UInt16[]> tabbedSpells = null;
-        public Double tabbedSpells_next_populate = 0;
         public string[] numerals = new string[] { "I", "II", "III", "IV", "V", "VI", "VII", "VIII" };
 
         public unsafe int TabFromSpellID(UInt32 spellId) {
@@ -515,35 +513,23 @@ When loading you can use the best version of a spell available, determined by yo
             return 0;
         }
         private unsafe void CharacterFilter_SpellCast(object sender, SpellCastEventArgs e) {
-            if (Spells.TryGetBestCastable((uint)e.SpellId, out var bestId, IgnoreSkill ? 0 : DifficultyModifier, IgnoreComps) && bestId != (uint)e.SpellId)
+            if (!Quiet && Spells.TryGetBestCastable((uint)e.SpellId, out var bestId, IgnoreSkill ? 0 : DifficultyModifier, IgnoreComps) && bestId != (uint)e.SpellId)
                 Logger.WriteToChat($"You could be casting {Spells.GetName(bestId)} instead.");
 
             int tab = TabFromSpellID((uint)e.SpellId);
 
-            // first run, or expired cache, re-populate:
-            if (tabbedSpells == null) {
-                populate_tabbedSpells();
-            }
-            if (*Timer.cur_time > tabbedSpells_next_populate) {
-                populate_tabbedSpells();
-            }
-
             // does not contain spell on any tab, create array, and add it
-            if (!tabbedSpells.ContainsKey((uint)e.SpellId)) {
-                var tsa = new UInt16[8];
-                tabbedSpells.Add((uint)e.SpellId, tsa);
+            if (tabbedSpells == null || !tabbedSpells.ContainsKey((uint)e.SpellId)) {
+                // re-populate our hash, and to see if the user manually added it
+                populate_tabbedSpells();
+                if (!tabbedSpells.ContainsKey((uint)e.SpellId)) AddFavorite((uint)e.SpellId, tab, (int)(*CPlayerSystem.s_pPlayerSystem)->playerModule.PlayerModule.GetFavoriteSpellsList(tab)->curNum, false, false, Quiet);
             }
-
-            // exists on atleast 1 tab, but not the target tab- add it to the index
-            if (tabbedSpells[(uint)e.SpellId][tab] == 0) {
-                var newpos = (int)CPlayerSystem.s_pPlayerSystem->playerModule.PlayerModule.GetFavoriteSpellsList(tab)->curNum;
-                tabbedSpells[(uint)e.SpellId][tab] = (UInt16)newpos;
-                AddFavorite((uint)e.SpellId, tab, newpos, false, false, AddSpellsOnCastQuiet);
-            }
-
         }
 
         public unsafe void AddFavorite(UInt32 _spellID, Int32 _tab, Int32 _index, bool _allowReplace, bool _skipUI, bool quiet) {
+            if (tabbedSpells == null) populate_tabbedSpells();
+            if (!tabbedSpells.ContainsKey(_spellID)) tabbedSpells.Add(_spellID, new UInt16[8]);
+            tabbedSpells[_spellID][_tab] = (UInt16)_index;
             // I see you looking at this, but.... sigh
             var myUI = (gmSpellcastingUI*)GlobalEventHandler.geh->ResolveHandler(5100110);
             SpellCastSubMenu* menu = (SpellCastSubMenu*)((&(myUI->m_subMenus)) + ((_tab) * (sizeof(SpellCastSubMenu) / 4)));
@@ -555,8 +541,8 @@ When loading you can use the best version of a spell available, determined by yo
             // if index came in as -1, add to end:
             if (_index == -1) _index = (int)menu->m_numSpells;
 
-            // first run, or expired cache, re-populate:
-            if (tabbedSpells == null || *Timer.cur_time > tabbedSpells_next_populate) populate_tabbedSpells();
+            // first run, populate:
+            if (tabbedSpells == null) populate_tabbedSpells();
             // does not contain spell on any tab, create array, and add it
             if (!tabbedSpells.ContainsKey(_spellID)) tabbedSpells.Add(_spellID, new UInt16[8]);
 
@@ -578,19 +564,9 @@ When loading you can use the best version of a spell available, determined by yo
         /// <param name="_allowReplace">if index collides with existing spell, replace? (false=insert)</param>
         /// <param name="quiet">report actions in chat window</param>
         public unsafe void FocusSpellorAdd(UInt32 _spellID, Int32 _index, bool _allowReplace, bool quiet) {
-            // first run, or expired cache, re-populate:
-            if (tabbedSpells == null || *Timer.cur_time > tabbedSpells_next_populate) populate_tabbedSpells();
-
             if (FocusSpell(_spellID)) return;
-
-            // does not contain spell on any tab, create array, and add it
-            if (!tabbedSpells.ContainsKey(_spellID)) tabbedSpells.Add(_spellID, new UInt16[8]);
-
-            // add it
             var _tab = TabFromSpellID(_spellID);
-            var newpos = (int)CPlayerSystem.s_pPlayerSystem->playerModule.PlayerModule.GetFavoriteSpellsList(_tab)->curNum;
-            tabbedSpells[_spellID][_tab] = (UInt16)newpos;
-            AddFavorite(_spellID, _tab, newpos, false, false, AddSpellsOnCastQuiet);
+            AddFavorite(_spellID, _tab, (int)(*CPlayerSystem.s_pPlayerSystem)->playerModule.PlayerModule.GetFavoriteSpellsList(_tab)->curNum, false, false, Quiet);
 
         }
 
@@ -600,10 +576,8 @@ When loading you can use the best version of a spell available, determined by yo
         /// <param name="_spellID"></param>
         /// <returns></returns>
         public unsafe bool FocusSpell(UInt32 _spellID) {
-            // first run, or expired cache, re-populate:
-            if (tabbedSpells == null || *Timer.cur_time > tabbedSpells_next_populate) populate_tabbedSpells();
-            var myUI = (gmSpellcastingUI*)GlobalEventHandler.geh->ResolveHandler(5100110);
-            var openIndex = myUI->GetOpenSubMenuIndex();
+            // first run, populate:
+            if (tabbedSpells == null) populate_tabbedSpells();
             if (!tabbedSpells.ContainsKey(_spellID)) return false;
             int _needle = -1;
             for (int _tab = 0; _tab < 8; _tab++) {

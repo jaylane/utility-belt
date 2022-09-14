@@ -3,10 +3,6 @@ using UtilityBelt.Lib;
 using UBLoader.Lib.Settings;
 using AcClient;
 using System.Runtime.InteropServices;
-using System.Drawing;
-using System.Collections.Generic;
-using static System.Net.Mime.MediaTypeNames;
-using System.Windows;
 using ImGuiNET;
 
 namespace UtilityBelt.Tools {
@@ -14,89 +10,67 @@ namespace UtilityBelt.Tools {
     [Summary("Provides an XP Meter overlay that works past 275")]
     [FullDescription(@"TODO: Write this. This is still under development.")]
     public class XPMeter : ToolBase {
-
-        /// <summary>
-        /// "current" totals
-        /// </summary>
-        public Int64 lastXP = 0;
-        public Int64 lastLUM = 0;
-
-        /// <summary>
-        /// amount accumulated since `start_time`
-        /// </summary>
-        public Int64 accum_XP = 0;
-        public Int64 accum_LUM = 0;
-
-        /// <summary>
-        /// client timestamp of last reset
-        /// </summary>
-        public Double start_time = 0;
-
-        public bool hasLuminance = false;
-
-        /// <summary>
-        ///  XP/hr
-        /// </summary>
-        public Double XP() => (accum_XP / RunTime()) * 3600;
-
-        /// <summary>
-        ///  LUM/hr
-        /// </summary>
-        public Double LUM() => (accum_LUM / RunTime()) * 3600;
-
-        /// <summary>
-        ///  # of seconds since reset
-        /// </summary>
-        public unsafe Double RunTime() => *Timer.cur_time - start_time;
-
         private UBService.Hud hud;
-        private UBHud.Button ResetBtn;
-        private UBHud.Label XPLabel;
-
-        private const short WM_MOUSEMOVE = 0x0200;
-        private const short WM_LBUTTONDOWN = 0x0201;
-        private const short WM_LBUTTONUP = 0x0202;
-
         #region Config
         [Summary("Enabled")]
         public Setting<bool> Enabled = new Setting<bool>(true);
+        [Summary("Show Totals")]
+        public Setting<bool> ShowTotals = new Setting<bool>(true);
+        [Summary("Show Time")]
+        public Setting<bool> ShowTime = new Setting<bool>(true);
 
+        //todo- detach Enabled from hud visibility
         //[Summary("Wether the hud is visible or not.")]
         //public readonly CharacterState<bool> Visible = new CharacterState<bool>(true);
 
-        [Summary("HUD Position X")]
-        public readonly CharacterState<int> HudX = new CharacterState<int>(5);
-
-        [Summary("HUD Position Y")]
-        public readonly CharacterState<int> HudY = new CharacterState<int>(45);
-
-        [Summary("HUD Font")]
-        public readonly CharacterState<string> HudFont = new CharacterState<string>("Arial");
-
-        [Summary("HUD Font Size")]
-        public readonly CharacterState<int> HudFontSize = new CharacterState<int>(10);
-
-        [Summary("text face color")]
-        public readonly CharacterState<UInt32> TextColor = new CharacterState<UInt32>(0xB0FFFFFF);
-
-        [Summary("background color")]
-        public readonly CharacterState<UInt32> BackgroundColor = new CharacterState<UInt32>(0x7F000000);
-
+        private void XPMeter_Enabled_Changed(object sender, SettingChangedEventArgs e) {
+            if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
+                return;
+            TryEnable();
+        }
         #endregion // Config
-
+        #region Commands
+        #region /ub xpmeter (on|off|reset)
+        [Summary("Enable/Disable/Reset XP Meter")]
+        [Usage("/ub xpmeter (on|off|reset)")]
+        [CommandPattern("xpmeter", @"^(?<cmd>true|false|on|off|reset)$", false)]
+        public unsafe void DoXP(string _, System.Text.RegularExpressions.Match args) {
+            switch (args.Groups["cmd"].Value.ToLower()) {
+                case "off":
+                case "false":
+                    Enabled.Value = false;
+                    WriteToChat($"Disabled.");
+                    break;
+                case "on":
+                case "true":
+                    Enabled.Value = true;
+                    WriteToChat($"Enabled.");
+                    break;
+                case "reset":
+                    ResetMeter();
+                    break;
+            }
+        }
+        #endregion
+        #endregion
         #region Expressions
-
         #region xpreset[]
         [ExpressionMethod("xpreset")]
         [ExpressionReturn(typeof(double), "Returns 1.")]
         [Summary("Resets the XP Meter")]
         [Example("xpreset[]", "1")]
         public object resetxp() {
-            Reset();
+            ResetMeter();
             return (double)1;
         }
         #endregion //resetxp[]
-
+        #region xpmeter[]
+        [ExpressionMethod("xpmeter")]
+        [ExpressionReturn(typeof(string), "XP Meter Text")]
+        [Summary("Returns the XP Meter Text")]
+        [Example("xpmeter[]", "500m XP, 51s, 35.39b XP/hr")]
+        public unsafe object xpmeter() => Gloat();
+        #endregion //xptotal[]
         #region xpduration[]
         [ExpressionMethod("xpduration")]
         [ExpressionReturn(typeof(double), "Number of seconds the xp meter has been running.")]
@@ -104,7 +78,6 @@ namespace UtilityBelt.Tools {
         [Example("xpduration[]", "420.69")]
         public unsafe object xpduration() => *Timer.cur_time - start_time;
         #endregion //xpduration[]
-
         #region xptotal[]
         [ExpressionMethod("xptotal")]
         [ExpressionReturn(typeof(double), "Total XP accumulated")]
@@ -112,7 +85,6 @@ namespace UtilityBelt.Tools {
         [Example("xptotal[]", "42")]
         public unsafe object xptotal() => (double)accum_XP;
         #endregion //xptotal[]
-
         #region lumtotal[]
         [ExpressionMethod("lumtotal")]
         [ExpressionReturn(typeof(double), "Total LUM accumulated")]
@@ -120,7 +92,6 @@ namespace UtilityBelt.Tools {
         [Example("lumtotal[]", "212")]
         public unsafe object lumtotal() => (double)accum_LUM;
         #endregion //lumtotal[]
-
         #region xpavg[]
         [ExpressionMethod("xpavg")]
         [ExpressionReturn(typeof(double), "Average XP/hr")]
@@ -128,7 +99,6 @@ namespace UtilityBelt.Tools {
         [Example("xpavg[]", "234567890")]
         public unsafe object xpavg() => XP();
         #endregion //xpavg[]
-
         #region lumavg[]
         [ExpressionMethod("lumavg")]
         [ExpressionReturn(typeof(double), "Average LUM/hr")]
@@ -136,100 +106,83 @@ namespace UtilityBelt.Tools {
         [Example("lumavg[]", "420")]
         public unsafe object lumavg() => LUM();
         #endregion //lumavg[]
-
         #endregion //Expressions
-
-
-        public XPMeter(UtilityBeltPlugin ub, string name) : base(ub, name) {
-
+        #region Common Interface
+        private unsafe void ResetMeter() {
+            WriteToChat($"Resetting XP Meter after {*Timer.cur_time - start_time:n0} seconds, {accum_XP:n0} XP, and {accum_LUM:n0} LUM");
+            accum_XP = 0;
+            accum_LUM = 0;
+            start_time = *Timer.cur_time;
         }
-
+        private unsafe string Gloat() {
+            if (hasLuminance) return $"{(ShowTotals ? $"{Util.formatExperience(accum_XP):n0} XP and {Util.formatExperience(accum_LUM):n0} LUM, " : "")}{(ShowTime ? $"{Util.formatDuration(RunTime()):n0}, " : "")}{Util.formatExperience(XP()):n0} XP/hr and {Util.formatExperience(LUM()):n0} LUM/hr";
+            else return $"{(ShowTotals ? $"{Util.formatExperience(accum_XP):n0} XP, " : "")}{(ShowTime ? $"{Util.formatDuration(RunTime()):n0}, " : "")}{Util.formatExperience(XP()):n0} XP/hr";
+        }
+        public Int64 lastXP = 0; // current total XP
+        public Int64 lastLUM = 0; // current total LUM
+        public Int64 accum_XP = 0; // XP accumulated since `start_time`
+        public Int64 accum_LUM = 0; // LUM accumulated since `start_time`
+        public Double start_time = 0; // client timestamp of last reset
+        public Double XP() => (accum_XP / RunTime()) * 3600; // XP/hr
+        public Double LUM() => (accum_LUM / RunTime()) * 3600; // LUM/hr
+        public unsafe Double RunTime() => *Timer.cur_time - start_time; //  # of seconds since reset
+        #endregion
+        #region Initialization
+        public XPMeter(UtilityBeltPlugin ub, string name) : base(ub, name) { }
         public override void Init() {
             base.Init();
-            try {
-                Changed += XPMeter_Changed;
-                if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
-                    UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
-                else
-                    TryEnable();
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
+            Enabled.Changed += XPMeter_Enabled_Changed;
+            if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
+                UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
+            else
+                TryEnable();
         }
         private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
             UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
             TryEnable();
         }
         private void TryEnable() {
-            if (Enabled) SetupMeter();
-            else ClearHud();
+            if (Enabled) EnableMeter();
+            else Hud_Hide();
         }
-
-
-        private Decal.Interop.Input.TimerClass drawTimer;
-        /// <summary>
-        /// safely reset counters, setup hook, start counter, and start hud
-        /// </summary>
-        public unsafe void SetupMeter() {
-            ClearHud();
-            CreateHud();
-            _hook.Setup(new def(hook));
-            try {
+        #endregion
+        #region Overall Enable/Disable
+        private bool hasLuminance = false;
+        public unsafe void EnableMeter() {
+            if ((*CPhysicsObj.player_object) != null && (*CPhysicsObj.player_object)->weenie_obj != null && (*CPhysicsObj.player_object)->weenie_obj->m_pQualities != null) {
                 CBaseQualities* playerQualities = &(*CPhysicsObj.player_object)->weenie_obj->m_pQualities->a0.a1;
                 lastXP = playerQualities->Get(STypeInt64.AVAILABLE_EXPERIENCE);
                 lastLUM = playerQualities->Get(STypeInt64.AVAILABLE_LUMINANCE);
                 hasLuminance = playerQualities->Get(STypeInt64.MAXIMUM_LUMINANCE) != 0 && playerQualities->Get(STypeInt.LEVEL) >= 200;
+                // LogError($"Success reading qualities. xp:{lastXP:n0}, lum:{lastLUM:n0}, hasLuminance: {hasLuminance}");
             }
-            catch { }
+            else {
+                LogError($"Error accessing player qualities");
+                return;
+            }
+            if (!ClientObjMaintSystem__Handle_Qualities__PrivateUpdateInt64_hook.Setup(new ClientObjMaintSystem__Handle_Qualities__PrivateUpdateInt64_def(ClientObjMaintSystem__Handle_Qualities__PrivateUpdateInt64))) {
+                LogError($"HOOK>ClientObjMaintSystem__Handle_Qualities__PrivateUpdateInt64 install falure");
+                return;
+            } // else LogError($"HOOK>ClientObjMaintSystem__Handle_Qualities__PrivateUpdateInt64 install success");
+            Hud_Show();
             accum_XP = 0;
             accum_LUM = 0;
             start_time = *Timer.cur_time;
-
         }
-
-
-
-        private void XPMeter_Changed(object sender, SettingChangedEventArgs e) {
-            if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
+        public void DisableMeter() {
+            if (!ClientObjMaintSystem__Handle_Qualities__PrivateUpdateInt64_hook.Remove()) {
+                LogError($"HOOK>ClientObjMaintSystem__Handle_Qualities__PrivateUpdateInt64 remove falure");
                 return;
-            switch (e.PropertyName) {
-                case "Enabled":
-                    TryEnable();
-                    break;
-                case "HudX":
-                case "HudY":
-                case "TextColor":
-                case "BackgroundColor":
-                case "HudFont":
-                case "HudFontSize":
-                    ClearHud();
-                    CreateHud();
-                    break;
-            }
+            } // else LogError($"HOOK>ClientObjMaintSystem__Handle_Qualities__PrivateUpdateInt64 remove success");
+            Hud_Hide();
         }
-
-
-        /// <summary>
-        /// safely remove hook, stop counter, and remove hud
-        /// </summary>
-        public void Stop() {
-            _hook.Remove();
-            ClearHud();
-        }
-
-        /// <summary>
-        /// super secret squirel numbers. ohh wait- these are the entrypoint, and call location for `ClientObjMaintSystem.Handle_Qualities__PrivateUpdateInt64`
-        /// </summary>
-        internal Hook _hook = new AcClient.Hook(0x00559C40, 0x006AF9DB);
-
-        /// <summary>
-        /// boilerplate delegate stuff
-        /// </summary>
-        [UnmanagedFunctionPointer(CallingConvention.ThisCall)] internal unsafe delegate UInt32 def(ClientObjMaintSystem* This, char wts, UInt32 stype, Int64 val);
-
-        /// <summary>
-        /// Detour function- the client thinks this is ClientObjMaintSystem.Handle_Qualities__PrivateUpdateInt64, so make sure you call the real thing
-        /// </summary>
-        private unsafe UInt32 hook(ClientObjMaintSystem* This, char wts, UInt32 stype, Int64 val) {
+        #endregion
+        #region HOOK ClientObjMaintSystem::Handle_Qualities__PrivateUpdateInt64(ClientObjMaintSystem* This, char wts, UInt32 stype, Int64 val);
+        internal Hook ClientObjMaintSystem__Handle_Qualities__PrivateUpdateInt64_hook = new AcClient.Hook(0x00559C40, 0x006AF9DB);
+        // .text:00559C40 ; public: unsigned long __thiscall ClientObjMaintSystem::Handle_Qualities__PrivateUpdateInt64(unsigned char,unsigned long,__int64)
+        // .text:006AF9DB                 call    ?Handle_Qualities__PrivateUpdateInt64@ClientObjMaintSystem@@QAEKEK_J@Z ; ClientObjMaintSystem::Handle_Qualities__PrivateUpdateInt64(uchar,ulong,__int64)
+        [UnmanagedFunctionPointer(CallingConvention.ThisCall)] internal unsafe delegate UInt32 ClientObjMaintSystem__Handle_Qualities__PrivateUpdateInt64_def(ClientObjMaintSystem* This, char wts, UInt32 stype, Int64 val);
+        private unsafe UInt32 ClientObjMaintSystem__Handle_Qualities__PrivateUpdateInt64(ClientObjMaintSystem* This, char wts, UInt32 stype, Int64 val) {
             switch (stype) {
                 case 2:
                     if (val - lastXP > 0) accum_XP += val - lastXP;
@@ -242,15 +195,10 @@ namespace UtilityBelt.Tools {
             }
             return This->Handle_Qualities__PrivateUpdateInt64(wts, stype, val);
         }
-
-        private unsafe void Reset() {
-            Logger.WriteToChat($"Resetting XP Meter after {*Timer.cur_time - start_time:n0} seconds, {accum_XP:n0} XP, and {accum_LUM:n0} LUM");
-            accum_XP = 0;
-            accum_LUM = 0;
-            start_time = *Timer.cur_time;
-        }
-
-        internal void CreateHud() {
+        #endregion
+        #region Hud Show/Hide
+        internal void Hud_Show() {
+            Hud_Hide();
             hud = UBService.HudManager.CreateHud("XP Meter");
             hud.ShowInBar = false;
             hud.ShouldHide += Hud_ShouldHide;
@@ -260,87 +208,65 @@ namespace UtilityBelt.Tools {
             hud.WindowSettings |= ImGuiWindowFlags.AlwaysAutoResize;
             hud.WindowSettings |= ImGuiWindowFlags.NoResize;
             hud.WindowSettings |= ImGuiWindowFlags.NoScrollbar;
+            hud.WindowSettings |= ImGuiWindowFlags.NoCollapse;
         }
-
-        private string hudText = "";
-        private bool showButtons = false;
-        private float targetHeight = 0;
-        private float currentHeight = 0;
-        private void Hud_PreRender(object sender, EventArgs e) {
-            try {
-                if (hasLuminance)
-                    hudText = $"Gained {Util.formatExperience(accum_XP):n0} XP and {Util.formatExperience(accum_LUM):n0} LUM over {Util.formatDuration(RunTime()):n0}, for {Util.formatExperience(XP()):n0} XP/hr and {Util.formatExperience(LUM()):n0} LUM/hr";
-                else
-                    hudText = $"Gained {accum_XP:n0} XP over {RunTime():n0} seconds, for {XP():n0} XP/hr";
-
-                showButtons = ImGui.GetIO().KeyShift > 0;
-
-                if (showButtons && currentHeight < 32) {
-                        currentHeight += 0.3f;
-                }
-                else if (currentHeight > 0) {
-                        currentHeight -= 0.3f;
-                }
-
-                hud.Title = hudText;
-                var size = new Vector2(-1, 20 + currentHeight);
-                ImGui.SetNextWindowCollapsed(currentHeight == 0, ImGuiCond.Always);
-                ImGui.SetNextWindowSize(size, ImGuiCond.Always);
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private unsafe void Hud_Render(object sender, EventArgs e) {
-            try {
-                // since we are after the title, we add a little padding to the body to get the window
-                // to auto resize correctly... kinda hacky
-                var paddedText = $"{hudText} +++";
-                var size = new Vector2(100, 20);
-                if (ImGui.Button("Reset", size)) {
-                    Reset();
-                }
-                ImGui.Text(paddedText);
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void Hud_ShouldHide(object sender, EventArgs e) {
-            WriteToChat("XP Meter closed. It can be re-opened in the UtilityBelt Settings, under XPMeter, or with the command:  /ub opt set XPMeter.Enabled true");
-            Enabled.Value = false;
-        }
-
-        public void ClearHud() {
+        public void Hud_Hide() {
             if (hud != null) {
-                ResetBtn = null;
-                XPLabel = null;
+                hud.ShouldHide -= Hud_ShouldHide;
+                hud.Render -= Hud_Render;
+                hud.PreRender -= Hud_PreRender;
                 hud.Dispose();
                 hud = null;
             }
         }
-
+        #endregion
+        #region Hud Events
+        private string hudText = "";
+        private float additionalHeight = 0;
+        private void Hud_PreRender(object sender, EventArgs e) {
+            hudText = Gloat();
+            if (ImGui.GetIO().KeyShift > 0) {
+                if (additionalHeight < 32)
+                    additionalHeight += 4f;
+            }
+            else if (additionalHeight > 0)
+                additionalHeight -= 4f;
+            hud.Title = hudText;
+            var size = new Vector2(-1, 20 + additionalHeight);
+            ImGui.SetNextWindowCollapsed(additionalHeight == 0, ImGuiCond.Always);
+            ImGui.SetNextWindowSize(size, ImGuiCond.Always);
+        }
+        private unsafe void Hud_Render(object sender, EventArgs e) {
+            if (additionalHeight == 0) {
+                ImGui.Text($"{hudText} +++");
+            }
+            else {
+                if (ImGui.Button("Reset", new Vector2(100, 20))) {
+                    ResetMeter();
+                }
+                ImGui.SameLine();
+                if (ImGui.Button("/say", new Vector2(50, 20))) {
+                    AC1Legacy.PStringBase<char> text = Gloat();
+                    CM_Communication.Event_Talk(&text);
+                }
+            }
+        }
+        private void Hud_ShouldHide(object sender, EventArgs e) {
+            WriteToChat("XP Meter closed. It can be re-opened in the UtilityBelt Settings, under XPMeter, or with the command:  /ub opt set XPMeter.Enabled true");
+            Enabled.Value = false;
+        }
+        #endregion
+        #region IDisposable Support
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
-                    Stop();
-                    Changed -= XPMeter_Changed;
+                    DisableMeter();
+                    Enabled.Changed -= XPMeter_Enabled_Changed;
                     UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
                 }
                 disposedValue = true;
             }
         }
-
-
-        //private struct StatisticsData<T> {
-        //    internal T accum;
-        //    internal Double accumTime;
-        //    internal T startValue;
-        //    internal Queue<T> sinceLastN;
-        //    internal T[] Nth;
-        //    internal double NextNthPeriod;
-        //    internal int period = 10;
-        //}
-
+        #endregion
     }
-
-
 }

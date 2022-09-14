@@ -33,7 +33,7 @@ Hold ctrl and drag to move the overlay position.  You can click the exit icon wh
 
         private TimerClass drawTimer;
 
-        Regex ChatCoordinatesRe = new Regex(@"[^>](?<NS>\d+\.?\d*)(?<NSChar>[ns]),?\s*(?<EW>\d+\.?\d*)(?<EWChar>[ew])", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        Regex ChatCoordinatesRe = new Regex(@"[^>](?<NS>[0-9]{1,3}(?:\.[0-9]{1,3})?)(?<NSChar>(?:[ns]))(?:[,\s]+)?(?<EW>[0-9]{1,3}(?:\.[0-9]{1,3})?)(?<EWChar>(?:[ew]))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private IconMarker mapMarker;
         private LabelMarker mapLabel;
 

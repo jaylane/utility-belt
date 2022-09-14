@@ -103,10 +103,10 @@ namespace UtilityBelt {
             WriteToLogFile("debug", message, true);
         }
 
-        public static void WriteToLogFile(string logName, string message, bool addTimestamp = false) {
+        public unsafe static void WriteToLogFile(string logName, string message, bool addTimestamp = false) {
             if (UtilityBeltPlugin.Instance != null && UtilityBeltPlugin.Instance.Plugin.Debug) {
                 string logFileName = $"{UBLoader.FilterCore.Global.LogDirectory}\\{logName}.{DateTime.Now.ToString("yyyy-MM-dd")}.txt";
-                string logMessage = $"{(addTimestamp ? DateTime.Now.ToString("yy/MM/dd H:mm:ss ") : null)}[{UBHelper.Core.WorldName}:{UBHelper.Core.UserName.GetHashCode():X8}] {message}\r\n";
+                string logMessage = $"{(addTimestamp ? DateTime.Now.ToString("yy/MM/dd H:mm:ss ") : null)}[{(*AcClient.Client.m_instance)->m_worldName}:{(*AcClient.Client.m_instance)->m_account.name.GetHashCode():X8}] {message}\r\n";
                 UBLoader.Lib.File.TryWrite(logFileName, logMessage);
                 //File.AppendAllText(Path.Combine(Util.GetLogDirectory(), logFileName), message + Environment.NewLine);
             }

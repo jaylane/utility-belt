@@ -3,8 +3,6 @@ using System.Drawing;
 using UtilityBelt.Lib;
 using UBLoader.Lib.Settings;
 using AcClient;
-using Decal.Adapter.Wrappers;
-using Antlr4.Runtime.Misc;
 
 namespace UtilityBelt.Tools {
     [Name("Player")]
@@ -152,8 +150,8 @@ namespace UtilityBelt.Tools {
             int iter = 0;
             foreach (var j in mytable) {
                 if (j == null) continue;
-                string left = $"{(STypeInt)j->_key}";
-                string text = "";
+                string left = $"{j->_key}";
+                string text = $"{(STypeInt)j->_key}";
                 string right = $"{j->_data}";
                 Blocks.Add(new UBHud.Block(hud, new Rectangle(0, (20 * (iter + 1)), panelWidth, 20), left, text, right, left + ':' + right, 0));
                 iter++;
@@ -169,8 +167,8 @@ namespace UtilityBelt.Tools {
             int iter = 0;
             foreach (var j in mytable) {
                 if (j == null) continue;
-                string left = $"{(STypeInt64)j->_key}";
-                string text = "";
+                string left = $"{j->_key}";
+                string text = $"{(STypeInt64)j->_key}";
                 string right = $"{j->_data}";
                 Blocks.Add(new UBHud.Block(hud, new Rectangle(0, (20 * (iter + 1)), panelWidth, 20), left, text, right, left + ':' + right, 0));
                 iter++;
@@ -186,8 +184,8 @@ namespace UtilityBelt.Tools {
             int iter = 0;
             foreach (var j in mytable) {
                 if (j == null) continue;
-                string left = $"{(STypeBool)j->_key}";
-                string text = "";
+                string left = $"{j->_key}";
+                string text = $"{(STypeBool)j->_key}";
                 string right = $"{j->_data}";
                 Blocks.Add(new UBHud.Block(hud, new Rectangle(0, (20 * (iter + 1)), panelWidth, 20), left, text, right, left + ':' + right, 0));
                 iter++;
@@ -203,8 +201,8 @@ namespace UtilityBelt.Tools {
             int iter = 0;
             foreach (var j in mytable) {
                 if (j == null) continue;
-                string left = $"{(STypeFloat)j->_key}";
-                string text = "";
+                string left = $"{j->_key}";
+                string text = $"{(STypeFloat)j->_key}";
                 string right = $"{j->_data}";
                 Blocks.Add(new UBHud.Block(hud, new Rectangle(0, (20 * (iter + 1)), panelWidth, 20), left, text, right, left + ':' + right, 0));
                 iter++;
@@ -220,8 +218,8 @@ namespace UtilityBelt.Tools {
             int iter = 0;
             foreach (var j in mytable) {
                 if (j == null) continue;
-                string left = $"{(STypeString)j->_key}";
-                string text = "";
+                string left = $"{j->_key}";
+                string text = $"{(STypeString)j->_key}";
                 string right = $"{j->_data}";
                 Blocks.Add(new UBHud.Block(hud, new Rectangle(0, (20 * (iter + 1)), panelWidth, 20), left, text, right, left + ':' + right, 0));
                 iter++;
@@ -237,8 +235,8 @@ namespace UtilityBelt.Tools {
             int iter = 0;
             foreach (var j in mytable) {
                 if (j == null) continue;
-                string left = $"{(STypeDID)j->_key}";
-                string text = "";
+                string left = $"{j->_key}";
+                string text = $"{(STypeDID)j->_key}";
                 string right = $"{j->_data:X8}";
                 Blocks.Add(new UBHud.Block(hud, new Rectangle(0, (20 * (iter + 1)), panelWidth, 20), left, text, right, left + ':' + right, 0));
                 iter++;
@@ -254,8 +252,8 @@ namespace UtilityBelt.Tools {
             int iter = 0;
             foreach (var j in mytable) {
                 if (j == null) continue;
-                string left = $"{(STypeIID)j->_key}";
-                string text = "";
+                string left = $"{j->_key}";
+                string text = $"{(STypeIID)j->_key}";
                 string right = $"{j->_data:X8}";
                 Blocks.Add(new UBHud.Block(hud, new Rectangle(0, (20 * (iter + 1)), panelWidth, 20), left, text, right, left + ':' + right, 0));
                 iter++;
@@ -271,8 +269,8 @@ namespace UtilityBelt.Tools {
             int iter = 0;
             foreach (var j in mytable) {
                 if (j == null) continue;
-                string left = $"{(STypePosition)j->_key}";
-                string text = "";
+                string left = $"{j->_key}";
+                string text = $"{(STypePosition)j->_key}";
                 string right = $"{j->_data}";
                 Blocks.Add(new UBHud.Block(hud, new Rectangle(0, (20 * (iter + 1)), panelWidth, 20), left, text, right, left + ':' + right, 0));
                 iter++;
@@ -289,8 +287,8 @@ namespace UtilityBelt.Tools {
                 if (j == null) continue;
                 AC1Legacy.PStringBase<char>* skillName = AC1Legacy.PStringBase<char>.null_string;
                 SkillSystem.InqSkillName(j->_key, skillName);
-                string left = $"({j->_key}){*skillName}";
-                string text = $"";
+                string left = $"{j->_key}";
+                string text = $"({j->_key}){*skillName}";
                 string right = $"{j->_data}";
 
                 Blocks.Add(new UBHud.Block(hud, new Rectangle(0, (20 * (iter + 1)), panelWidth, 20), left, text, right, left + ':' + right, 0));
@@ -439,3 +437,4 @@ https://github.com/ACEmulator/ACE-World-16PY-Patches/blob/master/Database/Patche
 
 
 }
+
