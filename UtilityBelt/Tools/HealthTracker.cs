@@ -7,7 +7,7 @@ using System.Text;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using static UtilityBelt.Tools.VTankControl;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using UtilityBelt.Lib.Expressions;
 
 namespace UtilityBelt.Tools {

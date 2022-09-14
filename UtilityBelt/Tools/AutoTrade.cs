@@ -10,7 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("AutoTrade")]

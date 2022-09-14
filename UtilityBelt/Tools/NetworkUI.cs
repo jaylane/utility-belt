@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using UtilityBelt.Lib;
 using UtilityBelt.Views;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using System.Collections.ObjectModel;
 using UtilityBelt.Lib.Networking;
 using UtilityBelt.Lib.Settings;

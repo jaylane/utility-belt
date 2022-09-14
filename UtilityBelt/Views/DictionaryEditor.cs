@@ -9,7 +9,7 @@ using System.Text;
 using UtilityBelt.Lib.Settings;
 using VirindiViewService;
 using VirindiViewService.Controls;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using Hellosam.Net.Collections;
 using UBLoader.Lib;
 

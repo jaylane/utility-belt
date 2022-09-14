@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using Decal.Adapter.Wrappers;
 using Decal.Adapter;
 using System.Runtime.InteropServices;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using VirindiViewService.Controls;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -29,7 +29,9 @@ namespace UtilityBelt.Tools {
                 AliasRegex = new Regex(_alias, RegexOptions.Compiled | RegexOptions.IgnoreCase);
             }
         }
+
         public BaseAction Action { get; set; }
+        
         public bool Eat { get; set; }
 
         public UBAlias() {
@@ -107,6 +109,7 @@ You can share a set of defined aliases with multiple characters by using the `Pr
         public readonly CharacterState<string> Profile = new CharacterState<string>("[character]");
 
         [Summary("Defined aliases")]
+        [DontShowInSettings]
         public readonly Alias<ObservableCollection<UBAlias>> DefinedAliases = new Alias<ObservableCollection<UBAlias>>(new ObservableCollection<UBAlias>());
         #endregion // Config
 
@@ -140,7 +143,7 @@ You can share a set of defined aliases with multiple characters by using the `Pr
             UIAliasesActionFormLayout = (HudFixedLayout)UB.MainView.view["AliasesActionFormLayout"];
             UIAliasAliasPreview = (HudButton)UB.MainView.view["AliasAliasPreview"];
 
-            foreach (var item in Enum.GetValues(typeof(BaseAction.ActionType)).Cast<BaseAction.ActionType>())
+            foreach (var item in Enum.GetValues(typeof(ActionType)).Cast<ActionType>())
                 UIAliasActionType.AddItem(item.ToString(), item.ToString());
 
             UIAliasActionType.Change += UIAliasActionType_Change;
@@ -232,7 +235,7 @@ You can share a set of defined aliases with multiple characters by using the `Pr
         private void DrawActionForm() {
             action?.ClearForm(UIAliasesActionFormLayout);
             var type = ((HudStaticText)UIAliasActionType[UIAliasActionType.Current]).Text;
-            action = BaseAction.FromType((BaseAction.ActionType)Enum.Parse(typeof(BaseAction.ActionType), type));
+            action = BaseAction.FromType((ActionType)Enum.Parse(typeof(ActionType), type));
             action.DrawForm(UIAliasesActionFormLayout);
         }
 

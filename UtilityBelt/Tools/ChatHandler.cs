@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Chat;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 
 
 namespace UtilityBelt.Tools {

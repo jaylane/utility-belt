@@ -14,7 +14,7 @@ using UtilityBelt.Lib.Maps.Markers;
 using UtilityBelt.Lib.Settings;
 using VirindiViewService;
 using VirindiViewService.Controls;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("LandscapeMaps")]

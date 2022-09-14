@@ -2,15 +2,8 @@
 using Decal.Interop.Core;
 using System.Runtime.InteropServices;
 using System.IO;
-using Microsoft.DirectX.Direct3D;
-using Microsoft.DirectX;
-using System.Drawing;
-using System.Collections.Generic;
-using Microsoft.DirectX.PrivateImplementationDetails;
-using System.Linq;
-using Decal.Adapter;
-using static System.Net.Mime.MediaTypeNames;
-using System.Threading;
+using UBService.Views;
+using UBService.Lib;
 
 namespace UBService {
     /// <summary>
@@ -23,7 +16,7 @@ namespace UBService {
     [ComDefaultInterface(typeof(IDecalService))]
     public sealed class UBService : MarshalByRefObject, IDecalService, IDecalRender, IDecalWindowsMessageSink {
         internal static DecalCore iDecal;
-        internal static bool DEBUG = false;
+        internal static bool DEBUG = false; // enable debug logs
 
         unsafe void IDecalService.Initialize(DecalCore pDecal) {
             //WriteLog($"IDecalService.Initialize");
@@ -118,7 +111,10 @@ namespace UBService {
 
 #pragma warning disable 1591
         public void Render3D() {
-
+            var timers = Timer.RunningTimers.ToArray();
+            foreach (var timer in timers) {
+                timer.TryTick();
+            }
         }
 
         internal static void LogException(Exception ex) {
@@ -127,6 +123,10 @@ namespace UBService {
 
         internal static void WriteLog(string text) {
             File.AppendAllText(@"ubservice.exceptions.txt", text + "\n");
+        }
+
+        internal static void LogError(string v) {
+            WriteLog(v);
         }
     }
 }

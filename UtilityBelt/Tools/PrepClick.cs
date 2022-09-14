@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using VirindiViewService.Controls;
 using UtilityBelt.Lib;
 using System.ComponentModel;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("Prepclick")]

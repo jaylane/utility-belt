@@ -37,6 +37,7 @@
     <LangVersion>10</LangVersion>
     <DebugSymbols>true</DebugSymbols>
     <CodeAnalysisIgnoreGeneratedCode>true</CodeAnalysisIgnoreGeneratedCode>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=1.2.0.1, Culture=neutral, processorArchitecture=MSIL">
@@ -192,6 +193,7 @@
     <Compile Include="Lib\Networking\Messages\TrackedItemUpdateMessage.cs" />
     <Compile Include="Lib\Networking\TrackedItemStatus.cs" />
     <Compile Include="Lib\DynamicObjectGeometry.cs" />
+    <Compile Include="Lib\Settings\ChatLogRule.cs" />
     <Compile Include="Lib\Settings\Chat\AttackOnTargetOption.cs" />
     <Compile Include="Lib\Networking\Messages\CastAttemptMessage.cs" />
     <Compile Include="Lib\Networking\Messages\CastSuccessMessage.cs" />
@@ -206,6 +208,7 @@
     <Compile Include="Lib\Settings\ColorToggleRenderOption.cs" />
     <Compile Include="Lib\Settings\NametagDisplay.cs" />
     <Compile Include="Lib\Settings\PluginMessageDisplay.cs" />
+    <Compile Include="Lib\Settings\SerializationBinder.cs" />
     <Compile Include="Lib\Settings\TrackedItem.cs" />
     <Compile Include="Lib\Spells.cs" />
     <Compile Include="Lib\TextureCache.cs" />
@@ -1102,6 +1105,18 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\icons\eye.png" />
     <EmbeddedResource Include="Resources\icons\inspector.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\icons\settings.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\icons\settings-editor.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\icons\info.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\icons\delete.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

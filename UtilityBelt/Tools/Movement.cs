@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using VirindiViewService.Controls;
 using System.IO;
 using UtilityBelt.Views;

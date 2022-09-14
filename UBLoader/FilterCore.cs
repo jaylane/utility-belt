@@ -6,7 +6,7 @@ using System.Reflection;
 using Decal.Adapter;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using Exceptionless;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -14,6 +14,9 @@ using AcClient;
 using ACE.DatLoader;
 using Microsoft.DirectX.Direct3D;
 using UBLoader.Lib;
+using UBService.Views;
+using UBService.Views.SettingsEditor;
+using System.Drawing;
 
 namespace UBLoader {
     [FriendlyName("UtilityBelt")]
@@ -93,16 +96,17 @@ namespace UBLoader {
         }
         public static GlobalSettings Global = new GlobalSettings();
         private Lib.CharacterCreation characterCreationUI;
+        private ManagedTexture settingsIcon;
+        private SettingsEditor settingsUIHud;
         #endregion Global Settings
 
         public FilterCore() {
             System.Resources.ResourceManager rm = new System.Resources.ResourceManager(GetType().Namespace + ".Properties.Resources", System.Reflection.Assembly.GetExecutingAssembly());
             System.Reflection.Assembly.Load((byte[])rm.GetObject("LiteDB"));
-            System.Reflection.Assembly.Load((byte[])rm.GetObject("Newtonsoft_Json"));
+            //System.Reflection.Assembly.Load((byte[])rm.GetObject("Newtonsoft_Json"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("Antlr4_Runtime"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("UBHelper"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("ACE_DatLoader"));
-            System.Reflection.Assembly.Load((byte[])rm.GetObject("DearImguiSharp"));
         }
 
         /// <summary>
@@ -110,7 +114,9 @@ namespace UBLoader {
         /// </summary>
         protected override void Startup() {
             try {
-                Settings = new Settings(this, System.IO.Path.Combine(PluginAssemblyDirectory, "utilitybelt.settings.json"));
+                Settings = new Settings(this, System.IO.Path.Combine(PluginAssemblyDirectory, "utilitybelt.settings.json"), (setting) => {
+                    return setting.FieldInfo.DeclaringType == typeof(GlobalSettings);
+                });
                 Settings.Load();
 
                 if (Global.UploadExceptions) {
@@ -189,6 +195,8 @@ namespace UBLoader {
             try {
                 switch (new_state) {
                     case UBHelper.GameState.Character_Select_Screen:
+                        MakeSettingsUI();
+                        settingsUIHud.Hud.ShowInBar = true;
                         VersionWatermark.Display(Host, $"{PluginName} v{FileVersionInfo.GetVersionInfo(PluginAssemblyPath).ProductVersion}");
                         CreateCharacterCreateUI();
                         UnloadPluginAssembly();
@@ -204,6 +212,7 @@ namespace UBLoader {
                         VersionWatermark.Destroy();
                         break;
                     case UBHelper.GameState.Entering_Game:
+                        settingsUIHud.Hud.ShowInBar = false;
                         DestroyCharacterCreateUI();
                         VersionWatermark.Destroy();
                         PluginsReady = true;
@@ -223,6 +232,18 @@ namespace UBLoader {
                 }
             }
             catch (Exception e) { LogException(e); }
+        }
+
+        private void MakeSettingsUI() {
+            if (settingsUIHud != null)
+                return;
+
+            using (Stream manifestResourceStream = GetType().Assembly.GetManifestResourceStream("UBLoader.Resources.settings.png")) {
+                settingsIcon = new ManagedTexture(new Bitmap(manifestResourceStream));
+            }
+
+            settingsUIHud = new SettingsEditor("UBLoader Settings", this, new object[] { typeof(UBLoader.FilterCore) });
+            settingsUIHud.Hud.Visible = false;
         }
 
         private void LoadAssemblyConfig() {
@@ -390,7 +411,9 @@ namespace UBLoader {
         /// </summary>
         protected override void Shutdown() {
             try {
-                if (Settings.NeedsSave)
+                settingsIcon?.Dispose();
+                settingsUIHud?.Dispose();
+                if (Settings != null && Settings.NeedsSave)
                     Settings.Save();
                 Global.FrameRate.Changed -= FrameRate_Changed;
                 Settings.Dispose();

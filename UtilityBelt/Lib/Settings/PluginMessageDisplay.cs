@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 
 namespace UtilityBelt.Lib.Settings {
     public class PluginMessageDisplay : ISetting {

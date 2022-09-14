@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using Decal.Adapter.Wrappers;
 using Decal.Adapter;
 using System.Runtime.InteropServices;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using VirindiViewService.Controls;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -102,7 +102,7 @@ You can share a set of defined event handlers with multiple characters by using 
             UIGameEventActionFormLayout = (HudFixedLayout)UB.MainView.view["GameEventActionFormLayout"];
             UIGameEventEventInfo = (HudButton)UB.MainView.view["GameEventEventInfo"];
 
-            foreach (var item in Enum.GetValues(typeof(BaseAction.ActionType)).Cast<BaseAction.ActionType>())
+            foreach (var item in Enum.GetValues(typeof(ActionType)).Cast<ActionType>())
                 UIGameEventActionType.AddItem(item.ToString(), item.ToString());
 
             UIGameEventActionType.Change += UIGameEventsActionType_Change;
@@ -208,7 +208,7 @@ You can share a set of defined event handlers with multiple characters by using 
         private void DrawActionForm() {
             action?.ClearForm(UIGameEventActionFormLayout);
             var type = ((HudStaticText)UIGameEventActionType[UIGameEventActionType.Current]).Text;
-            action = BaseAction.FromType((BaseAction.ActionType)Enum.Parse(typeof(BaseAction.ActionType), type));
+            action = BaseAction.FromType((ActionType)Enum.Parse(typeof(ActionType), type));
             action.DrawForm(UIGameEventActionFormLayout);
         }
 

@@ -83,16 +83,6 @@ namespace UBLoader.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] DearImguiSharp {
-            get {
-                object obj = ResourceManager.GetObject("DearImguiSharp", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
         internal static byte[] LiteDB {
             get {
                 object obj = ResourceManager.GetObject("LiteDB", resourceCulture);

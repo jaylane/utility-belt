@@ -13,7 +13,7 @@ using UtilityBelt.Lib.Settings;
 using VirindiViewService;
 using VirindiViewService.Controls;
 using VirindiViewService.XMLParsers;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using Hellosam.Net.Collections;
 
 namespace UtilityBelt.Views {
@@ -129,7 +129,7 @@ namespace UtilityBelt.Views {
                     var setting = GetSettingPropFromText(kv.Value);
 
                     if (setting == null) {
-                        Logger.WriteToChat($"Setting was null: {kv.Value}");
+                        //Logger.WriteToChat($"Setting was null: {kv.Value}");
                         continue;
                     }
 

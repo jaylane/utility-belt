@@ -19,7 +19,7 @@ namespace UtilityBelt.Views.Inspector {
         private static uint _id = 0;
         private static int _pushId = 0;
 
-        private Hud hud;
+        private UBService.Views.Hud hud;
         private Vector2 minWindowSize = new Vector2(500, 250);
         private Vector2 maxWindowSize = new Vector2(99999, 99999);
         private Vector4 iconTint = new Vector4(1, 1, 1, 1);
@@ -172,7 +172,7 @@ namespace UtilityBelt.Views.Inspector {
             ToInspect = toInspect;
             Selected = new InspectedObject(GetType().GetProperty("ToInspect", BindingFlags.Public | BindingFlags.Instance), this);
             using (Stream manifestResourceStream = GetType().Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.inspector.png")) {
-                hud = HudManager.CreateHud($"Inspector: {Name}##Inspector{_id++}", new Bitmap(manifestResourceStream));
+                hud = UBService.Views.HudManager.CreateHud($"Inspector: {Name}##Inspector{_id++}", new Bitmap(manifestResourceStream));
             }
 
             CreateTextures();

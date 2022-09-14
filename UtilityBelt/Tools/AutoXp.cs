@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Decal.Adapter;
 using UtilityBelt.Lib;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using Hellosam.Net.Collections;
 using UBLoader.Lib;
 using Newtonsoft.Json;

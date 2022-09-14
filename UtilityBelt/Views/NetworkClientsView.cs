@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Timers;
 using VirindiViewService.Controls;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using UtilityBelt.Lib.Networking;
 
 namespace UtilityBelt.Views {

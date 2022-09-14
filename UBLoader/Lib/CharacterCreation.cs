@@ -502,7 +502,7 @@ namespace UBLoader.Lib {
         private string sanamarDescription;
         private string yaraqDescription;
         private string shoushiDescription;
-        private Hud hud;
+        private UBService.Views.Hud hud;
         private Microsoft.DirectX.Direct3D.Texture LockOnTexture;
         private Microsoft.DirectX.Direct3D.Texture LockOffTexture;
         private Microsoft.DirectX.Direct3D.Texture ArrowUpTexture;
@@ -526,7 +526,7 @@ namespace UBLoader.Lib {
         public CharacterCreation() {
             LoadNeededData();
 
-            hud = HudManager.CreateHud("Create a character");
+            hud = UBService.Views.HudManager.CreateHud("Create a character");
             hud.ShowInBar = true;
             hud.WindowSettings |= ImGuiWindowFlags.AlwaysAutoResize;
             hud.Render += Hud_Render;

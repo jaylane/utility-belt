@@ -13,7 +13,7 @@ using UtilityBelt.Lib.Settings;
 using UtilityBelt.Lib.VendorCache;
 using UtilityBelt.Views;
 using VirindiViewService.Controls;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("AutoVendor")]
