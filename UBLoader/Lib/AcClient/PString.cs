@@ -55,8 +55,6 @@ namespace AcClient {
             //    return ret;
             //}
 
-
-            // Functions:
             // AC1Legacy::PStringBase<unsigned short>.PStringBase<unsigned short>:
             public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<UInt16>*, UInt16[], void> __Ctor_16 = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<UInt16>*, UInt16[], void>)0x005444D0; // .text:00543910 ; void __thiscall AC1Legacy::PStringBase<unsigned short>::PStringBase<unsigned short>(AC1Legacy::PStringBase<unsigned short> *this, const unsigned __int16 *str) .text:00543910 ??0?$PStringBase@G@AC1Legacy@@QAE@PBG@Z
 
@@ -66,134 +64,109 @@ namespace AcClient {
             // AC1Legacy::PStringBase<Char>.PStringBase<Char>:
             public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, Int32, void> __Ctor = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, Int32, void>)0x004ADBA0; // .text:004AD820 ; void __thiscall AC1Legacy::PStringBase<Char>::PStringBase<Char>(AC1Legacy::PStringBase<Char> *this, Int32 i_Int32) .text:004AD820 ??0?$PStringBase@D@AC1Legacy@@QAE@J@Z
 
-            // AC1Legacy::PStringBase<Char>.to_wpstring:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<UInt16>*, UInt16, AC1Legacy.PStringBase<UInt16>*> to_wpstring = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<UInt16>*, UInt16, AC1Legacy.PStringBase<UInt16>*>)0x005571C0; // .text:00556580 ; AC1Legacy::PStringBase<UInt16> *__thiscall AC1Legacy::PStringBase<Char>::to_wpstring(AC1Legacy::PStringBase<Char> *this, AC1Legacy::PStringBase<UInt16> *result, const U__Int3216 i_sourceCodePage) .text:00556580 ?to_wpstring@?$PStringBase@D@AC1Legacy@@QBE?AV?$PStringBase@G@2@G@Z
 
-            // AC1Legacy::PStringBase<Char>.PStringBase<Char>:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, void> __Ctor__ = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, void>)0x00480760; // .text:004803A0 ; void __thiscall AC1Legacy::PStringBase<Char>::PStringBase<Char>(AC1Legacy::PStringBase<Char> *this, AC1Legacy::PStringBase<Char> *rhs) .text:004803A0 ??0?$PStringBase@D@AC1Legacy@@QAE@ABV01@@Z
+            // AC1Legacy.PStringBase.operator_equals<char>:
+            public AC1Legacy.PStringBase<char>* operator_equals(int i_int32) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, int, AC1Legacy.PStringBase<char>*>)0x004AD9C0)(ref this, i_int32); // .text:004AD640 ; AC1Legacy.PStringBase<char> *__thiscall AC1Legacy.PStringBase<char>::operator=(AC1Legacy.PStringBase<char> *this, int i_int32) .text:004AD640 ??4?$PStringBase@D@AC1Legacy@@QAEAAV01@J@Z
 
+            // AC1Legacy.PStringBase.operator_equals<unsigned short>:
+            public AC1Legacy.PStringBase<UInt16>* operator_equals(AC1Legacy.PStringBase<UInt16>* rhs) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, AC1Legacy.PStringBase<UInt16>*, AC1Legacy.PStringBase<UInt16>*>)0x0048A0A0)(ref this, rhs); // .text:00489D70 ; AC1Legacy.PStringBase<unsigned short> *__thiscall AC1Legacy.PStringBase<unsigned short>::operator=(AC1Legacy.PStringBase<unsigned short> *this, AC1Legacy.PStringBase<unsigned short> *rhs) .text:00489D70 ??4?$PStringBase@G@AC1Legacy@@QAEAAV01@ABV01@@Z
 
+            // AC1Legacy.PStringBase.operator_is_equal<char>:
+            public Byte operator_is_equal(AC1Legacy.PStringBase<char>* rhs) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, AC1Legacy.PStringBase<char>*, Byte>)0x004AB9D0)(ref this, rhs); // .text:004AB650 ; bool __thiscall AC1Legacy.PStringBase<char>::operator==(AC1Legacy.PStringBase<char> *this, AC1Legacy.PStringBase<char> *rhs) .text:004AB650 ??8?$PStringBase@D@AC1Legacy@@QBE_NABV01@@Z
 
+            // AC1Legacy.PStringBase.operator_not_equal<char>:
+            public Byte operator_not_equal(AC1Legacy.PStringBase<char>* rhs) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, AC1Legacy.PStringBase<char>*, Byte>)0x004ABA30)(ref this, rhs); // .text:004AB6B0 ; bool __thiscall AC1Legacy.PStringBase<char>::operator!=(AC1Legacy.PStringBase<char> *this, AC1Legacy.PStringBase<char> *rhs) .text:004AB6B0 ??9?$PStringBase@D@AC1Legacy@@QBE_NABV01@@Z
 
+            // AC1Legacy.PStringBase.operator_plus<char>:
+            public AC1Legacy.PStringBase<char>* operator_plus(AC1Legacy.PStringBase<char>* result, AC1Legacy.PStringBase<char>* rhs) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, AC1Legacy.PStringBase<char>*, AC1Legacy.PStringBase<char>*, AC1Legacy.PStringBase<char>*>)0x004A2B90)(ref this, result, rhs); // .text:004A2860 ; AC1Legacy.PStringBase<char> *__thiscall AC1Legacy.PStringBase<char>::operator+(AC1Legacy.PStringBase<char> *this, AC1Legacy.PStringBase<char> *result, AC1Legacy.PStringBase<char> *rhs) .text:004A2860 ??H?$PStringBase@D@AC1Legacy@@QBE?AV01@ABV01@@Z
 
+            // AC1Legacy.PStringBase.operator_plus_equals<char>:
+            public AC1Legacy.PStringBase<char>* operator_plus_equals(AC1Legacy.PStringBase<char>* rhs) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, AC1Legacy.PStringBase<char>*, AC1Legacy.PStringBase<char>*>)0x004914F0)(ref this, rhs); // .text:00491210 ; AC1Legacy.PStringBase<char> *__thiscall AC1Legacy.PStringBase<char>::operator+=(AC1Legacy.PStringBase<char> *this, AC1Legacy.PStringBase<char> *rhs) .text:00491210 ??Y?$PStringBase@D@AC1Legacy@@QAEAAV01@ABV01@@Z
 
-            // AC1Legacy::PStringBase<Char>.cmp:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, Int32, Int32> cmp = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, Int32, Int32>)0x004ABA90; // .text:004AB710 ; Int32 __thiscall AC1Legacy::PStringBase<Char>::cmp(AC1Legacy::PStringBase<Char> *this, AC1Legacy::PStringBase<Char> *rhs, Int32 case_sensitive) .text:004AB710 ?cmp@?$PStringBase@D@AC1Legacy@@QBEJABV12@H@Z
-                                                                                                                                                                                                                                                             // -- No References found
+            // AC1Legacy.PStringBase.GetPackSize<char>:
+            public UInt32 GetPackSize() => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, UInt32>)0x004FD1F0)(ref this); // .text:004FC650 ; unsigned int __thiscall AC1Legacy.PStringBase<char>::GetPackSize(AC1Legacy.PStringBase<char> *this) .text:004FC650 ?GetPackSize@?$PStringBase@D@AC1Legacy@@QBEIXZ
 
-            // AC1Legacy::PStringBase<Char>.trim:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, Int32, Int32, AC1Legacy.PStringBase<Char>> trim = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, Int32, Int32, AC1Legacy.PStringBase<Char>>)0x0056F9A0; // .text:0056EBF0 ; void __thiscall AC1Legacy::PStringBase<Char>::trim(AC1Legacy::PStringBase<Char> *this, Int32 pre, Int32 post, AC1Legacy::PStringBase<Char> filter) .text:0056EBF0 ?trim@?$PStringBase@D@AC1Legacy@@QAEXHHV12@@Z
-                                                                                                                                                                                                                                                            // -- No References found
+            // AC1Legacy.PStringBase.InsertCommas<char>:
+            // public Byte InsertCommas() => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, Byte>)0xDEADBEEF)(ref this); // .text:004AC500 ; bool __thiscall AC1Legacy.PStringBase<char>::InsertCommas(AC1Legacy.PStringBase<char> *this) .text:004AC500 ?InsertCommas@?$PStringBase@D@AC1Legacy@@IAE_NXZ
 
-            // AC1Legacy::PStringBase<Char>.PStringBase<Char>:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.CaseInsensitiveStringBase<AC1Legacy.PStringBase<Char>>*> __Ctor___ = (delegate* unmanaged[Thiscall]<AC1Legacy.CaseInsensitiveStringBase<AC1Legacy.PStringBase<Char>>*>)0x00411850; // .text:004114F0 ; void __thiscall AC1Legacy::PStringBase<Char>::PStringBase<Char>(AC1Legacy::CaseInsensitiveStringBase<AC1Legacy::PStringBase<Char> > *this) .text:004114F0 ??0?$PStringBase@D@AC1Legacy@@QAE@XZ
-                                                                                                                                                                                                                                                     // -- No References found
+            // AC1Legacy.PStringBase.Pack<char>:
+            public UInt32 Pack(void** addr, UInt32 size) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, void**, UInt32, UInt32>)0x004FD290)(ref this, addr, size); // .text:004FC6F0 ; unsigned int __thiscall AC1Legacy.PStringBase<char>::Pack(AC1Legacy.PStringBase<char> *this, void **addr, unsigned int size) .text:004FC6F0 ?Pack@?$PStringBase@D@AC1Legacy@@QBEIAAPAXI@Z
 
-            // AC1Legacy::PStringBase<Char>.break_reference:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*> break_reference = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*>)0x00411870; // .text:00411510 ; void __thiscall AC1Legacy::PStringBase<Char>::break_reference(AC1Legacy::PStringBase<Char> *this) .text:00411510 ?break_reference@?$PStringBase@D@AC1Legacy@@IAEXXZ
-                                                                                                                                                                                 // -- No References found
+            // AC1Legacy.PStringBase.UnPack<char>:
+            public int UnPack(void** addr, UInt32 size) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, void**, UInt32, int>)0x004FD460)(ref this, addr, size); // .text:004FC8C0 ; int __thiscall AC1Legacy.PStringBase<char>::UnPack(AC1Legacy.PStringBase<char> *this, void **addr, unsigned int size) .text:004FC8C0 ?UnPack@?$PStringBase@D@AC1Legacy@@QAEHAAPAXI@Z
 
-            // AC1Legacy::PStringBase<Char>.operator!=:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, Byte> operator_notequal = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, Byte>)0x004ABA30; // .text:004AB6B0 ; bool __thiscall AC1Legacy::PStringBase<Char>::operator!=(AC1Legacy::PStringBase<Char> *this, AC1Legacy::PStringBase<Char> *rhs) .text:004AB6B0 ??9?$PStringBase@D@AC1Legacy@@QBE_NABV01@@Z
-                                                                                                                                                                                                                                                           // -- No References found
+            // AC1Legacy.PStringBase.allocate_ref_buffer<char>:
+            public void allocate_ref_buffer(UInt32 len) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, UInt32, void>)0x00403560)(ref this, len); // .text:00403380 ; void __thiscall AC1Legacy.PStringBase<char>::allocate_ref_buffer(AC1Legacy.PStringBase<char> *this, unsigned int len) .text:00403380 ?allocate_ref_buffer@?$PStringBase@D@AC1Legacy@@IAEXI@Z
 
-            // AC1Legacy::PStringBase<Char>.eq:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, Int32, bool> eq = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, Int32, bool>)0x004AC350; // .text:004ABFD0 ; bool __thiscall AC1Legacy::PStringBase<Char>::eq(AC1Legacy::PStringBase<Char> *this, AC1Legacy::PStringBase<Char> *rhs, Int32 case_sensitive) .text:004ABFD0 ?eq@?$PStringBase@D@AC1Legacy@@QBE_NABV12@H@Z
-                                                                                                                                                                                                                                                          // -- No References found
-                                                                                                                                                                                                                                                          // -- No References found
+            // AC1Legacy.PStringBase.allocate_ref_buffer<unsigned short>:
+            public void allocate_ref_buffer<UInt16>(UInt32 len) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, UInt32, void>)0x00543680)(ref this, len); // .text:00542AA0 ; void __thiscall AC1Legacy.PStringBase<unsigned short>::allocate_ref_buffer(AC1Legacy.PStringBase<unsigned short> *this, unsigned int len) .text:00542AA0 ?allocate_ref_buffer@?$PStringBase@G@AC1Legacy@@IAEXI@Z
 
-            // AC1Legacy::PStringBase<Char>.Pack:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, void**, UInt32, UInt32> Pack = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, void**, UInt32, UInt32>)0x004FD290; // .text:004FC6F0 ; UInt32 __thiscall AC1Legacy::PStringBase<Char>::Pack(AC1Legacy::PStringBase<Char> *this, void **addr, UInt32 size) .text:004FC6F0 ?Pack@?$PStringBase@D@AC1Legacy@@QBEIAAPAXI@Z
-                                                                                                                                                                                                                      // -- No References found
+            // AC1Legacy.PStringBase.append_int32<char>:
+            // public void append_int32(int num) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, int, void>)0xDEADBEEF)(ref this, num); // .text:004AC490 ; void __thiscall AC1Legacy.PStringBase<char>::append_int32(AC1Legacy.PStringBase<char> *this, int num) .text:004AC490 ?append_int32@?$PStringBase@D@AC1Legacy@@QAEXJ@Z
 
-            // AC1Legacy::PStringBase<Char>.sprInt32f:
-            // (ERR) .text:00487620 ; Int32 __cdecl AC1Legacy::PStringBase<Char>::sprInt32f(Int32, Char *Format, Char ArgList) .text:00487620 ?sprInt32f@?$PStringBase@D@AC1Legacy@@QAAJPBDZZ
+            // AC1Legacy.PStringBase.append_n_chars<char>:
+            public void append_n_chars(char* str, UInt32 count) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, char*, UInt32, void>)0x004910C0)(ref this, str, count); // .text:00490DE0 ; void __thiscall AC1Legacy.PStringBase<char>::append_n_chars(AC1Legacy.PStringBase<char> *this, const char *str, unsigned int count) .text:00490DE0 ?append_n_chars@?$PStringBase@D@AC1Legacy@@QAEXPBDI@Z
+
+            // AC1Legacy.PStringBase.break_reference<char>:
+            public void break_reference() => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, void>)0x00411870)(ref this); // .text:00411510 ; void __thiscall AC1Legacy.PStringBase<char>::break_reference(AC1Legacy.PStringBase<char> *this) .text:00411510 ?break_reference@?$PStringBase@D@AC1Legacy@@IAEXXZ
+
+            // AC1Legacy.PStringBase.clear<char>:
+            public void clear() => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, void>)0x004AB990)(ref this); // .text:004AB610 ; void __thiscall AC1Legacy.PStringBase<char>::clear(AC1Legacy.PStringBase<char> *this) .text:004AB610 ?clear@?$PStringBase@D@AC1Legacy@@QAEXXZ
+
+            // AC1Legacy.PStringBase.cmp<char>:
+            public int cmp(AC1Legacy.PStringBase<char>* rhs, int case_sensitive) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, AC1Legacy.PStringBase<char>*, int, int>)0x004ABA90)(ref this, rhs, case_sensitive); // .text:004AB710 ; int __thiscall AC1Legacy.PStringBase<char>::cmp(AC1Legacy.PStringBase<char> *this, AC1Legacy.PStringBase<char> *rhs, int case_sensitive) .text:004AB710 ?cmp@?$PStringBase@D@AC1Legacy@@QBEJABV12@H@Z
+
+            // AC1Legacy.PStringBase.compute_hash<char>:
+            public UInt32 compute_hash() => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, UInt32>)0x004FE440)(ref this); // .text:004FD8A0 ; unsigned int __thiscall AC1Legacy.PStringBase<char>::compute_hash(AC1Legacy.PStringBase<char> *this) .text:004FD8A0 ?compute_hash@?$PStringBase@D@AC1Legacy@@IBEKXZ
+
+            // AC1Legacy.PStringBase.convert<char>:
+            // public Byte convert(int i_int32, int comma) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, int, int, Byte>)0xDEADBEEF)(ref this, i_int32, comma); // .text:004AD5D0 ; bool __thiscall AC1Legacy.PStringBase<char>::convert(AC1Legacy.PStringBase<char> *this, int i_int32, int comma) .text:004AD5D0 ?convert@?$PStringBase@D@AC1Legacy@@QAE_NJH@Z
+
+            // AC1Legacy.PStringBase.eq<char>:
+            public Byte eq(AC1Legacy.PStringBase<char>* rhs, int case_sensitive) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, AC1Legacy.PStringBase<char>*, int, Byte>)0x004AC350)(ref this, rhs, case_sensitive); // .text:004ABFD0 ; bool __thiscall AC1Legacy.PStringBase<char>::eq(AC1Legacy.PStringBase<char> *this, AC1Legacy.PStringBase<char> *rhs, int case_sensitive) .text:004ABFD0 ?eq@?$PStringBase@D@AC1Legacy@@QBE_NABV12@H@Z
+
+            // AC1Legacy.PStringBase.find_substring<char>:
+            public int find_substring(AC1Legacy.PStringBase<char>* str) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, AC1Legacy.PStringBase<char>*, int>)0x00542EA0)(ref this, str); // .text:005422C0 ; int __thiscall AC1Legacy.PStringBase<char>::find_substring(AC1Legacy.PStringBase<char> *this, AC1Legacy.PStringBase<char> *str) .text:005422C0 ?find_substring@?$PStringBase@D@AC1Legacy@@QBEJABV12@@Z
+
+            // AC1Legacy.PStringBase.replace<char>:
+            public int replace(AC1Legacy.PStringBase<char>* search, AC1Legacy.PStringBase<char>* str) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, AC1Legacy.PStringBase<char>*, AC1Legacy.PStringBase<char>*, int>)0x00566D10)(ref this, search, str); // .text:00565F70 ; int __thiscall AC1Legacy.PStringBase<char>::replace(AC1Legacy.PStringBase<char> *this, AC1Legacy.PStringBase<char> *search, AC1Legacy.PStringBase<char> *str) .text:00565F70 ?replace@?$PStringBase@D@AC1Legacy@@QAEJABV12@0@Z
+
+            // AC1Legacy.PStringBase.set<char>:
+            public void set(char* str) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, char*, void>)0x004034C0)(ref this, str); // .text:004032E0 ; void __thiscall AC1Legacy.PStringBase<char>::set(AC1Legacy.PStringBase<char> *this, const char *str) .text:004032E0 ?set@?$PStringBase@D@AC1Legacy@@QAEXPBD@Z
+
+            // AC1Legacy.PStringBase.set<unsigned short>:
+            public void set(UInt16* str) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, UInt16*, void>)0x0055F580)(ref this, str); // .text:0055E810 ; void __thiscall AC1Legacy.PStringBase<unsigned short>::set(AC1Legacy.PStringBase<unsigned short> *this, const unsigned __int16 *str) .text:0055E810 ?set@?$PStringBase@G@AC1Legacy@@QAEXPBG@Z
+
+            // AC1Legacy.PStringBase.sprintf:
+            // (ERR) .text:00487620 ; int __cdecl AC1Legacy.PStringBase<char>::sprintf(int, char *Format, char ArgList) .text:00487620 ?sprintf@?$PStringBase@D@AC1Legacy@@QAAJPBDZZ
+
+            // AC1Legacy.PStringBase.substring<char>:
+            public AC1Legacy.PStringBase<char>* substring(AC1Legacy.PStringBase<char>* result, UInt32 first, UInt32 last) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, AC1Legacy.PStringBase<char>*, UInt32, UInt32, AC1Legacy.PStringBase<char>*>)0x005AA260)(ref this, result, first, last); // .text:005A91B0 ; AC1Legacy.PStringBase<char> *__thiscall AC1Legacy.PStringBase<char>::substring(AC1Legacy.PStringBase<char> *this, AC1Legacy.PStringBase<char> *result, unsigned int first, unsigned int last) .text:005A91B0 ?substring@?$PStringBase@D@AC1Legacy@@QBE?AV12@KK@Z
+
+            // AC1Legacy.PStringBase.to_spstring<unsigned short>:
+            public AC1Legacy.PStringBase<char>* to_spstring(AC1Legacy.PStringBase<char>* result, UInt16 i_targetCodePage) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, AC1Legacy.PStringBase<char>*, UInt16, AC1Legacy.PStringBase<char>*>)0x00546290)(ref this, result, i_targetCodePage); // .text:005456D0 ; AC1Legacy.PStringBase<char> *__thiscall AC1Legacy.PStringBase<unsigned short>::to_spstring(AC1Legacy.PStringBase<unsigned short> *this, AC1Legacy.PStringBase<char> *result, const unsigned __int16 i_targetCodePage) .text:005456D0 ?to_spstring@?$PStringBase@G@AC1Legacy@@QBE?AV?$PStringBase@D@2@G@Z
+
+            // AC1Legacy.PStringBase.to_wpstring<char>:
+            public AC1Legacy.PStringBase<UInt16>* to_wpstring(AC1Legacy.PStringBase<UInt16>* result, UInt16 i_sourceCodePage) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, AC1Legacy.PStringBase<UInt16>*, UInt16, AC1Legacy.PStringBase<UInt16>*>)0x005571C0)(ref this, result, i_sourceCodePage); // .text:00556580 ; AC1Legacy.PStringBase<unsigned short> *__thiscall AC1Legacy.PStringBase<char>::to_wpstring(AC1Legacy.PStringBase<char> *this, AC1Legacy.PStringBase<unsigned short> *result, const unsigned __int16 i_sourceCodePage) .text:00556580 ?to_wpstring@?$PStringBase@D@AC1Legacy@@QBE?AV?$PStringBase@G@2@G@Z
+
+            // AC1Legacy.PStringBase.trim<char>:
+            public void trim(int pre, int post, AC1Legacy.PStringBase<char> filter) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, int, int, AC1Legacy.PStringBase<char>, void>)0x0056F9A0)(ref this, pre, post, filter); // .text:0056EBF0 ; void __thiscall AC1Legacy.PStringBase<char>::trim(AC1Legacy.PStringBase<char> *this, int pre, int post, AC1Legacy.PStringBase<char> filter) .text:0056EBF0 ?trim@?$PStringBase@D@AC1Legacy@@QAEXHHV12@@Z
+
+            // AC1Legacy.PStringBase.vsprintf<char>:
+            public int vsprintf(char* fmt, char* args) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, char*, char*, int>)0x00487480)(ref this, fmt, args); // .text:004870C0 ; int __thiscall AC1Legacy.PStringBase<char>::vsprintf(AC1Legacy.PStringBase<char> *this, const char *fmt, char *args) .text:004870C0 ?vsprintf@?$PStringBase@D@AC1Legacy@@QAEJPBDPAD@Z
+
+            // AC1Legacy.PStringBase.vsprintf<unsigned short>:
+            // public int vsprintf(UInt16* fmt, char* args) => ((delegate* unmanaged[Thiscall]<ref AC1Legacy.PStringBase<T>, UInt16*, char*, int>)0xDEADBEEF)(ref this, fmt, args); // .text:00556430 ; int __thiscall AC1Legacy.PStringBase<unsigned short>::vsprintf(AC1Legacy.PStringBase<unsigned short> *this, const unsigned __int16 *fmt, char *args) .text:00556430 ?vsprintf@?$PStringBase@G@AC1Legacy@@QAEJPBGPAD@Z
+
             // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.allocate_ref_buffer:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, UInt32> allocate_ref_buffer = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, UInt32>)0x00403560; // .text:00403380 ; void __thiscall AC1Legacy::PStringBase<Char>::allocate_ref_buffer(AC1Legacy::PStringBase<Char> *this, UInt32 len) .text:00403380 ?allocate_ref_buffer@?$PStringBase@D@AC1Legacy@@IAEXI@Z
-                                                                                                                                                                                                     // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.operator+:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*> operator_plus = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*>)0x004A2B90; // .text:004A2860 ; AC1Legacy::PStringBase<Char> *__thiscall AC1Legacy::PStringBase<Char>::operator+(AC1Legacy::PStringBase<Char> *this, AC1Legacy::PStringBase<Char> *result, AC1Legacy::PStringBase<Char> *rhs) .text:004A2860 ??H?$PStringBase@D@AC1Legacy@@QBE?AV01@ABV01@@Z
-                                                                                                                                                                                                                                                                                                                                                                   // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.substring:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, UInt32, UInt32, AC1Legacy.PStringBase<Char>*> substring = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, UInt32, UInt32, AC1Legacy.PStringBase<Char>*>)0x005AA260; // .text:005A91B0 ; AC1Legacy::PStringBase<Char> *__thiscall AC1Legacy::PStringBase<Char>::substring(AC1Legacy::PStringBase<Char> *this, AC1Legacy::PStringBase<Char> *result, UInt32 first, UInt32 last) .text:005A91B0 ?substring@?$PStringBase@D@AC1Legacy@@QBE?AV12@KK@Z
-                                                                                                                                                                                                                                                                                                                                   // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.UnPack:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, void**, UInt32, Int32> UnPack = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, void**, UInt32, Int32>)0x004FD460; // .text:004FC8C0 ; Int32 __thiscall AC1Legacy::PStringBase<Char>::UnPack(AC1Legacy::PStringBase<Char> *this, void **addr, UInt32 size) .text:004FC8C0 ?UnPack@?$PStringBase@D@AC1Legacy@@QAEHAAPAXI@Z
-                                                                                                                                                                                                                      // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.replace:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, Int32> replace = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, Int32>)0x00566D10; // .text:00565F70 ; Int32 __thiscall AC1Legacy::PStringBase<Char>::replace(AC1Legacy::PStringBase<Char> *this, AC1Legacy::PStringBase<Char> *search, AC1Legacy::PStringBase<Char> *str) .text:00565F70 ?replace@?$PStringBase@D@AC1Legacy@@QAEJABV12@0@Z
-                                                                                                                                                                                                                                                                                                               // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.append_Int32:
-            // public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*,Int32> append_Int32 = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*,Int32>)0xDEADBEEF; // .text:004AC490 ; void __thiscall AC1Legacy::PStringBase<Char>::append_Int32(AC1Legacy::PStringBase<Char> *this, Int32 num) .text:004AC490 ?append_Int32@?$PStringBase@D@AC1Legacy@@QAEXJ@Z
-            // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.operator=:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, Int32, AC1Legacy.PStringBase<Char>*> operator_equals = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, Int32, AC1Legacy.PStringBase<Char>*>)0x004AD9C0; // .text:004AD640 ; AC1Legacy::PStringBase<Char> *__thiscall AC1Legacy::PStringBase<Char>::operator=(AC1Legacy::PStringBase<Char> *this, Int32 i_Int32) .text:004AD640 ??4?$PStringBase@D@AC1Legacy@@QAEAAV01@J@Z
-                                                                                                                                                                                                                                                           // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.GetPackSize:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, UInt32> GetPackSize = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, UInt32>)0x004FD1F0; // .text:004FC650 ; UInt32 __thiscall AC1Legacy::PStringBase<Char>::GetPackSize(AC1Legacy::PStringBase<Char> *this) .text:004FC650 ?GetPackSize@?$PStringBase@D@AC1Legacy@@QBEIXZ
-                                                                                                                                                                                             // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.find_substring:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, Int32> find_substring = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, Int32>)0x00542EA0; // .text:005422C0 ; Int32 __thiscall AC1Legacy::PStringBase<Char>::find_substring(AC1Legacy::PStringBase<Char> *this, AC1Legacy::PStringBase<Char> *str) .text:005422C0 ?find_substring@?$PStringBase@D@AC1Legacy@@QBEJABV12@@Z
-                                                                                                                                                                                                                                                          // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.__vecDelDtor:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, UInt32, void*> __vecDelDtor = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, UInt32, void*>)0x004011E0; // .text:00401220 ; void *__thiscall AC1Legacy::PStringBase<Char>::`vector deleting destructor'(AC1Legacy::PStringBase<Char> *this, UInt32) .text:00401220 ??_E?$PStringBase@D@AC1Legacy@@QAEPAXI@Z
-                                                                                                                                                                                                            // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.set:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, Char*> set = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, Char*>)0x004034C0; // .text:004032E0 ; void __thiscall AC1Legacy::PStringBase<Char>::set(AC1Legacy::PStringBase<Char> *this, const Char *str) .text:004032E0 ?set@?$PStringBase@D@AC1Legacy@@QAEXPBD@Z
-                                                                                                                                                                                   // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.append_n_Chars:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, Char*, UInt32> append_n_Chars = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, Char*, UInt32>)0x004910C0; // .text:00490DE0 ; void __thiscall AC1Legacy::PStringBase<Char>::append_n_Chars(AC1Legacy::PStringBase<Char> *this, const Char *str, UInt32 count) .text:00490DE0 ?append_n_Chars@?$PStringBase@D@AC1Legacy@@QAEXPBDI@Z
-                                                                                                                                                                                                              // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.clear:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*> clear = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*>)0x004AB990; // .text:004AB610 ; void __thiscall AC1Legacy::PStringBase<Char>::clear(AC1Legacy::PStringBase<Char> *this) .text:004AB610 ?clear@?$PStringBase@D@AC1Legacy@@QAEXXZ
-                                                                                                                                                                       // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.convert:
-            // public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*,Int32i_Int323,Int32, Byte> convert = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*,Int32i_Int323,Int32, Byte>)0xDEADBEEF; // .text:004AD5D0 ; bool __thiscall AC1Legacy::PStringBase<Char>::convert(AC1Legacy::PStringBase<Char> *this, Int32 i_Int32, Int32 comma) .text:004AD5D0 ?convert@?$PStringBase@D@AC1Legacy@@QAE_NJH@Z
-            // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.compute_hash:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, UInt32> compute_hash = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, UInt32>)0x004FE440; // .text:004FD8A0 ; UInt32 __thiscall AC1Legacy::PStringBase<Char>::compute_hash(AC1Legacy::PStringBase<Char> *this) .text:004FD8A0 ?compute_hash@?$PStringBase@D@AC1Legacy@@IBEKXZ
-                                                                                                                                                                                              // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.vsprInt32f:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, Char*, Char*, Int32> vsprInt32f = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, Char*, Char*, Int32>)0x00487480; // .text:004870C0 ; Int32 __thiscall AC1Legacy::PStringBase<Char>::vsprInt32f(AC1Legacy::PStringBase<Char> *this, const Char *fmt, Char *args) .text:004870C0 ?vsprInt32f@?$PStringBase@D@AC1Legacy@@QAEJPBDPAD@Z
-                                                                                                                                                                                                                      // -- No References found
-                                                                                                                                                                                                                      // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.operator==:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, Byte> operator_isequal = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, Byte>)0x004AB9D0; // .text:004AB650 ; bool __thiscall AC1Legacy::PStringBase<Char>::operator==(AC1Legacy::PStringBase<Char> *this, AC1Legacy::PStringBase<Char> *rhs) .text:004AB650 ??8?$PStringBase@D@AC1Legacy@@QBE_NABV01@@Z
-                                                                                                                                                                                                                                                          // -- No References found                                                                                                                                                                                                                                                                                                    // -- No References found
-                                                                                                                                                                                                                                                          // AC1Legacy::PStringBase<Char>.InsertCommas:
-                                                                                                                                                                                                                                                          // public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, Byte> InsertCommas = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, Byte>)0xDEADBEEF; // .text:004AC500 ; bool __thiscall AC1Legacy::PStringBase<Char>::InsertCommas(AC1Legacy::PStringBase<Char> *this) .text:004AC500 ?InsertCommas@?$PStringBase@D@AC1Legacy@@IAE_NXZ
-                                                                                                                                                                                                                                                          // -- No References found
-                                                                                                                                                                                                                                                          // -- No References found
-
-            // AC1Legacy::PStringBase<Char>.operator+=:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*> operator_plus_equals = (delegate* unmanaged[Thiscall]<AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*, AC1Legacy.PStringBase<Char>*>)0x004914F0; // .text:00491210 ; AC1Legacy::PStringBase<Char> *__thiscall AC1Legacy::PStringBase<Char>::operator+=(AC1Legacy::PStringBase<Char> *this, AC1Legacy::PStringBase<Char> *rhs) .text:00491210 ??Y?$PStringBase@D@AC1Legacy@@QAEAAV01@ABV01@@Z
-                                                                                                                                                                                                                                                                                                              // -- No References found
 
             // Globals:
-            public static AC1Legacy.PSRefBuffer<T>** s_NullBuffer = (AC1Legacy.PSRefBuffer<T>**)0x008EF11C; // .data:008EE10C ; AC1Legacy::PSRefBuffer<Char> *AC1Legacy::PStringBase<Char>::s_NullBuffer .data:008EE10C ?s_NullBuffer@?$PStringBase@D@AC1Legacy@@1PAV?$PSRefBuffer@D@2@A
-            public static AC1Legacy.PStringBase<Char>* null_string = (AC1Legacy.PStringBase<Char>*)0x008EF120; // .data:008EE110 ; AC1Legacy::PStringBase<Char> AC1Legacy::PStringBase<Char>::null_string .data:008EE110 ?null_string@?$PStringBase@D@AC1Legacy@@2V12@B
-            public static AC1Legacy.PStringBase<Char>* whitespace_string = (AC1Legacy.PStringBase<Char>*)0x008EF124; // .data:008EE114 ; AC1Legacy::PStringBase<Char> AC1Legacy::PStringBase<Char>::whitespace_string .data:008EE114 ?whitespace_string@?$PStringBase@D@AC1Legacy@@2V12@B
-            public static AC1Legacy.PSRefBuffer<T>** s_NullBuffer_w = (AC1Legacy.PSRefBuffer<T>**)0x008EF12C; // .data:008EE11C ; AC1Legacy::PSRefBuffer<unsigned short> *AC1Legacy::PStringBase<unsigned short>::s_NullBuffer .data:008EE11C ?s_NullBuffer@?$PStringBase@G@AC1Legacy@@1PAV?$PSRefBuffer@G@2@A
-            public static AC1Legacy.PStringBase<UInt16>* null_string_w = (AC1Legacy.PStringBase<UInt16>*)0x008EF130; // .data:008EE120 ; AC1Legacy::PStringBase<unsigned short> AC1Legacy::PStringBase<unsigned short>::null_string .data:008EE120 ?null_string@?$PStringBase@G@AC1Legacy@@2V12@B
-            public static AC1Legacy.PStringBase<UInt16>* whitespace_string_w = (AC1Legacy.PStringBase<UInt16>*)0x008EF134; // .data:008EE124 ; AC1Legacy::PStringBase<unsigned short> AC1Legacy::PStringBase<unsigned short>::whitespace_string .data:008EE124 ?whitespace_string@?$PStringBase@G@AC1Legacy@@2V12@B
+            public static AC1Legacy.PSRefBuffer<T>** s_NullBuffer = (AC1Legacy.PSRefBuffer<T>**)0x008EF11C; // .data:008EE10C ; AC1Legacy::PSRefBuffer<Char> *AC1Legacy.PStringBase<Char>::s_NullBuffer .data:008EE10C ?s_NullBuffer@?$PStringBase@D@AC1Legacy@@1PAV?$PSRefBuffer@D@2@A
+            public static AC1Legacy.PStringBase<Char>* null_string = (AC1Legacy.PStringBase<Char>*)0x008EF120; // .data:008EE110 ; AC1Legacy.PStringBase<Char> AC1Legacy.PStringBase<Char>::null_string .data:008EE110 ?null_string@?$PStringBase@D@AC1Legacy@@2V12@B
+            public static AC1Legacy.PStringBase<Char>* whitespace_string = (AC1Legacy.PStringBase<Char>*)0x008EF124; // .data:008EE114 ; AC1Legacy.PStringBase<Char> AC1Legacy.PStringBase<Char>::whitespace_string .data:008EE114 ?whitespace_string@?$PStringBase@D@AC1Legacy@@2V12@B
+            public static AC1Legacy.PSRefBuffer<T>** s_NullBuffer_w = (AC1Legacy.PSRefBuffer<T>**)0x008EF12C; // .data:008EE11C ; AC1Legacy::PSRefBuffer<unsigned short> *AC1Legacy.PStringBase<unsigned short>::s_NullBuffer .data:008EE11C ?s_NullBuffer@?$PStringBase@G@AC1Legacy@@1PAV?$PSRefBuffer@G@2@A
+            public static AC1Legacy.PStringBase<UInt16>* null_string_w = (AC1Legacy.PStringBase<UInt16>*)0x008EF130; // .data:008EE120 ; AC1Legacy.PStringBase<unsigned short> AC1Legacy.PStringBase<unsigned short>::null_string .data:008EE120 ?null_string@?$PStringBase@G@AC1Legacy@@2V12@B
+            public static AC1Legacy.PStringBase<UInt16>* whitespace_string_w = (AC1Legacy.PStringBase<UInt16>*)0x008EF134; // .data:008EE124 ; AC1Legacy.PStringBase<unsigned short> AC1Legacy.PStringBase<unsigned short>::whitespace_string .data:008EE124 ?whitespace_string@?$PStringBase@G@AC1Legacy@@2V12@B
 
         }
         public unsafe struct PSRefBuffer<T> where T : unmanaged {
@@ -226,8 +199,15 @@ namespace AcClient {
     public unsafe struct PStringBase<T> where T : unmanaged {
         // Struct:
         public PSRefBufferCharData<T>* m_charbuffer;
-        public override string ToString() => $"m_charbuffer:->(PSRefBufferCharData<char>*)0x{(int)m_charbuffer:X8}";
-
+        public override string ToString() {
+            int len = 0;
+            if (typeof(T) == typeof(UInt16)) {
+                for (int i = 0; ((char*)m_charbuffer->m_data)[i] != 0; i++) len++;
+                return new string((char*)m_charbuffer, 0, len);
+            }
+            for (int i = 0; ((sbyte*)m_charbuffer->m_data)[i] != 0; i++) len++;
+            return new string((sbyte*)m_charbuffer, 0, len);
+        }
 
         // Functions:
 

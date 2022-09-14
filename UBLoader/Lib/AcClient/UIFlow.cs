@@ -81,7 +81,7 @@ namespace AcClient {
         public Byte m_bCanForceHide;
         public Byte m_bIsForcedHidden;
         public Byte m_shown;
-        public SmartArray<PTR<UIChildFramework>> m_children;
+        public SmartArray<int> m_children; // UIChildFramework*
         public override string ToString() => $"a0(UIListener):{a0}, m_bCanForceHide:{m_bCanForceHide:X2}, m_bIsForcedHidden:{m_bIsForcedHidden:X2}, m_shown:{m_shown:X2}, m_children(SmartArray<UIChildFramework*,1>):{m_children}";
 
         // Functions:
@@ -514,7 +514,7 @@ namespace AcClient {
         public static int SendBlob(NetBlob* pBlob) => ((delegate* unmanaged[Cdecl]<NetBlob*, int>)0x00547300)(pBlob); // .text:00546740 ; int __cdecl Proto_UI::SendBlob(NetBlob *pBlob) .text:00546740 ?SendBlob@Proto_UI@@YAHPAVNetBlob@@@Z
 
         // Proto_UI.SendCharGenResult:
-        public static int SendCharGenResult(CharGenResult* _charGenResult, accountID account, int _secure) => ((delegate* unmanaged[Cdecl]<CharGenResult*, accountID, int, int>)0x00547630)(_charGenResult, account, _secure); // .text:00546A70 ; int __cdecl Proto_UI::SendCharGenResult(CharGenResult *_charGenResult, accountID account, int _secure) .text:00546A70 ?SendCharGenResult@Proto_UI@@YAHPAVCharGenResult@@VaccountID@@H@Z
+        public static bool SendCharGenResult(ACCharGenResult* _charGenResult, accountID account) => ((delegate* unmanaged[Cdecl]<ACCharGenResult*, accountID, bool>)0x00547630)(_charGenResult, account); // .text:00546A70 ; int __cdecl Proto_UI::SendCharGenResult(CharGenResult *_charGenResult, accountID account, int _secure) .text:00546A70 ?SendCharGenResult@Proto_UI@@YAHPAVCharGenResult@@VaccountID@@H@Z
 
         // Proto_UI.SendDeleteCharacter:
         public static int SendDeleteCharacter(accountID account, int slot) => ((delegate* unmanaged[Cdecl]<accountID, int, int>)0x005476F0)(account, slot); // .text:00546B30 ; int __cdecl Proto_UI::SendDeleteCharacter(accountID account, int slot) .text:00546B30 ?SendDeleteCharacter@Proto_UI@@YAHVaccountID@@H@Z

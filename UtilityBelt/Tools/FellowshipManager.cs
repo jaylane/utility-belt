@@ -299,7 +299,7 @@ namespace UtilityBelt.Tools {
             if (_name.IsNullOrEmpty()) return;
             AC1Legacy.PStringBase<char> pStringBase = _name;
 
-            int share_xp = (int)CPlayerSystem.s_pPlayerSystem->playerModule.PlayerModule.FellowshipShareXP();
+            int share_xp = (int)(*CPlayerSystem.s_pPlayerSystem)->playerModule.PlayerModule.FellowshipShareXP();
             CM_Fellowship.Event_Create(&pStringBase, share_xp);
 
         }

@@ -9,6 +9,7 @@ namespace AcClient {
     /// </summary>
     public class Hook {
         internal IntPtr Entrypoint;
+        internal Delegate Del;
         internal int call;
 
         public Hook(int entrypoint, int call_location) {
@@ -17,11 +18,12 @@ namespace AcClient {
         }
         public bool Setup(Delegate del) {
             if (!hookers.Contains(this)) {
+                Del = del;
                 if (ReadCall(call) != (int)Entrypoint) {
                     // WriteToDebugLog($"Failed to detour 0x{call:X8}. expected 0x{(int)Entrypoint:X8}, received 0x{ReadCall(call):X8}");
                     return false;
                 }
-                if (!PatchCall(call, Marshal.GetFunctionPointerForDelegate(del))) {
+                if (!PatchCall(call, Marshal.GetFunctionPointerForDelegate(Del))) {
                     return false;
                 }
                 else {
@@ -75,6 +77,52 @@ namespace AcClient {
                 return previousPointer;
             }
         }
+        internal static void Cleanup() {
+            for (int i = hookers.Count - 1; i > -1; i--)
+                hookers[i].Remove();
+        }
+    }
+
+    /// <summary>
+    /// New improved Hooker (Virtual edition, brought to you by Carls Jr.)
+    /// </summary>
+    public class VHook {
+        internal int Entrypoint;
+        internal Delegate Del;
+        internal int call;
+
+        public VHook(int entrypoint, int vtbl_address) {
+            Entrypoint = entrypoint;
+            call = vtbl_address;
+        }
+        public bool Setup(Delegate del) {
+            if (!hookers.Contains(this)) {
+                Del = del;
+                if (ReadVCall(call) != Entrypoint) return false;
+                if (PatchVCall(call, (int)Marshal.GetFunctionPointerForDelegate(Del))) {
+                    hookers.Add(this);
+                    return true;
+                }
+            }
+            return false;
+        }
+        public bool Remove() {
+            if (hookers.Contains(this)) {
+                hookers.Remove(this);
+                return PatchVCall(call, Entrypoint);
+            }
+            return false;
+        }
+
+        // static half
+        internal static System.Collections.Generic.List<VHook> hookers = new System.Collections.Generic.List<VHook>();
+        internal static bool PatchVCall(int callLocation, int newPointer) {
+            unsafe {
+                Hook.Write((IntPtr)(callLocation), newPointer);
+                return *(int*)callLocation == newPointer;
+            }
+        }
+        internal unsafe static int ReadVCall(int callLocation) => *(int*)callLocation;
         internal static void Cleanup() {
             for (int i = hookers.Count - 1; i > -1; i--)
                 hookers[i].Remove();

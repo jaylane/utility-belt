@@ -1,4 +1,5 @@
-﻿using ACE.DatLoader;
+﻿using AcClient;
+using ACE.DatLoader;
 using ACE.DatLoader.Entity;
 using ACE.DatLoader.FileTypes;
 using ACE.Entity.Enum;
@@ -12,18 +13,21 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using UBService;
 using SkillBase = ACE.DatLoader.Entity.SkillBase;
+using Vector4 = ImGuiNET.Vector4;
 using WeaponType = ACE.Entity.Enum.WeaponType;
 
 namespace UBLoader.Lib {
     public class CharacterCreation : IDisposable {
         private const uint MAX_CHAR_NAME_LENGTH = 32;
 
-        private static Random _random = new Random();
+        private static readonly Random _random = new Random();
 
         public enum Skill {
             None,
@@ -230,7 +234,7 @@ namespace UBLoader.Lib {
         private class CharGenData {
             private PropertyAttribute _nextAttribute = PropertyAttribute.Strength;
 
-            public string Name { get; set; }
+            public string Name { get; set; } = "";
             public Heritage Heritage { get; set; }
             public Template Template { get; set; }
 
@@ -484,9 +488,9 @@ namespace UBLoader.Lib {
         private static PortalDatDatabase PortalDat => UBLoader.FilterCore.PortalDat;
         private static LanguageDatDatabase LanguageDat => UBLoader.FilterCore.LanguageDat;
         private static StringTable UI_Pregame_Strings;
-        private List<Template> Templates = new List<Template>();
-        private List<Heritage> Heritages = new List<Heritage>();
-        private List<StarterArea> StarterAreas = new List<StarterArea>();
+        private readonly List<Template> Templates = new List<Template>();
+        private readonly List<Heritage> Heritages = new List<Heritage>();
+        private readonly List<StarterArea> StarterAreas = new List<StarterArea>();
         private string skillHelpText;
         private string attributeLockHelpText;
         private string attributeCreditesTooltipText;
@@ -504,13 +508,13 @@ namespace UBLoader.Lib {
         private Microsoft.DirectX.Direct3D.Texture ArrowUpTexture;
         private Microsoft.DirectX.Direct3D.Texture ArrowDownTexture;
         private Microsoft.DirectX.Direct3D.Texture ACMapTexture;
-        private Microsoft.DirectX.Direct3D.Texture CharAppearanceTexture;
+        // private Microsoft.DirectX.Direct3D.Texture CharAppearanceTexture;
 
         public class FinishedEventArgs : EventArgs {
-            public AcClient.CharGenState CharGenState { get; }
+            public AcClient.ACCharGenResult ACCharGenResult { get; }
 
-            public FinishedEventArgs(AcClient.CharGenState state) {
-                CharGenState = state;
+            public FinishedEventArgs(AcClient.ACCharGenResult state) {
+                ACCharGenResult = state;
             }
         }
 
@@ -567,91 +571,74 @@ namespace UBLoader.Lib {
             }
             catch (Exception ex) { UBLoader.FilterCore.LogException(ex); }
         }
+        public string SanitizeName(string _name) {
+            // remove non-character/space characters
+            string ret = Regex.Replace(_name, "[^a-zA-Z ]", String.Empty);
+            // remove leading/trailing space
+            ret = ret.Trim();
+            // remove consecutive spaces
+            ret = Regex.Replace(ret, @"[\s]{2,}", " ");
+            // capitalize first character
+            ret = char.ToUpper(ret[0]) + ret.Substring(1);
+            return ret;
+        }
+        public unsafe AcClient.ACCharGenResult ToACCharGenResult() {
+            ACCharGenResult result = new ACCharGenResult();
+            int numSkills = (int)Skill.Summoning + 1;
+            SKILL_ADVANCEMENT_CLASS* sacs = (SKILL_ADVANCEMENT_CLASS*)Marshal.AllocHGlobal(numSkills * 4);
+            for (int i = 0; i < numSkills; i++) {
+                sacs[i] = charData.Skills.ContainsKey((Skill)i) ? (SKILL_ADVANCEMENT_CLASS)charData.Skills[(Skill)i].Training : SKILL_ADVANCEMENT_CLASS.UNDEF;
+            }
+            AC1Legacy.PStringBase<char> name = SanitizeName(charData.Name);
+            // todo- call this after return... because... yeah. that's possible...
+            // temporary memory leak here.
+            // Marshal.FreeHGlobal((IntPtr)sacs);
 
-        public AcClient.CharGenState ToACCharGenState() {
-            return new AcClient.CharGenState() {
-                //Vtbl* vfptr = 0,
-                //ACCharGenResult CharGenResult = 0,
-                //Int32 beginRequest = 0,
-                //Int32 heritageGroupFrozen = 0,
-                //Int32 sexFrozen = 0,
-                //Int32 appearanceFrozen = 0,
-                //Int32 clothingFrozen = 0,
-                mHeritageGroup = (uint)charData.Heritage.Group,
-                mGender = (uint)charData.Heritage.SelectedGenderIndex,
-                eyesStrip = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedEyeStrip,
-                noseStrip = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedNoseStrip,
-                mouthStrip = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedMouthStrip,
-                // Int32 hairColor = 0,
-                // Int32 eyeColor = 0,
-                hairStyle = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedHairStyle,
-                headgearStyle = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedHeadgear,
-                // Int32 headgearColor = 0,
-                shirtStyle = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedShirt,
-                // Int32 shirtColor = 0,
-                trousersStyle = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedPants,
-                // Int32 trousersColor = 0,
-                footwearStyle = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedFootwear,
-                // Int32 footwearColor = 0,
-                // Int32 numHeadgearColors = 0,
-                // Int32 numShirtColors = 0,
-                // Int32 numTrousersColors = 0,
-                // Int32 numFootwearColors = 0,
-                // UInt32* headgearPaletteTemplateIDs = 0,
-                // UInt32* shirtPaletteTemplateIDs = 0,
-                // UInt32* trousersPaletteTemplateIDs = 0,
-                // UInt32* footwearPaletteTemplateIDs = 0,
-                // UInt32* headgearPalSetIDs = 0,
-                // UInt32* shirtPalSetIDs = 0,
-                // UInt32* trousersPalSetIDs = 0,
-                // UInt32* footwearPalSetIDs = 0,
-                // Double skinShade = 0,
-                // Double hairShade = 0,
-                // Double headgearShade = 0,
-                // Double shirtShade = 0,
-                // Double trousersShade = 0,
-                // Double footwearShade = 0,
-                // Method_CG method = 0,
-                // AdvancedMethod_CG advancedMethod = 0,
-                template_ = _currentTemplateIndex,
-                strength = charData.Attributes[PropertyAttribute.Strength].Value, // this is total value, like 10 is 10 (minumum)
-                endurance = charData.Attributes[PropertyAttribute.Endurance].Value, // this is total value, like 10 is 10 (minumum)
-                coordination = charData.Attributes[PropertyAttribute.Coordination].Value, // this is total value, like 10 is 10 (minumum)
-                quickness = charData.Attributes[PropertyAttribute.Quickness].Value, // this is total value, like 10 is 10 (minumum)
-                focus = charData.Attributes[PropertyAttribute.Focus].Value, // this is total value, like 10 is 10 (minumum)
-                self = charData.Attributes[PropertyAttribute.Self].Value, // this is total value, like 10 is 10 (minumum)
-                totalAtrbCredits = (int)charData.Heritage.Dat.AttributeCredits,
-                remainingAtrbCredits = charData.AvailableAttributeCredits,
-                // Int32 atrbMin = 0,
-                // Int32 atrbMax = 0,
-                // Int32 totalNumSkills = 0,
-                // SKILL_ADVANCEMENT_CLASS* skillLevels = 0, // charData.Skills
-                totalSkillCredits = (int)charData.Heritage.Dat.SkillCredits,
-                remainingSkillCredits = charData.AvailableSkillCredits,
-                // Int32* spellKnown = 0,
-                // _List<PTR<SkillRecord>> skillRecordList = 0, // charData.Skills
-                //fixed Char name[33] = 0, // charData.Name
-                // Int32 linkingWord = 0,
-                startArea = charData.Heritage.SelectedStarterArea,
-                setupID = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].Dat.SetupID,
-                // UInt32 animID = 0,
-                // Int32 setupChanged = 0,
-                // Int32 slot = 0,
-                // fixed Char password[20] = 0,
-                // CG_VERIFICATION_RESPONSE verificationState = 0,
-                // Int32 createAsAdmin = 0,
-                // Int32 createAsEnvoy = 0,
-                // fixed Int32 bAttribLocked[7] = 0,
-                // SkillTable* skillTable = 0, // charData.Skills
-                // Attribute2ndTable* attribute2ndTable = 0,
-                // EnterChargen enterChargen = 0,
-                // ACCharGenData* CharGenData = 0,
-            };
+            result.CharGenResult = new AcClient.CharGenResult() { PackObj = new AcClient.PackObj() { vfptr = (AcClient.PackObj.Vtbl*)0x007E8940 } };
+            result.heritageGroup = (uint)charData.Heritage.Group;
+            result.gender = (uint)charData.Heritage.SelectedGenderIndex + 1;
+            result.eyesStrip = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedEyeStrip;
+            result.noseStrip = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedNoseStrip;
+            result.mouthStrip = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedMouthStrip;
+            result.hairColor = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedHairColor;
+            result.eyeColor = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedEyeColor;
+            result.hairStyle = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedHairStyle;
+            result.headgearStyle = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedHeadgear;
+            result.shirtStyle = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedShirt;
+            result.trousersStyle = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedPants;
+            result.footwearStyle = charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].SelectedFootwear;
+            result.headgearColor = 0; // TODO
+            result.shirtColor = 0;
+            result.trousersColor = 0;
+            result.footwearColor = 0;
+            result.skinShade = 0.71;
+            result.hairShade = 0.74;
+            result.headgearShade = 0.6;
+            result.shirtShade = 0.48;
+            result.trousersShade = 0.43;
+            result.footwearShade = 0.69;
+            result.templateNum = _currentTemplateIndex;
+            result.strength = charData.Attributes[PropertyAttribute.Strength].Value; // this is total value, like 10 is 10 (minumum)
+            result.endurance = charData.Attributes[PropertyAttribute.Endurance].Value; // this is total value, like 10 is 10 (minumum)
+            result.coordination = charData.Attributes[PropertyAttribute.Coordination].Value; // this is total value, like 10 is 10 (minumum)
+            result.quickness = charData.Attributes[PropertyAttribute.Quickness].Value; // this is total value, like 10 is 10 (minumum)
+            result.focus = charData.Attributes[PropertyAttribute.Focus].Value; // this is total value, like 10 is 10 (minumum)
+            result.self = charData.Attributes[PropertyAttribute.Self].Value; // this is total value, like 10 is 10 (minumum)
+            result.numSkills = numSkills;
+            result.skillAdvancementClasses = sacs;
+            result.name = name;
+            result.slot = 3;
+            result.classID = 1;
+            result.startArea = (uint)charData.Heritage.SelectedStarterArea;
+            result.isAdmin = 0;
+            result.isEnvoy = 0;
+
+            return result;
         }
 
         // ui state
         private int _currentHeritageIndex = 0;
-        private byte[] _charNameData = new byte[MAX_CHAR_NAME_LENGTH + 1];
+        private readonly byte[] _charNameData = new byte[MAX_CHAR_NAME_LENGTH + 1];
         private int _currentTemplateIndex = 0;
 
         private unsafe void Hud_Render(object sender, EventArgs e) {
@@ -750,7 +737,7 @@ namespace UBLoader.Lib {
                                 }
                                 ImGui.EndTooltip(); // Attribute Credits
                             }
-                            
+
                             var _id = 0;
                             var lockIconSize = new Vector2(18, 18);
                             foreach (var attr in charData.Attributes.Values) {
@@ -1009,7 +996,7 @@ namespace UBLoader.Lib {
                     if (ImGui.BeginTabItem("Summary")) {
                         ImGui.BeginChild("Summary", new Vector2(240, 300)); // summary
                         {
-                            var indent = 10;
+                            //var indent = 10;
                             var colSize = 140;
                             ImGui.Text("Profession:"); ImGui.SameLine(colSize); ImGui.Text(charData.Template.Name);
                             ImGui.Text("Gender:"); ImGui.SameLine(colSize); ImGui.Text(charData.Heritage.Genders[charData.Heritage.SelectedGenderIndex].Dat.Name);
@@ -1049,7 +1036,7 @@ namespace UBLoader.Lib {
                         ImGui.Spacing();
 
                         if (ImGui.Button("Finish", new Vector2(240, 100))) {
-                            var state = ToACCharGenState();
+                            var state = ToACCharGenResult();
                             //Logger.WriteToChat($"FINISHED: {state}");
                             OnFinished?.Invoke(this, new FinishedEventArgs(state));
                         }
@@ -1226,14 +1213,14 @@ namespace UBLoader.Lib {
                 DestroyTexture(ref ACMapTexture);
             }
             catch (Exception ex) { UBLoader.FilterCore.LogException(ex); }
-}
+        }
 
         private void DestroyTexture(ref Microsoft.DirectX.Direct3D.Texture texture) {
             texture?.Dispose();
             texture = null;
         }
 
-        private static List<Skill> AlwaysTrained = new List<Skill>()
+        private static readonly List<Skill> AlwaysTrained = new List<Skill>()
         {
             Skill.ArcaneLore,
             Skill.Jump,
@@ -1243,7 +1230,7 @@ namespace UBLoader.Lib {
             Skill.Salvaging
         };
         private Skill _selectedSkill;
-        private int _selectedGenderIndex;
+        // private int _selectedGenderIndex;
 
         private static void PopulateHeritageData(Heritage heritage) {
             switch (heritage.Dat.Name) {
@@ -1391,6 +1378,55 @@ namespace UBLoader.Lib {
             catch { }
             return "";
         }
+
+        internal static AcClient.Hook CPlayerSystem__Handle_CharGenVerificationResponse_hook = new AcClient.Hook(0x0055F620, 0x0055D61F);
+        //.text:0055F620 ; public: void __thiscall CPlayerSystem::Handle_CharGenVerificationResponse(void*, unsigned int)
+        //.text:0055D61F                 call? Handle_CharGenVerificationResponse@CPlayerSystem @@QAEXPAXI@Z ; CPlayerSystem::Handle_CharGenVerificationResponse(void*, uint)
+        [UnmanagedFunctionPointer(CallingConvention.ThisCall)] internal unsafe delegate void CPlayerSystem__Handle_CharGenVerificationResponse_def(CPlayerSystem* This, void* buff, uint size);
+
+        /// <summary>
+        /// Detour function- the client thinks this is CPlayerSystem::Handle_CharGenVerificationResponse, so make sure you call the real thing
+        /// </summary>
+        internal unsafe static void CPlayerSystem__Handle_CharGenVerificationResponse(CPlayerSystem* This, void* buff, uint size) {
+            if (!CPlayerSystem__Handle_CharGenVerificationResponse_hook.Remove())
+                FilterCore.LogError($"HOOK>CPlayerSystem__Handle_CharGenVerificationResponse removal failure");
+            if (buff != null) {
+                int buf = (int)buff;
+                CG_VERIFICATION_RESPONSE verificationResponse = *(CG_VERIFICATION_RESPONSE*)buf;
+                switch (verificationResponse) {
+                    case CG_VERIFICATION_RESPONSE.CG_VERIFICATION_RESPONSE_OK:
+                        This->Handle_CharGenVerificationResponse(buff, size);
+                        UInt32 gid = *(UInt32*)(buf + 4);
+                        //ushort nameLen = *(ushort*)(buf + 8);
+                        //string name = new((sbyte*)buf + 10);
+                        //int secondsGreyedOut = *(int*)(buf + ((10 + 3 + nameLen) & ~3));
+                        //FilterCore.LogError($"Created character \"{name}\". Entering game..."); // to make multiple characters at once, cache the above info, and drop the following LogOnCharacter. This will leave CharacterSet in a bad state though.
+                        (*CPlayerSystem.s_pPlayerSystem)->LogOnCharacter(gid);
+                        break;
+                    case CG_VERIFICATION_RESPONSE.CG_VERIFICATION_RESPONSE_NAME_IN_USE:
+                        FilterCore.LogError($"{verificationResponse}: ID_Character_Err_NameReserved");
+                        //TODO: make dialog.
+                        double todo1;
+                        break;
+                    case CG_VERIFICATION_RESPONSE.CG_VERIFICATION_RESPONSE_NAME_BANNED:
+                        FilterCore.LogError($"{verificationResponse}: ID_Character_Err_NameBanned");
+                        //TODO: make dialog.
+                        double todo2;
+                        break;
+                    case CG_VERIFICATION_RESPONSE.CG_VERIFICATION_RESPONSE_ADMIN_PRIVILEGE_DENIED:
+                        FilterCore.LogError($"{verificationResponse}: ID_Character_Err_NameAdminDenied");
+                        //TODO: make dialog.
+                        double todo3;
+                        break;
+                    default:
+                        FilterCore.LogError($"{verificationResponse}: ID_Character_Err_NameDBDown");
+                        //TODO: make dialog.
+                        double todo4;
+                        break;
+                }
+            }
+        }
+
 
         public void Dispose() {
             if (hud != null) {

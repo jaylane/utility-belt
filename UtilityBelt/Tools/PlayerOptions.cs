@@ -18,9 +18,9 @@ namespace UtilityBelt.Tools {
     [Name("PlayerOptions")]
     public class PlayerOptions : ToolBase {
         internal HudCombo CharacterOptionsProfilesCombo;
-        private HudButton CharacterOptionsProfileCopyTo;
-        private HudButton CharacterOptionsProfileReset;
-        private HudButton CharacterOptionsProfileImport;
+        //private HudButton CharacterOptionsProfileCopyTo;
+        //private HudButton CharacterOptionsProfileReset;
+        //private HudButton CharacterOptionsProfileImport;
 
         /// <summary>
         /// The file path to the currently loaded settings profile
@@ -268,7 +268,7 @@ namespace UtilityBelt.Tools {
                 value = true;
 
             UBHelper.Player.SetOption((UBHelper.Player.PlayerOption)option, value);
-            Logger.WriteToChat($"Setting {(((UBHelper.Player.PlayerOption)option).ToString())} = {value.ToString()}");
+            Logger.WriteToChat($"Setting {(UBHelper.Player.PlayerOption)option} = {value}");
         }
         #endregion
         #endregion Commands
@@ -302,15 +302,15 @@ namespace UtilityBelt.Tools {
             RestoreOption(e.Setting);
         }
 
-        private void RestoreOptions() {
-            foreach (var categoryField in PlayerOption.GetType().GetFields(Settings.BindingFlags)) {
-                var category = categoryField.GetValue(PlayerOption);
-                foreach (var optionField in categoryField.FieldType.GetFields(Settings.BindingFlags)) {
-                    RestoreOption((ISetting)optionField.GetValue(category));
-                }
-            }
-            UBHelper.Player.SaveOptions();
-        }
+        //private void RestoreOptions() {
+        //    foreach (var categoryField in PlayerOption.GetType().GetFields(Settings.BindingFlags)) {
+        //        var category = categoryField.GetValue(PlayerOption);
+        //        foreach (var optionField in categoryField.FieldType.GetFields(Settings.BindingFlags)) {
+        //            RestoreOption((ISetting)optionField.GetValue(category));
+        //        }
+        //    }
+        //    UBHelper.Player.SaveOptions();
+        //}
 
         private void RestoreOption(ISetting setting) {
             try {

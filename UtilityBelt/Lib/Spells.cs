@@ -235,7 +235,7 @@ namespace UtilityBelt.Lib {
                 MagicSchool.LifeMagic => cf.EffectiveSkill[CharFilterSkillType.LifeMagic],
                 MagicSchool.VoidMagic => cf.EffectiveSkill[CharFilterSkillType.VoidMagic],
                 MagicSchool.WarMagic => cf.EffectiveSkill[CharFilterSkillType.WarMagic],
-                MagicSchool.None => throw new NotImplementedException(),
+                _ => throw new NotImplementedException(),
             };
 
             if (cf.GetCharProperty(326/*Jack of All Trades*/) == 1)

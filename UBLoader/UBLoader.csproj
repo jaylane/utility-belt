@@ -138,7 +138,6 @@
     <Compile Include="Lib\AcClient\_Hook.cs" />
     <Compile Include="Lib\AcClient\_Todo.cs" />
     <Compile Include="Lib\CharacterCreation.cs" />
-    <Compile Include="Lib\CharacterCreator.cs" />
     <Compile Include="Lib\File.cs" />
     <Compile Include="FilterCore.cs" />
     <Compile Include="Lib\ObservableDictionary.cs" />

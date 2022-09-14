@@ -23,7 +23,7 @@ namespace UtilityBelt.Lib {
 
         public uint LandBlock { get => Geometry.GetLandblockFromCoordinates(EW, NS); }
 
-        public static Regex CoordinateRegex = new Regex(@"(?<NSval>-?\d+.?\d+?)(?<NSchr>[ns])?,\s?(?<EWval>-?\d+.?\d+)(?<EWchr>[ew])?(,?\s*(?<Zval>\-?\d+.?\d+)z)?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        public static Regex CoordinateRegex = new Regex(@"(?<NSval>[0-9]{1,3}(?:\.[0-9]{1,3})?)(?<NSchr>(?:[ns]))(?:[,\s]+)?(?<EWval>[0-9]{1,3}(?:\.[0-9]{1,3})?)(?<EWchr>(?:[ew]))?(,?\s*(?<Zval>\-?\d+.?\d+)z)?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         public Coordinates() {
 

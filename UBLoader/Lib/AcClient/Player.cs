@@ -268,7 +268,7 @@ namespace AcClient {
         public Byte UsingItem(UInt32 _itemID, int _useable, int _forceUse) => ((delegate* unmanaged[Thiscall]<ref CPlayerSystem, UInt32, int, int, Byte>)0x00563D10)(ref this, _itemID, _useable, _forceUse); // .text:00562F70 ; bool __thiscall CPlayerSystem::UsingItem(CPlayerSystem *this, unsigned int _itemID, int _useable, int _forceUse) .text:00562F70 ?UsingItem@CPlayerSystem@@QAE_NKHH@Z
 
         // Globals:
-        public static CPlayerSystem* s_pPlayerSystem = *(CPlayerSystem**)0x0087119C; // .data:0087018C ; CPlayerSystem *CPlayerSystem::s_pPlayerSystem .data:0087018C ?s_pPlayerSystem@CPlayerSystem@@1PAV1@A
+        public static CPlayerSystem** s_pPlayerSystem = (CPlayerSystem**)0x0087119C; // .data:0087018C ; CPlayerSystem *CPlayerSystem::s_pPlayerSystem .data:0087018C ?s_pPlayerSystem@CPlayerSystem@@1PAV1@A
     }
 
 

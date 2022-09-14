@@ -229,7 +229,6 @@
     <Compile Include="Lib\VHS_Connector.cs" />
     <Compile Include="Tools\GUI.cs" />
     <Compile Include="Tools\Player.cs" />
-    <Compile Include="Tools\UBHudDemo.cs" />
     <Compile Include="Tools\XPMeter.cs" />
     <Compile Include="Tools\OverlayMap.cs" />
     <Compile Include="Tools\AutoXp.cs" />

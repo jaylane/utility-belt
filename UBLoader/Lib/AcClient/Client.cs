@@ -190,7 +190,7 @@ namespace AcClient {
         public static delegate* unmanaged[Thiscall]<Client*, UInt32> AddRef = (delegate* unmanaged[Thiscall]<Client*, UInt32>)0x00401E60; // .text:00401D30 ; UInt32 __thiscall Client::AddRef(Client *this) .text:00401D30 ?AddRef@Client@@UBEKXZ
 
         // Globals:
-        public static Client* m_instance = *(Client**)0x008379E4; // .data:008369E4 ; Client *Client::m_instance .data:008369E4 ?m_instance@Client@@1PAV1@A
+        public static Client** m_instance = (Client**)0x008379E4; // .data:008369E4 ; Client *Client::m_instance .data:008369E4 ?m_instance@Client@@1PAV1@A
     }
 
     public unsafe struct gmClient {
