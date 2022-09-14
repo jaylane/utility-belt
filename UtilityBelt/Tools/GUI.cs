@@ -1,6 +1,6 @@
 ﻿using System;
 using UtilityBelt.Lib;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using System.Drawing;
 using System.Linq;
 using UBService;
@@ -10,7 +10,15 @@ using ACE.DatLoader.FileTypes;
 using ACE.DatLoader.Entity;
 using Decal.Filters;
 using UtilityBelt.Views.Inspector;
-using AcClient;
+using Vector4 = ImGuiNET.Vector4;
+using UBService.Views;
+using Decal.Adapter.Wrappers;
+using System.IO;
+using System.Security.Cryptography;
+using Hud = UBService.Views.Hud;
+using UBService.Views.SettingsEditor;
+using UtilityBelt.Views;
+using System.Reflection;
 
 namespace UtilityBelt.Tools {
     [Name("GUI")]
@@ -19,6 +27,7 @@ namespace UtilityBelt.Tools {
         private bool demoIsOpen;
         private Hud demoHudWithCustomWindow;
         private Inspector gameStateInspector;
+        private ManagedTexture settingsIcon;
 
         #region Config
         [Summary("Enabled")]
@@ -28,7 +37,7 @@ namespace UtilityBelt.Tools {
         public Setting<uint> MaxFramerate = new Setting<uint>(60);
 
         [Summary("Enable Demo UI")]
-        public Setting<bool> EnableDemoUI = new Setting<bool>(false);
+        public Setting<bool> EnableDemoUI = new Setting<bool>(true);
 
         [Summary("Enable GameState Inspector")]
         public Setting<bool> EnableGameStateInspector = new Setting<bool>(false);
@@ -43,13 +52,16 @@ namespace UtilityBelt.Tools {
         }
 
         public override void Init() {
+            using (Stream manifestResourceStream = GetType().Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.settings.png")) {
+                settingsIcon = new ManagedTexture(new Bitmap(manifestResourceStream));
+            }
+            CreateHuds();
+            demoIsOpen = true;
             base.Init();
 
             EnableDemoUI.Changed += ShowHud_Changed;
             EnableGameStateInspector.Changed += ShowHud_Changed;
             demoIsOpen = EnableDemoUI.Value;
-
-            CreateHuds();
         }
 
         private void DemoHudWithCustomWindow_ShouldShow(object sender, EventArgs e) {
@@ -60,10 +72,56 @@ namespace UtilityBelt.Tools {
             demoIsOpen = false;
         }
 
-        private void DemoHudWithCustomWindow_Render(object sender, EventArgs e) {
+        private Random rand = new Random();
+
+        private unsafe void DemoHudWithCustomWindow_Render(object sender, EventArgs e) {
             demoHudWithCustomWindow.Visible = demoIsOpen;
-            if (demoIsOpen)
-                ImGui.ShowDemoWindow(ref demoIsOpen);
+
+            var flags = ImGuiWindowFlags.MenuBar;
+            var windowIsOpen = ImGui.Begin("Test Window", ref demoIsOpen, flags);
+
+
+            if (false&& windowIsOpen) {
+                if (ImGui.BeginMenuBar()) {
+                    if (ImGui.BeginMenu("test")) {
+                        ImGui.MenuItem("one");
+                        ImGui.MenuItem("two");
+                        ImGui.MenuItem("one");
+                        ImGui.EndMenu();
+                    }
+                    if (ImGui.BeginMenu("test 2")) {
+                        ImGui.MenuItem("one");
+                        ImGui.MenuItem("two");
+                        ImGui.MenuItem("one");
+                        ImGui.EndMenu();
+                    }
+                    ImGui.EndMenuBar();
+                }
+                var pos = ImGui.GetCursorPos();
+                //ImGui.InvisibleButton("canvas", size);
+                if (ImGui.Button("test body button")) {
+                    WriteToChat("test body button clicked");
+                }
+                ImGui.SetCursorPos(pos);
+                ImGui.InvisibleButton("renderbutton", ImGui.GetContentRegionAvail());
+                Vector2 p0 = ImGui.GetItemRectMin();
+                Vector2 p1 = ImGui.GetItemRectMax();
+                var size = new Vector2(p1.X - p0.X, p1.Y - p0.Y);
+
+                var drawList = ImGui.GetWindowDrawList();
+                drawList.PushClipRect(p0, p1);
+                var t = ImGui.GetTime();
+                for (int n = 0; n < (1.0f + Math.Sin(t * 5.7f)) * 40.0f; n++)
+                    drawList.AddCircle(new Vector2(p0.X + size.X * 0.5f, p0.Y + size.Y * 0.5f), size.X * (0.01f + n * 0.03f),
+                        (0xFF000000 + (((uint)Math.Min(n * 8, 255)) << 16 ) + +(((uint)Math.Min(n * 8, 255)))), 50, 3);
+
+                drawList.PopClipRect();
+            }
+            ImGui.End();
+
+            ImGui.StyleColorsDark();
+            //if (demoIsOpen) 
+            ImGui.ShowDemoWindow(ref demoIsOpen);
         }
 
         private void ShowHud_Changed(object sender, SettingChangedEventArgs e) {
@@ -78,6 +136,7 @@ namespace UtilityBelt.Tools {
                 demoHudWithCustomWindow.Dispose();
                 demoHudWithCustomWindow = null;
             }
+
             if ((!EnableGameStateInspector || disposedValue) && gameStateInspector != null) {
                 gameStateInspector.Dispose();
                 gameStateInspector = null;
@@ -87,7 +146,7 @@ namespace UtilityBelt.Tools {
         private unsafe void CreateHuds() {
             if (EnableDemoUI && demoHudWithCustomWindow == null) {
                 demoHudWithCustomWindow = HudManager.CreateHud("Demo Hud (Custom Window)");
-                demoHudWithCustomWindow.CustomWindowDrawing = true;
+                demoHudWithCustomWindow.DontDrawDefaultWindow = true;
                 demoHudWithCustomWindow.Render += DemoHudWithCustomWindow_Render;
                 demoHudWithCustomWindow.ShouldHide += DemoHudWithCustomWindow_ShouldHide;
                 demoHudWithCustomWindow.ShouldShow += DemoHudWithCustomWindow_ShouldShow;
@@ -112,6 +171,7 @@ namespace UtilityBelt.Tools {
 
                     disposedValue = true;
                     DestroyHuds();
+                    settingsIcon?.Dispose();
                 }
             }
         }

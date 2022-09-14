@@ -11,7 +11,7 @@ using uTank2.LootPlugins;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using VTClassic;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using UtilityBelt.Lib.Expressions;
 
 namespace UtilityBelt.Tools {

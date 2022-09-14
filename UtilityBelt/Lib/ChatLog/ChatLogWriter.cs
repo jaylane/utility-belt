@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
+using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Lib.ChatLog
 {

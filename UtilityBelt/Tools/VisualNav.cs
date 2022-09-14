@@ -12,7 +12,7 @@ using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using System.ComponentModel;
 using Newtonsoft.Json;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     #region VisualNav Display Config

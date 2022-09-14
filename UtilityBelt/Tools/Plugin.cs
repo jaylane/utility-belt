@@ -16,7 +16,7 @@ using UtilityBelt.Lib.Dungeon;
 using UtilityBelt.Lib.Expressions;
 using UtilityBelt.Lib.Settings;
 using static UtilityBelt.Tools.VTankControl;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using System.Collections.ObjectModel;
 using Hellosam.Net.Collections;
 using Exceptionless.Extensions;
@@ -224,6 +224,9 @@ namespace UtilityBelt.Tools {
 
                 if (option == null || option.Setting == null) {
                     Logger.Error("Invalid option: " + name);
+                    foreach (var opt in UB.State.GetAll()) {
+                        Logger.Error($"  - {opt.FullName}");
+                    }
                     return;
                 }
 

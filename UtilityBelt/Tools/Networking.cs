@@ -5,7 +5,7 @@ using System.Text;
 using UtilityBelt.Lib;
 using System.ComponentModel;
 using System.Windows.Forms;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using System.Collections.Concurrent;
 using UtilityBelt.Lib.Networking.Messages;
 using System.Text.RegularExpressions;

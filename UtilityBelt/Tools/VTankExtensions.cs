@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Constants;
 using VirindiViewService;

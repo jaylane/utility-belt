@@ -140,18 +140,6 @@
     <Compile Include="Lib\CharacterCreation.cs" />
     <Compile Include="Lib\File.cs" />
     <Compile Include="FilterCore.cs" />
-    <Compile Include="Lib\ObservableDictionary.cs" />
-    <Compile Include="Lib\Settings\Alias.cs" />
-    <Compile Include="Lib\Settings\CharacterState.cs" />
-    <Compile Include="Lib\Settings\ChatLogRule.cs" />
-    <Compile Include="Lib\Settings\GameEvent.cs" />
-    <Compile Include="Lib\Settings\ISetting.cs" />
-    <Compile Include="Lib\Settings\OptionResult.cs" />
-    <Compile Include="Lib\Settings\SerializationBinder.cs" />
-    <Compile Include="Lib\Settings\Setting.cs" />
-    <Compile Include="Lib\Settings\SettingAttributes.cs" />
-    <Compile Include="Lib\Settings\SettingChangedEventArgs.cs" />
-    <Compile Include="Lib\Settings\Settings.cs" />
     <Compile Include="Lib\SSLProtocolExtensions.cs" />
     <Compile Include="Lib\XPHelper.cs" />
     <Compile Include="LoaderLogin.cs" />
@@ -168,6 +156,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\settings.png" />
     <EmbeddedResource Include="Resources\acmap-small.png" />
     <EmbeddedResource Include="Resources\outline-arrow-down-round.png" />
     <EmbeddedResource Include="Resources\outline-arrow-up-round.png" />

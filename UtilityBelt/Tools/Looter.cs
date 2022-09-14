@@ -5,7 +5,7 @@ using System.Linq;
 using UtilityBelt.Lib;
 using uTank2;
 using Decal.Adapter.Wrappers;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using Decal.Interop.Input;
 using Timer = Decal.Interop.Input.Timer;
 using UBHelper;

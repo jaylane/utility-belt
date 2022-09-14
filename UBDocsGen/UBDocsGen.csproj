@@ -81,6 +81,10 @@
       <Project>{bb14f564-6e92-4fd0-9394-120e517ea5ba}</Project>
       <Name>UBLoader</Name>
     </ProjectReference>
+    <ProjectReference Include="..\UBService\UBService.csproj">
+      <Project>{8adc5729-db1a-4e28-9475-c4eafae1e6e7}</Project>
+      <Name>UBService</Name>
+    </ProjectReference>
     <ProjectReference Include="..\UtilityBelt\UtilityBelt.csproj">
       <Project>{c2880823-67e7-4b3d-a481-9adc9847c39c}</Project>
       <Name>UtilityBelt</Name>

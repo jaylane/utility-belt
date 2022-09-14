@@ -11,7 +11,7 @@ using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using UtilityBelt.Tools;
 using UtilityBelt.Views;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using UtilityBelt.Lib.Expressions;
 using System.Threading;
 using ACE.DatLoader;
@@ -324,6 +324,8 @@ namespace UtilityBelt {
         private void InitSettings() {
             var defaultSettingsPath = System.IO.Path.Combine(Util.AssemblyDirectory, "settings.default.json");
             var statePath = System.IO.Path.Combine(Util.GetCharacterDirectory(), "state.json");
+
+            var binder = new SettingsBinder();
 
             State = new Settings(this, statePath, p => p.SettingType == SettingType.State, null, "State");
             State.Load();

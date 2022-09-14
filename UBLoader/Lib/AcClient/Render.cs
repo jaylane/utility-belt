@@ -1,5 +1,5 @@
 ﻿using System;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 
 namespace AcClient {
     public unsafe struct Render {

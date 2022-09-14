@@ -50,9 +50,9 @@ namespace UtilityBelt.Lib.Actions {
                 }
             };
 
-            Controls.Add(label);
-            Controls.Add(edit);
-            Controls.Add(button);
+            GetControls().Add(label);
+            GetControls().Add(edit);
+            GetControls().Add(button);
 
             layout.AddControl(label, new Rectangle(0, 0, 60, 16));
             layout.AddControl(edit, new Rectangle(60, 0, 315, 16));

@@ -2,6 +2,7 @@
 !define APPNAME "UtilityBelt"
 !define SOFTWARECOMPANY "HackThePlanet"
 !define APPGUID "{c51788b5-3c43-471a-8034-79d5865fd7bd}"
+!define SERVICEGUID "{8adc5729-db1a-4e28-9475-c4eafae1e6e7}"
 
 !define ASSEMBLY "UBLoader.dll"
 !define CLASSNAME "UBLoader.FilterCore"
@@ -61,6 +62,7 @@ Section "" CoreSection
 	File "${BUILDPATH}\cimgui.dll"
 	File "${BUILDPATH}\Exceptionless.dll"
 	File "${BUILDPATH}\Exceptionless.Models.dll"
+	File "${BUILDPATH}\themes\*.json"
 
 SectionEnd
 
@@ -87,7 +89,15 @@ Section -FinishSection
 		WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Path" "$INSTDIR"
 		WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Surrogate" "{71A69713-6593-47EC-0002-0000000DECA1}"
 		WriteRegStr HKLM "Software\Decal\NetworkFilters\${APPGUID}" "Uninstaller" "${APPNAME}"
+	${Else}
+		${IF} $0 != "${APPNAME}"
+			MESSAGEBOX MB_OK|MB_ICONSTOP "Skipped decal UBLoader registration. A decal filter with this GUID already exists ($0), and is not ${APPNAME}.  This should not happen, but report it on gitlab or discord if you are seeing this."
+		${ENDIF}
+	${EndIf}
 
+	ClearErrors
+	ReadRegStr $0 HKLM "Software\Decal\Services\${SERVICEGUID}" ""
+	${If} ${Errors}
 		WriteRegStr HKLM "Software\Decal\Services\${SERVICEGUID}" "" "UBService"
 		WriteRegDWORD HKLM "Software\Decal\Services\${SERVICEGUID}" "Enabled" "1"
 		WriteRegStr HKLM "Software\Decal\Services\${SERVICEGUID}" "Object" "UBService.UBService"
@@ -96,8 +106,8 @@ Section -FinishSection
 		WriteRegStr HKLM "Software\Decal\Services\${SERVICEGUID}" "Surrogate" "{71A69713-6593-47EC-0002-0000000DECA1}"
 		WriteRegStr HKLM "Software\Decal\Services\${SERVICEGUID}" "Uninstaller" "${APPNAME}"
 	${Else}
-		${IF} $0 != "${APPNAME}"
-			MESSAGEBOX MB_OK|MB_ICONSTOP "Skipped decal registration. A decal filter with this GUID already exists ($0), and is not ${APPNAME}.  This should not happen, but report it on gitlab or discord if you are seeing this."
+		${IF} $0 != "UBService"
+			MESSAGEBOX MB_OK|MB_ICONSTOP "Skipped decal UBService registration. A decal filter with this GUID already exists ($0), and is not UBService.  This should not happen, but report it on gitlab or discord if you are seeing this."
 		${ENDIF}
 	${EndIf}
 

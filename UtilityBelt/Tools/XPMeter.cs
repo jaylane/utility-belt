@@ -1,6 +1,6 @@
 ﻿using System;
 using UtilityBelt.Lib;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using AcClient;
 using System.Runtime.InteropServices;
 using ImGuiNET;
@@ -10,7 +10,8 @@ namespace UtilityBelt.Tools {
     [Summary("Provides an XP Meter overlay that works past 275")]
     [FullDescription(@"TODO: Write this. This is still under development.")]
     public class XPMeter : ToolBase {
-        private UBService.Hud hud;
+        private UBService.Views.Hud hud;
+
         #region Config
         [Summary("Enabled")]
         public Setting<bool> Enabled = new Setting<bool>(true);
@@ -199,7 +200,7 @@ namespace UtilityBelt.Tools {
         #region Hud Show/Hide
         internal void Hud_Show() {
             Hud_Hide();
-            hud = UBService.HudManager.CreateHud("XP Meter");
+            hud = UBService.Views.HudManager.CreateHud("XP Meter");
             hud.ShowInBar = false;
             hud.ShouldHide += Hud_ShouldHide;
             hud.Render += Hud_Render;

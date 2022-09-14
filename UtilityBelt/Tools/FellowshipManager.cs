@@ -5,7 +5,7 @@ using UtilityBelt.Lib;
 using System.Text.RegularExpressions;
 using Decal.Adapter.Wrappers;
 using Decal.Adapter;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using UtilityBelt.Lib.Expressions;
 using AcClient;
 using Exceptionless.Extensions;

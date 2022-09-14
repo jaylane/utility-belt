@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using AcClient;
 using System.Runtime.InteropServices;
 

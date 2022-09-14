@@ -13,7 +13,7 @@ using UtilityBelt.Lib;
 using UtilityBelt.Lib.Dungeon;
 using UtilityBelt.Lib.Models;
 using UtilityBelt.Lib.Settings;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     public class DataUpdatedEventArgs : EventArgs {

@@ -1,6 +1,7 @@
 ﻿using System;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using UtilityBelt.Lib.Constants;
+using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Lib.ChatLog
 {

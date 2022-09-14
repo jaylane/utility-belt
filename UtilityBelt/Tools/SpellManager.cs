@@ -3,7 +3,7 @@ using Decal.Adapter.Wrappers;
 using System;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using UtilityBelt.Lib.Expressions;
 using AcClient;
 using Microsoft.DirectX.Direct3D;

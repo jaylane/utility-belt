@@ -11,7 +11,7 @@ using UtilityBelt.Lib;
 using System.Threading;
 using System.Diagnostics;
 using System.ComponentModel;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using UtilityBelt.Lib.Networking.Messages;
 using UBNetworking.Lib;
 using UBNetworking.Messages;

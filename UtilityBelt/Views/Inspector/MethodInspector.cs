@@ -21,7 +21,7 @@ namespace UtilityBelt.Views.Inspector {
         private const int MAX_STRING_LENGTH = 1000;
         private static uint _id = 0;
         private static uint _pushId = 0;
-        private Hud hud;
+        private UBService.Views.Hud hud;
         private Vector2 minWindowSize = new Vector2(300, 200);
         private Vector2 maxWindowSize = new Vector2(99999, 99999);
         private List<Inspector> inspectors = new List<Inspector>();
@@ -41,7 +41,7 @@ namespace UtilityBelt.Views.Inspector {
             Parent = parent;
 
             using (Stream manifestResourceStream = GetType().Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.eye.png")) {
-                hud = HudManager.CreateHud($"MethodInspector: {Name}##EventMonitor{_id++}", new Bitmap(manifestResourceStream));
+                hud = UBService.Views.HudManager.CreateHud($"MethodInspector: {Name}##EventMonitor{_id++}", new Bitmap(manifestResourceStream));
             }
 
             var _params = MethodInfo.GetParameters();

@@ -14,7 +14,7 @@ using System.Web.UI;
 using UtilityBelt;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 
 namespace UBDocsGen {
     #region UB Attribute data

@@ -8,7 +8,7 @@ using UtilityBelt.Constants;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using VirindiViewService.Controls;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using UtilityBelt.Lib.Expressions;
 
 namespace UtilityBelt.Tools {

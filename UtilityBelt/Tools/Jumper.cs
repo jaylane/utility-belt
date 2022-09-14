@@ -7,7 +7,7 @@ using VirindiViewService.Controls;
 using UtilityBelt.Lib;
 using System.ComponentModel;
 using UtilityBelt.Lib.Settings;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("Jumper")]

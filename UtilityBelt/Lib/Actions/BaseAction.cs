@@ -6,17 +6,16 @@ using System.Text;
 using VirindiViewService.Controls;
 
 namespace UtilityBelt.Lib.Actions {
+    public enum ActionType {
+        Expression = 0,
+        ChatExpression = 1,
+        ChatCommand = 2,
+    }
     public abstract class BaseAction {
-        public enum ActionType {
-            Expression = 0,
-            ChatExpression = 1,
-            ChatCommand = 2,
-        }
 
         public ActionType Type { get; set; }
 
-        [JsonIgnore]
-        public List<HudControl> Controls { get; } = new List<HudControl>();
+        private List<HudControl> Controls { get; } = new List<HudControl>();
 
         public static BaseAction FromType(ActionType type) {
             switch (type) {
@@ -32,6 +31,10 @@ namespace UtilityBelt.Lib.Actions {
         }
 
         public abstract void Run();
+
+        public List<HudControl> GetControls() {
+            return Controls;
+        }
 
         public abstract void DrawForm(HudFixedLayout layout);
 

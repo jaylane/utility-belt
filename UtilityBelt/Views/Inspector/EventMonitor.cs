@@ -19,7 +19,7 @@ namespace UtilityBelt.Views.Inspector {
     /// </summary>
     public class EventMonitor : IDisposable {
         private static uint _id = 0;
-        private Hud hud;
+        private UBService.Views.Hud hud;
         private Vector2 minWindowSize = new Vector2(300, 200);
         private Vector2 maxWindowSize = new Vector2(99999, 99999);
         private DynamicEventHandler dynamicHandler;
@@ -54,7 +54,7 @@ namespace UtilityBelt.Views.Inspector {
             EventToMonitor = eventToMonitor;
 
             using (Stream manifestResourceStream = GetType().Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.eye.png")) {
-                hud = HudManager.CreateHud($"EventMonitor: {Name}##EventMonitor{_id++}", new Bitmap(manifestResourceStream));
+                hud = UBService.Views.HudManager.CreateHud($"EventMonitor: {Name}##EventMonitor{_id++}", new Bitmap(manifestResourceStream));
             }
 
             hud.Render += Hud_Render;

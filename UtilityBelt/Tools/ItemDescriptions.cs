@@ -1,7 +1,7 @@
 ﻿using System;
 using uTank2.LootPlugins;
 using UtilityBelt.Lib;
-using UBLoader.Lib.Settings;
+using UBService.Lib.Settings;
 using Decal.Adapter;
 using Decal.Adapter.Wrappers;
 using Decal.Filters;
