@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Text;
 using UBService.Lib;
 using UBService.Lib.Settings;
+using UBService.Views.SettingsEditor;
 
 namespace UBService.Views {
     public class HudBar : ISetting, IDisposable {
@@ -82,6 +83,7 @@ namespace UBService.Views {
                 if (ImGui.TextureButton("SettingsIcon", settingsIcon, buttonSize, 1)) {
                     if (settingsEditor == null) {
                         settingsEditor = new SettingsEditor.SettingsEditor("UBService Settings", new object[] { typeof(UBService) });
+                        settingsEditor.Hud.ShowInBar = false;
                         settingsEditor.Hud.ShouldHide += (s, e) => {
                             settingsEditor.Dispose();
                             settingsEditor = null;
@@ -192,6 +194,8 @@ namespace UBService.Views {
         }
 
         public void Dispose() {
+            settingsEditor?.Dispose();
+            settingsEditor = null;
             settingsIcon?.Dispose();
         }
     }

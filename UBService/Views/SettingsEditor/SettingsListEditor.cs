@@ -421,9 +421,9 @@ namespace UBService.Views.SettingsEditor {
                 return;
 
             ClearListEditors();
+            cancelIcon?.Dispose();
 
             if (hud != null) {
-                cancelIcon?.Dispose();
                 hud.PreRender -= Hud_PreRender;
                 hud.Render -= Hud_Render;
                 hud.ShouldHide -= Hud_ShouldHide;

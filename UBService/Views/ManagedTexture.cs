@@ -68,6 +68,7 @@ namespace UBService.Views {
         /// Release this texture
         /// </summary>
         public void Dispose() {
+            ReleaseTexture();
             UBService.Huds.RemoveManagedTexture(this);
             Bitmap?.Dispose();
             Bitmap = null;
