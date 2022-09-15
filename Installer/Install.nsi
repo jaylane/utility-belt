@@ -61,8 +61,11 @@ Section "" CoreSection
 	File "${BUILDPATH}\0Harmony.dll"
 	File "${BUILDPATH}\cimgui.dll"
 	File "${BUILDPATH}\UBService.dll"
+	File "${BUILDPATH}\Newtonsoft.Json.dll"
 	File "${BUILDPATH}\Exceptionless.dll"
 	File "${BUILDPATH}\Exceptionless.Models.dll"
+
+	SetOutPath "$INSTDIR\themes\"
 	File "${BUILDPATH}\themes\*.json"
 
 SectionEnd
@@ -102,7 +105,7 @@ Section -FinishSection
 		WriteRegStr HKLM "Software\Decal\Services\${SERVICEGUID}" "" "UBService"
 		WriteRegDWORD HKLM "Software\Decal\Services\${SERVICEGUID}" "Enabled" "1"
 		WriteRegStr HKLM "Software\Decal\Services\${SERVICEGUID}" "Object" "UBService.UBService"
-		WriteRegStr HKLM "Software\Decal\Services\${SERVICEGUID}" "Assembly" "UBService"
+		WriteRegStr HKLM "Software\Decal\Services\${SERVICEGUID}" "Assembly" "UBService.dll"
 		WriteRegStr HKLM "Software\Decal\Services\${SERVICEGUID}" "Path" "$INSTDIR"
 		WriteRegStr HKLM "Software\Decal\Services\${SERVICEGUID}" "Surrogate" "{71A69713-6593-47EC-0002-0000000DECA1}"
 		WriteRegStr HKLM "Software\Decal\Services\${SERVICEGUID}" "Uninstaller" "${APPNAME}"
@@ -118,7 +121,6 @@ Section -FinishSection
 	
 	;Clean up old plugin resources
 	Delete "$INSTDIR\SharedMemory.dll"
-	Delete "$INSTDIR\Newtonsoft.Json.dll"
 	Delete "$INSTDIR\\Resources\tiles\*.bmp"
 	RMDir "$INSTDIR\Resources\tiles\"
 	Delete "$INSTDIR\Resources\quests.xml"
@@ -153,14 +155,15 @@ Section Uninstall
 	Delete "$$INSTDIR\UBNetworking.pdb"
 	Delete "$$INSTDIR\UBNetServer.exe"
 	Delete "$INSTDIR\0Harmony.dll"
-	Delete "$$INSTDIR\UBService.dll"
+	Delete "$INSTDIR\UBService.dll"
+	Delete "$INSTDIR\UBNetworking.dll"
+	Delete "$INSTDIR\UBNetworking.pdb"
+	Delete "$INSTDIR\UBNetServer.exe"
 	Delete "$INSTDIR\cimgui.dll"
 	Delete "$INSTDIR\SharedMemory.dll"
 	Delete "$INSTDIR\Newtonsoft.Json.dll"
 	Delete "$INSTDIR\Exceptionless.dll"
 	Delete "$INSTDIR\Exceptionless.Models.dll"
-	Delete "${BUILDPATH}\Resources\tiles\*.bmp"
-	Delete "${BUILDPATH}\Resources\quests.xml"
 	RMDir "$INSTDIR\"
 
 SectionEnd
