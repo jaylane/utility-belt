@@ -35,7 +35,7 @@ namespace UBService.Views {
         public ManagedTexture(Bitmap bitmap) : base() {
             Bitmap = new Bitmap(bitmap);
             CreateTexture();
-            HudManager.AddManagedTexture(this);
+            UBService.Huds.AddManagedTexture(this);
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace UBService.Views {
         public ManagedTexture(Stream stream) : base() {
             Bitmap = new Bitmap(stream);
             CreateTexture();
-            HudManager.AddManagedTexture(this);
+            UBService.Huds.AddManagedTexture(this);
         }
 
 
@@ -56,7 +56,7 @@ namespace UBService.Views {
                 return;
 
             if (Bitmap != null)
-                Texture = new Texture(HudManager.D3Ddevice, Bitmap, Usage.Dynamic, Pool.Default);
+                Texture = new Texture(UBService.Huds.D3Ddevice, Bitmap, Usage.Dynamic, Pool.Default);
         }
 
         internal void ReleaseTexture() {
@@ -68,7 +68,7 @@ namespace UBService.Views {
         /// Release this texture
         /// </summary>
         public void Dispose() {
-            HudManager.RemoveManagedTexture(this);
+            UBService.Huds.RemoveManagedTexture(this);
             Bitmap?.Dispose();
             Bitmap = null;
         }

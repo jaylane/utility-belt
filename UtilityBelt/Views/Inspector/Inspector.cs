@@ -172,7 +172,7 @@ namespace UtilityBelt.Views.Inspector {
             ToInspect = toInspect;
             Selected = new InspectedObject(GetType().GetProperty("ToInspect", BindingFlags.Public | BindingFlags.Instance), this);
             using (Stream manifestResourceStream = GetType().Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.inspector.png")) {
-                hud = UBService.Views.HudManager.CreateHud($"Inspector: {Name}##Inspector{_id++}", new Bitmap(manifestResourceStream));
+                hud = UBService.UBService.Huds.CreateHud($"Inspector: {Name}##Inspector{_id++}", new Bitmap(manifestResourceStream));
             }
 
             CreateTextures();

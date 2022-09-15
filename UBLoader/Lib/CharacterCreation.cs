@@ -526,7 +526,7 @@ namespace UBLoader.Lib {
         public CharacterCreation() {
             LoadNeededData();
 
-            hud = UBService.Views.HudManager.CreateHud("Create a character");
+            hud = UBService.UBService.Huds.CreateHud("Create a character");
             hud.ShowInBar = true;
             hud.WindowSettings |= ImGuiWindowFlags.AlwaysAutoResize;
             hud.Render += Hud_Render;

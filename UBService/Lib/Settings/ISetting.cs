@@ -18,7 +18,9 @@ namespace UBService.Lib.Settings {
         SpellBars,
         CharacterSettings,
         Alias,
-        GameEvent
+        GameEvent,
+
+        Views
     };
 
     public abstract class ISetting {

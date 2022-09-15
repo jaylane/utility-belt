@@ -200,7 +200,7 @@ namespace UtilityBelt.Tools {
         #region Hud Show/Hide
         internal void Hud_Show() {
             Hud_Hide();
-            hud = UBService.Views.HudManager.CreateHud("XP Meter");
+            hud = UBService.UBService.Huds.CreateHud("XP Meter");
             hud.ShowInBar = false;
             hud.ShouldHide += Hud_ShouldHide;
             hud.Render += Hud_Render;

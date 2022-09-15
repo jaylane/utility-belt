@@ -54,7 +54,7 @@ namespace UtilityBelt.Views.Inspector {
             EventToMonitor = eventToMonitor;
 
             using (Stream manifestResourceStream = GetType().Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.eye.png")) {
-                hud = UBService.Views.HudManager.CreateHud($"EventMonitor: {Name}##EventMonitor{_id++}", new Bitmap(manifestResourceStream));
+                hud = UBService.UBService.Huds.CreateHud($"EventMonitor: {Name}##EventMonitor{_id++}", new Bitmap(manifestResourceStream));
             }
 
             hud.Render += Hud_Render;

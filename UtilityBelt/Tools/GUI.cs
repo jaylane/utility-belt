@@ -37,7 +37,7 @@ namespace UtilityBelt.Tools {
         public Setting<uint> MaxFramerate = new Setting<uint>(60);
 
         [Summary("Enable Demo UI")]
-        public Setting<bool> EnableDemoUI = new Setting<bool>(true);
+        public Setting<bool> EnableDemoUI = new Setting<bool>(false);
 
         [Summary("Enable GameState Inspector")]
         public Setting<bool> EnableGameStateInspector = new Setting<bool>(false);
@@ -81,7 +81,7 @@ namespace UtilityBelt.Tools {
             var windowIsOpen = ImGui.Begin("Test Window", ref demoIsOpen, flags);
 
 
-            if (false&& windowIsOpen) {
+            if (windowIsOpen) {
                 if (ImGui.BeginMenuBar()) {
                     if (ImGui.BeginMenu("test")) {
                         ImGui.MenuItem("one");
@@ -119,7 +119,6 @@ namespace UtilityBelt.Tools {
             }
             ImGui.End();
 
-            ImGui.StyleColorsDark();
             //if (demoIsOpen) 
             ImGui.ShowDemoWindow(ref demoIsOpen);
         }
@@ -145,7 +144,7 @@ namespace UtilityBelt.Tools {
 
         private unsafe void CreateHuds() {
             if (EnableDemoUI && demoHudWithCustomWindow == null) {
-                demoHudWithCustomWindow = HudManager.CreateHud("Demo Hud (Custom Window)");
+                demoHudWithCustomWindow = UBService.UBService.Huds.CreateHud("Demo Hud (Custom Window)");
                 demoHudWithCustomWindow.DontDrawDefaultWindow = true;
                 demoHudWithCustomWindow.Render += DemoHudWithCustomWindow_Render;
                 demoHudWithCustomWindow.ShouldHide += DemoHudWithCustomWindow_ShouldHide;

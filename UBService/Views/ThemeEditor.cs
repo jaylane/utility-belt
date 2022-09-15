@@ -74,7 +74,7 @@ namespace UBService.Views {
         public unsafe ThemeEditor(string themesDirectory) {
             this.themesDirectory = themesDirectory;
             using (Stream manifestResourceStream = GetType().Assembly.GetManifestResourceStream("UBService.Resources.icons.theme-editor.png")) {
-                Hud = HudManager.CreateHud("Theme Editor", new Bitmap(manifestResourceStream));
+                Hud = UBService.Huds.CreateHud("Theme Editor", new Bitmap(manifestResourceStream));
                 Hud.PreRender += Hud_PreRender;
                 Hud.Render += Hud_Render;
                 Hud.WindowSettings &= ~ImGuiWindowFlags.AlwaysAutoResize;
@@ -148,8 +148,8 @@ namespace UBService.Views {
             }
 
             File.WriteAllText(themeFile, JsonConvert.SerializeObject(CurrentTheme, Formatting.Indented));
-            
-            HudManager.Toaster.Add($"Saved theme as: \n{themeFile}", Toaster.ToastType.Success);
+
+            UBService.Huds.Toaster.Add($"Saved theme as: \n{themeFile}", Toaster.ToastType.Success);
             closeMenu = true;
             ThemeDefaults = CreateDeepCopy(CurrentTheme);
             OpenTheme(saveAsName);
@@ -177,14 +177,14 @@ namespace UBService.Views {
         private void Hud_PreRender(object sender, EventArgs e) {
             if (applyThemeToEverything) {
                 // reset theme so we dont override settings for DemoWindow/SettingsEditor
-                HudManager.CurrentTheme.Apply();
+                UBService.Huds.CurrentTheme.Apply();
             }
 
             if (showDemoWindow) {
                 if (applyThemeToDemoWindow) {
                     CurrentTheme.Apply();
                     ImGui.ShowDemoWindow(ref showDemoWindow);
-                    HudManager.CurrentTheme.Apply();
+                    UBService.Huds.CurrentTheme.Apply();
                 }
                 else {
                     ImGui.ShowDemoWindow(ref showDemoWindow);
@@ -211,7 +211,7 @@ namespace UBService.Views {
         private unsafe void Hud_Render(object sender, EventArgs e) {
             RenderStyleEditor(CurrentTheme);
             if (applyThemeToEditorWindow) {
-                HudManager.CurrentTheme.Apply();
+                UBService.Huds.CurrentTheme.Apply();
             }
             if (applyThemeToEverything) {
                 CurrentTheme.Apply();
@@ -247,7 +247,7 @@ namespace UBService.Views {
                     ImGui.Separator();
                     if (ImGui.MenuItem("Export to Clipboard")) {
                         Clipboard.SetText(JsonConvert.SerializeObject(CurrentTheme, Formatting.Indented));
-                        HudManager.Toaster.Add("Exported theme to clipboard", Toaster.ToastType.Success);
+                        UBService.Huds.Toaster.Add("Exported theme to clipboard", Toaster.ToastType.Success);
                     }
                     ImGui.EndMenu();
                 }

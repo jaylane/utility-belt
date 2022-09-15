@@ -66,7 +66,7 @@ namespace UBService.Lib.Settings {
                 TypeNameHandling = TypeNameHandling.All,
                 TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
                 SerializationBinder = new SerializationBinder() {
-                    BindParent = parent
+                    BindParentType = parent.GetType()
                 }
             };
         }

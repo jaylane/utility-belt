@@ -4,6 +4,11 @@ using System.Runtime.InteropServices;
 using System.IO;
 using UBService.Views;
 using UBService.Lib;
+using Decal.Adapter;
+using UBService.Lib.Settings;
+using UBService.Views.SettingsEditor;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace UBService {
     /// <summary>
@@ -16,19 +21,50 @@ namespace UBService {
     [ComDefaultInterface(typeof(IDecalService))]
     public sealed class UBService : MarshalByRefObject, IDecalService, IDecalRender, IDecalWindowsMessageSink {
         internal static DecalCore iDecal;
-        internal static bool DEBUG = false; // enable debug logs
+        internal static bool didInit = false;
+        internal static Settings Settings { get; set; }
+        internal static Settings ViewsSettings { get; set; }
+        internal static Settings CharacterSettings { get; set; }
+        internal static string AssemblyDirectory => Path.GetDirectoryName(Assembly.GetAssembly(typeof(UBService)).Location);
+
+        public static bool IsInGame { get; internal set; }
+
+        #region Service Settings
+        public class ServiceSettings : ISetting {
+            [Summary("Enable service debug logs")]
+            public Setting<bool> Debug = new Setting<bool>(false);
+        }
+        public static ServiceSettings Service = new ServiceSettings();
+        #endregion // Service Settings
+
+        public static HudManager Huds = null;
 
         unsafe void IDecalService.Initialize(DecalCore pDecal) {
-            //WriteLog($"IDecalService.Initialize");
+            WriteLog($"IDecalService.Initialize");
             try {
                 iDecal = pDecal;
-                iDecal.InitializeComplete += iDecal_InitializeComplete;
+                Huds = new HudManager();
+
+                Settings = new Settings(this, System.IO.Path.Combine(AssemblyDirectory, "ubservice.settings.json"), (t) => {
+                    return (t.SettingType == SettingType.Profile);
+                });
+                Settings.Load();
+
+                if (!Directory.Exists(Huds.profilesDir))
+                    Directory.CreateDirectory(Huds.profilesDir);
+
+                ViewsSettings = new Settings(this, Huds.CurrentProfilePath, (t) => {
+                    return (t.SettingType == SettingType.Views);
+                });
+                ViewsSettings.Load();
+
+                Huds.Profile.Changed += Profile_Changed;
             }
             catch (Exception ex) { LogException(ex); }
         }
 
-        unsafe private void iDecal_InitializeComplete(eDecalComponentType type) {
-            //WriteLog($"iDecal_InitializeComplete: {type} {(CoreManager.Current == null ? "null" : "not null")}");
+        private void Profile_Changed(object sender, SettingChangedEventArgs e) {
+            ViewsSettings.SettingsPath = Huds.CurrentProfilePath;
         }
 
         /// <summary>
@@ -42,21 +78,46 @@ namespace UBService {
         unsafe public bool WindowMessage(int HWND, short uMsg, int wParam, int lParam) {
             var eat = false;
             try {
-                eat = HudManager.WindowMessage(HWND, uMsg, wParam, lParam);
+                eat = Huds.WindowMessage(HWND, uMsg, wParam, lParam);
             }
             catch (Exception ex) { LogException(ex); }
             return eat;
         }
 
-        void IDecalService.AfterPlugins() {
-            WriteLog($"AfterPlugins");
+        void IDecalService.BeforePlugins() {
+            WriteLog($"BeforePlugins: {Huds.CurrentProfilePath}");
+            CoreManager.Current.CharacterFilter.Login += CharacterFilter_Login;
         }
 
-        void IDecalService.BeforePlugins() {
-            WriteLog($"BeforePlugins");
+        private void CharacterFilter_Login(object sender, Decal.Adapter.Wrappers.LoginEventArgs e) {
+            IsInGame = true;
+            WriteLog($"CharacterFilter_Login: {Huds.CurrentProfilePath}");
+
+            var charSettingsPath = Path.Combine(Huds.profilesDir, $"__{CoreManager.Current.CharacterFilter.AccountName}_{CoreManager.Current.CharacterFilter.Name}.json");
+            CharacterSettings = new Settings(this, charSettingsPath, (t) => {
+                return (t.SettingType == SettingType.CharacterSettings);
+            });
+            CharacterSettings.Load();
+
+            ViewsSettings.SettingsPath = Huds.CurrentProfilePath;
+            CoreManager.Current.CharacterFilter.Login -= CharacterFilter_Login;
+        }
+
+        void IDecalService.AfterPlugins() {
+            IsInGame = false;
+            WriteLog($"AfterPlugins: {Huds.CurrentProfilePath}");
+            ViewsSettings.SettingsPath = Huds.CurrentProfilePath;
+            if (CharacterSettings != null && CharacterSettings.NeedsSave)
+                CharacterSettings.Save();
+            CharacterSettings = null;
         }
 
         void IDecalService.Terminate() {
+            Huds.Profile.Changed -= Profile_Changed;
+            if (Settings != null && Settings.NeedsSave)
+                Settings.Save();
+            if (ViewsSettings != null && ViewsSettings.NeedsSave)
+                ViewsSettings.Save();
             WriteLog($"Terminate");
         }
 
@@ -65,7 +126,9 @@ namespace UBService {
         public unsafe void ChangeDirectX() {
             WriteLog($"ChangeDirectX");
             try {
-                HudManager.ChangeDirectX();
+                if (!didInit) {
+                    Huds.Init();
+                }
             }
             catch (Exception ex) {
                 LogException(ex);
@@ -81,7 +144,7 @@ namespace UBService {
         public void PostReset() {
             WriteLog($"PostReset");
             try {
-                HudManager.PostReset();
+                Huds.PostReset();
             }
             catch (Exception ex) {
                 LogException(ex);
@@ -92,7 +155,7 @@ namespace UBService {
         public void PreReset() {
             WriteLog($"PreReset");
             try {
-                HudManager.PreReset();
+                Huds.PreReset();
             }
             catch (Exception ex) {
                 LogException(ex);
@@ -102,7 +165,7 @@ namespace UBService {
 #pragma warning disable 1591
         public void Render2D() {
             try {
-                HudManager.DoRender();
+                Huds.DoRender();
             }
             catch (Exception ex) {
                 LogException(ex);
@@ -122,7 +185,8 @@ namespace UBService {
         }
 
         internal static void WriteLog(string text) {
-            File.AppendAllText(@"ubservice.exceptions.txt", text + "\n");
+            if (UBService.Service.Debug)
+                File.AppendAllText(@"ubservice.exceptions.txt", text + "\n");
         }
 
         internal static void LogError(string v) {

@@ -70,6 +70,7 @@
     <Compile Include="Lib\HelloSam\ThreadSafeObservableDictionaryWithNotification.cs" />
     <Compile Include="Lib\ImGuiNet\CppSharp.cs" />
     <Compile Include="Lib\Settings\Alias.cs" />
+    <Compile Include="Lib\Settings\CharacterSetting.cs" />
     <Compile Include="Lib\Settings\CharacterState.cs" />
     <Compile Include="Lib\Settings\GameEvent.cs" />
     <Compile Include="Lib\Settings\ISetting.cs" />
@@ -81,9 +82,11 @@
     <Compile Include="Lib\Settings\SettingChangedEventArgs.cs" />
     <Compile Include="Lib\Settings\Settings.cs" />
     <Compile Include="Lib\Settings\SettingsFile.cs" />
+    <Compile Include="Lib\Settings\ViewsProfile.cs" />
     <Compile Include="Lib\Timer.cs" />
     <Compile Include="Lib\UBServiceTheme.cs" />
     <Compile Include="Views\Hud.cs" />
+    <Compile Include="Views\HudBar.cs" />
     <Compile Include="Views\HudManager.cs" />
     <Compile Include="ImGuiController.cs" />
     <Compile Include="Lib\ImGuiNet\ImColor.gen.cs" />
@@ -204,6 +207,12 @@
     <None Include="themes\Light.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UBNetworking\UBNetworking.csproj">
+      <Project>{2829fc6e-2bec-4259-aa51-6cc180d3834b}</Project>
+      <Name>UBNetworking</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

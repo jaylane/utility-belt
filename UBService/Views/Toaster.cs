@@ -34,8 +34,8 @@ namespace UBService.Views {
             }
         }
 
-        public Toaster() {
-            Hud = HudManager.CreateHud("Toaster");
+        public void Init() {
+            Hud = UBService.Huds.CreateHud("Toaster");
             Hud.ShowInBar = false;
             Hud.DontDrawDefaultWindow = true;
             Hud.Render += Hud_Render;
@@ -74,16 +74,16 @@ namespace UBService.Views {
                 if (ImGui.Begin(toast.Id.ToString(), window_flags)) {
                     switch (toast.Type) {
                         case ToastType.Success:
-                            ImGui.TextColored(HudManager.CurrentTheme.Colors.Success, toast.Message);
+                            ImGui.TextColored(UBService.Huds.CurrentTheme.Colors.Success, toast.Message);
                             break;
                         case ToastType.Warning:
-                            ImGui.TextColored(HudManager.CurrentTheme.Colors.Warning, toast.Message);
+                            ImGui.TextColored(UBService.Huds.CurrentTheme.Colors.Warning, toast.Message);
                             break;
                         case ToastType.Error:
-                            ImGui.TextColored(HudManager.CurrentTheme.Colors.Error, toast.Message);
+                            ImGui.TextColored(UBService.Huds.CurrentTheme.Colors.Error, toast.Message);
                             break;
                         case ToastType.Info:
-                            ImGui.TextColored(HudManager.CurrentTheme.Colors.Text, toast.Message);
+                            ImGui.TextColored(UBService.Huds.CurrentTheme.Colors.Text, toast.Message);
                             break;
                     }
                     if (ImGui.IsItemClicked()) {

@@ -242,7 +242,7 @@ namespace UBLoader {
                 settingsIcon = new ManagedTexture(new Bitmap(manifestResourceStream));
             }
 
-            settingsUIHud = new SettingsEditor("UBLoader Settings", this, new object[] { typeof(UBLoader.FilterCore) });
+            settingsUIHud = new SettingsEditor("UBLoader Settings", new object[] { typeof(UBLoader.FilterCore) });
             settingsUIHud.Hud.Visible = false;
         }
 
