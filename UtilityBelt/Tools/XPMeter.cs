@@ -233,7 +233,7 @@ namespace UtilityBelt.Tools {
             else if (additionalHeight > 0)
                 additionalHeight -= 4f;
             hud.Title = hudText;
-            var size = new Vector2(-1, 20 + additionalHeight);
+            var size = new Vector2(Math.Max(ImGui.CalcTextSize($"{hudText} +++").X, 174), 20 + additionalHeight);
             ImGui.SetNextWindowCollapsed(additionalHeight == 0, ImGuiCond.Always);
             ImGui.SetNextWindowSize(size, ImGuiCond.Always);
         }

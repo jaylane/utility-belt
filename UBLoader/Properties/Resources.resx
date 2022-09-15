@@ -127,9 +127,6 @@
   <data name="LiteDB" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\deps\litedb.dll;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="Newtonsoft_Json" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\deps\newtonsoft.json.dll;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="UBHelper" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\deps\ubhelper.dll;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>

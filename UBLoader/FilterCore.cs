@@ -103,7 +103,6 @@ namespace UBLoader {
         public FilterCore() {
             System.Resources.ResourceManager rm = new System.Resources.ResourceManager(GetType().Namespace + ".Properties.Resources", System.Reflection.Assembly.GetExecutingAssembly());
             System.Reflection.Assembly.Load((byte[])rm.GetObject("LiteDB"));
-            //System.Reflection.Assembly.Load((byte[])rm.GetObject("Newtonsoft_Json"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("Antlr4_Runtime"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("UBHelper"));
             System.Reflection.Assembly.Load((byte[])rm.GetObject("ACE_DatLoader"));
@@ -120,11 +119,13 @@ namespace UBLoader {
                 Settings.Load();
 
                 if (Global.UploadExceptions) {
-                    Exceptionless.ExceptionlessClient.Current.Configuration.IncludePrivateInformation = false;
-                    Exceptionless.ExceptionlessClient.Current.Startup();
+                    //Exceptionless.ExceptionlessClient.Current.Configuration.IncludePrivateInformation = false;
+                    //Exceptionless.ExceptionlessClient.Current.Startup();
                 }
 
                 Global.FrameRate.Changed += FrameRate_Changed;
+                Global.HotReload.Changed += HotReload_Changed;
+                Global.ShowCharacterCreationUI.Changed += ShowCharacterCreationUI_Changed;
                 LoadAssemblyConfig();
                 LoadDats();
                 UBHelper.Core.GameStateChanged += Core_GameStateChanged;
@@ -136,6 +137,24 @@ namespace UBLoader {
                     UBHelper.SimpleFrameLimiter.globalMax = Global.FrameRate;
             }
             catch (Exception ex) { LogException(ex); }
+        }
+
+        private void ShowCharacterCreationUI_Changed(object sender, SettingChangedEventArgs e) {
+            if (Global.ShowCharacterCreationUI) {
+                CreateCharacterCreateUI();
+            }
+            else {
+                DestroyCharacterCreateUI();
+            }
+        }
+
+        private void HotReload_Changed(object sender, SettingChangedEventArgs e) {
+            if (Global.HotReload) {
+                // this does a reload even though we may not have changed dlls. it
+                // enables the filewatcher for future reloads
+                UnloadPluginAssembly();
+                LoadPluginAssembly();
+            }
         }
 
         private void CreateCharacterCreateUI() {

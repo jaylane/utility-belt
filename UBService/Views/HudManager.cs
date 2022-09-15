@@ -16,6 +16,7 @@ using System.Text;
 using System.Xml.Linq;
 using UBService.Lib;
 using UBService.Lib.Settings;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace UBService.Views {
 
@@ -73,7 +74,7 @@ namespace UBService.Views {
         [Summary("Current Theme")]
         public ViewsProfileSetting<string> CurrentThemeName = new ViewsProfileSetting<string>("Dark");
 
-        [Summary("Enable viewports. (Ability to render plugin windows outside of the client window, requires client restart)")]
+        [Summary("Enable viewports. (Ability to render plugin windows outside of the client window)")]
         public ViewsProfileSetting<bool> Viewports = new ViewsProfileSetting<bool>(true);
 
         [Summary("View Settings Profile")]
@@ -95,6 +96,8 @@ namespace UBService.Views {
             ImGui.SetCurrentContext(_context);
             if (Viewports)
                 ImGui.GetIO().ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
+            else
+                ImGui.GetIO().ConfigFlags &= ~ImGuiConfigFlags.ViewportsEnable;
             ImGui.GetIO().IniSavingRate = float.MinValue; // no ini saving
 
             var defaultThemePath = Path.Combine(themesDir, $"{CurrentThemeName}.json");
@@ -112,6 +115,7 @@ namespace UBService.Views {
             Marshal.QueryInterface(Marshal.GetIUnknownForObject(d3dDevice), ref IID_IDirect3DDevice9, out unmanagedD3dPtr);
             D3Ddevice = new Device(unmanagedD3dPtr);
             var ret1 = ImGuiImpl.ImGui_ImplWin32_Init((IntPtr)UBService.iDecal.HWND);
+            //ImGuiImpl.ImGui_ImplWin32_EnableDpiAwareness();
             var ret2 = ImGuiImpl.ImGui_ImplDX9_Init(unmanagedD3dPtr);
             CurrentThemeName.Changed += CurrentThemeName_Changed;
             Viewports.Changed += Viewports_Changed;
@@ -123,13 +127,12 @@ namespace UBService.Views {
         }
 
         private void Viewports_Changed(object sender, SettingChangedEventArgs e) {
-            // This is broken... currently requiring client restart to take effect
-            /*
+            //*
             if (Viewports)
                 ImGui.GetIO().ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
             else
                 ImGui.GetIO().ConfigFlags &= ~ImGuiConfigFlags.ViewportsEnable;
-            */
+            //*/
         }
 
         private void CurrentThemeName_Changed(object sender, SettingChangedEventArgs e) {
@@ -253,8 +256,8 @@ namespace UBService.Views {
         }
 
         internal void PreReset() {
+            UBService.WriteLog("PreReset -> Clearing textures");
             isResetting = true;
-            ImGuiImpl.ImGui_ImplDX9_InvalidateDeviceObjects();
 
             var _managedTextures = textures.ToArray();
             foreach (var managedTexture in _managedTextures) {
@@ -268,6 +271,7 @@ namespace UBService.Views {
                 }
                 catch (Exception ex) { UBService.LogException(ex); }
             }
+            ImGuiImpl.ImGui_ImplDX9_InvalidateDeviceObjects();
 
             needsTextures = true;
         }

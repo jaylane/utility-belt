@@ -30,6 +30,19 @@ namespace UBService.Views.SettingsEditor {
         private Dictionary<string, byte[]> _stringInputBuffers = new Dictionary<string, byte[]>();
         private List<SettingsListEditor> listEditors = new List<SettingsListEditor>();
 
+        internal static readonly Type[] NumberTypes = new Type[] {
+            typeof(byte),
+            typeof(short),
+            typeof(ushort),
+            typeof(int),
+            typeof(uint),
+            typeof(long),
+            typeof(ulong),
+            typeof(float),
+            typeof(double)
+        };
+        private ManagedTexture infoIcon;
+
         /// <summary>
         /// Name of this settings editor, used it the title
         /// </summary>
@@ -197,19 +210,6 @@ namespace UBService.Views.SettingsEditor {
             }
 
         }
-
-        internal static readonly Type[] NumberTypes = new Type[] {
-            typeof(byte),
-            typeof(short),
-            typeof(ushort),
-            typeof(int),
-            typeof(uint),
-            typeof(long),
-            typeof(ulong),
-            typeof(float),
-            typeof(double)
-        };
-        private ManagedTexture infoIcon;
 
         private unsafe void RenderEditRow(ISetting setting) {
             var type = setting.GetValue().GetType();
