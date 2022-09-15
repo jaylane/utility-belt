@@ -41,7 +41,7 @@ namespace UtilityBelt.Views.Inspector {
             Parent = parent;
 
             using (Stream manifestResourceStream = GetType().Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.eye.png")) {
-                hud = UBService.Views.HudManager.CreateHud($"MethodInspector: {Name}##EventMonitor{_id++}", new Bitmap(manifestResourceStream));
+                hud = UBService.UBService.Huds.CreateHud($"MethodInspector: {Name}##EventMonitor{_id++}", new Bitmap(manifestResourceStream));
             }
 
             var _params = MethodInfo.GetParameters();

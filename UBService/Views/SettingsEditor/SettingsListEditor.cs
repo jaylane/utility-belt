@@ -31,8 +31,6 @@ namespace UBService.Views.SettingsEditor {
         private Vector2 showAt;
         private Action<object> updateAction;
 
-        public object ParentObject { get; }
-
         private bool isDeleteOpen = false;
         private object currentlyEditing = null;
         private object currentlyEditingClone = null;
@@ -42,16 +40,15 @@ namespace UBService.Views.SettingsEditor {
         public Type ValueType { get; }
         public object Value { get; private set; }
 
-        public SettingsListEditor(string name, object parent, IList editList, Vector2 showAt, Action<object> updateAction) {
+        public SettingsListEditor(string name, IList editList, Vector2 showAt, Action<object> updateAction) {
             Value = editList;
             this.showAt = showAt;
             this.updateAction = updateAction;
-            this.ParentObject = parent;
             Name = name;
             ValueType = Value.GetType().GetGenericArguments().FirstOrDefault();
 
             id = ++_nextId;
-            hud = HudManager.CreateHud($"ListEditor_{id}_{name}");
+            hud = UBService.Huds.CreateHud($"ListEditor_{id}_{name}");
             hud.Title = $"Edit List: {name}";
             hud.ShowInBar = false;
             hud.PreRender += Hud_PreRender;
@@ -234,7 +231,7 @@ namespace UBService.Views.SettingsEditor {
                             ImGui.GetWindowPos().X + (ImGui.GetWindowWidth() / 2),
                             ImGui.GetWindowPos().Y + (ImGui.GetWindowHeight() / 2)
                         );
-                    var editor = new SettingsListEditor($"{Name} // {label}", ParentObject, iList, showAt, (newValue) => {
+                    var editor = new SettingsListEditor($"{Name} // {label}", iList, showAt, (newValue) => {
                         //iList.Clear();
                     });
                     listEditors.Add(editor);
@@ -375,7 +372,7 @@ namespace UBService.Views.SettingsEditor {
                 }
                 else if (ImGui.IsItemActive()) {
                     currentlyEditing = item;
-                    currentlyEditingClone = CreateDeepCopy(item, ParentObject);
+                    currentlyEditingClone = CreateDeepCopy(item);
                 }
                 i++;
                 ImGui.PopID();
@@ -398,16 +395,13 @@ namespace UBService.Views.SettingsEditor {
             objectToRemove = null;
             updateAction?.Invoke(Value);
         }
-        internal static T CreateDeepCopy<T>(T obj, object parent) {
+        internal static T CreateDeepCopy<T>(T obj) {
             if (obj.GetType().IsPrimitive || obj.GetType().IsEnum)
                 return obj;
 
             var settings = new JsonSerializerSettings() {
                 TypeNameHandling = TypeNameHandling.All,
                 TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Full,
-                SerializationBinder = new SerializationBinder() {
-                    BindParent = parent
-                },
                 Formatting = Formatting.Indented
             };
             var json = JsonConvert.SerializeObject(obj, settings); 

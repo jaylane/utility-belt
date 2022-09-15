@@ -131,7 +131,7 @@ namespace UBService.Views {
             Visible = true;
 
             if (iconTexture == null && iconBitmap != null) {
-                iconTexture = new Texture(HudManager.D3Ddevice, iconBitmap, Usage.Dynamic, Pool.Default);
+                iconTexture = new Texture(UBService.Huds.D3Ddevice, iconBitmap, Usage.Dynamic, Pool.Default);
             }
         }
 
@@ -189,7 +189,7 @@ namespace UBService.Views {
 
         internal void CallCreateTextures() {
             if (iconTexture == null && iconBitmap != null) {
-                iconTexture = new Texture(HudManager.D3Ddevice, iconBitmap, Usage.Dynamic, Pool.Default);
+                iconTexture = new Texture(UBService.Huds.D3Ddevice, iconBitmap, Usage.Dynamic, Pool.Default);
             }
             CreateTextures?.Invoke(this, EventArgs.Empty);
         }
@@ -201,7 +201,7 @@ namespace UBService.Views {
             try {
                 iconTexture?.Dispose();
                 iconBitmap?.Dispose();
-                HudManager.RemoveHud(this);
+                UBService.Huds.RemoveHud(this);
             }
             catch (Exception ex) { UBService.LogException(ex); }
         }

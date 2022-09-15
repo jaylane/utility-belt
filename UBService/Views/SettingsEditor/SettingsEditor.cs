@@ -34,7 +34,6 @@ namespace UBService.Views.SettingsEditor {
         /// Name of this settings editor, used it the title
         /// </summary>
         public string Name { get; }
-        public object ParentObject { get; }
 
         /// <summary>
         /// The settings containers being edited
@@ -47,9 +46,8 @@ namespace UBService.Views.SettingsEditor {
         /// <param name="name">The name (shown in window title)</param>
         /// <param name="settingsContainers">The settings object to edit</param> 
         /// <param name="icon">The icon to use</param> 
-        public SettingsEditor(string name, object parent, IEnumerable<object> settingsContainers, Bitmap icon = null) {
+        public SettingsEditor(string name, IEnumerable<object> settingsContainers, Bitmap icon = null) {
             Name = name;
-            ParentObject = parent;
             SettingsContainers = settingsContainers.ToArray();
 
             if (icon == null) {
@@ -62,7 +60,7 @@ namespace UBService.Views.SettingsEditor {
                 infoIcon = new ManagedTexture(manifestResourceStream);
             }
 
-            Hud = HudManager.CreateHud($"SettingsEditor: {Name}##SettingsEditor{_id++}", icon);
+            Hud = UBService.Huds.CreateHud($"SettingsEditor: {Name}##SettingsEditor{_id++}", icon);
 
             Hud.Title = Name;
             Hud.Render += Hud_Render;
@@ -228,12 +226,9 @@ namespace UBService.Views.SettingsEditor {
 
             ImGui.PushItemWidth(ImGui.GetContentRegionAvail().X * 0.45f);
             if (type == typeof(string)) {
-                if (!_stringInputBuffers.ContainsKey(setting.FullName)) {
-                    _stringInputBuffers.Add(setting.FullName, new byte[MAX_STRING_LENGTH]);
-                }
-                _stringInputBuffers[setting.FullName] = Encoding.UTF8.GetBytes(setting.GetValue().ToString());
-                if (ImGui.InputText(label, _stringInputBuffers[setting.FullName], MAX_STRING_LENGTH, ImGuiInputTextFlags.None, null)) {
-                    var newValue = Encoding.UTF8.GetString(_stringInputBuffers[setting.FullName]).ToString();
+                var settingString = (string)setting.GetValue();
+                if (ImGui.InputText(label, ref settingString, 100)) {
+                    var newValue = settingString.Replace("\0", "");
 
                     setting.SetValue(newValue);
                 }
@@ -270,7 +265,7 @@ namespace UBService.Views.SettingsEditor {
                             ImGui.GetWindowPos().X + (ImGui.GetWindowWidth() / 2),
                             ImGui.GetWindowPos().Y + (ImGui.GetWindowHeight() / 2)
                         );
-                    var editor = new SettingsListEditor(setting.FullName, ParentObject, iList, showAt, (newValue) => {
+                    var editor = new SettingsListEditor(setting.FullName, iList, showAt, (newValue) => {
                         //setting.SetValue(newValue);
                     });
                     listEditors.Add(editor);

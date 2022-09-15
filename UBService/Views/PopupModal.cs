@@ -33,7 +33,7 @@ namespace UBService.Views {
             _body = body;
             _buttons = buttons;
 
-            Hud = HudManager.CreateHud(title);
+            Hud = UBService.Huds.CreateHud(title);
             Hud.DontDrawDefaultWindow = true;
             Hud.ShowInBar = true;
 

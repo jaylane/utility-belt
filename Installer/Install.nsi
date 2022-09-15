@@ -60,6 +60,7 @@ Section "" CoreSection
 	File "${BUILDPATH}\UBNetServer.exe"
 	File "${BUILDPATH}\0Harmony.dll"
 	File "${BUILDPATH}\cimgui.dll"
+	File "${BUILDPATH}\UBService.dll"
 	File "${BUILDPATH}\Exceptionless.dll"
 	File "${BUILDPATH}\Exceptionless.Models.dll"
 	File "${BUILDPATH}\themes\*.json"

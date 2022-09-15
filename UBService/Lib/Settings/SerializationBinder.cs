@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace UBService.Lib.Settings {
     internal class SerializationBinder : ISerializationBinder {
-        public object BindParent = null;
+        public Type BindParentType = null;
 
         public Type BindToType(string assemblyName, string typeName) {
             var genRe = new Regex(@"^(?<gen>[^\[]+)\[(?<type>[^\]]*,?)+\]$");
@@ -34,8 +34,8 @@ namespace UBService.Lib.Settings {
         private Type GetFlatTypeMapping(string assemblyName, string typeName = "") {
             Type ret = null;
 
-            if (BindParent != null) {
-                ret = BindParent.GetType().Assembly.GetTypes().FirstOrDefault(t => t.ToString() == typeName || t.Name == typeName);
+            if (BindParentType != null) {
+                ret = BindParentType.Assembly.GetTypes().FirstOrDefault(t => t.ToString() == typeName || t.Name == typeName);
             }
 
             if (ret == null) {
