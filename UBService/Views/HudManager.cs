@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Contexts;
 using System.Security;
 using System.Text;
+using System.Windows;
 using System.Xml.Linq;
 using UBService.Lib;
 using UBService.Lib.Settings;
@@ -79,7 +80,25 @@ namespace UBService.Views {
 
         [Summary("View Settings Profile")]
         public CharacterSetting<string> Profile = new CharacterSetting<string>("[character]");
+
+        [Summary("Font")]
+        [Choices("ProggyClean.ttf", typeof(GetAvailableFonts))]
+        public ViewsProfileSetting<string> Font = new ViewsProfileSetting<string>("ProggyClean.ttf");
+
+        [Summary("Font Size (requires client restart)")]
+        public ViewsProfileSetting<int> FontSize = new ViewsProfileSetting<int>(13);
         #endregion // Config
+
+        internal class GetAvailableFonts : IChoiceResults {
+            public IList<string> GetChoices() {
+                var fonts = new List<string>();
+                for (var i = 0; i < ImGui.GetIO().Fonts.Fonts.Size; i++) {
+                    var font = ImGui.GetIO().Fonts.Fonts[i].GetDebugName().Split(',').First();
+                    fonts.Add(font);
+                }
+                return fonts;
+            }
+        }
 
         /// <summary>
         /// Current global theme
@@ -91,7 +110,7 @@ namespace UBService.Views {
             HudBar = new HudBar();
         }
 
-        internal void Init() {
+        internal unsafe void Init() {
             _context = ImGui.CreateContext();
             ImGui.SetCurrentContext(_context);
             if (Viewports)
@@ -119,11 +138,40 @@ namespace UBService.Views {
             var ret2 = ImGuiImpl.ImGui_ImplDX9_Init(unmanagedD3dPtr);
             CurrentThemeName.Changed += CurrentThemeName_Changed;
             Viewports.Changed += Viewports_Changed;
+            Font.Changed += Font_Changed;
 
             Toaster.Init();
             HudBar.Init();
 
+            var fontsList = Directory.GetFiles(Path.Combine(UBService.AssemblyDirectory, "fonts"), "*.ttf");
+            if (fontsList.Length > 0) {
+                var fonts = ImGui.GetIO().Fonts;
+
+                //fonts.AddFontDefault();
+                foreach (var fontPath in fontsList) {
+                    var cFontPath = fontPath.Replace("\\", "\\\\");
+                    fonts.AddFontFromFileTTF(cFontPath, FontSize, null, ImGui.GetIO().Fonts.GetGlyphRangesDefault());
+                }
+
+                ImGui.GetIO().Fonts.Build();
+
+                Font_Changed(null, null);
+            }
+
             didInit = true;
+        }
+
+        internal unsafe void Font_Changed(object sender, SettingChangedEventArgs e) {
+            var io = ImGui.GetIO();
+            for (var i = 0; i < io.Fonts.Fonts.Size; i++) {
+                var font = io.Fonts.Fonts[i];
+                UBService.WriteLog($"Check font: {font.GetDebugName()} vs {Font.Value}");
+                if (font.GetDebugName().Split(',').First().Equals(Font.Value)) {
+                    io.FontDefault = font;
+                    UBService.WriteLog($"Push font: {font.GetDebugName()}");
+                    break;
+                }
+            }
         }
 
         private void Viewports_Changed(object sender, SettingChangedEventArgs e) {

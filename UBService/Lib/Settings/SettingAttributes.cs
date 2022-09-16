@@ -52,4 +52,19 @@ namespace UBService.Lib.Settings {
             Format = format;
         }
     }
+
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Field)]
+    public class ChoicesAttribute : Attribute {
+        public string DefaultValue { get; }
+        public Type ResultClass { get; }
+
+        public ChoicesAttribute(string defaultValue, Type iChoiceResults) {
+            DefaultValue = defaultValue;
+            ResultClass = iChoiceResults;
+        }
+    }
+
+    public interface IChoiceResults {
+        public IList<string> GetChoices();
+    }
 }
