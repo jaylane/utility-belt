@@ -781,7 +781,7 @@ namespace ImGuiNET
         public ImFontAtlasPtr Fonts => new ImFontAtlasPtr(NativePtr->Fonts);
         public ref float FontGlobalScale => ref NativePtr->FontGlobalScale;
         public ref byte FontAllowUserScaling => ref NativePtr->FontAllowUserScaling;
-        public ImFontPtr FontDefault => new ImFontPtr(NativePtr->FontDefault);
+        public ImFontPtr FontDefault { get => new ImFontPtr(NativePtr->FontDefault); set => NativePtr->FontDefault = value; }
         public ref Vector2 DisplayFramebufferScale => ref NativePtr->DisplayFramebufferScale;
         public ref byte ConfigDockingNoSplit => ref NativePtr->ConfigDockingNoSplit;
         public ref byte ConfigDockingWithShift => ref NativePtr->ConfigDockingWithShift;

@@ -1,6 +1,7 @@
 ﻿using Microsoft.DirectX.Direct3D;
 using Newtonsoft.Json;
 using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UBService.Lib.Settings.Serializers;
@@ -91,27 +92,29 @@ namespace ImGuiNET {
         */
     }
 
-    public unsafe struct ImVector<T>
-    {
+    public unsafe struct ImVector<T> {
         public readonly int Size;
         public readonly int Capacity;
         public readonly IntPtr Data;
 
-        public ImVector(ImVector vector)
-        {
+        public ImVector(ImVector vector) {
             Size = vector.Size;
             Capacity = vector.Capacity;
             Data = vector.Data;
         }
 
-        public ImVector(int size, int capacity, IntPtr data)
-        {
+        public ImVector(int size, int capacity, IntPtr data) {
             Size = size;
             Capacity = capacity;
             Data = data;
         }
 
-        //public ref T this[int index] => ref Unsafe.AsRef<T>((byte*)Data + index * Unsafe.SizeOf<T>());
+        public T this[int index] {
+            get {
+                IntPtr address = (IntPtr)((int)Data + index * Marshal.SizeOf(typeof(T)));
+                return (T)Marshal.PtrToStructure(address, typeof(T));
+            }
+        }
     }
 
     public unsafe struct ImPtrVector<T>

@@ -14,6 +14,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UBService.Lib.Settings;
 using UBService.Views;
+using static UBService.Views.HudManager;
 
 namespace UBService.Views.SettingsEditor {
     /// <summary>
@@ -227,10 +228,23 @@ namespace UBService.Views.SettingsEditor {
             ImGui.PushItemWidth(ImGui.GetContentRegionAvail().X * 0.45f);
             if (type == typeof(string)) {
                 var settingString = (string)setting.GetValue();
-                if (ImGui.InputText(label, ref settingString, 100)) {
-                    var newValue = settingString.Replace("\0", "");
 
-                    setting.SetValue(newValue);
+                var choicesAttrs = setting.FieldInfo.GetCustomAttributes(false).Where(a => a is ChoicesAttribute);
+                if (choicesAttrs.Count() > 0 && choicesAttrs.First() is ChoicesAttribute cAttr) {
+                    var cRes = (IChoiceResults)Activator.CreateInstance(cAttr.ResultClass);
+                    var choices = cRes.GetChoices();
+                    var current = Math.Max(0, choices.IndexOf(setting.GetValue().ToString()));
+                    if (ImGui.Combo(label, ref current, choices.ToArray(), choices.Count)) {
+                        setting.SetValue(choices[current]);
+                        UBService.Huds.Font_Changed(null, null);
+                    }
+                }
+                else {
+                    if (ImGui.InputText(label, ref settingString, 512)) {
+                        var newValue = settingString.Split('\0').First();
+
+                        setting.SetValue(newValue);
+                    }
                 }
             }
             else if (type.IsEnum) {
@@ -331,13 +345,8 @@ namespace UBService.Views.SettingsEditor {
                 }
             }
             else if (NumberTypes.Contains(type)) {
-                if (!_stringInputBuffers.ContainsKey(setting.FullName)) {
-                    _stringInputBuffers.Add(setting.FullName, new byte[MAX_STRING_LENGTH]);
-                }
-                _stringInputBuffers[setting.FullName] = Encoding.UTF8.GetBytes(setting.GetValue().ToString());
-                var initialValue = (byte[])_stringInputBuffers[setting.FullName].Clone();
+                var str = setting.GetValue().ToString();
                 bool paramIsHex = false;
-                var latestValue = setting.GetValue().ToString();
 
                 var flags = ImGuiInputTextFlags.None;
                 if (type == typeof(float) || type == typeof(double)) {
@@ -350,14 +359,11 @@ namespace UBService.Views.SettingsEditor {
                     flags |= ImGuiInputTextFlags.CharsDecimal;
                 }
 
-                if (ImGui.InputText(label, _stringInputBuffers[setting.FullName], MAX_STRING_LENGTH, ImGuiInputTextFlags.None, null)) {
-                    var newValue = Encoding.UTF8.GetString(_stringInputBuffers[setting.FullName]).ToString();
+                if (ImGui.InputText(label, ref str, 100, flags)) {
+                    var newValue = str.Split('\0').First();
 
                     if (TryParseNumberType(type, newValue, out object result, paramIsHex)) {
                         setting.SetValue(result);
-                    }
-                    else {
-                        initialValue.CopyTo(_stringInputBuffers[setting.FullName], 0);
                     }
 
                     ret = true;

@@ -189,6 +189,12 @@
     <Content Include="cimgui.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="fonts\NotoSans-License.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="fonts\ProggyClean-License.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <EmbeddedResource Include="Resources\icons\theme-editor.png" />
     <EmbeddedResource Include="Resources\icons\delete.png" />
     <EmbeddedResource Include="Resources\icons\info.png" />
@@ -198,6 +204,12 @@
     <EmbeddedResource Include="Resources\icons\settings.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="fonts\NotoSans-Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="fonts\ProggyClean.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="themes\Classic.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

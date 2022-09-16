@@ -68,6 +68,9 @@ Section "" CoreSection
 	SetOutPath "$INSTDIR\themes\"
 	File "${BUILDPATH}\themes\*.json"
 
+	SetOutPath "$INSTDIR\fonts\"
+	File "${BUILDPATH}\fonts\*"
+
 SectionEnd
 
 Section -FinishSection

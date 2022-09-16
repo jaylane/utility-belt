@@ -25,7 +25,7 @@ namespace UBService {
         internal static Settings Settings { get; set; }
         internal static Settings ViewsSettings { get; set; }
         internal static Settings CharacterSettings { get; set; }
-        internal static string AssemblyDirectory => Path.GetDirectoryName(Assembly.GetAssembly(typeof(UBService)).Location);
+        public static string AssemblyDirectory => Path.GetDirectoryName(Assembly.GetAssembly(typeof(UBService)).Location);
 
         public static bool IsInGame { get; internal set; }
 
