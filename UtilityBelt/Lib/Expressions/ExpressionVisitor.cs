@@ -50,6 +50,18 @@ namespace UtilityBelt.Lib.Expressions {
                 return "number";
             if (type == typeof(int))
                 return "number";
+            if (type == typeof(uint))
+                return "number";
+            if (type == typeof(byte))
+                return "number";
+            if (type == typeof(short))
+                return "number";
+            if (type == typeof(ushort))
+                return "number";
+            if (type == typeof(long))
+                return "number";
+            if (type == typeof(ulong))
+                return "number";
             if (type == typeof(double))
                 return "number";
             if (type == typeof(ParamArrayAttribute))
@@ -69,11 +81,17 @@ namespace UtilityBelt.Lib.Expressions {
             // all numbers should be doubles
             if (v.GetType() == typeof(int))
                 return Convert.ToDouble(v);
+            if (v.GetType() == typeof(uint))
+                return Convert.ToDouble(v);
             if (v.GetType() == typeof(float))
                 return Convert.ToDouble(v);
             if (v.GetType() == typeof(long))
                 return Convert.ToDouble(v);
+            if (v.GetType() == typeof(ulong))
+                return Convert.ToDouble(v);
             if (v.GetType() == typeof(short))
+                return Convert.ToDouble(v);
+            if (v.GetType() == typeof(ushort))
                 return Convert.ToDouble(v);
             if (v.GetType() == typeof(byte))
                 return Convert.ToDouble(v);
