@@ -218,7 +218,7 @@ namespace UBService.Views {
         internal unsafe bool WindowMessage(int hWND, short uMsg, int wParam, int lParam) {
             bool eat = false;
 
-            if (ImGui.GetCurrentContext() == IntPtr.Zero)
+            if (uMsg == 0x20/*setcursor*/ || uMsg == 0x84/*WM_NCHITTEST*/ || ImGui.GetCurrentContext() == IntPtr.Zero)
                 return eat;
 
             ImGuiImpl.ImGui_ImplWin32_WndProcHandler((void*)(IntPtr)hWND, (uint)uMsg, (IntPtr)wParam, (IntPtr)lParam);
