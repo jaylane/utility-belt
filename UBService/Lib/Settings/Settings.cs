@@ -63,7 +63,7 @@ namespace UBService.Lib.Settings {
             Changed += Settings_Changed;
 
             SerializerSettings = new JsonSerializerSettings() {
-                TypeNameHandling = TypeNameHandling.All,
+                TypeNameHandling = TypeNameHandling.Auto,
                 TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
                 SerializationBinder = new SerializationBinder() {
                     BindParentType = parent.GetType()
@@ -316,7 +316,6 @@ namespace UBService.Lib.Settings {
                             dict.Add(kv.Key, kv.Value.ToString());
                         }
                     }
-                    /*
                     if (((ISetting)setting).GetValue().GetType() == typeof(ObservableDictionary<string, string>)) {
                         var dict = ((ISetting)setting).GetValue() as ObservableDictionary<string, string>;
                         deserializedSettings.Add(((ISetting)setting).FullName);
@@ -333,7 +332,6 @@ namespace UBService.Lib.Settings {
                             dict.Add((XpTarget)Enum.Parse(typeof(XpTarget), kv.Key), kv.Value.ToObject<double>());
                         }
                     }
-                    */
                 }
                 else {
                     foreach (var kv in (JObject)jToken) {

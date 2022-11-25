@@ -76,7 +76,7 @@ namespace UBService.Views {
         public ViewsProfileSetting<string> CurrentThemeName = new ViewsProfileSetting<string>("Dark");
 
         [Summary("Enable viewports. (Ability to render plugin windows outside of the client window)")]
-        public ViewsProfileSetting<bool> Viewports = new ViewsProfileSetting<bool>(true);
+        public ViewsProfileSetting<bool> Viewports = new ViewsProfileSetting<bool>(false);
 
         [Summary("View Settings Profile")]
         public CharacterSetting<string> Profile = new CharacterSetting<string>("[character]");

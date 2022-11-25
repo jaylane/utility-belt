@@ -1,11 +1,11 @@
-﻿using Decal.Adapter;
-using Decal.Adapter.Wrappers;
+﻿using Decal.Adapter.Wrappers;
+using Decal.Adapter;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace UBLoader.Lib {
+namespace UBService.Lib.Settings {
     #region Xp Target Helpers
     public static class XpHelper {
         //Costs to level for 
