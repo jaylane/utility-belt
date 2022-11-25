@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using uTank2.LootPlugins;
 using UtilityBelt.Lib;
 using UBService.Lib.Settings;
@@ -31,27 +31,6 @@ namespace UtilityBelt.Tools {
         [Summary("Copy to clipboard")]
         public readonly Setting<bool> AutoClipboard = new Setting<bool>(false);
         #endregion
-
-        #region Commands
-        #region /ub desc
-        //[Summary("Gives items matching the provided name to a player.")]
-        //[Usage("/ub give[p{P|r}] [itemCount] <itemName> to <target>")]
-        //[Example("/ub giver Hero.* to Zero Cool", "Gives all items matching the regex \"Hero.*\" to Zero Cool")]
-        //[CommandPattern("give", @"^ *((?<Count>\d+)? ?(?<Item>.+?) to (?<Target>.+)|(?<StopCommand>stop|cancel|quit|abort))$", true)]
-        //public void DoGive(string command, Match args) { }
-        #endregion
-        #endregion
-
-        #region Expressions
-        //#region getitemcountininventorybyname[string name]
-        //[ExpressionMethod("getitemcountininventorybyname")]
-        //[ExpressionParameter(0, typeof(string), "name", "Exact itemId name to match")]
-        //[ExpressionReturn(typeof(double), "Returns a count of the number of items found. stack size is counted")]
-        //[Summary("Counts how many items you have in your inventory exactly matching `name`. Stack sizes are counted")]
-        //[Example("getitemcountininventorybyname[Prismatic Taper]", "Returns total count of prismatic tapers in your inventory")]
-        //public object Getitemcountininventorybyname(string name) { }
-        //#endregion //getitemcountininventorybyname[string namerx]
-        #endregion //Expressions
 
         public ItemDescriptions(UtilityBeltPlugin ub, string name) : base(ub, name) { }
 
