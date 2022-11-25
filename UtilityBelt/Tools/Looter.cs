@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Decal.Adapter;
 using System.Collections.Generic;
 using System.Linq;
@@ -130,7 +130,7 @@ namespace UtilityBelt.Tools {
         public Setting<int> OverallSpeed = new Setting<int>(60);
 
         [Summary("Test mode")]
-        public Setting<bool> TestMode = new Setting<bool>(true);
+        public Setting<bool> TestMode = new Setting<bool>(false);
 
         public Looter(UtilityBeltPlugin ub, string name) : base(ub, name) {
 
@@ -367,12 +367,13 @@ namespace UtilityBelt.Tools {
                 var requestingInfoItems = containerItems.Where(x => x.Value == itemstate.RequestingInfo);
 
                 if (writeChat) {
+                    var testMode = TestMode ? "" : " TEST MODE:";
                     //Logger.WriteToChat("*********************DONE LOOTING*****************************");
                     if (needsToBeLootedItems.Count() + blacklistedItems.Count() <= 0) {
-                        Logger.WriteToChat("Looter completed in " + Util.GetFriendlyTimeDifference(DateTime.UtcNow - startTime).ToString() + " Scanned " + containerItems.Count() + " items and looted " + lootedItems.Count() + " items");
+                        Logger.WriteToChat("Looter" + testMode + " completed in " + Util.GetFriendlyTimeDifference(DateTime.UtcNow - startTime).ToString() + " Scanned " + containerItems.Count() + " items and looted " + lootedItems.Count() + " items");
                     }
                     else {
-                        Logger.WriteToChat("Looter completed in " + Util.GetFriendlyTimeDifference(DateTime.UtcNow - startTime).ToString() + " --- Scanned " + containerItems.Count() + " items and looted " + lootedItems.Count() + " items --- Failed to loot " + (needsToBeLootedItems.Count() + blacklistedItems.Count()).ToString() + " items");
+                        Logger.WriteToChat("Looter" + testMode + " completed in " + Util.GetFriendlyTimeDifference(DateTime.UtcNow - startTime).ToString() + " --- Scanned " + containerItems.Count() + " items and looted " + lootedItems.Count() + " items --- Failed to loot " + (needsToBeLootedItems.Count() + blacklistedItems.Count()).ToString() + " items");
                     }
                 }
                 UnLockVtankSettings();
