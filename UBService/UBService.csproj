@@ -83,6 +83,7 @@
     <Compile Include="Lib\Settings\Settings.cs" />
     <Compile Include="Lib\Settings\SettingsFile.cs" />
     <Compile Include="Lib\Settings\ViewsProfile.cs" />
+    <Compile Include="Lib\Settings\XpHelper.cs" />
     <Compile Include="Lib\Timer.cs" />
     <Compile Include="Lib\UBServiceTheme.cs" />
     <Compile Include="Views\Hud.cs" />

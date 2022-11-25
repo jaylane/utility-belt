@@ -86,14 +86,7 @@ Chat logger supports the following message types:
         public readonly Setting<bool> SaveToFile = new Setting<bool>(false);
 
         [Summary("List of message types to log")]
-        public readonly Setting<ObservableCollection<ChatLogRule>> Rules = new Setting<ObservableCollection<ChatLogRule>>(new ObservableCollection<ChatLogRule>() {
-            new ChatLogRule() { Types = new List<ChatMessageType>() { ChatMessageType.Salvaging, ChatMessageType.Spellcasting }, MessageFilter = "test one" },
-            new ChatLogRule() { Types = new List<ChatMessageType>() { ChatMessageType.Salvaging, ChatMessageType.Fellowship }, MessageFilter = "test two" },
-            new ChatLogRule() { Types = new List<ChatMessageType>() { ChatMessageType.Broadcast, ChatMessageType.CombatEnemy }, MessageFilter = "test none" },
-            new ChatLogRule() { Types = new List<ChatMessageType>() { ChatMessageType.Emote }, MessageFilter = "test asdf" },
-            new ChatLogRule() { Types = new List<ChatMessageType>() { ChatMessageType.Craft }, MessageFilter = "test 1234" },
-            new ChatLogRule() { Types = new List<ChatMessageType>() {  }, MessageFilter = "test 4567" },
-        });
+        public readonly Setting<ObservableCollection<ChatLogRule>> Rules = new Setting<ObservableCollection<ChatLogRule>>(new ObservableCollection<ChatLogRule>());
 
         #endregion
 

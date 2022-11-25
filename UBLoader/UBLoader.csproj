@@ -141,7 +141,6 @@
     <Compile Include="Lib\File.cs" />
     <Compile Include="FilterCore.cs" />
     <Compile Include="Lib\SSLProtocolExtensions.cs" />
-    <Compile Include="Lib\XPHelper.cs" />
     <Compile Include="LoaderLogin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Lib\VersionWatermark.cs" />
