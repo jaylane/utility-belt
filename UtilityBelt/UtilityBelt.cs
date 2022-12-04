@@ -173,7 +173,7 @@ namespace UtilityBelt {
         public GUI GUI;
         public HealthTracker HealthTracker;
         public InventoryManager InventoryManager;
-        public ItemDescriptions ItemDescriptions;
+        public ItemInfo ItemInfo;
         public Jumper Jumper;
         public LandscapeMaps LandscapeMaps;
         public LoginManager LoginManager;

@@ -568,8 +568,8 @@ namespace UtilityBelt.Tools {
                     containerItems[item] = itemstate.Ignore;
                 }
 
-                if (containerItems[item] == itemstate.NeedsToBeLooted && UtilityBeltPlugin.Instance.ItemDescriptions.DescribeOnLoot)
-                    UtilityBeltPlugin.Instance.ItemDescriptions.DisplayItem(item, itemInfo, result.RuleName, true);
+                if (containerItems[item] == itemstate.NeedsToBeLooted && UtilityBeltPlugin.Instance.ItemInfo.DescribeOnLoot)
+                    UtilityBeltPlugin.Instance.ItemInfo.DisplayItem(item, itemInfo, result.RuleName, true);
 
                 if (TestMode)
                     containerItems[item] = itemstate.Looted;

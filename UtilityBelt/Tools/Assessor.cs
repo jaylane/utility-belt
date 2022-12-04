@@ -23,7 +23,7 @@ namespace UtilityBelt.Tools {
 
             return needsData;
         }
-        private bool ItemNeedsIdData(WorldObject wo) {
+        public bool ItemNeedsIdData(WorldObject wo) {
             if (SkippableObjectClasses.Contains(wo.ObjectClass)) return false;
             return true;
         }
