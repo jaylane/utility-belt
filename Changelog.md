@@ -3,7 +3,7 @@
 - Add functionality of MagFilter to login as a substring or index after logging out with `/ub login` tool
 - Add expressions getcharacterindex[string name], setnextlogin[string nameOrIndex], clearnextlogin[]
 - Add test mode to Looter to describe items to be looted without looting
-- Add MagTools-style ItemDescriptions
+- Add MagTools-style Item Descriptions (with some enhancements)
 - Add expressions: actiontrymove[], actiontrydrop[]
 - Modified expression delayexec[] to return an identifier that can be used to clear the exec with cleardelay[]
 - Add expression: actiontrysplit[]
@@ -60,6 +60,9 @@
 - Add expressions: ustadd[wobject], ustopen[], ustsalvage[]
 - Add expression regex operator `#` now supports named group capture, and sets group matches to $capturegroup_groupname
 - Fix /ub bct command now supports surrounding tag names with doubles quotes for tags that contain spaces
+- Add expression: getcombatstate[], setcombatstate[string combatstate]
+- Add command: `/ub combatstate [<peace|melee|missile|magic>]`
+- Add expression: getbusystate[]
 - Add expression: getequippedweapontype[]
 - Fix Issue 156: shortcut for persistent variables not parsing correctly
 - Add expression: coordinategetheadingto[Coordinates obj]

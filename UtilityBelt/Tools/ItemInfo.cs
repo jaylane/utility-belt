@@ -11,65 +11,144 @@ using BoolValueKey = uTank2.LootPlugins.BoolValueKey;
 using DoubleValueKey = Decal.Adapter.Wrappers.DoubleValueKey;
 using ObjectClass = Decal.Adapter.Wrappers.ObjectClass;
 using StringValueKey = uTank2.LootPlugins.StringValueKey;
+using System.Text.RegularExpressions;
+using UtilityBelt.Lib.Constants;
+using UtilityBelt.Lib.ItemInfoHelper;
+using static UtilityBelt.Lib.ItemInfoHelper.MiscCalcs;
+using System.Data;
+using System.Linq;
 
 namespace UtilityBelt.Tools {
-    [Name("ItemDescriptions")]
-    public class ItemDescriptions : ToolBase {
+    [Name("ItemInfo")]
+    public class ItemInfo : ToolBase {
         #region Config
+
+        [Summary("Enable ItemInfo")]
+        public readonly Setting<bool> Enabled = new Setting<bool>(false);
+
         [Summary("Describe items when selected")]
-        public readonly Setting<bool> DescribeOnSelect = new Setting<bool>(true);
+        public readonly Setting<bool> DescribeOnSelect = new Setting<bool>(false);
 
         [Summary("Describe lootable items found by Looter")]
         public readonly Setting<bool> DescribeOnLoot = new Setting<bool>(true);
 
         [Summary("Display buffed values")]
-        public readonly Setting<bool> ShowBuffedValues = new Setting<bool>(true);
+        public readonly Setting<bool> ShowMagtoolsBuffedValues = new Setting<bool>(false);
+
+        [Summary("Display damage calculations for missile/melee weps")]
+        public readonly Setting<bool> ShowDamage = new Setting<bool>(false);
 
         [Summary("Display value and burden")]
         public readonly Setting<bool> ShowValueAndBurden = new Setting<bool>(false);
 
         [Summary("Copy to clipboard")]
         public readonly Setting<bool> AutoClipboard = new Setting<bool>(false);
+
+        [Summary("Show comparison to max retail damage weapons (compares to it's own tier)")]
+        public readonly Setting<bool> ShowRetailComparison = new Setting<bool>(false);
+
+        [Summary("Show retail max values next to actual values")]
+        public readonly Setting<bool> ShowRetailMax = new Setting<bool>(false);
         #endregion
 
-        public ItemDescriptions(UtilityBeltPlugin ub, string name) : base(ub, name) { }
+        private bool scanningItem = false;
+        private WorldObject targetItem = null;
+        private bool subscribed;
+
+        public ItemInfo(UtilityBeltPlugin ub, string name) : base(ub, name) { }
 
         public override void Init() {
             base.Init();
 
             try {
+                Enabled.Changed += Enabled_Changed;
                 DescribeOnSelect.Changed += DescribeOnSelect_Changed;
 
-                if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
-                    UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
-                else
-                    TryEnable();
+                //if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
+                //    UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
+                //else
+                    UpdateSubscriptions();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void TryEnable() {
-            if (DescribeOnSelect.Value)
+        private void Enabled_Changed(object sender, SettingChangedEventArgs e) {
+            UpdateSubscriptions();
+        }
+
+        private void UpdateSubscriptions() {
+            if (Enabled.Value && DescribeOnSelect.Value && !subscribed) {
+                subscribed = true;
                 UB.Core.ItemSelected += Core_ItemSelected;
+            }
+            else if (subscribed && Enabled.Value && !DescribeOnSelect.Value) {
+                UB.Core.ItemSelected -= Core_ItemSelected;
+                subscribed = false;
+            }
+            else if (subscribed && !Enabled.Value && DescribeOnSelect.Value) {
+                UB.Core.ItemSelected -= Core_ItemSelected;
+                subscribed = false;
+            }
+            else if (subscribed && !Enabled.Value && !DescribeOnSelect.Value){
+                UB.Core.ItemSelected -= Core_ItemSelected;
+                subscribed = false;
+            }
         }
 
         #region Event Handlers
-        private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
-            UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
-            TryEnable();
-        }
+        //private void CharacterFilter_LoginComplete(object sender, EventArgs e) {
+        //    UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
+        //    TryEnable();
+        //}
 
         private void DescribeOnSelect_Changed(object sender, SettingChangedEventArgs e) {
-            if (DescribeOnSelect.Value)
-                UB.Core.ItemSelected += Core_ItemSelected;
-            else
-                UB.Core.ItemSelected -= Core_ItemSelected;
+            UpdateSubscriptions();
         }
 
         private void Core_ItemSelected(object sender, ItemSelectedEventArgs e) {
-            DisplayItem(e.ItemGuid);
+
+            //if (mouseClicked) {
+                if (UB.Core.Actions.IsValidObject(e.ItemGuid)) {
+                    targetItem = UB.Core.WorldFilter[e.ItemGuid];
+                    if (!targetItem.HasIdData) {
+                        UB.Assessor.Request(targetItem.Id);
+                        UB.Core.RenderFrame += Core_RenderFrame;
+                        scanningItem = true;
+                    }
+                    else {
+                    DisplayItem(targetItem.Id);
+                        Stop();
+                    }
+                }
+                else {
+                    Logger.Debug("not a valid item - ignoring");
+                }
+            //}
+            //DisplayItem(e.ItemGuid);
+        }
+
+        private void Core_RenderFrame(object sender, EventArgs e) {
+            try {
+                if (targetItem == null) return;
+                if (targetItem.HasIdData) {
+                    DisplayItem(targetItem.Id);
+                    UB.Core.RenderFrame -= Core_RenderFrame;
+                    Stop();
+                }
+                else {
+                    //Logger.WriteToChat("waiting on data");
+                }
+            }
+            catch (Exception ex) {
+                Logger.LogException(ex);
+            }
         }
         #endregion // Event Handlers
+
+        private void Stop() {
+            scanningItem = false;
+            targetItem = null;
+        }
 
         #region Item Display
         internal string DisplayItem(int itemId) {
@@ -99,17 +178,23 @@ namespace UtilityBelt.Tools {
         //Based on doProcessItemInfoCallback in MagTools
         internal string DisplayItem(int item, GameItemInfo itemInfo, string ruleName, bool isLoot, bool silent = false) {
             var sb = new System.Text.StringBuilder();
-            sb.Append(isLoot ? $"+({ruleName})" : "-");
+            //sb.Append(isLoot ? $"+({ruleName})" : "-");
 
             //Colorize loot rule before adding itemId description
-            sb.Insert(0, $"<Tell:IIDString:221112:{item}@\">");
-            sb.Append(@"<\\Tell>");
+            if (string.IsNullOrEmpty(ruleName)) {
+                sb.Insert(0, $"<Tell:IIDString:{Util.GetChatId()}:select|{itemInfo.Id}>{Util.GetObjectName(itemInfo.Id)}</Tell >");
+            }
+            else {
+                sb.Insert(0, $"<Tell:IIDString:{Util.GetChatId()}:select|{itemInfo.Id}>{ ruleName + " - " + Util.GetObjectName(itemInfo.Id)}</Tell >");
+            }
+            //sb.Append(@"<\\Tell>");
 
             //Add MagTools item description
-            sb.Append(new ItemInfo(CoreManager.Current.WorldFilter[item])).Append(" ");
+            sb.Append(new ItemDescriptions(CoreManager.Current.WorldFilter[item])).Append(" ");
 
-            if (!silent) 
-                    MyClasses.VCS_Connector.SendChatTextCategorized("IDs", sb.ToString(), 14, 0);
+            if (!silent)
+                Logger.WriteToChat("ItemInfo: " + sb.ToString());
+                //MyClasses.VCS_Connector.SendChatTextCategorized("IDs", sb.ToString(), 13, 0);
 
             if (AutoClipboard.Value) {
                 try {
@@ -133,11 +218,11 @@ namespace UtilityBelt.Tools {
     }
 
     #region Slightly modified MagTools item description classes
-    public class ItemInfo {
+    public class ItemDescriptions {
         private readonly WorldObject wo;
         private readonly MyWorldObject mwo;
 
-        public ItemInfo(WorldObject worldObject) {
+        public ItemDescriptions(WorldObject worldObject) {
             wo = worldObject;
             mwo = MyWorldObjectCreator.Create(worldObject);
         }
@@ -145,29 +230,42 @@ namespace UtilityBelt.Tools {
         public override string ToString() {
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
-            if (wo.Values(LongValueKey.Material) > 0) {
-                if (Dictionaries.MaterialInfo.ContainsKey(wo.Values(LongValueKey.Material)))
-                    sb.Append(Dictionaries.MaterialInfo[wo.Values(LongValueKey.Material)] + " ");
-                else
-                    sb.Append("unknown material " + wo.Values(LongValueKey.Material) + " ");
-            }
-
-            sb.Append(wo.Name);
-
-            if (wo.Values((LongValueKey)353) > 0) {
-                if (Dictionaries.MasteryInfo.ContainsKey(wo.Values((LongValueKey)353)))
-                    sb.Append(" (" + Dictionaries.MasteryInfo[wo.Values((LongValueKey)353)] + ")");
-                else
-                    sb.Append(" (Unknown mastery " + wo.Values((LongValueKey)353) + ")");
+            if (wo.Values(LongValueKey.DamageType, 0) > 0 || wo.Values((LongValueKey)353) > 0) {
+                sb.Append(" (");
+                if (wo.Values(LongValueKey.DamageType, 0) > 0)
+                    sb.Append((DamageTypes)wo.Values(LongValueKey.DamageType));
+                if (wo.Values((LongValueKey)353) > 0) {
+                    if (Dictionaries.MasteryInfo.ContainsKey(wo.Values((LongValueKey)353)))
+                        sb.Append(" " + Dictionaries.MasteryInfo[wo.Values((LongValueKey)353)]);
+                    else
+                        sb.Append(" Unknown mastery " + wo.Values((LongValueKey)353));
+                }
+                sb.Append(")");
             }
 
             int set = wo.Values((LongValueKey)265, 0);
             if (set != 0) {
                 sb.Append(", ");
-                if (Dictionaries.AttributeSetInfo.ContainsKey(set))
+                if (Dictionaries.AttributeSetInfo.ContainsKey(set)) {
                     sb.Append(Dictionaries.AttributeSetInfo[set]);
+                    if (wo.Values((LongValueKey)319, 0) > 0) {
+                        sb.Append(" (Lvl " + wo.Values((LongValueKey)319) + ")");
+                    }
+                }
                 else
                     sb.Append("Unknown set " + set);
+            }
+
+            if (wo.ObjectClass == ObjectClass.Clothing && wo.Category == 4 && wo.Values(LongValueKey.EquipableSlots) == 134217728) {
+                FileService service = CoreManager.Current.Filter<FileService>();
+                if (wo.SpellCount > 0) {
+                    string spell = service.SpellTable.GetById(wo.Spell(0)).ToString();
+                    sb.Append(", " + spell);
+                }
+                else {
+                    sb.Append(", " + "-200 Damage Chance");
+                    //if (wo.Values((LongValueKey)352, 0) == 2) {
+                }
             }
 
             if (wo.Values(LongValueKey.ArmorLevel) > 0)
@@ -191,28 +289,86 @@ namespace UtilityBelt.Tools {
                 if ((wo.Values(LongValueKey.Imbued) & 536870912) == 536870912) sb.Append(" MagicAbsorb");
             }
 
+            if (wo.Values((DoubleValueKey)155, 0) != 0)
+                sb.Append(", AC");
+
+
+            if (wo.Values((DoubleValueKey)136, 0) >= 1)
+                sb.Append(", CrushB (" + wo.Values((DoubleValueKey)136, 0) +")");
+
+            if (wo.Values((DoubleValueKey)147, 0) >= 1)
+                sb.Append(", BS (" + wo.Values((DoubleValueKey)147, 0) + ")");
+
+
+
+            if (wo.Values((LongValueKey)166, 0) >= 1) {
+                int slayer = wo.Values((LongValueKey)166);
+                if (Dictionaries.Slayers.ContainsKey(slayer))
+                    sb.Append(", " + Dictionaries.Slayers[slayer] + " Slayer");
+            }
+
+            if (wo.Values((LongValueKey)47, 0) != 0) {
+                var attackType = wo.Values((LongValueKey)47);
+                if (attackType == 4 && wo.Values((LongValueKey)353, 0) == 11)
+                    sb.Append(", Cleaving");
+                else if (attackType == 160 || attackType == 166)
+                    sb.Append(", Multi-Strike");
+                else if (attackType == 486)
+                    sb.Append(", Multi-Strike (3)");
+            }
+
             if (wo.Values(LongValueKey.NumberTimesTinkered) > 0)
                 sb.Append(", Tinks " + wo.Values(LongValueKey.NumberTimesTinkered));
 
-            if (wo.Values(LongValueKey.MaxDamage) != 0 && wo.Values(DoubleValueKey.Variance) != 0)
+            if (wo.Values(LongValueKey.MaxDamage) != 0 && wo.Values(DoubleValueKey.Variance) != 0) {
                 sb.Append(", " + (wo.Values(LongValueKey.MaxDamage) - (wo.Values(LongValueKey.MaxDamage) * wo.Values(DoubleValueKey.Variance))).ToString("N2") + "-" + wo.Values(LongValueKey.MaxDamage));
-            else if (wo.Values(LongValueKey.MaxDamage) != 0 && wo.Values(DoubleValueKey.Variance) == 0)
+                if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
+                    sb.Append("(" + GetMaxProperty(wo,WeaponProperty.MaxDmg).ToString() + ")");
+            }
+            else if (wo.Values(LongValueKey.MaxDamage) != 0 && wo.Values(DoubleValueKey.Variance) == 0) {
                 sb.Append(", " + wo.Values(LongValueKey.MaxDamage));
+                sb.Append("(" + mwo.GetBuffedIntValueKey(218103842).ToString() + ")");
+                if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
+                    sb.Append("(" + GetMaxProperty(wo, WeaponProperty.MaxDmg).ToString() + ")");
+            }
 
-            if (wo.Values(LongValueKey.ElementalDmgBonus, 0) != 0)
+            if (wo.Values(DoubleValueKey.Variance) > 0) {
+                sb.Append(", " + Math.Round(wo.Values(DoubleValueKey.Variance), 2).ToString() + "v");
+                //MyWorldObject.GetMaxProperty(wo, MyWorldObject.WeaponProperty.MaxVar);
+                if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
+                    sb.Append("(" + GetMaxProperty(wo, WeaponProperty.MaxVar).ToString() + ")");
+            }
+
+            if (wo.Values(LongValueKey.ElementalDmgBonus, 0) != 0) {
                 sb.Append(", +" + wo.Values(LongValueKey.ElementalDmgBonus));
+                if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax) 
+                    sb.Append("(" + GetMaxProperty(wo, WeaponProperty.MaxElementalDmgBonus).ToString() + ")");
+            }
 
-            if (wo.Values(DoubleValueKey.DamageBonus, 1) != 1)
+            if (wo.Values(DoubleValueKey.DamageBonus, 1) != 1) {
                 sb.Append(", +" + Math.Round(((wo.Values(DoubleValueKey.DamageBonus) - 1) * 100)) + "%");
+                if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
+                    sb.Append("(" + GetMaxProperty(wo, WeaponProperty.MaxDmgMod).ToString() + ")");
+            }
 
-            if (wo.Values(DoubleValueKey.ElementalDamageVersusMonsters, 1) != 1)
-                sb.Append(", +" + Math.Round(((wo.Values(DoubleValueKey.ElementalDamageVersusMonsters) - 1) * 100)) + "%vs. Monsters");
+            if (wo.Values(DoubleValueKey.ElementalDamageVersusMonsters, 1) != 1) {
+                sb.Append(", +" + Math.Round(((wo.Values(DoubleValueKey.ElementalDamageVersusMonsters) - 1) * 100)) + "%");
+                if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
+                    sb.Append("(" + ((GetMaxProperty(wo, WeaponProperty.MaxElementalDmgVsMonsters) - 1) * 100).ToString() + ")");
+                sb.Append(" vs. Monsters");
+            }
 
-            if (wo.Values(DoubleValueKey.AttackBonus, 1) != 1)
-                sb.Append(", +" + Math.Round(((wo.Values(DoubleValueKey.AttackBonus) - 1) * 100)) + "%a");
+                if (wo.Values(DoubleValueKey.AttackBonus, 1) != 1) {
+                sb.Append(", " + Math.Round((mwo.AttackBonus - 1) * 100) + "%a");
+                if (mwo.AttackBonus != mwo.BuffedAttackBonus)
+                    sb.Append(" (" + Math.Round((mwo.BuffedAttackBonus - 1) * 100) + ")");
+            }
 
-            if (wo.Values(DoubleValueKey.MeleeDefenseBonus, 1) != 1)
+            if (wo.Values(DoubleValueKey.MeleeDefenseBonus, 1) != 1) {
                 sb.Append(", " + Math.Round(((wo.Values(DoubleValueKey.MeleeDefenseBonus) - 1) * 100)) + "%md");
+                if (mwo.MeleeDefenseBonus != mwo.BuffedMeleeDefenseBonus)
+                    sb.Append(" (" + Math.Round((mwo.BuffedMeleeDefenseBonus - 1) * 100) + ")");
+            }
 
             if (wo.Values(DoubleValueKey.MagicDBonus, 1) != 1)
                 sb.Append(", " + Math.Round(((wo.Values(DoubleValueKey.MagicDBonus) - 1) * 100), 1) + "%mgc.d");
@@ -223,34 +379,48 @@ namespace UtilityBelt.Tools {
             if (wo.Values(DoubleValueKey.ManaCBonus) != 0)
                 sb.Append(", " + Math.Round((wo.Values(DoubleValueKey.ManaCBonus) * 100)) + "%mc");
 
-            if (UtilityBeltPlugin.Instance.ItemDescriptions.ShowBuffedValues.Value &&
+
+
+            if (UtilityBeltPlugin.Instance.ItemInfo.ShowMagtoolsBuffedValues.Value &&
                 //Settings.SettingsManager.ItemInfoOnIdent.ShowBuffedValues.Value && 
                 (wo.ObjectClass == ObjectClass.MeleeWeapon || wo.ObjectClass == ObjectClass.MissileWeapon || wo.ObjectClass == ObjectClass.WandStaffOrb)) {
                 sb.Append(", (");
 
                 // (Damage)
-                if (wo.ObjectClass == ObjectClass.MeleeWeapon)
-                    sb.Append(mwo.CalcedBuffedTinkedDoT.ToString("N1") + "/" + mwo.GetBuffedIntValueKey((int)LongValueKey.MaxDamage));
+                    if (wo.ObjectClass == ObjectClass.MeleeWeapon)
+                        sb.Append(mwo.CalcedBuffedTinkedDoT.ToString("N1") + "/" + mwo.GetBuffedIntValueKey((int)LongValueKey.MaxDamage));
 
-                if (wo.ObjectClass == ObjectClass.MissileWeapon)
-                    sb.Append(mwo.CalcedBuffedMissileDamage.ToString("N1"));
+                    if (wo.ObjectClass == ObjectClass.MissileWeapon)
+                        sb.Append(mwo.CalcedBuffedMissileDamage.ToString("N1"));
 
-                if (wo.ObjectClass == ObjectClass.WandStaffOrb)
-                    sb.Append(((mwo.GetBuffedDoubleValueKey((int)DoubleValueKey.ElementalDamageVersusMonsters) - 1) * 100).ToString("N1"));
+                    if (wo.ObjectClass == ObjectClass.WandStaffOrb)
+                        sb.Append(((mwo.GetBuffedDoubleValueKey((int)DoubleValueKey.ElementalDamageVersusMonsters) - 1) * 100).ToString("N1"));
 
                 // (AttackBonus/MeleeDefenseBonus/ManaCBonus)
-                sb.Append(" ");
+                    sb.Append(" ");
 
-                if (wo.Values(DoubleValueKey.AttackBonus, 1) != 1)
-                    sb.Append(Math.Round(((mwo.GetBuffedDoubleValueKey((int)DoubleValueKey.AttackBonus) - 1) * 100)).ToString("N1") + "/");
+                    if (wo.Values(DoubleValueKey.AttackBonus, 1) != 1)
+                        sb.Append(Math.Round(((mwo.GetBuffedDoubleValueKey((int)DoubleValueKey.AttackBonus) - 1) * 100)).ToString("N1") + "/");
 
-                if (wo.Values(DoubleValueKey.MeleeDefenseBonus, 1) != 1)
-                    sb.Append(Math.Round(((mwo.GetBuffedDoubleValueKey((int)DoubleValueKey.MeleeDefenseBonus) - 1) * 100)).ToString("N1"));
+                    if (wo.Values(DoubleValueKey.MeleeDefenseBonus, 1) != 1)
+                        sb.Append(Math.Round(((mwo.GetBuffedDoubleValueKey((int)DoubleValueKey.MeleeDefenseBonus) - 1) * 100)).ToString("N1"));
 
-                if (wo.Values(DoubleValueKey.ManaCBonus) != 0)
-                    sb.Append("/" + Math.Round(mwo.GetBuffedDoubleValueKey((int)DoubleValueKey.ManaCBonus) * 100));
+                    if (wo.Values(DoubleValueKey.ManaCBonus) != 0)
+                        sb.Append("/" + Math.Round(mwo.GetBuffedDoubleValueKey((int)DoubleValueKey.ManaCBonus) * 100));
 
-                sb.Append(")");
+                    sb.Append(")");
+                //}
+            }
+
+            if (UtilityBeltPlugin.Instance.ItemInfo.ShowDamage) {
+
+                if (wo.ObjectClass == ObjectClass.MissileWeapon) {
+                    sb.Append(", Damage " + Math.Round(mwo.CalcMissileDamage, 2).ToString());
+                }
+
+                if (wo.ObjectClass == ObjectClass.MeleeWeapon) {
+                    sb.Append(", Damage " + Math.Round(mwo.CalcMeleeDamage, 2).ToString());
+                }
             }
 
             if (wo.SpellCount > 0) {
@@ -358,6 +528,20 @@ namespace UtilityBelt.Tools {
                     sb.Append(", Unknown skill: " + wo.Values(LongValueKey.ActivationReqSkillId) + " " + wo.Values(LongValueKey.SkillLevelReq) + " to Activate");
             }
 
+            if (wo.ObjectClass == ObjectClass.MeleeWeapon) {
+                if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailComparison) {
+                    double od = mwo.CalcMeleeDamage - (GetMaxProperty(wo, WeaponProperty.MaxDmg));
+                    sb.Append(" (OD +" + Math.Round(od, 2).ToString() + ")");
+                }
+            }
+
+            if (wo.ObjectClass == ObjectClass.MissileWeapon) {
+                if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailComparison) {
+                    double od = mwo.CalcMissileDamage - (GetMaxProperty(wo, WeaponProperty.MaxElementalDmgBonus) + 24 + mwo.MaxArrowDmg);
+                    sb.Append(" (OD +" + Math.Round(od, 2).ToString() + ")");
+                }
+            }
+
             // Summoning Gem
             if (wo.Values((LongValueKey)366) > 0 && wo.Values((LongValueKey)367) > 0) {
                 if (Dictionaries.SkillInfo.ContainsKey(wo.Values((LongValueKey)366)))
@@ -386,6 +570,7 @@ namespace UtilityBelt.Tools {
                     sb.Append(", Craft " + wo.Values(LongValueKey.Workmanship));
             }
 
+
             if (wo.ObjectClass == ObjectClass.Armor && wo.Values(LongValueKey.Unenchantable, 0) != 0) {
                 sb.Append(", [" +
                     wo.Values(DoubleValueKey.SlashProt).ToString("N1") + "/" +
@@ -397,7 +582,7 @@ namespace UtilityBelt.Tools {
                     wo.Values(DoubleValueKey.LightningProt).ToString("N1") + "]");
             }
 
-            if (UtilityBeltPlugin.Instance.ItemDescriptions.ShowValueAndBurden.Value
+            if (UtilityBeltPlugin.Instance.ItemInfo.ShowValueAndBurden.Value
                 //Settings.SettingsManager.ItemInfoOnIdent.ShowValueAndBurden.Value
                 ) {
                 if (wo.Values(LongValueKey.Value) > 0)
@@ -407,22 +592,50 @@ namespace UtilityBelt.Tools {
                     sb.Append(", BU " + wo.Values(LongValueKey.Burden));
             }
 
-            if (mwo.TotalRating > 0) {
-                sb.Append(", [");
-                bool first = true;
-                if (mwo.DamRating > 0) { sb.Append("D " + mwo.DamRating); first = false; }
-                if (mwo.DamResistRating > 0) { if (!first) sb.Append(", "); sb.Append("DR " + mwo.DamResistRating); first = false; }
-                if (mwo.CritRating > 0) { if (!first) sb.Append(", "); sb.Append("C " + mwo.CritRating); first = false; }
-                if (mwo.CritDamRating > 0) { if (!first) sb.Append(", "); sb.Append("CD " + mwo.CritDamRating); first = false; }
-                if (mwo.CritResistRating > 0) { if (!first) sb.Append(", "); sb.Append("CR " + mwo.CritResistRating); first = false; }
-                if (mwo.CritDamResistRating > 0) { if (!first) sb.Append(", "); sb.Append("CDR " + mwo.CritDamResistRating); first = false; }
-                if (mwo.HealBoostRating > 0) { if (!first) sb.Append(", "); sb.Append("HB " + mwo.HealBoostRating); first = false; }
-                if (mwo.VitalityRating > 0) { if (!first) sb.Append(", "); sb.Append("V " + mwo.VitalityRating); first = false; }
-                sb.Append("]");
+            if (wo.ObjectClass != ObjectClass.Player) {
+                if (mwo.TotalRating > 0) {
+                    sb.Append(", [");
+                    bool first = true;
+                    if (mwo.DamRating > 0) { sb.Append("D " + mwo.DamRating); first = false; }
+                    if (mwo.DamResistRating > 0) { if (!first) sb.Append(", "); sb.Append("DR " + mwo.DamResistRating); first = false; }
+                    if (mwo.CritRating > 0) { if (!first) sb.Append(", "); sb.Append("C " + mwo.CritRating); first = false; }
+                    if (mwo.CritDamRating > 0) { if (!first) sb.Append(", "); sb.Append("CD " + mwo.CritDamRating); first = false; }
+                    if (mwo.CritResistRating > 0) { if (!first) sb.Append(", "); sb.Append("CR " + mwo.CritResistRating); first = false; }
+                    if (mwo.CritDamResistRating > 0) { if (!first) sb.Append(", "); sb.Append("CDR " + mwo.CritDamResistRating); first = false; }
+                    if (mwo.HealBoostRating > 0) { if (!first) sb.Append(", "); sb.Append("HB " + mwo.HealBoostRating); first = false; }
+                    if (mwo.VitalityRating > 0) { if (!first) sb.Append(", "); sb.Append("V " + mwo.VitalityRating); first = false; }
+                    sb.Append("]");
+                }
+            }
+            else {
+                double dmg = wo.Values((LongValueKey)307, 0);
+                double dmgRes = wo.Values((LongValueKey)308, 0);
+                double critDmg = wo.Values((LongValueKey)314, 0);
+                double critDmgRes = wo.Values((LongValueKey)316, 0);
+
+                if (dmg + dmgRes + critDmg + critDmgRes > 0) {
+                    sb.Append(", [");
+                    bool first = true;
+                    if (dmg > 0) { sb.Append("D " + dmg.ToString()); first = false; }
+                    if (dmgRes > 0) { if (!first) sb.Append(", "); sb.Append("DR " + dmgRes.ToString()); first = false; }
+                    if (critDmg > 0) { if (!first) sb.Append(", "); sb.Append("CD " + critDmg.ToString()); first = false; }
+                    if (critDmgRes > 0) { if (!first) sb.Append(", "); sb.Append("CDR " + critDmgRes.ToString()); first = false; }
+                    sb.Append("]");
+                }
             }
 
             if (wo.ObjectClass == ObjectClass.Misc && wo.Name.Contains("Keyring"))
                 sb.Append(", Keys: " + wo.Values(LongValueKey.KeysHeld) + ", Uses: " + wo.Values(LongValueKey.UsesRemaining));
+
+            //summons
+            if (wo.Values(LongValueKey.IconUnderlay) == 29728) {
+                double dps = UtilityBelt.Lib.ItemInfoHelper.MiscCalcs.GetSummonDamage(wo);
+                sb.Append(", Approx DPS: " + Math.Round(dps, 2).ToString());
+            }
+
+            if (!string.IsNullOrEmpty(wo.Values(Decal.Adapter.Wrappers.StringValueKey.Inscription))) {
+                sb.Append(", Inscription: " + wo.Values(Decal.Adapter.Wrappers.StringValueKey.Inscription));
+            }
 
             return sb.ToString();
         }
@@ -668,21 +881,62 @@ namespace UtilityBelt.Tools {
 
                 foreach (int spell in ActiveSpells) {
                     foreach (var effect in Dictionaries.LongValueKeySpellEffects) {
-                        if (spell == effect.Key && effect.Value.Key == 28)
-                            armorFromBuffs += effect.Value.Change;
+                        if (spell == effect.Key && effect.Value.Where(x => x.Key == 28).Count() == 1)
+                            armorFromBuffs += effect.Value.Find(x => x.Key == 28).Change;
                     }
                 }
 
                 foreach (int spell in Spells) {
                     foreach (var effect in Dictionaries.LongValueKeySpellEffects) {
-                        if (spell == effect.Key && effect.Value.Key == 28)
-                            armorFromBuffs -= effect.Value.Bonus;
+                        if (spell == effect.Key && effect.Value.Where(x => x.Key == 28).Count() == 1)
+                            armorFromBuffs -= effect.Value.Find(x => x.Key == 28).Bonus;
                     }
                 }
 
                 return ArmorLevel - armorFromTinks - armorFromBuffs;
             }
         }
+
+        public double MaxArrowDmg {
+            get {
+                switch (IntValues[353]) {
+                    case 8:
+                        return 40;
+                        break;
+                    case 9:
+                        return 53;
+                        break;
+                    case 10:
+                        return 42;
+                        break;
+                    default:
+                        return 0;
+                }
+                return 0;
+            }
+        }
+
+        public double CalcMissileDamage {
+            get {
+                WorldObject wo = CoreManager.Current.WorldFilter[Id];
+                double dmgMod = DoubleValues[167772174] * 100 - 100;
+                double arrowMax = MaxArrowDmg;
+                double maxTinkedMissileMod = (GetMaxProperty(wo, WeaponProperty.MaxDmgMod) + 100 + 4 * 9) / 100;
+                //[MissileOD = (1 + (DamageModifier + 36 {9x Mahogany Tinks})/100) * (ElementalDamage + BD + BT + AmmoMaxDamage)/MaxTinkedMissileMod] - (MaxElementalDamage + 24 {BD8}+ArrowMaxDamage]
+                return (1 + (dmgMod + 4 * 9) / 100) * (BuffedElementalDamageBonus + 24 + arrowMax) / (maxTinkedMissileMod);
+            }
+        }
+
+        public double CalcMeleeDamage {
+            get {
+                WorldObject wo = CoreManager.Current.WorldFilter[Id];
+                double perfectVariance = MiscCalcs.GetMaxProperty(wo, WeaponProperty.MaxVar);
+                double varianceTinks = Math.Round(Math.Log(perfectVariance / Variance, 0.8), 2);
+                double odValue = GetBuffedIntValueKey(218103842) - varianceTinks;
+                return odValue - Variance;
+            }
+        }
+
 
         /// <summary>
         /// This will take into account Variance, MaxDamage and Tinks of a melee weapon and determine what its optimal 10 tinked DamageOverTime is.
@@ -725,6 +979,8 @@ namespace UtilityBelt.Tools {
 
         public double BuffedElementalDamageVersusMonsters => GetBuffedDoubleValueKey(152, -1);
 
+        public double BuffedElementalDamageBonus => GetBuffedIntValueKey(204); //204 is proper value, but it already exists in the dictionary so using maxdamage value for lookup
+
         public double BuffedAttackBonus => GetBuffedDoubleValueKey(167772172, -1);
 
         public double BuffedMeleeDefenseBonus => GetBuffedDoubleValueKey(29, -1);
@@ -738,13 +994,19 @@ namespace UtilityBelt.Tools {
             int value = IntValues[key];
 
             foreach (int spell in ActiveSpells) {
-                if (Dictionaries.LongValueKeySpellEffects.ContainsKey(spell) && Dictionaries.LongValueKeySpellEffects[spell].Key == key)
-                    value -= Dictionaries.LongValueKeySpellEffects[spell].Change;
+                if (!Dictionaries.LongValueKeySpellEffects.ContainsKey(spell))
+                    continue;
+                var matches = Dictionaries.LongValueKeySpellEffects[spell].Where(x => x.Key == key);
+                if (matches.Count() == 1)
+                    value -= matches.FirstOrDefault().Change;
             }
 
             foreach (int spell in Spells) {
-                if (Dictionaries.LongValueKeySpellEffects.ContainsKey(spell) && Dictionaries.LongValueKeySpellEffects[spell].Key == key)
-                    value += Dictionaries.LongValueKeySpellEffects[spell].Bonus;
+                if (!Dictionaries.LongValueKeySpellEffects.ContainsKey(spell))
+                    continue;
+                var matches = Dictionaries.LongValueKeySpellEffects[spell].Where(x => x.Key == key);
+                if (matches.Count() == 1)
+                    value += matches.FirstOrDefault().Bonus;
             }
 
             return value;
@@ -793,434 +1055,6 @@ namespace UtilityBelt.Tools {
             return Name;
         }
     }
-
-    public static class Dictionaries {
-        /// <summary>
-        /// Returns a dictionary of skill ids vs names
-        /// </summary>
-        /// <returns></returns>
-        public static readonly Dictionary<int, string> SkillInfo = new Dictionary<int, string>
-        {
-			// This list was taken from the Alinco source
-			{ 0x1, "Axe" },
-            { 0x2, "Bow" },
-            { 0x3, "Crossbow" },
-            { 0x4, "Dagger" },
-            { 0x5, "Mace" },
-            { 0x6, "Melee Defense" },
-            { 0x7, "Missile Defense" },
-            { 0x8, "Sling" },
-            { 0x9, "Spear" },
-            { 0xA, "Staff" },
-            { 0xB, "Sword" },
-            { 0xC, "Thrown Weapons" },
-            { 0xD, "Unarmed Combat" },
-            { 0xE, "Arcane Lore" },
-            { 0xF, "Magic Defense" },
-            { 0x10, "Mana Conversion" },
-            { 0x12, "Item Tinkering" },
-            { 0x13, "Assess Person" },
-            { 0x14, "Deception" },
-            { 0x15, "Healing" },
-            { 0x16, "Jump" },
-            { 0x17, "Lockpick" },
-            { 0x18, "Run" },
-            { 0x1B, "Assess Creature" },
-            { 0x1C, "Weapon Tinkering" },
-            { 0x1D, "Armor Tinkering" },
-            { 0x1E, "Magic Item Tinkering" },
-            { 0x1F, "Creature Enchantment" },
-            { 0x20, "Item Enchantment" },
-            { 0x21, "Life Magic" },
-            { 0x22, "War Magic" },
-            { 0x23, "Leadership" },
-            { 0x24, "Loyalty" },
-            { 0x25, "Fletching" },
-            { 0x26, "Alchemy" },
-            { 0x27, "Cooking" },
-            { 0x28, "Salvaging" },
-            { 0x29, "Two Handed Combat" },
-            { 0x2A, "Gearcraft"},
-            { 0x2B, "Void" },
-            { 0x2C, "Heavy Weapons" },
-            { 0x2D, "Light Weapons" },
-            { 0x2E, "Finesse Weapons" },
-            { 0x2F, "Missile Weapons" },
-            { 0x30, "Shield" },
-            { 0x31, "Dual Wield" },
-            { 0x32, "Recklessness" },
-            { 0x33, "Sneak Attack" },
-            { 0x34, "Dirty Fighting" },
-            { 0x35, "Challenge" },
-            { 0x36, "Summoning" },
-        };
-
-        /// <summary>
-        /// Returns a dictionary of mastery ids vs names
-        /// </summary>
-        /// <returns></returns>
-        public static Dictionary<int, string> MasteryInfo = new Dictionary<int, string>
-        {
-            { 1, "Unarmed Weapon" },
-            { 2, "Sword" },
-            { 3, "Axe" },
-            { 4, "Mace" },
-            { 5, "Spear" },
-            { 6, "Dagger" },
-            { 7, "Staff" },
-            { 8, "Bow" },
-            { 9, "Crossbow" },
-            { 10, "Thrown" },
-            { 11, "Two Handed Combat" },
-        };
-
-        /// <summary>
-        /// Returns a dictionary of attribute set ids vs names
-        /// </summary>
-        /// <returns></returns>
-        public static Dictionary<int, string> AttributeSetInfo = new Dictionary<int, string>
-        {
-			// This list was taken from Virindi Tank Loot Editor
-			// 01
-			{ 02, "Test"},
-			// 03
-			{ 04, "Carraida's Benediction"},
-            { 05, "Noble Relic Set" },
-            { 06, "Ancient Relic Set" },
-            { 07, "Relic Alduressa Set" },
-            { 08, "Shou-jen Set" },
-            { 09, "Empyrean Rings Set" },
-            { 10, "Arm, Mind, Heart Set" },
-            { 11, "Coat of the Perfect Light Set" },
-            { 12, "Leggings of Perfect Light Set" },
-            { 13, "Soldier's Set" },
-            { 14, "Adept's Set" },
-            { 15, "Archer's Set" },
-            { 16, "Defender's Set" },
-            { 17, "Tinker's Set" },
-            { 18, "Crafter's Set" },
-            { 19, "Hearty Set" },
-            { 20, "Dexterous Set" },
-            { 21, "Wise Set" },
-            { 22, "Swift Set" },
-            { 23, "Hardenend Set" },
-            { 24, "Reinforced Set" },
-            { 25, "Interlocking Set" },
-            { 26, "Flame Proof Set" },
-            { 27, "Acid Proof Set" },
-            { 28, "Cold Proof Set" },
-            { 29, "Lightning Proof Set" },
-            { 30, "Dedication Set" },
-            { 31, "Gladiatorial Clothing Set" },
-            { 32, "Ceremonial Clothing" },
-            { 33, "Protective Clothing" },
-            { 34, "Noobie Armor" },
-            { 35, "Sigil of Defense" },
-            { 36, "Sigil of Destruction" },
-            { 37, "Sigil of Fury" },
-            { 38, "Sigil of Growth" },
-            { 39, "Sigil of Vigor" },
-            { 40, "Heroic Protector Set" },
-            { 41, "Heroic Destroyer Set" },
-            { 42, "Olthoi Armor D Red" },
-            { 43, "Olthoi Armor C Rat" },
-            { 44, "Olthoi Armor C Red" },
-            { 45, "Olthoi Armor D Rat" },
-            { 46, "Upgraded Relic Alduressa Set" },
-            { 47, "Upgraded Ancient Relic Set" },
-            { 48, "Upgraded Noble Relic Set" },
-            { 49, "Weave of Alchemy" },
-            { 50, "Weave of Arcane Lore" },
-            { 51, "Weave of Armor Tinkering" },
-            { 52, "Weave of Assess Person" },
-            { 53, "Weave of Light Weapons" },
-            { 54, "Weave of Missile Weapons" },
-            { 55, "Weave of Cooking" },
-            { 56, "Weave of Creature Enchantment" },
-            { 57, "Weave of Missile Weapons" },
-            { 58, "Weave of Finesse" },
-            { 59, "Weave of Deception" },
-            { 60, "Weave of Fletching" },
-            { 61, "Weave of Healing" },
-            { 62, "Weave of Item Enchantment" },
-            { 63, "Weave of Item Tinkering" },
-            { 64, "Weave of Leadership" },
-            { 65, "Weave of Life Magic" },
-            { 66, "Weave of Loyalty" },
-            { 67, "Weave of Light Weapons" },
-            { 68, "Weave of Magic Defense" },
-            { 69, "Weave of Magic Item Tinkering" },
-            { 70, "Weave of Mana Conversion" },
-            { 71, "Weave of Melee Defense" },
-            { 72, "Weave of Missile Defense" },
-            { 73, "Weave of Salvaging" },
-            { 74, "Weave of Light Weapons" },
-            { 75, "Weave of Light Weapons" },
-            { 76, "Weave of Heavy Weapons" },
-            { 77, "Weave of Missile Weapons" },
-            { 78, "Weave of Two Handed Combat" },
-            { 79, "Weave of Light Weapons" },
-            { 80, "Weave of Void Magic" },
-            { 81, "Weave of War Magic" },
-            { 82, "Weave of Weapon Tinkering" },
-            { 83, "Weave of Assess Creature " },
-            { 84, "Weave of Dirty Fighting" },
-            { 85, "Weave of Dual Wield" },
-            { 86, "Weave of Recklessness" },
-            { 87, "Weave of Shield" },
-            { 88, "Weave of Sneak Attack" },
-            { 89, "Ninja_New" },
-            { 90, "Weave of Summoning" },
-
-            { 91, "Shrouded Soul" },
-            { 92, "Darkened Mind" },
-            { 93, "Clouded Spirit" },
-            { 94, "Minor Stinging Shrouded Soul" },
-            { 95, "Minor Sparking Shrouded Soul" },
-            { 96, "Minor Smoldering Shrouded Soul" },
-            { 97, "Minor Shivering Shrouded Soul" },
-            { 98, "Minor Stinging Darkened Mind" },
-            { 99, "Minor Sparking Darkened Mind" },
-
-            { 100, "Minor Smoldering Darkened Mind" },
-            { 101, "Minor Shivering Darkened Mind" },
-            { 102, "Minor Stinging Clouded Spirit" },
-            { 103, "Minor Sparking Clouded Spirit" },
-            { 104, "Minor Smoldering Clouded Spirit" },
-            { 105, "Minor Shivering Clouded Spirit" },
-            { 106, "Major Stinging Shrouded Soul" },
-            { 107, "Major Sparking Shrouded Soul" },
-            { 108, "Major Smoldering Shrouded Soul" },
-            { 109, "Major Shivering Shrouded Soul" },
-
-            { 110, "Major Stinging Darkened Mind" },
-            { 111, "Major Sparking Darkened Mind" },
-            { 112, "Major Smoldering Darkened Mind" },
-            { 113, "Major Shivering Darkened Mind" },
-            { 114, "Major Stinging Clouded Spirit" },
-            { 115, "Major Sparking Clouded Spirit" },
-            { 116, "Major Smoldering Clouded Spirit" },
-            { 117, "Major Shivering Clouded Spirit" },
-            { 118, "Blackfire Stinging Shrouded Soul" },
-            { 119, "Blackfire Sparking Shrouded Soul" },
-
-            { 120, "Blackfire Smoldering Shrouded Soul" },
-            { 121, "Blackfire Shivering Shrouded Soul" },
-            { 122, "Blackfire Stinging Darkened Mind" },
-            { 123, "Blackfire Sparking Darkened Mind" },
-            { 124, "Blackfire Smoldering Darkened Mind" },
-            { 125, "Blackfire Shivering Darkened Mind" },
-            { 126, "Blackfire Stinging Clouded Spirit" },
-            { 127, "Blackfire Sparking Clouded Spirit" },
-            { 128, "Blackfire Smoldering Clouded Spirit" },
-            { 129, "Blackfire Shivering Clouded Spirit" },
-
-            { 130, "Shimmering Shadows" },
-
-            { 131, "Brown Society Locket" },
-            { 132, "Yellow Society Locket" },
-            { 133, "Red Society Band" },
-            { 134, "Green Society Band" },
-            { 135, "Purple Society Band" },
-            { 136, "Blue Society Band" },
-
-            { 137, "Gauntlet Garb" },
-
-            { 138, "UNKNOWN_138" }, // Possibly Paragon Missile Weapons
-			{ 139, "UNKNOWN_139" }, // Possibly Paragon Casters
-			{ 140, "UNKNOWN_140" }, // Possibly Paragon Melee Weapons
-		};
-
-        /// <summary>
-        /// Returns a dictionary of material ids vs names
-        /// </summary>
-        /// <returns></returns>
-        public static Dictionary<int, string> MaterialInfo = new Dictionary<int, string>
-        {
-            { 1, "Ceramic" },
-            { 2, "Porcelain" },
-			// 3
-			{ 4, "Linen" },
-            { 5, "Satin" },
-            { 6, "Silk" },
-            { 7, "Velvet" },
-            { 8, "Wool" },
-			// 9
-			{ 10, "Agate" },
-            { 11, "Amber" },
-            { 12, "Amethyst" },
-            { 13, "Aquamarine" },
-            { 14, "Azurite" },
-            { 15, "Black Garnet" },
-            { 16, "Black Opal" },
-            { 17, "Bloodstone" },
-            { 18, "Carnelian" },
-            { 19, "Citrine" },
-            { 20, "Diamond" },
-            { 21, "Emerald" },
-            { 22, "Fire Opal" },
-            { 23, "Green Garnet" },
-            { 24, "Green Jade" },
-            { 25, "Hematite" },
-            { 26, "Imperial Topaz" },
-            { 27, "Jet" },
-            { 28, "Lapis Lazuli" },
-            { 29, "Lavender Jade" },
-            { 30, "Malachite" },
-            { 31, "Moonstone" },
-            { 32, "Onyx" },
-            { 33, "Opal" },
-            { 34, "Peridot" },
-            { 35, "Red Garnet" },
-            { 36, "Red Jade" },
-            { 37, "Rose Quartz" },
-            { 38, "Ruby" },
-            { 39, "Sapphire" },
-            { 40, "Smokey Quartz" },
-            { 41, "Sunstone" },
-            { 42, "Tiger Eye" },
-            { 43, "Tourmaline" },
-            { 44, "Turquoise" },
-            { 45, "White Jade" },
-            { 46, "White Quartz" },
-            { 47, "White Sapphire" },
-            { 48, "Yellow Garnet" },
-            { 49, "Yellow Topaz" },
-            { 50, "Zircon" },
-            { 51, "Ivory" },
-            { 52, "Leather" },
-            { 53, "Armoredillo Hide" },
-            { 54, "Gromnie Hide" },
-            { 55, "Reed Shark Hide" },
-			// 56
-			{ 57, "Brass" },
-            { 58, "Bronze" },
-            { 59, "Copper" },
-            { 60, "Gold" },
-            { 61, "Iron" },
-            { 62, "Pyreal" },
-            { 63, "Silver" },
-            { 64, "Steel" },
-			// 65
-			{ 66, "Alabaster" },
-            { 67, "Granite" },
-            { 68, "Marble" },
-            { 69, "Obsidian" },
-            { 70, "Sandstone" },
-            { 71, "Serpentine" },
-            { 73, "Ebony" },
-            { 74, "Mahogany" },
-            { 75, "Oak" },
-            { 76, "Pine" },
-            { 77, "Teak" },
-        };
-
-        public struct SpellInfo<T> {
-            public readonly int Key;
-            public readonly T Change;
-            public readonly T Bonus;
-
-            public SpellInfo(int key, T change, T bonus = default(T)) {
-                Key = key;
-                Change = change;
-                Bonus = bonus;
-            }
-        }
-
-        // Taken from Decal.Adapter.Wrappers.LongValueKey
-        const int LongValueKey_MaxDamage = 218103842;
-        const int LongValueKey_ArmorLevel = 28;
-
-        public static readonly Dictionary<int, SpellInfo<int>> LongValueKeySpellEffects = new Dictionary<int, SpellInfo<int>>()
-        {
-			// In 2012 they removed these item spells and converted them to auras that are cast on the player, not on the item.
-			{ 1616, new SpellInfo<int>(LongValueKey_MaxDamage, 20)}, // Blood Drinker VI
-			{ 2096, new SpellInfo<int>(LongValueKey_MaxDamage, 22)}, // Infected Caress
-			//{ 5183, new SpellInfo<LongValueKey>(LongValueKey_MaxDamage, 22)}, // Incantation of Blood Drinker Pre Feb-2013
-			//{ 4395, new SpellInfo<LongValueKey>(LongValueKey_MaxDamage, 24, 2)}, // Incantation of Blood Drinker, this spell on the item adds 2 more points of damage over a user casted 8 Pre Feb-2013
-			{ 5183, new SpellInfo<int>(LongValueKey_MaxDamage, 24)}, // Incantation of Blood Drinker Post Feb-2013
-			{ 4395, new SpellInfo<int>(LongValueKey_MaxDamage, 24)}, // Incantation of Blood Drinker Post Feb-2013
-
-			{ 2598, new SpellInfo<int>(LongValueKey_MaxDamage, 2, 2)}, // Minor Blood Thirst
-			{ 2586, new SpellInfo<int>(LongValueKey_MaxDamage, 4, 4)}, // Major Blood Thirst
-			{ 4661, new SpellInfo<int>(LongValueKey_MaxDamage, 7, 7)}, // Epic Blood Thirst
-			{ 6089, new SpellInfo<int>(LongValueKey_MaxDamage, 10, 10)}, // Legendary Blood Thirst
-
-			{ 3688, new SpellInfo<int>(LongValueKey_MaxDamage, 300)}, // Prodigal Blood Drinker
-
-
-			{ 1486, new SpellInfo<int>(LongValueKey_ArmorLevel, 200)}, // Impenetrability VI
-			{ 2108, new SpellInfo<int>(LongValueKey_ArmorLevel, 220)}, // Brogard's Defiance
-			{ 4407, new SpellInfo<int>(LongValueKey_ArmorLevel, 240)}, // Incantation of Impenetrability
-
-			{ 2604, new SpellInfo<int>(LongValueKey_ArmorLevel, 20, 20)}, // Minor Impenetrability
-			{ 2592, new SpellInfo<int>(LongValueKey_ArmorLevel, 40, 40)}, // Major Impenetrability
-			{ 4667, new SpellInfo<int>(LongValueKey_ArmorLevel, 60, 60)}, // Epic Impenetrability
-			{ 6095, new SpellInfo<int>(LongValueKey_ArmorLevel, 80, 80)}, // Legendary Impenetrability
-		};
-
-        // Taken from Decal.Adapter.Wrappers.DoubleValueKey
-        const int DoubleValueKey_ElementalDamageVersusMonsters = 152;
-        const int DoubleValueKey_AttackBonus = 167772172;
-        const int DoubleValueKey_MeleeDefenseBonus = 29;
-        const int DoubleValueKey_ManaCBonus = 144;
-
-        public static readonly Dictionary<int, SpellInfo<double>> DoubleValueKeySpellEffects = new Dictionary<int, SpellInfo<double>>()
-        {
-			// In 2012 they removed these item spells and converted them to auras that are cast on the player, not on the item.
-			{ 3258, new SpellInfo<double>(DoubleValueKey_ElementalDamageVersusMonsters, .06)}, // Spirit Drinker VI
-			{ 3259, new SpellInfo<double>(DoubleValueKey_ElementalDamageVersusMonsters, .07)}, // Infected Spirit Caress
-			//{ 5182, new SpellInfo<double>(DoubleValueKey_ElementalDamageVersusMonsters, .07)}, // Incantation of Spirit Drinker Pre Feb-2013
-			//{ 4414, new SpellInfo<double>(DoubleValueKey_ElementalDamageVersusMonsters, .08, .01)}, // Incantation of Spirit Drinker, this spell on the item adds 1 more % of damage over a user casted 8 Pre Feb-2013
-			{ 5182, new SpellInfo<double>(DoubleValueKey_ElementalDamageVersusMonsters, .08)}, // Incantation of Spirit Drinker Post Feb-2013
-			{ 4414, new SpellInfo<double>(DoubleValueKey_ElementalDamageVersusMonsters, .08)}, // Incantation of Spirit Drinker, this spell on the item adds 1 more % of damage over a user casted 8 Post Feb-2013
-
-			{ 3251, new SpellInfo<double>(DoubleValueKey_ElementalDamageVersusMonsters, .01, .01)}, // Minor Spirit Thirst
-			{ 3250, new SpellInfo<double>(DoubleValueKey_ElementalDamageVersusMonsters, .03, .03)}, // Major Spirit Thirst
-			{ 4670, new SpellInfo<double>(DoubleValueKey_ElementalDamageVersusMonsters, .05, .05)}, // Epic Spirit Thirst
-			{ 6098, new SpellInfo<double>(DoubleValueKey_ElementalDamageVersusMonsters, .07, .07)}, // Legendary Spirit Thirst
-
-			{ 3735, new SpellInfo<double>(DoubleValueKey_ElementalDamageVersusMonsters, .15)}, // Prodigal Spirit Drinker
-
-
-			// In 2012 they removed these item spells and converted them to auras that are cast on the player, not on the item.
-			{ 1592, new SpellInfo<double>(DoubleValueKey_AttackBonus, .15)}, // Heart Seeker VI
-			{ 2106, new SpellInfo<double>(DoubleValueKey_AttackBonus, .17)}, // Elysa's Sight
-			{ 4405, new SpellInfo<double>(DoubleValueKey_AttackBonus, .20)}, // Incantation of Heart Seeker
-
-			{ 2603, new SpellInfo<double>(DoubleValueKey_AttackBonus, .03, .03)}, // Minor Heart Thirst
-			{ 2591, new SpellInfo<double>(DoubleValueKey_AttackBonus, .05, .05)}, // Major Heart Thirst
-			{ 4666, new SpellInfo<double>(DoubleValueKey_AttackBonus, .07, .07)}, // Epic Heart Thirst
-			{ 6094, new SpellInfo<double>(DoubleValueKey_AttackBonus, .09, .09)}, // Legendary Heart Thirst
-
-
-			// In 2012 they removed these item spells and converted them to auras that are cast on the player, not on the item.
-			{ 1605, new SpellInfo<double>(DoubleValueKey_MeleeDefenseBonus, .15)}, // Defender VI
-			{ 2101, new SpellInfo<double>(DoubleValueKey_MeleeDefenseBonus, .17)}, // Cragstone's Will
-			//{ 4400, new SpellInfo<double>(DoubleValueKey_MeleeDefenseBonus, .17)}, // Incantation of Defender Pre Feb-2013
-			{ 4400, new SpellInfo<double>(DoubleValueKey_MeleeDefenseBonus, .20)}, // Incantation of Defender Post Feb-2013
-
-			{ 2600, new SpellInfo<double>(DoubleValueKey_MeleeDefenseBonus, .03, .03)}, // Minor Defender
-			{ 3985, new SpellInfo<double>(DoubleValueKey_MeleeDefenseBonus, .04, .04)}, // Mukkir Sense
-			{ 2588, new SpellInfo<double>(DoubleValueKey_MeleeDefenseBonus, .05, .05)}, // Major Defender
-			{ 4663, new SpellInfo<double>(DoubleValueKey_MeleeDefenseBonus, .07, .07)}, // Epic Defender
-			{ 6091, new SpellInfo<double>(DoubleValueKey_MeleeDefenseBonus, .09, .09)}, // Legendary Defender
-
-			{ 3699, new SpellInfo<double>(DoubleValueKey_MeleeDefenseBonus, .25)}, // Prodigal Defender
-
-
-			// In 2012 they removed these item spells and converted them to auras that are cast on the player, not on the item.
-			{ 1480, new SpellInfo<double>(DoubleValueKey_ManaCBonus, 1.60)}, // Hermetic Link VI
-			{ 2117, new SpellInfo<double>(DoubleValueKey_ManaCBonus, 1.70)}, // Mystic's Blessing
-			{ 4418, new SpellInfo<double>(DoubleValueKey_ManaCBonus, 1.80)}, // Incantation of Hermetic Link
-
-			{ 3201, new SpellInfo<double>(DoubleValueKey_ManaCBonus, 1.05, 1.05)}, // Feeble Hermetic Link
-			{ 3199, new SpellInfo<double>(DoubleValueKey_ManaCBonus, 1.10, 1.10)}, // Minor Hermetic Link
-			{ 3202, new SpellInfo<double>(DoubleValueKey_ManaCBonus, 1.15, 1.15)}, // Moderate Hermetic Link
-			{ 3200, new SpellInfo<double>(DoubleValueKey_ManaCBonus, 1.20, 1.20)}, // Major Hermetic Link
-			{ 6086, new SpellInfo<double>(DoubleValueKey_ManaCBonus, 1.25, 1.25)}, // Epic Hermetic Link
-			{ 6087, new SpellInfo<double>(DoubleValueKey_ManaCBonus, 1.30, 1.30)}, // Legendary Hermetic Link
-		};
-    }
-    #endregion
 }
+
+#endregion

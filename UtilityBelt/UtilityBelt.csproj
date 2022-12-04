@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- todo: move these somewhere easier to get to? -->
   <Import Project="..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.props" />
@@ -146,6 +146,9 @@
     <Compile Include="Lib\Attributes.cs" />
     <Compile Include="Lib\Camera.cs" />
     <Compile Include="Lib\Chat\ChatType.cs" />
+    <Compile Include="Lib\ItemInfoHelper\Dictionaries.cs" />
+    <Compile Include="Lib\ItemInfoHelper\MiscCalcs.cs" />
+    <Compile Include="Lib\ItemInfoHelper\WeaponMods.cs" />
     <Compile Include="Lib\Constants\WeenieType.cs" />
     <Compile Include="Lib\Coordinate.cs" />
     <Compile Include="Lib\Dungeon\Dungeon.cs" />
@@ -241,7 +244,7 @@
     <Compile Include="Tools\Aliases.cs" />
     <Compile Include="Tools\Arrow.cs" />
     <Compile Include="Tools\GameEvents.cs" />
-    <Compile Include="Tools\ItemDescriptions.cs" />
+    <Compile Include="Tools\ItemInfo.cs" />
     <Compile Include="Tools\LoginManager.cs" />
     <Compile Include="Tools\Looter.cs" />
     <Compile Include="Tools\Movement.cs" />
