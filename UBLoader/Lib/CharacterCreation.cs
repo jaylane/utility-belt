@@ -2,8 +2,6 @@
 using ACE.DatLoader;
 using ACE.DatLoader.Entity;
 using ACE.DatLoader.FileTypes;
-using ACE.Entity.Enum;
-using ACE.Entity.Enum.Properties;
 using Harmony;
 using ImGuiNET;
 using Microsoft.DirectX.Direct3D;
@@ -13,15 +11,17 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using UBService;
+using UBCommon.Enums;
+using UtilityBelt.Service;
 using SkillBase = ACE.DatLoader.Entity.SkillBase;
-using Vector4 = ImGuiNET.Vector4;
-using WeaponType = ACE.Entity.Enum.WeaponType;
+using Vector4 = System.Numerics.Vector4;
+using WeaponType = UBCommon.Enums.WeaponType;
 
 namespace UBLoader.Lib {
     public class CharacterCreation : IDisposable {
@@ -88,14 +88,14 @@ namespace UBLoader.Lib {
         }
 
         private class CharAttribute {
-            public PropertyAttribute Type;
+            public AttributeId Type;
             public int Value = 10;
             public bool Locked = false;
             public byte[] ByteValue = new byte[4]; // max 3 + null
 
             public string Description { get; private set; } = "";
 
-            public CharAttribute(PropertyAttribute type) {
+            public CharAttribute(AttributeId type) {
                 Type = type;
                 PopulateData();
                 Update();
@@ -103,22 +103,22 @@ namespace UBLoader.Lib {
 
             private void PopulateData() {
                 switch (Type) {
-                    case PropertyAttribute.Strength:
+                    case AttributeId.Strength:
                         Description = GetStringFromId(UI_Pregame_Strings, 0x06592518);
                         break;
-                    case PropertyAttribute.Endurance:
+                    case AttributeId.Endurance:
                         Description = GetStringFromId(UI_Pregame_Strings, 0x06fecf05);
                         break;
-                    case PropertyAttribute.Coordination:
+                    case AttributeId.Coordination:
                         Description = GetStringFromId(UI_Pregame_Strings, 0x04d1159e);
                         break;
-                    case PropertyAttribute.Quickness:
+                    case AttributeId.Quickness:
                         Description = GetStringFromId(UI_Pregame_Strings, 0x02b8f5c3);
                         break;
-                    case PropertyAttribute.Focus:
+                    case AttributeId.Focus:
                         Description = GetStringFromId(UI_Pregame_Strings, 0x06ce87f3);
                         break;
-                    case PropertyAttribute.Self:
+                    case AttributeId.Self:
                         Description = GetStringFromId(UI_Pregame_Strings, 0x036b87f6);
                         break;
                 }
@@ -134,14 +134,14 @@ namespace UBLoader.Lib {
         private class CharSkill {
             public Skill Type { get; set; }
             public SkillBase Dat { get; set; }
-            public SkillAdvancementClass Training { get; set; }
-            public SkillAdvancementClass MinTraining { get; set; }
-            public SkillAdvancementClass MaxTraining => Type == Skill.Salvaging ? SkillAdvancementClass.Trained : SkillAdvancementClass.Specialized;
+            public SkillTrainingType Training { get; set; }
+            public SkillTrainingType MinTraining { get; set; }
+            public SkillTrainingType MaxTraining => Type == Skill.Salvaging ? SkillTrainingType.Trained : SkillTrainingType.Specialized;
             public int CreditsToLower {
                 get {
                     if (Training == MinTraining)
                         return 0;
-                    else if (Training == SkillAdvancementClass.Specialized)
+                    else if (Training == SkillTrainingType.Specialized)
                         return Dat.UpgradeCostFromTrainedToSpecialized;
                     else
                         return Dat.TrainedCost;
@@ -151,9 +151,9 @@ namespace UBLoader.Lib {
                 get {
                     if (Type == Skill.Salvaging)
                         return 0;
-                    else if (Training == SkillAdvancementClass.Specialized)
+                    else if (Training == SkillTrainingType.Specialized)
                         return 0;
-                    else if (Training == SkillAdvancementClass.Trained)
+                    else if (Training == SkillTrainingType.Trained)
                         return Dat.UpgradeCostFromTrainedToSpecialized;
                     else
                         return Dat.TrainedCost;
@@ -170,7 +170,7 @@ namespace UBLoader.Lib {
                 get {
                     if (Training == MinTraining)
                         return 0;
-                    else if (Training == SkillAdvancementClass.Specialized)
+                    else if (Training == SkillTrainingType.Specialized)
                         return TrainedCost + SpecializedCost;
                     else
                         return TrainedCost;
@@ -181,10 +181,10 @@ namespace UBLoader.Lib {
                 get {
                     var strBuilder = new StringBuilder();
                     if (Dat.Formula.Attr2 > 0) {
-                        strBuilder.Append($"({(PropertyAttribute)Dat.Formula.Attr1} + {(PropertyAttribute)Dat.Formula.Attr2})");
+                        strBuilder.Append($"({(AttributeId)Dat.Formula.Attr1} + {(AttributeId)Dat.Formula.Attr2})");
                     }
                     else {
-                        strBuilder.Append($"{(PropertyAttribute)Dat.Formula.Attr1}");
+                        strBuilder.Append($"{(AttributeId)Dat.Formula.Attr1}");
                     }
                     if (Dat.Formula.Z > 1)
                         strBuilder.Append($" / {Dat.Formula.Z}");
@@ -206,7 +206,7 @@ namespace UBLoader.Lib {
 
             internal bool TryRaise() {
                 if (Training < MaxTraining) {
-                    if (Training == SkillAdvancementClass.Inactive) {
+                    if (Training == SkillTrainingType.Unusable) {
                         Training += 2;
                     }
                     else {
@@ -219,7 +219,7 @@ namespace UBLoader.Lib {
 
             internal bool TryLower() {
                 if (Training > MinTraining) {
-                    if (Training == SkillAdvancementClass.Trained) {
+                    if (Training == SkillTrainingType.Trained) {
                         Training -= 2;
                     }
                     else {
@@ -232,13 +232,13 @@ namespace UBLoader.Lib {
         }
 
         private class CharGenData {
-            private PropertyAttribute _nextAttribute = PropertyAttribute.Strength;
+            private AttributeId _nextAttribute = AttributeId.Strength;
 
             public string Name { get; set; } = "";
             public Heritage Heritage { get; set; }
             public Template Template { get; set; }
 
-            public Dictionary<PropertyAttribute, CharAttribute> Attributes = new Dictionary<PropertyAttribute, CharAttribute>();
+            public Dictionary<AttributeId, CharAttribute> Attributes = new Dictionary<AttributeId, CharAttribute>();
             public Dictionary<Skill, CharSkill> Skills = new Dictionary<Skill, CharSkill>();
 
             public int AvailableAttributeCredits => (int)Heritage.Dat.AttributeCredits - SpentAttributeCredits;
@@ -250,21 +250,21 @@ namespace UBLoader.Lib {
             public int TotalSkillCredits => (int)Heritage.Dat.SkillCredits;
 
             public CharGenData() {
-                Attributes.Add(PropertyAttribute.Strength, new CharAttribute(PropertyAttribute.Strength));
-                Attributes.Add(PropertyAttribute.Endurance, new CharAttribute(PropertyAttribute.Endurance));
-                Attributes.Add(PropertyAttribute.Coordination, new CharAttribute(PropertyAttribute.Coordination));
-                Attributes.Add(PropertyAttribute.Quickness, new CharAttribute(PropertyAttribute.Quickness));
-                Attributes.Add(PropertyAttribute.Focus, new CharAttribute(PropertyAttribute.Focus));
-                Attributes.Add(PropertyAttribute.Self, new CharAttribute(PropertyAttribute.Self));
+                Attributes.Add(AttributeId.Strength, new CharAttribute(AttributeId.Strength));
+                Attributes.Add(AttributeId.Endurance, new CharAttribute(AttributeId.Endurance));
+                Attributes.Add(AttributeId.Coordination, new CharAttribute(AttributeId.Coordination));
+                Attributes.Add(AttributeId.Quickness, new CharAttribute(AttributeId.Quickness));
+                Attributes.Add(AttributeId.Focus, new CharAttribute(AttributeId.Focus));
+                Attributes.Add(AttributeId.Self, new CharAttribute(AttributeId.Self));
             }
 
             internal void ApplyCurrentTemplate() {
-                Attributes[PropertyAttribute.Strength].Value = (int)Template.Dat.Strength;
-                Attributes[PropertyAttribute.Endurance].Value = (int)Template.Dat.Endurance;
-                Attributes[PropertyAttribute.Coordination].Value = (int)Template.Dat.Coordination;
-                Attributes[PropertyAttribute.Quickness].Value = (int)Template.Dat.Quickness;
-                Attributes[PropertyAttribute.Focus].Value = (int)Template.Dat.Focus;
-                Attributes[PropertyAttribute.Self].Value = (int)Template.Dat.Self;
+                Attributes[AttributeId.Strength].Value = (int)Template.Dat.Strength;
+                Attributes[AttributeId.Endurance].Value = (int)Template.Dat.Endurance;
+                Attributes[AttributeId.Coordination].Value = (int)Template.Dat.Coordination;
+                Attributes[AttributeId.Quickness].Value = (int)Template.Dat.Quickness;
+                Attributes[AttributeId.Focus].Value = (int)Template.Dat.Focus;
+                Attributes[AttributeId.Self].Value = (int)Template.Dat.Self;
 
                 foreach (var attribute in Attributes) {
                     attribute.Value.Locked = false;
@@ -272,15 +272,15 @@ namespace UBLoader.Lib {
                 }
 
                 foreach (var skillId in Template.Dat.NormalSkillsList) {
-                    Skills[(Skill)skillId].Training = SkillAdvancementClass.Trained;
+                    Skills[(Skill)skillId].Training = SkillTrainingType.Trained;
                 }
 
                 foreach (var skillId in Template.Dat.PrimarySkillsList) {
-                    Skills[(Skill)skillId].Training = SkillAdvancementClass.Specialized;
+                    Skills[(Skill)skillId].Training = SkillTrainingType.Specialized;
                 }
             }
 
-            internal bool TryAdjustAttributesToFit(PropertyAttribute adjustedAttribute) {
+            internal bool TryAdjustAttributesToFit(AttributeId adjustedAttribute) {
                 int hitReset = 0;
                 while (AvailableAttributeCredits < 0) {
                     if (!Attributes[_nextAttribute].Locked && Attributes[_nextAttribute].Value > 10) {
@@ -289,8 +289,8 @@ namespace UBLoader.Lib {
                     }
 
                     _nextAttribute++;
-                    if (_nextAttribute > PropertyAttribute.Self) {
-                        _nextAttribute = PropertyAttribute.Strength;
+                    if (_nextAttribute > AttributeId.Self) {
+                        _nextAttribute = AttributeId.Strength;
                         hitReset++;
                     }
 
@@ -302,12 +302,12 @@ namespace UBLoader.Lib {
 
             internal void ResetSkills() {
                 foreach (var kv in PortalDat.SkillTable.SkillBaseHash) {
-                    var training = SkillAdvancementClass.Untrained;
+                    var training = SkillTrainingType.Untrained;
                     if (AlwaysTrained.Contains((Skill)kv.Key)) {
-                        training = SkillAdvancementClass.Trained;
+                        training = SkillTrainingType.Trained;
                     }
-                    else if ((SkillAdvancementClass)kv.Value.MinLevel > SkillAdvancementClass.Untrained) {
-                        training = SkillAdvancementClass.Inactive;
+                    else if ((SkillTrainingType)kv.Value.MinLevel > SkillTrainingType.Untrained) {
+                        training = SkillTrainingType.Unusable;
                     }
 
                     if (!Skills.ContainsKey((Skill)kv.Key)) {
@@ -316,7 +316,7 @@ namespace UBLoader.Lib {
 
                     Skills[(Skill)kv.Key].Training = training;
                     if (AlwaysTrained.Contains((Skill)kv.Key)) {
-                        Skills[(Skill)kv.Key].MinTraining = SkillAdvancementClass.Trained;
+                        Skills[(Skill)kv.Key].MinTraining = SkillTrainingType.Trained;
                     }
                     else {
                         Skills[(Skill)kv.Key].MinTraining = training;
@@ -331,11 +331,11 @@ namespace UBLoader.Lib {
 
                     if (Template != null) {
                         foreach (var skillId in Template.Dat.NormalSkillsList) {
-                            Skills[(Skill)skillId].Training = SkillAdvancementClass.Trained;
+                            Skills[(Skill)skillId].Training = SkillTrainingType.Trained;
                         }
 
                         foreach (var skillId in Template.Dat.PrimarySkillsList) {
-                            Skills[(Skill)skillId].Training = SkillAdvancementClass.Specialized;
+                            Skills[(Skill)skillId].Training = SkillTrainingType.Specialized;
                         }
                     }
                 }
@@ -368,18 +368,18 @@ namespace UBLoader.Lib {
 
             internal int SkillLevel(CharSkill skill) {
                 var skillLevel = 0;
-                if (skill.Training > SkillAdvancementClass.Inactive && skill.Dat.Formula.X > 0) {
-                    skillLevel += Attributes[(PropertyAttribute)skill.Dat.Formula.Attr1].Value;
+                if (skill.Training > SkillTrainingType.Unusable && skill.Dat.Formula.X > 0) {
+                    skillLevel += Attributes[(AttributeId)skill.Dat.Formula.Attr1].Value;
                     if (skill.Dat.Formula.Attr2 > 0) {
-                        skillLevel += Attributes[(PropertyAttribute)skill.Dat.Formula.Attr2].Value;
+                        skillLevel += Attributes[(AttributeId)skill.Dat.Formula.Attr2].Value;
                     }
 
                     skillLevel = (int)Math.Floor(((float)skillLevel / (float)skill.Dat.Formula.Z) + 0.5f);
                 }
 
-                if (skill.Training == SkillAdvancementClass.Trained)
+                if (skill.Training == SkillTrainingType.Trained)
                     skillLevel += 5;
-                if (skill.Training == SkillAdvancementClass.Specialized)
+                if (skill.Training == SkillTrainingType.Specialized)
                     skillLevel += 10;
 
                 return skillLevel;
@@ -502,7 +502,7 @@ namespace UBLoader.Lib {
         private string sanamarDescription;
         private string yaraqDescription;
         private string shoushiDescription;
-        private UBService.Views.Hud hud;
+        private UtilityBelt.Service.Views.Hud hud;
         private Microsoft.DirectX.Direct3D.Texture LockOnTexture;
         private Microsoft.DirectX.Direct3D.Texture LockOffTexture;
         private Microsoft.DirectX.Direct3D.Texture ArrowUpTexture;
@@ -526,13 +526,13 @@ namespace UBLoader.Lib {
         public CharacterCreation() {
             LoadNeededData();
 
-            hud = UBService.UBService.Huds.CreateHud("Create a character");
+            hud = UtilityBelt.Service.UBService.Huds.CreateHud("Create a character");
             hud.ShowInBar = true;
             hud.WindowSettings |= ImGuiWindowFlags.AlwaysAutoResize;
-            hud.Render += Hud_Render;
-            hud.PreRender += Hud_PreRender;
-            hud.DestroyTextures += Hud_DestroyTextures;
-            hud.CreateTextures += Hud_CreateTextures;
+            hud.OnRender += Hud_Render;
+            hud.OnPreRender += Hud_PreRender;
+            hud.OnDestroyTextures += Hud_DestroyTextures;
+            hud.OnCreateTextures += Hud_CreateTextures;
         }
 
         private void LoadNeededData() {
@@ -618,12 +618,12 @@ namespace UBLoader.Lib {
             result.trousersShade = 0.43;
             result.footwearShade = 0.69;
             result.templateNum = _currentTemplateIndex;
-            result.strength = charData.Attributes[PropertyAttribute.Strength].Value; // this is total value, like 10 is 10 (minumum)
-            result.endurance = charData.Attributes[PropertyAttribute.Endurance].Value; // this is total value, like 10 is 10 (minumum)
-            result.coordination = charData.Attributes[PropertyAttribute.Coordination].Value; // this is total value, like 10 is 10 (minumum)
-            result.quickness = charData.Attributes[PropertyAttribute.Quickness].Value; // this is total value, like 10 is 10 (minumum)
-            result.focus = charData.Attributes[PropertyAttribute.Focus].Value; // this is total value, like 10 is 10 (minumum)
-            result.self = charData.Attributes[PropertyAttribute.Self].Value; // this is total value, like 10 is 10 (minumum)
+            result.strength = charData.Attributes[AttributeId.Strength].Value; // this is total value, like 10 is 10 (minumum)
+            result.endurance = charData.Attributes[AttributeId.Endurance].Value; // this is total value, like 10 is 10 (minumum)
+            result.coordination = charData.Attributes[AttributeId.Coordination].Value; // this is total value, like 10 is 10 (minumum)
+            result.quickness = charData.Attributes[AttributeId.Quickness].Value; // this is total value, like 10 is 10 (minumum)
+            result.focus = charData.Attributes[AttributeId.Focus].Value; // this is total value, like 10 is 10 (minumum)
+            result.self = charData.Attributes[AttributeId.Self].Value; // this is total value, like 10 is 10 (minumum)
             result.numSkills = numSkills;
             result.skillAdvancementClasses = sacs;
             result.name = name;
@@ -800,9 +800,9 @@ namespace UBLoader.Lib {
                             ImGui.Spacing();
                         }
 
-                        RenderVital("Health: ", ((int)Math.Floor(charData.Attributes[PropertyAttribute.Endurance].Value / 2f)).ToString(), healthTooltipText);
-                        RenderVital("Stamina: ", charData.Attributes[PropertyAttribute.Endurance].Value.ToString(), staminaTooltipText);
-                        RenderVital("Mana: ", charData.Attributes[PropertyAttribute.Self].Value.ToString(), manaTooltipText);
+                        RenderVital("Health: ", ((int)Math.Floor(charData.Attributes[AttributeId.Endurance].Value / 2f)).ToString(), healthTooltipText);
+                        RenderVital("Stamina: ", charData.Attributes[AttributeId.Endurance].Value.ToString(), staminaTooltipText);
+                        RenderVital("Mana: ", charData.Attributes[AttributeId.Self].Value.ToString(), manaTooltipText);
 
                         ImGui.EndGroup(); // attribute selections
                         ImGui.EndTabItem();
@@ -814,10 +814,10 @@ namespace UBLoader.Lib {
                         {
                             ImGui.BeginChild(1, new Vector2(340, 240)); // skills table
                             {
-                                RenderSkillTable(SkillAdvancementClass.Specialized);
-                                RenderSkillTable(SkillAdvancementClass.Trained);
-                                RenderSkillTable(SkillAdvancementClass.Untrained);
-                                RenderSkillTable(SkillAdvancementClass.Inactive);
+                                RenderSkillTable(SkillTrainingType.Specialized);
+                                RenderSkillTable(SkillTrainingType.Trained);
+                                RenderSkillTable(SkillTrainingType.Untrained);
+                                RenderSkillTable(SkillTrainingType.Unusable);
                             }
                             ImGui.EndChild(); // skills table
                             ImGui.Spacing();
@@ -1012,16 +1012,16 @@ namespace UBLoader.Lib {
                             }
 
                             ImGui.Text("Health"); ImGui.SameLine(colSize);
-                            ImGui.Text(((int)Math.Floor(charData.Attributes[PropertyAttribute.Endurance].Value / 2f)).ToString());
+                            ImGui.Text(((int)Math.Floor(charData.Attributes[AttributeId.Endurance].Value / 2f)).ToString());
                             ImGui.Text("Stamina"); ImGui.SameLine(colSize);
-                            ImGui.Text(charData.Attributes[PropertyAttribute.Endurance].Value.ToString());
+                            ImGui.Text(charData.Attributes[AttributeId.Endurance].Value.ToString());
                             ImGui.Text("Mana"); ImGui.SameLine(colSize);
-                            ImGui.Text(charData.Attributes[PropertyAttribute.Self].Value.ToString());
+                            ImGui.Text(charData.Attributes[AttributeId.Self].Value.ToString());
 
-                            RenderSkillSummary(SkillAdvancementClass.Specialized, colSize);
-                            RenderSkillSummary(SkillAdvancementClass.Trained, colSize);
-                            RenderSkillSummary(SkillAdvancementClass.Untrained, colSize);
-                            RenderSkillSummary(SkillAdvancementClass.Inactive, colSize);
+                            RenderSkillSummary(SkillTrainingType.Specialized, colSize);
+                            RenderSkillSummary(SkillTrainingType.Trained, colSize);
+                            RenderSkillSummary(SkillTrainingType.Untrained, colSize);
+                            RenderSkillSummary(SkillTrainingType.Unusable, colSize);
                         }
                         ImGui.EndChild(); // summary
                         ImGui.SameLine();
@@ -1050,7 +1050,7 @@ namespace UBLoader.Lib {
             catch (Exception ex) { UBLoader.FilterCore.LogException(ex); }
         }
 
-        private void RenderSkillSummary(SkillAdvancementClass training, int colSize) {
+        private void RenderSkillSummary(SkillTrainingType training, int colSize) {
             ImGui.Spacing();
             ImGui.Spacing();
             ImGui.Text($"{training} Skills:");
@@ -1084,15 +1084,15 @@ namespace UBLoader.Lib {
             }
         }
 
-        private void RenderSkillTable(SkillAdvancementClass training) {
+        private void RenderSkillTable(SkillTrainingType training) {
             if (ImGui.BeginTable($"{training}SkillsTable", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.NoPadOuterX | ImGuiTableFlags.RowBg)) {
-                RenderSkillTrainingHeader(training == SkillAdvancementClass.Inactive ? "Unuseable" : training.ToString());
+                RenderSkillTrainingHeader(training == SkillTrainingType.Unusable ? "Unuseable" : training.ToString());
                 RenderSkillRows(training);
                 ImGui.EndTable();
             }
         }
 
-        private void RenderSkillRows(SkillAdvancementClass training) {
+        private void RenderSkillRows(SkillTrainingType training) {
             var skills = charData.Skills.Values.Where(s => s.Training == training).ToList();
             skills.Sort((a, b) => a.Dat.Name.CompareTo(b.Dat.Name));
             foreach (var skill in skills) {
@@ -1430,10 +1430,10 @@ namespace UBLoader.Lib {
 
         public void Dispose() {
             if (hud != null) {
-                hud.Render -= Hud_Render;
-                hud.PreRender -= Hud_PreRender;
-                hud.DestroyTextures -= Hud_DestroyTextures;
-                hud.CreateTextures -= Hud_CreateTextures;
+                hud.OnRender -= Hud_Render;
+                hud.OnPreRender -= Hud_PreRender;
+                hud.OnDestroyTextures -= Hud_DestroyTextures;
+                hud.OnCreateTextures -= Hud_CreateTextures;
                 hud.Dispose();
                 hud = null;
             }

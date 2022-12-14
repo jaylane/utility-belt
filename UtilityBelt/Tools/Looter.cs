@@ -5,7 +5,7 @@ using System.Linq;
 using UtilityBelt.Lib;
 using uTank2;
 using Decal.Adapter.Wrappers;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using Decal.Interop.Input;
 using Timer = Decal.Interop.Input.Timer;
 using UBHelper;
@@ -15,21 +15,22 @@ namespace UtilityBelt.Tools {
     [Name("Looter")]
     [Summary("Loot functionality from chests and your own corpse.")]
     [FullDescription(@"
-<span style='color:red'>I **highly** suggest double checking your active vtank loot profile before using looter, especially if utilizing the autosalvage functionality.  It will only salvage items it loots, but is not forgiving.</span>
+> [!CAUTION]
+> It is **highly** suggested to double check your active vtank loot profile before using looter, especially if utilizing the autosalvage functionality.  It will only salvage items it loots, but is not forgiving.
 
-### How to use
+#### How to use
 
 * Modify the Looter settings as needed, they are pretty self explanatory.
-* Open a chest manually and let looter do it's thing.  This is recommended before using the /ub use command on a chest or corpse.
-* If you want, use the /ub use <name> on a chest or corpse.  This will open the chest, loot the items that match the current vtank profile and **close the chest once complete**.
+* Open a chest manually and let looter do it's thing.  This is recommended before using the `/ub use` command on a chest or corpse.
+* If you want, use the `/ub use <name>` on a chest or corpse.  This will open the chest, loot the items that match the current vtank profile and **close the chest once complete**.
 
-### Info
+#### Info
 
 * Looter uses the active vtank loot profile
 * It is capable of looting the following:
   - Chests
   - Your own corpse
-  - Monster corpses if /ub use command was used.
+  - Monster corpses if `/ub use` command was used.
 * Supported rule actions: Keep, Keep #, and Salvage
   - Keep (loot all matching items).
   - Keep # (loot # of this item)
@@ -37,7 +38,7 @@ namespace UtilityBelt.Tools {
 * Red loot rules are supported (the ones that need id data)
 * Jump looting works best when client has focus or at a force higher fps.  It will not try to jump over 200 burden or under 5 stamina. **Does not work on GDLE**
 * Jump height is customizable and the container will close if you jump too high.
-* Autosavage will only work if /ub use command or the UI was used.
+* Autosavage will only work if `/ub use` command or the UI was used.
 * Autosalvage will only attempt to salvage items that it looted from the targetted container. It does not currently combine bags.
 * Things that it *won't* do:
   - Give you better loot

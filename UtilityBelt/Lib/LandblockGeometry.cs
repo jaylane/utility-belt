@@ -1,13 +1,12 @@
 ﻿using ACE.DatLoader;
-using ACE.DatLoader.Entity;
 using ACE.DatLoader.FileTypes;
 using Decal.Adapter;
 using Decal.Filters;
-using Microsoft.DirectX;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using UBCommon.Messages.Types;
+using Frame = ACE.DatLoader.Entity.Frame;
 
 namespace UtilityBelt.Lib {
     public class LandblockGeometry {
@@ -402,8 +401,8 @@ namespace UtilityBelt.Lib {
             double dtheta = 2 * Math.PI / num_sides;
             for (int i = 0; i < num_sides; i++) {
                 Positions.Add(origin +
-                    (float)Math.Cos(theta) * v1 +
-                    (float)Math.Sin(theta) * v2);
+                    v1 * (float)Math.Cos(theta) +
+                    v2 * (float)Math.Sin(theta));
                 theta += dtheta;
             }
 
@@ -425,8 +424,8 @@ namespace UtilityBelt.Lib {
             theta = 0;
             for (int i = 0; i < num_sides; i++) {
                 Positions.Add(end_point2 +
-                    (float)Math.Cos(theta) * v1 +
-                    (float)Math.Sin(theta) * v2);
+                    v1 * (float)Math.Cos(theta) +
+                    v2 * (float)Math.Sin(theta));
                 theta += dtheta;
             }
 
@@ -449,8 +448,8 @@ namespace UtilityBelt.Lib {
             theta = 0;
             for (int i = 0; i < num_sides; i++) {
                 Vector3 p1 = origin +
-                    (float)Math.Cos(theta) * v1 +
-                    (float)Math.Sin(theta) * v2;
+                    v1 * (float)Math.Cos(theta) +
+                    v2 * (float)Math.Sin(theta);
                 Positions.Add(p1);
                 Vector3 p2 = p1 + axis;
                 Positions.Add(p2);
@@ -488,7 +487,7 @@ namespace UtilityBelt.Lib {
                 var v1 = vertices[i1];
 
                 var midpoint = (v0 + v1);
-                midpoint.Multiply(0.5f);
+                midpoint *= 0.5f;
 
                 if (vertices.Contains(midpoint))
                     midpointIndex = vertices.IndexOf(midpoint);

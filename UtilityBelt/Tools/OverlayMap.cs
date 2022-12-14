@@ -12,16 +12,17 @@ using UtilityBelt.Lib.Maps.Markers;
 using UtilityBelt.Lib.Settings;
 using VirindiViewService;
 using static UtilityBelt.Tools.VTankControl;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using Microsoft.DirectX.Direct3D;
 using System.Collections.Generic;
 using ACE.DatLoader.FileTypes;
 using ACE.DatLoader.Entity;
+using Geometry = UtilityBelt.Lib.Geometry;
 
 namespace UtilityBelt.Tools {
     [Name("OverlayMap")]
     [Summary("Provides ingame 3d map overlay.")]
-    [FullDescription(@"Todo...")]
+    [FullDescription(@"You can use this tool to provide a custom 3d renderer in place of the default game 3d renderer.  Combining it with the video patch option allows you to lower cpu usage while still seeing what's going on in the game world.")]
     public class OverlayMap : ToolBase {
         #region Config
         [Summary("Enabled")]

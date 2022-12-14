@@ -1,7 +1,6 @@
 ﻿using AcClient;
 using System;
 using System.Collections.Generic;
-using UBService.Lib.Settings;
 
 namespace AcClient {
 

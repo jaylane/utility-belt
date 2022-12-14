@@ -13,13 +13,14 @@ using UtilityBelt.Lib.Settings;
 using UtilityBelt.Lib.VendorCache;
 using UtilityBelt.Views;
 using VirindiViewService.Controls;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("AutoVendor")]
     [Summary("Automatically buys/sells items at vendors based on loot profiles.")]
     [FullDescription(@"
-<span style='color:red'>I **highly** suggest enabling test mode before actually running, this can **sell all of your stuff** so please don't blame me.</span>
+> [!CAUTION]
+> It is **highly** suggested to enable test mode with `/ub opt set AutoVendor.TestMode true` before actually running, this can **sell all of your stuff**.
 
 Kind of like [mag-tools auto buy/sell](https://github.com/Mag-nus/Mag-Plugins/wiki/Mag%E2%80%90Tools-Misc#vendor-auto-buysell-on-open-trade). It's less forgiving, and can sell just about anything. It will load the first profile it finds when you open a vendor in this order:
 
@@ -30,7 +31,7 @@ Documents\Decal Plugins\UtilityBelt\<server>\<char>\default.utl
 Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
 ```
 
-### How to use
+#### How to use
 
 * Create a virindi tank loot profile with some keep rules, here is an example for [Aun Amanaualuan the Elder Shaman](/utl/Aun Amanaualuan the Elder Shaman.utl). (replace underscores with spaces after downloading)
 * Drop the profile in `%USERPROFILE%\Documents\Decal Plugins\UtilityBelt\autovendor\`
@@ -39,7 +40,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
 * Next time you open Aun Amanaualuan the Elder Shaman, ub will auto buy components and sell peas.
 * If a profile does not exist, nothing will be bought/sold.
 
-### Info
+#### Info
 
 * Supported rule actions: Keep, Keep #, and Sell
   - Keep (buy as many as this item as it can afford.  wont sell notes to buy other notes).
@@ -58,13 +59,14 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
   - Tinkered/Imbued items
   - Items with zero value
 
-### Example Profiles
-* [Tunlok Weapons Master.utl](/utl/Tunlok Weapons Master.utl)
-    - (Sells all salvage except Granite)
-* [Aun Amanaualuan the Elder Shaman.utl](/utl/Aun Amanaualuan the Elder Shaman.utl)
-    - Buys components /portal gems. Sells peas.
-* [Thimrin Woodsetter.utl](/utl/Thimrin Woodsetter.utl)
-    - Buys supplies based on character's current skill level (healing kits, cooking pot, rations)
+#### Example Profiles
+
+| Vendor UTL | Description |
+|------------|-------------|
+| [Tunlok Weapons Master.utl](../../utl/Tunlok%20Weapons%20Master.utl) | Sells all salvage except Granite |
+| [Aun Amanaualuan the Elder Shaman.utl](../../utl/Aun%20Amanaualuan%20the%20Elder%20Shaman.utl) | Buys components /portal gems. Sells peas. |
+| [Thimrin Woodsetter.utl](../../utl/Thimrin%20Woodsetter.utl) | Buys supplies based on character's current skill level (healing kits, cooking pot, rations) |
+
     ")]
     public class AutoVendor : ToolBase {
         private const int MAX_VENDOR_BUY_COUNT = 5000;
@@ -157,9 +159,10 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         #endregion
         #region /ub vendor {open[p] [vendorname,vendorid,vendorhex],opencancel,buyall,sellall,clearbuy,clearsell}
         [Summary("Vendor commands, with build in VTank pausing.")]
-        [Usage("/ub vendor {open[p] <vendorname,vendorid,vendorhex> | buyall | sellall | clearbuy | clearsell | opencancel}")]
+        [Usage("/ub vendor {open[p] <vendorname,vendorid,vendorhex> | buyall | sellall | clearbuy | clearsell | opencancel | addbuy[p] <item> | addsell[p] <item>}")]
         [Example("/ub vendor open Tunlok Weapons Master", "Opens vendor with name \"Tunlok Weapons Master\"")]
         [Example("/ub vendor opencancel", "Quietly cancels the last /ub vendor open* command")]
+        [Example("/ub vendor addbuy 10 Mana Scarab", "Adds 10 Mana Scarabs to the buy list. use /ub vendor buyall to actually buy")]
         [CommandPattern("vendor", @"^ *(?<params>(openp? ?.+|buy(all)?|sell(all)?|clearbuy|clearsell|opencancel|addsellp? .+|addbuyp? .+)) *$")]
         public void DoVendor(string _, Match args) {
             UB_vendor(args.Groups["params"].Value);

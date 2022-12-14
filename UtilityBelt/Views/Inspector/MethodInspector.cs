@@ -8,12 +8,13 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using UBService;
+using UtilityBelt.Service;
 using static UtilityBelt.Lib.UBHud;
 
 namespace UtilityBelt.Views.Inspector {
@@ -21,7 +22,7 @@ namespace UtilityBelt.Views.Inspector {
         private const int MAX_STRING_LENGTH = 1000;
         private static uint _id = 0;
         private static uint _pushId = 0;
-        private UBService.Views.Hud hud;
+        private UtilityBelt.Service.Views.Hud hud;
         private Vector2 minWindowSize = new Vector2(300, 200);
         private Vector2 maxWindowSize = new Vector2(99999, 99999);
         private List<Inspector> inspectors = new List<Inspector>();
@@ -41,7 +42,7 @@ namespace UtilityBelt.Views.Inspector {
             Parent = parent;
 
             using (Stream manifestResourceStream = GetType().Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.eye.png")) {
-                hud = UBService.UBService.Huds.CreateHud($"MethodInspector: {Name}##EventMonitor{_id++}", new Bitmap(manifestResourceStream));
+                hud = UtilityBelt.Service.UBService.Huds.CreateHud($"MethodInspector: {Name}##EventMonitor{_id++}", new Bitmap(manifestResourceStream));
             }
 
             var _params = MethodInfo.GetParameters();
@@ -60,11 +61,11 @@ namespace UtilityBelt.Views.Inspector {
                 }
             }
 
-            hud.Render += Hud_Render;
-            hud.PreRender += Hud_PreRender;
-            hud.ShouldHide += Hud_ShouldHide;
-            hud.CreateTextures += Hud_CreateTextures;
-            hud.DestroyTextures += Hud_DestroyTextures;
+            hud.OnRender += Hud_Render;
+            hud.OnPreRender += Hud_PreRender;
+            hud.OnHide += Hud_ShouldHide;
+            hud.OnCreateTextures += Hud_CreateTextures;
+            hud.OnDestroyTextures += Hud_DestroyTextures;
             CreateTextures();
         }
 
@@ -351,11 +352,11 @@ namespace UtilityBelt.Views.Inspector {
                 results.Clear();
                 DestroyTextures();
                 hud.Visible = false;
-                hud.Render -= Hud_Render;
-                hud.PreRender -= Hud_PreRender;
-                hud.ShouldHide -= Hud_ShouldHide;
-                hud.CreateTextures -= Hud_CreateTextures;
-                hud.DestroyTextures -= Hud_DestroyTextures;
+                hud.OnRender -= Hud_Render;
+                hud.OnPreRender -= Hud_PreRender;
+                hud.OnHide -= Hud_ShouldHide;
+                hud.OnCreateTextures -= Hud_CreateTextures;
+                hud.OnDestroyTextures -= Hud_DestroyTextures;
                 hud.Dispose();
                 isDisposed = true;
             }

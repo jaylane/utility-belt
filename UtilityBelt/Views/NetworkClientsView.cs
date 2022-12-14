@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Timers;
 using VirindiViewService.Controls;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using UtilityBelt.Lib.Networking;
 
 namespace UtilityBelt.Views {
@@ -105,7 +105,7 @@ namespace UtilityBelt.Views {
         }
 
         private IEnumerable<ClientInfo> GetActiveClients() {
-            return UB.Networking.Clients.Select(c => c.Value).Where(c => currentTab == "All" || c.Tags.Contains(currentTab));
+            return UB.Networking.Clients.Select(c => c).Where(c => currentTab == "All" || c.Tags.Contains(currentTab));
         }
 
         private void All_UseSelected_Hit(object sender, EventArgs e) {

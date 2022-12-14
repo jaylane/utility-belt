@@ -14,12 +14,19 @@ using UtilityBelt.Lib.Maps.Markers;
 using UtilityBelt.Lib.Settings;
 using VirindiViewService;
 using VirindiViewService.Controls;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("LandscapeMaps")]
     [Summary("Provides a landscape map with markers for points of interest")]
-    [FullDescription(@"Click the map looking icon under the main utility belt icon in the VVS bar to show.  You can click the ""Follow"" button to make the map stick to your character position. Click and dragging on the map pans, and changes to manual positioning.  Scroll wheel changes the zoom level.")]
+    [FullDescription(@"
+
+Click the map looking icon under the main utility belt icon in the VVS bar to show.  You can click the `Follow` button to make the map stick to your character position. Click and dragging on the map pans, and changes to manual positioning.  Scroll wheel changes the zoom level.
+
+#### Screenshots
+
+![UtilityBelt plugin landscape maps window preview](../../images/screenshots/landscapemaps.png)
+")]
     public class LandscapeMaps : ToolBase {
         private DxTexture mapTexture = null;
         private DxTexture playerArrowTexture = null;

@@ -14,32 +14,31 @@ using UtilityBelt.Lib.Tinker;
 using System.ComponentModel;
 using UBHelper;
 using UtilityBelt.Lib.Settings;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("AutoTinker")]
     [Summary("Provides a UI for automatically applying salvage to weapons/armor.")]
     [FullDescription(@"
-This tool provides a UI for automatically applying tinkering salvage and imbue salvage to weapons and armor. It will choose the best (lowest workmanship) salvage and it to the target item, that still gives a percentage over [AutoTinker.MinPercent](/docs/tools/autotinker/#autotinker-minpercentage).
+This tool provides a UI for automatically applying tinkering salvage and imbue salvage to weapons and armor. It will choose the best (lowest workmanship) salvage and it to the target item, that still gives a percentage over [AutoTinker.MinPercent](#autotinkerminpercentage).
 
-### Tinker Tab
+#### Tinker Tab
 
 This can apply specific salvage, or for melee weapons it can apply the best granite/iron option.  The math here follows endy's tinking calculator and selects highest max damage possible.
 
-![](/screenshots/AutoTinker/autotinker.png)
+![AutoTinker Plugin Window Preview](../../images/screenshots/AutoTinker/autotinker.png)
 
 1. Select an item in your inventory you want to tinker.
-2. Set [AutoTinker.MinPercent](/docs/tools/autotinker/#autotinker-minpercentage) 
+2. Set [AutoTinker.MinPercent](#autotinkerminpercentage) 
 3. Choose a salvage type from the dropdown.
 4. Click the populate button.
 5. If it looks good, hit Start.
 
-
-### Imbue Tab
+#### Imbue Tab
 
 This is capable of bulk applying imbue salvage to items.
 
-![](/screenshots/AutoTinker/autoimbue.png)
+![AutoImbue Plugin Window Preview](../../images/screenshots/AutoTinker/autoimbue.png)
 
 1. Select the appropriate damage and salvage combo
 2. Select refresh
@@ -58,8 +57,6 @@ The Rend All button will automatically do the following:
 * Apply red garnet to fire weapons
 * Apply emerald to acid weapons
 * Apply aquamarine to cold weapons
-
-
 
     ")]
     public class AutoTinker : ToolBase {

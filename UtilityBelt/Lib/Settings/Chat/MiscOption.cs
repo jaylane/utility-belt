@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.ComponentModel;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 
 namespace UtilityBelt.Lib.Settings.Chat {
     public class MiscOption : ISetting {

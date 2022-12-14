@@ -1,341 +1,117 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- todo: move these somewhere easier to get to? -->
-  <Import Project="..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Major>0</Major>
-    <Minor>2</Minor>
-    <Build>8</Build>
-    <Revision>0</Revision>
-    <Branch>master</Branch>
-  </PropertyGroup>
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{C2880823-67E7-4B3D-A481-9ADC9847C39C}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>UtilityBelt</RootNamespace>
-    <AssemblyName>UtilityBelt</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>..\bin\</OutputPath>
-    <DefineConstants>TRACE;VVS_REFERENCED</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <TargetFramework>net48</TargetFramework>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <LangVersion>10</LangVersion>
     <DebugSymbols>true</DebugSymbols>
-    <CodeAnalysisIgnoreGeneratedCode>true</CodeAnalysisIgnoreGeneratedCode>
-    <NoWarn>1591</NoWarn>
+    <OutputType>Library</OutputType>
+    <OutputPath>..\bin\Release\</OutputPath>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+    <LangVersion>10</LangVersion>
+    <UseFullSemVerForNuget>False</UseFullSemVerForNuget>
+    <UpdateVersionProperties>True</UpdateVersionProperties>
+  </PropertyGroup>
+  
   <ItemGroup>
-    <Reference Include="0Harmony, Version=1.2.0.1, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\UBLoader\Deps\0Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="ACE.DatLoader, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\UBLoader\Deps\ACE.DatLoader.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Antlr4.Runtime, Version=4.6.0.0, Culture=neutral, PublicKeyToken=09abb75b9ed49849, processorArchitecture=MSIL">
-      <HintPath>..\packages\Antlr4.Runtime.4.6.6\lib\net35-client\Antlr4.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Decal.Adapter">
-      <HintPath>C:\Program Files (x86)\Decal 3.0\Decal.Adapter.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\deps\Decal.Adapter.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Decal.FileService">
-      <HintPath>C:\Program Files (x86)\Decal 3.0\Decal.FileService.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Decal.Interop.D3DService, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Decal.Interop.Filters, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Decal.Interop.Input, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>C:\Program Files (x86)\Decal 3.0\.NET 2.0 PIA\Decal.Interop.Input.DLL</HintPath>
+      <HintPath>..\deps\Decal.FileService.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Decal.Interop.Render, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65, processorArchitecture=MSIL">
+    <Reference Include="Decal.Interop.Core">
+      <HintPath>..\deps\Decal.Interop.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Decal.Interop.D3DService">
       <SpecificVersion>False</SpecificVersion>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>C:\Program Files (x86)\Decal 3.0\.NET 2.0 PIA\Decal.Interop.Render.DLL</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\deps\Decal.Interop.D3DService.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Exceptionless, Version=1.5.2121.0, Culture=neutral, PublicKeyToken=fc181f0a46f65747, processorArchitecture=MSIL">
+    <Reference Include="Decal.Interop.Filters">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Exceptionless.1.5.2121\lib\net35\Exceptionless.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\deps\Decal.Interop.Filters.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="LiteDB, Version=4.1.4.0, Culture=neutral, PublicKeyToken=4ee40123013c9f27, processorArchitecture=MSIL">
-      <HintPath>..\packages\LiteDB.4.1.4\lib\net35\LiteDB.dll</HintPath>
+    <Reference Include="Decal.Interop.Input">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\deps\Decal.Interop.Input.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Decal.Interop.Render">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\deps\Decal.Interop.Render.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\deps\Microsoft.DirectX.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.DirectX.Direct3D, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2902.0\Microsoft.DirectX.Direct3D.dll</HintPath>
+      <HintPath>..\deps\Microsoft.DirectX.Direct3D.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.VisualC" />
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\UBLoader\Deps\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Microsoft.VisualC">
       <Private>False</Private>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.configuration" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Data.Linq" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-    <Reference Include="UBHelper">
-      <HintPath>..\UBLoader\Deps\UBHelper.dll</HintPath>
+    <Reference Include="MoonSharp.Interpreter, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\deps\MoonSharp.Interpreter.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Data.Linq">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Runtime">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Windows">
       <Private>False</Private>
     </Reference>
     <Reference Include="utank2-i">
-      <HintPath>C:\Games\VirindiPlugins\VirindiTank\utank2-i.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\deps\utank2-i.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="VCS5">
-      <HintPath>C:\Games\VirindiPlugins\VirindiChatSystem5\VCS5.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\deps\VCS5.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="VirindiHotkeySystem">
-      <HintPath>C:\Games\VirindiPlugins\VirindiHotkeySystem\VirindiHotkeySystem.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\deps\VirindiHotkeySystem.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="VirindiHUDs">
-      <HintPath>C:\Games\VirindiPlugins\VirindiHUDs\VirindiHUDs.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\deps\VirindiHUDs.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="VirindiViewService">
-      <HintPath>C:\Games\VirindiPlugins\VirindiViewService\VirindiViewService.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\deps\VirindiViewService.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="VTClassic">
-      <HintPath>C:\Games\VirindiPlugins\VirindiTankClassicLooter\VTClassic.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\deps\VTClassic.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="WindowsBase" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Lib\ActionQueue.cs" />
-    <Compile Include="Lib\Actions\ChatCommandAction.cs" />
-    <Compile Include="Lib\Actions\ChatExpressionAction.cs" />
-    <Compile Include="Lib\Actions\ExpressionAction.cs" />
-    <Compile Include="Lib\Attributes.cs" />
-    <Compile Include="Lib\Camera.cs" />
-    <Compile Include="Lib\Chat\ChatType.cs" />
-    <Compile Include="Lib\ItemInfoHelper\Dictionaries.cs" />
-    <Compile Include="Lib\ItemInfoHelper\MiscCalcs.cs" />
-    <Compile Include="Lib\ItemInfoHelper\WeaponMods.cs" />
-    <Compile Include="Lib\Constants\WeenieType.cs" />
-    <Compile Include="Lib\Coordinate.cs" />
-    <Compile Include="Lib\Dungeon\Dungeon.cs" />
-    <Compile Include="Lib\Dungeon\DungeonCell.cs" />
-    <Compile Include="Lib\Dungeon\DungeonLayer.cs" />
-    <Compile Include="Lib\Dungeon\IsDungeon.cs" />
-    <Compile Include="Lib\LandblockGeometry.cs" />
-    <Compile Include="Lib\Expressions\ExpressionCoordinates.cs" />
-    <Compile Include="Lib\Expressions\ExpressionList.cs" />
-    <Compile Include="Lib\Expressions\ExpressionDictionary.cs" />
-    <Compile Include="Lib\Expressions\ExpressionObjectBase.cs" />
-    <Compile Include="Lib\Expressions\ExpressionStopwatch.cs" />
-    <Compile Include="Lib\Expressions\ExpressionUIControl.cs" />
-    <Compile Include="Lib\Expressions\ExpressionVisitor.cs" />
-    <Compile Include="Lib\Expressions\ExpressionWorldObject.cs" />
-    <Compile Include="Lib\Extensions.cs" />
-    <Compile Include="Lib\GameEvents\BaseGameEvent.cs" />
-    <Compile Include="Lib\GameEvents\CharacterDeathGameEvent.cs" />
-    <Compile Include="Lib\GameEvents\LoginCompleteGameEvent.cs" />
-    <Compile Include="Lib\GameEvents\LoginGameEvent.cs" />
-    <Compile Include="Lib\GameEvents\LogoutGameEvent.cs" />
-    <Compile Include="Lib\GameEvents\UBGameEvent.cs" />
-    <Compile Include="Lib\HotkeyWrapper.cs" />
-    <Compile Include="Lib\Inventory.cs" />
-    <Compile Include="Lib\Maps\markers\BaseMarker.cs" />
-    <Compile Include="Lib\Maps\markers\IconMarker.cs" />
-    <Compile Include="Lib\Maps\LandscapeMarkers.cs" />
-    <Compile Include="Lib\Maps\markers\LabelMarker.cs" />
-    <Compile Include="Lib\Maps\markers\LineMarker.cs" />
-    <Compile Include="Lib\Models\Angles.cs" />
-    <Compile Include="Lib\Models\CompiledExpression.cs" />
-    <Compile Include="Lib\Models\Frame.cs" />
-    <Compile Include="Lib\Models\GlobalVariable.cs" />
-    <Compile Include="Lib\Models\Landblock.cs" />
-    <Compile Include="Lib\Models\Link.cs" />
-    <Compile Include="Lib\Models\Origin.cs" />
-    <Compile Include="Lib\Models\PersistentVariable.cs" />
-    <Compile Include="Lib\Models\Position.cs" />
-    <Compile Include="Lib\Models\QuestFlag.cs" />
-    <Compile Include="Lib\Models\Weenie.cs" />
-    <Compile Include="Lib\Models\WeenieAttribute.cs" />
-    <Compile Include="Lib\Models\WeenieSpawn.cs" />
-    <Compile Include="Lib\Networking\ClientInfo.cs" />
-    <Compile Include="Lib\Networking\HotReloadTypeBinder.cs" />
-    <Compile Include="Lib\Networking\Messages\CharacterPositionMessage.cs" />
-    <Compile Include="Lib\Networking\Messages\TrackedItemUpdateMessage.cs" />
-    <Compile Include="Lib\Networking\TrackedItemStatus.cs" />
-    <Compile Include="Lib\DynamicObjectGeometry.cs" />
-    <Compile Include="Lib\Settings\ChatLogRule.cs" />
-    <Compile Include="Lib\Settings\Chat\AttackOnTargetOption.cs" />
-    <Compile Include="Lib\Networking\Messages\CastAttemptMessage.cs" />
-    <Compile Include="Lib\Networking\Messages\CastSuccessMessage.cs" />
-    <Compile Include="Lib\Networking\Messages\CommandBroadcastMessage.cs" />
-    <Compile Include="Lib\PerfMonitor.cs" />
-    <Compile Include="Lib\Settings\Chat\AttackOnYouOption.cs" />
-    <Compile Include="Lib\Settings\Chat\MessageOption.cs" />
-    <Compile Include="Lib\Settings\Chat\MiscOption.cs" />
-    <Compile Include="Lib\Settings\Chat\OthersCastOption.cs" />
-    <Compile Include="Lib\Settings\Chat\RechargeOptions.cs" />
-    <Compile Include="Lib\Settings\Chat\YouCastOption.cs" />
-    <Compile Include="Lib\Settings\ColorToggleRenderOption.cs" />
-    <Compile Include="Lib\Settings\NametagDisplay.cs" />
-    <Compile Include="Lib\Settings\PluginMessageDisplay.cs" />
-    <Compile Include="Lib\Settings\SerializationBinder.cs" />
-    <Compile Include="Lib\Settings\TrackedItem.cs" />
-    <Compile Include="Lib\Spells.cs" />
-    <Compile Include="Lib\TextureCache.cs" />
-    <Compile Include="Lib\Dungeon\TrackedObject.cs" />
-    <Compile Include="Lib\Mp3Player.cs" />
-    <Compile Include="Lib\Tinker\TinkerJob.cs" />
-    <Compile Include="Lib\Tinker\TinkerJobManager.cs" />
-    <Compile Include="Lib\ToolBase.cs" />
-    <Compile Include="Lib\Database.cs" />
-    <Compile Include="Lib\Actions\BaseAction.cs" />
-    <Compile Include="Lib\UBHud\UBHud.Block.cs" />
-    <Compile Include="Lib\UBHud\UBHud.Button.cs" />
-    <Compile Include="Lib\UBHud\UBHud.cs" />
-    <Compile Include="Lib\UBHud\UBHud.Element.cs" />
-    <Compile Include="Lib\UBHud\UBHud.Enums.cs" />
-    <Compile Include="Lib\UBHud\UBHud.Image.cs" />
-    <Compile Include="Lib\UBHud\UBHud.Label.cs" />
-    <Compile Include="Lib\UBHud\UBHud.Titlebar.cs" />
-    <Compile Include="Lib\UBHud\UBHudManager.cs" />
-    <Compile Include="Lib\VCS_Connector.cs" />
-    <Compile Include="Lib\VHS_Connector.cs" />
-    <Compile Include="Tools\GUI.cs" />
-    <Compile Include="Tools\Player.cs" />
-    <Compile Include="Tools\XPMeter.cs" />
-    <Compile Include="Tools\OverlayMap.cs" />
-    <Compile Include="Tools\AutoXp.cs" />
-    <Compile Include="Tools\ChatFilter.cs" />
-    <Compile Include="Tools\ChatHandler.cs" />
-    <Compile Include="Tools\Aliases.cs" />
-    <Compile Include="Tools\Arrow.cs" />
-    <Compile Include="Tools\GameEvents.cs" />
-    <Compile Include="Tools\ItemInfo.cs" />
-    <Compile Include="Tools\LoginManager.cs" />
-    <Compile Include="Tools\Looter.cs" />
-    <Compile Include="Tools\Movement.cs" />
-    <Compile Include="Tools\Networking.cs" />
-    <Compile Include="Tools\NetworkUI.cs" />
-    <Compile Include="Tools\PlayerOptions.cs" />
-    <Compile Include="Tools\Client.cs" />
-    <Compile Include="Tools\DerethTime.cs" />
-    <Compile Include="Tools\DungeonMaps.cs" />
-    <Compile Include="Tools\FellowshipManager.cs" />
-    <Compile Include="Tools\LandscapeMaps.cs" />
-    <Compile Include="Tools\LSD.cs" />
-    <Compile Include="Tools\HealthTracker.cs" />
-    <Compile Include="Tools\Nametags.cs" />
-    <Compile Include="Lib\ChatLog\ChatLog.cs" />
-    <Compile Include="Lib\ChatLog\ChatLogWriter.cs" />
-    <Compile Include="Lib\Constants\BehaviorFlags.cs" />
-    <Compile Include="Lib\Constants\DamageTypes.cs" />
-    <Compile Include="Lib\Constants\PhysicsState.cs" />
-    <Compile Include="Lib\Constants\Skills.cs" />
-    <Compile Include="Lib\Constants\UseFlags.cs" />
-    <Compile Include="Lib\PhysicsObject.cs" />
-    <Compile Include="Lib\Salvage\Material.cs" />
-    <Compile Include="Lib\Salvage\TinkerCalc.cs" />
-    <Compile Include="Lib\Salvage\TinkerType.cs" />
-    <Compile Include="Lib\Settings\ColorToggleOption.cs" />
-    <Compile Include="Lib\Settings\MarkerToggleOption.cs" />
-    <Compile Include="Lib\Constants\CharOptions2.cs" />
-    <Compile Include="Lib\Constants\CharOptions.cs" />
-    <Compile Include="Lib\Geometry.cs" />
-    <Compile Include="Lib\Quests\QuestFlag.cs" />
-    <Compile Include="Lib\Quests\QuestFlagType.cs" />
-    <Compile Include="Lib\Settings\SettingsForm.cs" />
-    <Compile Include="Lib\UpdateChecker.cs" />
-    <Compile Include="Lib\VendorCache\BuyItem.cs" />
-    <Compile Include="Lib\VendorCache\VendorCache.cs" />
-    <Compile Include="Lib\VendorCache\VendorInfo.cs" />
-    <Compile Include="Lib\VendorCache\VendorItem.cs" />
-    <Compile Include="Lib\VTNav\enums.cs" />
-    <Compile Include="Lib\VTNav\Waypoints\VTNChat.cs" />
-    <Compile Include="Lib\VTNav\Waypoints\VTNJump.cs" />
-    <Compile Include="Lib\VTNav\Waypoints\VTNOpenVendor.cs" />
-    <Compile Include="Lib\VTNav\Waypoints\VTNPause.cs" />
-    <Compile Include="Lib\VTNav\Waypoints\VTNPoint.cs" />
-    <Compile Include="Lib\VTNav\Waypoints\VTNPortal.cs" />
-    <Compile Include="Lib\VTNav\Waypoints\VTNRecall.cs" />
-    <Compile Include="Lib\VTNav\Waypoints\VTNUseNPC.cs" />
-    <Compile Include="Lib\Logger.cs" />
-    <Compile Include="Tools\PrepClick.cs" />
-    <Compile Include="Tools\Professors.cs" />
-    <Compile Include="Tools\SpellManager.cs" />
-    <Compile Include="Tools\VTankExtensions.cs" />
-    <Compile Include="UtilityBelt.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Tools\Assessor.cs" />
-    <Compile Include="Tools\AutoSalvage.cs" />
-    <Compile Include="Tools\AutoTinker.cs" />
-    <Compile Include="Tools\AutoTrade.cs" />
-    <Compile Include="Tools\AutoVendor.cs" />
-    <Compile Include="Tools\ChatLogger.cs" />
-    <Compile Include="Tools\ChatNameClickHandler.cs" />
-    <Compile Include="Tools\Counter.cs" />
-    <Compile Include="Tools\EquipmentManager.cs" />
-    <Compile Include="Tools\InventoryManager.cs" />
-    <Compile Include="Tools\Jumper.cs" />
-    <Compile Include="Tools\Plugin.cs" />
-    <Compile Include="Tools\QuestTracker.cs" />
-    <Compile Include="Tools\VisualNav.cs" />
-    <Compile Include="Lib\VTNav\VTNavRoute.cs" />
-    <Compile Include="Tools\VTankControl.cs" />
-    <Compile Include="Tools\VTankFellowHeals.cs" />
-    <Compile Include="Lib\Util.cs" />
-    <Compile Include="Views\BaseView.cs" />
-    <Compile Include="Views\ColorPicker.cs" />
-    <Compile Include="Views\ConfirmationDialog.cs" />
-    <Compile Include="Views\DictionaryEditor.cs" />
-    <Compile Include="Views\EnumFlagEditor.cs" />
-    <Compile Include="Views\Inspector\DynamicEventHandler.cs" />
-    <Compile Include="Views\Inspector\EventMonitor.cs" />
-    <Compile Include="Views\Inspector\Inspector.cs" />
-    <Compile Include="Views\Inspector\MethodInspector.cs" />
-    <Compile Include="Views\KeyValueTreeView.cs" />
-    <Compile Include="Views\ItemGiver.cs" />
-    <Compile Include="Views\LandscapeMapsView.cs" />
-    <Compile Include="Views\ListEditor.cs" />
-    <Compile Include="Views\DungeonMapsView.cs" />
-    <Compile Include="Views\LongStringEditor.cs" />
-    <Compile Include="Views\MainView.cs" />
-    <Compile Include="Views\NetworkClientsView.cs" />
-    <Compile Include="Views\SettingsView.cs" />
-    <Compile Include="Views\TextEditPopup.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\MainView.xml">
@@ -350,74 +126,11 @@
       <Abstract>False</Abstract>
       <ForceAtn>False</ForceAtn>
     </Antlr4>
-    <None Include="Installer\Install.nsi" />
-    <None Include="packages.config" />
     <EmbeddedResource Include="Resources\mapdata\npcs.csv" />
     <EmbeddedResource Include="Resources\mapdata\portals.csv" />
     <EmbeddedResource Include="Resources\mapdata\vendors.csv" />
     <EmbeddedResource Include="Resources\mapdata\towns.csv" />
     <EmbeddedResource Include="Resources\mapdata\lifestones.csv" />
-  </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="D3DService">
-      <Guid>{8F6EF6AD-E982-40A4-B6CC-79E80B77313B}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <Private>False</Private>
-    </COMReference>
-    <COMReference Include="Decal">
-      <Guid>{FF7F5F6D-34E0-4B6F-B3BB-8141DE2EF732}</Guid>
-      <VersionMajor>2</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <Private>False</Private>
-    </COMReference>
-    <COMReference Include="DecalFilters">
-      <Guid>{DA16DAA9-7F16-45D9-A59F-8C45A7F2ACB1}</Guid>
-      <VersionMajor>2</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <Private>False</Private>
-    </COMReference>
-    <COMReference Include="DecalNet">
-      <Guid>{572B87C4-93BD-46B3-A291-CD58181D25DC}</Guid>
-      <VersionMajor>2</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <Private>False</Private>
-    </COMReference>
-    <COMReference Include="DecalPlugins">
-      <Guid>{3559E08B-827E-4DFE-9D33-3567246849CC}</Guid>
-      <VersionMajor>2</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <Private>False</Private>
-    </COMReference>
-    <COMReference Include="stdole">
-      <Guid>{00020430-0000-0000-C000-000000000046}</Guid>
-      <VersionMajor>2</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\icons\dungeonmaps.png" />
@@ -1069,22 +782,6 @@
     <EmbeddedResource Include="Resources\icons\daynight.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\UBLoader\UBLoader.csproj">
-      <Project>{bb14f564-6e92-4fd0-9394-120e517ea5ba}</Project>
-      <Name>UBLoader</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\UBNetworking\UBNetworking.csproj">
-      <Project>{2829fc6e-2bec-4259-aa51-6cc180d3834b}</Project>
-      <Name>UBNetworking</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\UBService\UBService.csproj">
-      <Project>{8adc5729-db1a-4e28-9475-c4eafae1e6e7}</Project>
-      <Name>UBService</Name>
-      <Private>False</Private>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Views\DictionaryEditor.xml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -1107,8 +804,10 @@
     <EmbeddedResource Include="Views\NetworkClientsView.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\icons\eye.png" />
     <EmbeddedResource Include="Resources\icons\inspector.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\icons\eye.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\icons\settings.png" />
@@ -1122,38 +821,92 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\icons\delete.png" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\icons\scripts-manager.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UBLoader\UBLoader.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Antlr4" Version="4.6.6" />
+    <PackageReference Include="Antlr4.CodeGenerator" Version="4.6.6" />
+    <PackageReference Include="Antlr4.Runtime" Version="4.6.6" />
+    <PackageReference Include="GitVersion.MsBuild" Version="5.11.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Lib.Harmony" Version="1.2.0.1" />
+    <PackageReference Include="LiteDB" Version="4.1.4" />
+    <PackageReference Include="MSBuildTasks" Version="1.5.0.235" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="NSIS-Tool" Version="3.0.8" />
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0">
+      <ExcludeAssets>*</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Reactive" Version="4.3.2" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+    <PackageReference Include="System.Threading.Channels" Version="7.0.0" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+    <PackageReference Include="TaskParallelLibrary" Version="1.0.2856.0" />
+    <PackageReference Include="UtilityBelt.Common" Version="1.0.3" />
+    <PackageReference Include="UtilityBelt.Helper" Version="1.0.4" />
+    <PackageReference Include="UtilityBelt.Networking" Version="1.0.4" />
+    <PackageReference Include="UtilityBelt.Scripting" Version="1.0.2" />
+    <PackageReference Include="UtilityBelt.Service" Version="2.0.5" />
+    <PackageReference Include="Websocket.Client" Version="4.4.43" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Core">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Data">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Drawing">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.IO.Compression.FileSystem">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Numerics">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Runtime.Serialization">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Windows.Forms">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Xml">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Xml.Linq">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="powershell -ExecutionPolicy RemoteSigned -NoProfile $(ProjectDir)scripts\post-build.ps1 -NuGetVersion $(GitVersion_NuGetVersionV2) -NuGetPackageRoot $(NuGetPackageRoot) -SolutionDir $(SolutionDir) -ProjectDir $(ProjectDir) -ProjectPath $(ProjectPath) -ConfigurationName $(ConfigurationName) -TargetName $(TargetName) -TargetDir $(TargetDir) -ProjectName $(ProjectName) -PlatformName $(PlatformName) -TargetPath $(TargetPath)" />
   </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-  <Import Project="..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets" Condition="Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets'))" />
-    <Error Condition="!Exists('..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.props'))" />
-    <Error Condition="!Exists('..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.targets'))" />
-  </Target>
-  <Target Name="BeforeBuild">
-    <ItemGroup>
-      <AssemblyLines Include="[assembly: Exceptionless.Configuration.Exceptionless(&quot;B94a7v4HvLtiUr10Dvgx7zyQs8hbsJGmDgKCvg9B&quot;, EnableSSL=false, ServerUrl=&quot;http://ex.haxit.org/&quot;)]" />
-    </ItemGroup>
-    <GitVersion LocalPath="$(MSBuildProjectDirectory)">
-      <Output TaskParameter="CommitHash" PropertyName="Revision" />
-    </GitVersion>
-    <GitBranch LocalPath="$(MSBuildProjectDirectory)">
-      <Output TaskParameter="branch" PropertyName="Branch" />
-    </GitBranch>
-    <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.cs" AssemblyTitle="UtilityBelt" AssemblyDescription="Hack the Planet" AssemblyCompany="Ellingson Mineral Company" AssemblyProduct="UtilityBelt" AssemblyCopyright="Copyright 1337 Zero Cool" ComVisible="false" CLSCompliant="false" AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Branch).$(Revision) ($([System.DateTime]::UTCNow.ToString(`yyyy-MM-dd HH:mm:ss`)))" AssemblyVersion="$(Major).$(Minor).$(Build)" AssemblyFileVersion="$(Major).$(Minor).$(Build)" Guid="d00fa5e5-e034-4c5a-ac9b-397875a8b788" />
-    <ReadLinesFromFile File="Properties\AssemblyInfo.cs" Condition="Exists('Properties\AssemblyInfo.cs')">
-      <Output TaskParameter="Lines" ItemName="AssemblyLines" />
-    </ReadLinesFromFile>
-    <WriteLinesToFile File="Properties\AssemblyInfo.cs" Lines="@(AssemblyLines)" Overwrite="true" Encoding="Unicode" />
-  </Target>
-  <Import Project="..\packages\Antlr4.CodeGenerator.4.6.6\build\Antlr4.CodeGenerator.targets" />
 </Project>

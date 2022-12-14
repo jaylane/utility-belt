@@ -6,12 +6,13 @@ using Newtonsoft.Json;
 using System.Runtime.Serialization;
 using System.Reflection;
 using System.Collections.Concurrent;
+using Hellosam.Net.Collections;
 
 namespace UtilityBelt.Lib.Expressions {
     public class LoadedTypesBinder : Newtonsoft.Json.Serialization.ISerializationBinder {
         public Type BindToType(string assemblyName, string typeName) {
             if (typeName.StartsWith("System.Collections.Concurrent.ObservableConcurrentDictionary"))
-                return typeof(ObservableConcurrentDictionary<string, object>);
+                return typeof(ObservableDictionary<string, object>);
             return Type.GetType(typeName);
         }
 

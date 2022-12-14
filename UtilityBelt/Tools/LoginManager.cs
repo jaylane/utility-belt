@@ -2,7 +2,7 @@
 using System;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

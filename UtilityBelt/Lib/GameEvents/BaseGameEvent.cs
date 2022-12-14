@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 
 namespace UtilityBelt.Lib.GameEvents {
     public class GameEventFiredEventArgs : EventArgs {

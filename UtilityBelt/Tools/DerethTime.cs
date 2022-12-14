@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Dungeon;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using VirindiViewService;
 
 namespace UtilityBelt.Tools {

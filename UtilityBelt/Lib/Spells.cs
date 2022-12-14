@@ -1,12 +1,12 @@
 ﻿using AcClient;
 using ACE.DatLoader.Entity;
 using ACE.DatLoader.FileTypes;
-using ACE.Entity.Enum;
 using Decal.Adapter.Wrappers;
 using Decal.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UBCommon.Enums;
 using Spell = Decal.Filters.Spell;
 using SpellComponentBase = ACE.DatLoader.Entity.SpellComponentBase;
 using SpellTable = Decal.Filters.SpellTable;
@@ -79,7 +79,7 @@ namespace UtilityBelt.Lib {
         }
 
         /// <summary>
-        /// Checks if the player has the required skill to cast spellId. Difficulty is modified by the 
+        /// Checks if the player has the required skill to cast spellId. Difficulty is modified by the  
         /// SpellDiffExcessThreshold-Buff vtank setting.
         /// </summary>
         /// <param name="spellId">spell id to check</param>

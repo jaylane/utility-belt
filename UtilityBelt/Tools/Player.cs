@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using UtilityBelt.Lib;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using AcClient;
 
 namespace UtilityBelt.Tools {

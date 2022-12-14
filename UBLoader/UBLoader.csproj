@@ -1,158 +1,90 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\GitVersionTask.5.1.2\build\GitVersionTask.props" Condition="Exists('..\packages\GitVersionTask.5.1.2\build\GitVersionTask.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Major>0</Major>
-    <Minor>2</Minor>
-    <Build>8</Build>
-    <Revision>0</Revision>
+    <TargetFramework>net48</TargetFramework>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <Configurations>Release</Configurations>
   </PropertyGroup>
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{BB14F564-6E92-4FD0-9394-120E517EA5BA}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>UBLoader</RootNamespace>
-    <AssemblyName>UBLoader</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>..\bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <OutputPath>..\bin\Release\</OutputPath>
     <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>10.0</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+    <LangVersion>10</LangVersion>
+    <UseFullSemVerForNuget>False</UseFullSemVerForNuget>
+    <UpdateVersionProperties>True</UpdateVersionProperties>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony, Version=1.2.0.1, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Deps\0Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="ACE.DatLoader, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
+    <None Remove="Resources\websocket-sharp.dll" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="Decal.Adapter">
-      <HintPath>C:\Program Files (x86)\Decal 3.0\Decal.Adapter.dll</HintPath>
+      <HintPath>..\deps\Decal.Adapter.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Decal.Interop.Core, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65, processorArchitecture=MSIL">
+    <Reference Include="Decal.FileService">
+      <HintPath>..\deps\Decal.FileService.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Decal.Interop.Core">
+      <HintPath>..\deps\Decal.Interop.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Decal.Interop.D3DService, Version=2.9.8.0, Culture=neutral, PublicKeyToken=481f17d392f1fb65, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\deps\Decal.Interop.D3DService.dll</HintPath>
       <Private>False</Private>
-      <HintPath>C:\Program Files (x86)\Decal 3.0\.NET 2.0 PIA\Decal.Interop.Core.DLL</HintPath>
     </Reference>
-    <Reference Include="Decal.Interop.Input, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65, processorArchitecture=MSIL">
+    <Reference Include="Decal.Interop.Filters, Version=2.9.8.0, Culture=neutral, PublicKeyToken=481f17d392f1fb65, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>C:\Program Files (x86)\Decal 3.0\.NET 2.0 PIA\Decal.Interop.Input.DLL</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\deps\Decal.Interop.Filters.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Decal.Interop.Render, Version=2.9.7.5, Culture=neutral, PublicKeyToken=481f17d392f1fb65, processorArchitecture=MSIL">
+    <Reference Include="Decal.Interop.Input, Version=2.9.8.0, Culture=neutral, PublicKeyToken=481f17d392f1fb65, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\deps\Decal.Interop.Input.dll</HintPath>
       <Private>False</Private>
-      <HintPath>C:\Program Files (x86)\Decal 3.0\.NET 2.0 PIA\Decal.Interop.Render.DLL</HintPath>
     </Reference>
-    <Reference Include="Exceptionless, Version=1.5.2121.0, Culture=neutral, PublicKeyToken=fc181f0a46f65747, processorArchitecture=MSIL">
-      <HintPath>..\packages\Exceptionless.1.5.2121\lib\net35\Exceptionless.dll</HintPath>
+    <Reference Include="Decal.Interop.Render, Version=2.9.8.0, Culture=neutral, PublicKeyToken=481f17d392f1fb65, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\deps\Decal.Interop.Render.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.DirectX">
+      <HintPath>..\deps\Microsoft.DirectX.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.DirectX.Direct3D">
+      <HintPath>..\deps\Microsoft.DirectX.Direct3D.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.DirectX.Direct3DX">
+      <HintPath>..\deps\Microsoft.DirectX.Direct3DX.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualC">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MoonSharp.Interpreter">
+      <HintPath>..\deps\MoonSharp.Interpreter.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Exceptionless.Models, Version=1.5.2121.0, Culture=neutral, PublicKeyToken=fc181f0a46f65747, processorArchitecture=MSIL">
-      <HintPath>..\packages\Exceptionless.1.5.2121\lib\net35\Exceptionless.Models.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Windows\assembly\GAC\Microsoft.DirectX\1.0.2902.0__31bf3856ad364e35\Microsoft.DirectX.dll</HintPath>
+    <Reference Include="System.Data.Linq">
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.DirectX.Direct3D, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2902.0\Microsoft.DirectX.Direct3D.dll</HintPath>
+    <Reference Include="System.Runtime.Remoting">
       <Private>False</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net35\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="System.Windows">
       <Private>False</Private>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data.Linq" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Runtime.Remoting" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-    <Reference Include="UBHelper, Version=0.0.0.1, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Deps\UBHelper.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="WindowsBase" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Lib\AcClient\Allegiance.cs" />
-    <Compile Include="Lib\AcClient\Array.cs" />
-    <Compile Include="Lib\AcClient\CharGen.cs" />
-    <Compile Include="Lib\AcClient\Client.cs" />
-    <Compile Include="Lib\AcClient\CM.cs" />
-    <Compile Include="Lib\AcClient\Combat.cs" />
-    <Compile Include="Lib\AcClient\Communication.cs" />
-    <Compile Include="Lib\AcClient\DB.cs" />
-    <Compile Include="Lib\AcClient\enum.cs" />
-    <Compile Include="Lib\AcClient\Fellow.cs" />
-    <Compile Include="Lib\AcClient\Hash.cs" />
-    <Compile Include="Lib\AcClient\Input.cs" />
-    <Compile Include="Lib\AcClient\Inventory.cs" />
-    <Compile Include="Lib\AcClient\List.cs" />
-    <Compile Include="Lib\AcClient\Magic.cs" />
-    <Compile Include="Lib\AcClient\Maint.cs" />
-    <Compile Include="Lib\AcClient\Movement.cs" />
-    <Compile Include="Lib\AcClient\Net.cs" />
-    <Compile Include="Lib\AcClient\Physics.cs" />
-    <Compile Include="Lib\AcClient\Player.cs" />
-    <Compile Include="Lib\AcClient\PString.cs" />
-    <Compile Include="Lib\AcClient\Render.cs" />
-    <Compile Include="Lib\AcClient\SmartBox.cs" />
-    <Compile Include="Lib\AcClient\STypes.cs" />
-    <Compile Include="Lib\AcClient\Trade.cs" />
-    <Compile Include="Lib\AcClient\UIFlow.cs" />
-    <Compile Include="Lib\AcClient\UIRegion.cs" />
-    <Compile Include="Lib\AcClient\Vendor.cs" />
-    <Compile Include="Lib\AcClient\Weenie.cs" />
-    <Compile Include="Lib\AcClient\_AcClient.cs" />
-    <Compile Include="Lib\AcClient\_Hook.cs" />
-    <Compile Include="Lib\AcClient\_Todo.cs" />
-    <Compile Include="Lib\CharacterCreation.cs" />
-    <Compile Include="Lib\File.cs" />
-    <Compile Include="FilterCore.cs" />
-    <Compile Include="Lib\SSLProtocolExtensions.cs" />
-    <Compile Include="LoaderLogin.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Lib\VersionWatermark.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="build\net40\DearImguiSharp.targets" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\settings.png" />
@@ -161,54 +93,101 @@
     <EmbeddedResource Include="Resources\outline-arrow-up-round.png" />
     <EmbeddedResource Include="Resources\outline-lock-off.png" />
     <EmbeddedResource Include="Resources\outline-lock-on.png" />
-    <None Include="Resources\UBNetworking.dll" />
-    <None Include="Deps\Newtonsoft.Json.dll" />
-    <Content Include="Deps\0Harmony.dll" />
-    <Content Include="Deps\ACE.DatLoader.dll" />
-    <Content Include="Deps\Antlr4.Runtime.dll" />
-    <None Include="Deps\DearImguiSharp.dll" />
-    <Content Include="Deps\LiteDB.dll" />
-    <Content Include="Deps\System.Threading.dll" />
-    <Content Include="Deps\UBHelper.dll" />
+    <Content Include="..\deps\0Harmony.dll" />
+    <Content Include="..\deps\Antlr4.Runtime.dll" />
+    <Content Include="..\deps\LiteDB.dll" />
+    <Content Include="..\deps\MoonSharp.Interpreter.dll" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\UBService\UBService.csproj">
-      <Project>{8adc5729-db1a-4e28-9475-c4eafae1e6e7}</Project>
-      <Name>UBService</Name>
+    <PackageReference Include="Exceptionless" Version="1.5.2121" />
+    <PackageReference Include="GitVersion.MsBuild" Version="5.11.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Lib.Harmony" Version="1.2.0.1" />
+    <PackageReference Include="MSBuildTasks" Version="1.5.0.235" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0">
+      <PrivateAssets>all</PrivateAssets>
       <Private>False</Private>
-    </ProjectReference>
+    </PackageReference>
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Reactive" Version="4.3.2">
+      <PrivateAssets>all</PrivateAssets>
+      <Private>False</Private>
+    </PackageReference>
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+    <PackageReference Include="System.Threading.Channels" Version="7.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <Private>False</Private>
+    </PackageReference>
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4">
+      <PrivateAssets>all</PrivateAssets>
+      <Private>False</Private>
+    </PackageReference>
+    <PackageReference Include="System.ValueTuple" Version="4.5.0">
+      <PrivateAssets>all</PrivateAssets>
+      <Private>False</Private>
+    </PackageReference>
+    <PackageReference Include="UtilityBelt.Common" Version="1.0.3" />
+    <PackageReference Include="UtilityBelt.Helper" Version="1.0.4" />
+    <PackageReference Include="UtilityBelt.Networking" Version="1.0.4" />
+    <PackageReference Include="UtilityBelt.Scripting" Version="1.0.2" />
+    <PackageReference Include="UtilityBelt.Server" Version="1.0.3" />
+    <PackageReference Include="UtilityBelt.Service" Version="2.0.5" />
+    <PackageReference Include="WebSocketSharp-netstandard" Version="1.0.1" />
   </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets" Condition="Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets'))" />
-  </Target>
-  <Target Name="BeforeBuild">
-    <ItemGroup>
-      <AssemblyLines Include="[assembly: Exceptionless.Configuration.Exceptionless(&quot;B94a7v4HvLtiUr10Dvgx7zyQs8hbsJGmDgKCvg9B&quot;, EnableSSL=false, ServerUrl=&quot;http://ex.haxit.org/&quot;)]" />
-    </ItemGroup>
-    <GitVersion LocalPath="$(MSBuildProjectDirectory)">
-      <Output TaskParameter="CommitHash" PropertyName="Revision" />
-    </GitVersion>
-    <GitBranch LocalPath="$(MSBuildProjectDirectory)">
-      <Output TaskParameter="branch" PropertyName="Branch" />
-    </GitBranch>
-    <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.cs" AssemblyTitle="UBLoader" AssemblyDescription="Hack the Planet" AssemblyCompany="Ellingson Mineral Company" AssemblyProduct="UtilityBelt" AssemblyCopyright="Copyright 1337 Zero Cool" ComVisible="false" CLSCompliant="false" AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Branch).$(Revision) ($([System.DateTime]::UTCNow.ToString(`yyyy-MM-dd HH:mm:ss`)))" AssemblyVersion="$(Major).$(Minor).$(Build)" AssemblyFileVersion="$(Major).$(Minor).$(Build)" Guid="c51788b5-3c43-471a-8034-79d5865fd7bd" />
-    <ReadLinesFromFile File="Properties\AssemblyInfo.cs" Condition="Exists('Properties\AssemblyInfo.cs')">
-      <Output TaskParameter="Lines" ItemName="AssemblyLines" />
-    </ReadLinesFromFile>
-    <WriteLinesToFile File="Properties\AssemblyInfo.cs" Lines="@(AssemblyLines)" Overwrite="true" Encoding="Unicode" />
-  </Target>
-  <Import Project="..\packages\GitVersionTask.5.1.2\build\GitVersionTask.targets" Condition="Exists('..\packages\GitVersionTask.5.1.2\build\GitVersionTask.targets')" />
+  <ItemGroup>
+    <Reference Update="System">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Core">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Data">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Drawing">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.IO.Compression.FileSystem">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Numerics">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Runtime.Serialization">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Windows.Forms">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Xml">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Xml.Linq">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
 </Project>

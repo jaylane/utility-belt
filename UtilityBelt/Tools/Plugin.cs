@@ -16,11 +16,12 @@ using UtilityBelt.Lib.Dungeon;
 using UtilityBelt.Lib.Expressions;
 using UtilityBelt.Lib.Settings;
 using static UtilityBelt.Tools.VTankControl;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using System.Collections.ObjectModel;
 using Hellosam.Net.Collections;
-using Exceptionless.Extensions;
 using System.Diagnostics;
+using UBCommon.Enums;
+using ChatMessageType = UtilityBelt.Lib.Settings.ChatMessageType;
 
 namespace UtilityBelt.Tools {
     public class DelayedCommand {
@@ -216,7 +217,7 @@ namespace UtilityBelt.Tools {
                 string newValue = match.Groups["value"].Value;
                 OptionResult option;
                 if (name.StartsWith("global."))
-                    option = UBLoader.FilterCore.Settings.Get(name);
+                    option = UBLoader.FilterCore.SettingsGlobal.Get(name);
                 else if (UB.Settings.Exists(name))
                     option = UB.Settings.Get(name);
                 else
@@ -298,7 +299,7 @@ namespace UtilityBelt.Tools {
             var results = "";
             var settings = UB.Settings.GetAll();
             var state = UB.State.GetAll();
-            var globalSettings = UBLoader.FilterCore.Settings.GetAll();
+            var globalSettings = UBLoader.FilterCore.SettingsGlobal.GetAll();
 
             foreach (var setting in globalSettings) {
                 results += $"{setting.FullName} ({setting.SettingType}) = {setting.DisplayValue(true)}\n";
@@ -671,37 +672,37 @@ namespace UtilityBelt.Tools {
 
             var stringKeys = wo.StringKeys.ToList();
             if (stringKeys.Count > 0) {
-                stringKeys.Sort((a, b) => ((ACE.Entity.Enum.Properties.PropertyString)a).ToString().CompareTo(((ACE.Entity.Enum.Properties.PropertyString)b).ToString()));
+                stringKeys.Sort((a, b) => ((StringId)a).ToString().CompareTo(((StringId)b).ToString()));
                 output.AppendLine("String Values:");
                 foreach (var sk in stringKeys) {
-                    output.AppendLine($"  {(ACE.Entity.Enum.Properties.PropertyString)sk}({sk}) = {wo.Values((StringValueKey)sk)}");
+                    output.AppendLine($"  {(StringId)sk}({sk}) = {wo.Values((StringValueKey)sk)}");
                 }
             }
 
             var intKeys = wo.LongKeys.ToList();
             if (intKeys.Count > 0) {
-                intKeys.Sort((a, b) => ((ACE.Entity.Enum.Properties.PropertyInt)a).ToString().CompareTo(((ACE.Entity.Enum.Properties.PropertyInt)b).ToString()));
+                intKeys.Sort((a, b) => ((IntId)a).ToString().CompareTo(((IntId)b).ToString()));
                 output.AppendLine("Int Values:");
                 foreach (var sk in intKeys) {
-                    output.AppendLine($"  {(ACE.Entity.Enum.Properties.PropertyInt)sk}({sk}) = {wo.Values((LongValueKey)sk)}");
+                    output.AppendLine($"  {(IntId)sk}({sk}) = {wo.Values((LongValueKey)sk)}");
                 }
             }
 
             var boolKeys = wo.BoolKeys.ToList();
             if (boolKeys.Count > 0) {
-                boolKeys.Sort((a, b) => ((ACE.Entity.Enum.Properties.PropertyBool)a).ToString().CompareTo(((ACE.Entity.Enum.Properties.PropertyBool)b).ToString()));
+                boolKeys.Sort((a, b) => ((BoolId)a).ToString().CompareTo(((BoolId)b).ToString()));
                 output.AppendLine("Bool Values:");
                 foreach (var sk in boolKeys) {
-                    output.AppendLine($"  {(ACE.Entity.Enum.Properties.PropertyBool)sk}({sk}) = {wo.Values((BoolValueKey)sk)}");
+                    output.AppendLine($"  {(BoolId)sk}({sk}) = {wo.Values((BoolValueKey)sk)}");
                 }
             }
 
             var floatKeys = wo.DoubleKeys.ToList();
             if (floatKeys.Count > 0) {
-                floatKeys.Sort((a, b) => ((ACE.Entity.Enum.Properties.PropertyFloat)a).ToString().CompareTo(((ACE.Entity.Enum.Properties.PropertyFloat)b).ToString()));
+                floatKeys.Sort((a, b) => ((FloatId)a).ToString().CompareTo(((FloatId)b).ToString()));
                 output.AppendLine("Float Values:");
                 foreach (var sk in floatKeys) {
-                    output.AppendLine($"  {(ACE.Entity.Enum.Properties.PropertyFloat)sk}({sk}) = {wo.Values((DoubleValueKey)sk)}");
+                    output.AppendLine($"  {(FloatId)sk}({sk}) = {wo.Values((DoubleValueKey)sk)}");
                 }
             }
 
@@ -1953,7 +1954,7 @@ namespace UtilityBelt.Tools {
             name = name.ToLower();
             OptionResult option;
             if (name.StartsWith("global."))
-                option = UBLoader.FilterCore.Settings.Get(name);
+                option = UBLoader.FilterCore.SettingsGlobal.Get(name);
             else if (UB.Settings.Exists(name))
                 option = UB.Settings.Get(name);
             else
@@ -1987,7 +1988,7 @@ namespace UtilityBelt.Tools {
             name = name.ToLower();
             OptionResult option;
             if (name.StartsWith("global."))
-                option = UBLoader.FilterCore.Settings.Get(name);
+                option = UBLoader.FilterCore.SettingsGlobal.Get(name);
             else if (UB.Settings.Exists(name))
                 option = UB.Settings.Get(name);
             else

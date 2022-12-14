@@ -7,7 +7,7 @@ using System.Text;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using static UtilityBelt.Tools.VTankControl;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using UtilityBelt.Lib.Expressions;
 using UtilityBelt.Lib.Dungeon;
 

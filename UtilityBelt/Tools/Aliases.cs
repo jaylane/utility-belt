@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using Decal.Adapter.Wrappers;
 using Decal.Adapter;
 using System.Runtime.InteropServices;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using VirindiViewService.Controls;
 using System.Collections.ObjectModel;
 using System.IO;

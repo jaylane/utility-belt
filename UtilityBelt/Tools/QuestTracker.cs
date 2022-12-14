@@ -9,7 +9,7 @@ using System.Windows.Forms;
 using UtilityBelt.Lib.Quests;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("QuestTracker")]

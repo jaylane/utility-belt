@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32811.315
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilityBelt", "UtilityBelt\UtilityBelt.csproj", "{C2880823-67E7-4B3D-A481-9ADC9847C39C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UtilityBelt", "UtilityBelt\UtilityBelt.csproj", "{C2880823-67E7-4B3D-A481-9ADC9847C39C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BB14F564-6E92-4FD0-9394-120E517EA5BA} = {BB14F564-6E92-4FD0-9394-120E517EA5BA}
 	EndProjectSection
@@ -13,50 +13,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		.gitlab-ci.yml = .gitlab-ci.yml
-		Changelog.md = Changelog.md
-		Installer\Install.nsi = Installer\Install.nsi
 		README.md = README.md
-		ReleaseInstructions.md = ReleaseInstructions.md
+		changelog\vNext.md = changelog\vNext.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UBLoader", "UBLoader\UBLoader.csproj", "{BB14F564-6E92-4FD0-9394-120E517EA5BA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UBDocsGen", "UBDocsGen\UBDocsGen.csproj", "{895DDC02-40BC-4F5A-8212-7032231216AE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UBLoader.Tests", "UBLoader.Tests\UBLoader.Tests.csproj", "{6D6BC2D4-2251-469F-8E67-BBCFF83EF703}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilityBelt.Tests", "UtilityBelt.Tests\UtilityBelt.Tests.csproj", "{1C1F3A9B-1B2F-496B-84EE-A3AC6A3100C1}"
-	ProjectSection(ProjectDependencies) = postProject
-		{C2880823-67E7-4B3D-A481-9ADC9847C39C} = {C2880823-67E7-4B3D-A481-9ADC9847C39C}
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UBNetworking", "UBNetworking\UBNetworking.csproj", "{2829FC6E-2BEC-4259-AA51-6CC180D3834B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UBNetServer", "UBNetServer\UBNetServer.csproj", "{2444A625-B122-4147-AFBA-7F681DB3EB28}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UBService", "UBService\UBService.csproj", "{8ADC5729-DB1A-4E28-9475-C4EAFAE1E6E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UBLoader", "UBLoader\UBLoader.csproj", "{BB14F564-6E92-4FD0-9394-120E517EA5BA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C2880823-67E7-4B3D-A481-9ADC9847C39C}.Release|x86.ActiveCfg = Release|x86
-		{C2880823-67E7-4B3D-A481-9ADC9847C39C}.Release|x86.Build.0 = Release|x86
-		{BB14F564-6E92-4FD0-9394-120E517EA5BA}.Release|x86.ActiveCfg = Release|x86
-		{BB14F564-6E92-4FD0-9394-120E517EA5BA}.Release|x86.Build.0 = Release|x86
-		{895DDC02-40BC-4F5A-8212-7032231216AE}.Release|x86.ActiveCfg = Release|x86
-		{895DDC02-40BC-4F5A-8212-7032231216AE}.Release|x86.Build.0 = Release|x86
-		{6D6BC2D4-2251-469F-8E67-BBCFF83EF703}.Release|x86.ActiveCfg = Release|x86
-		{6D6BC2D4-2251-469F-8E67-BBCFF83EF703}.Release|x86.Build.0 = Release|x86
-		{1C1F3A9B-1B2F-496B-84EE-A3AC6A3100C1}.Release|x86.ActiveCfg = Release|x86
-		{1C1F3A9B-1B2F-496B-84EE-A3AC6A3100C1}.Release|x86.Build.0 = Release|x86
-		{2829FC6E-2BEC-4259-AA51-6CC180D3834B}.Release|x86.ActiveCfg = Release|x86
-		{2829FC6E-2BEC-4259-AA51-6CC180D3834B}.Release|x86.Build.0 = Release|x86
-		{2444A625-B122-4147-AFBA-7F681DB3EB28}.Release|x86.ActiveCfg = Release|x86
-		{2444A625-B122-4147-AFBA-7F681DB3EB28}.Release|x86.Build.0 = Release|x86
-		{8ADC5729-DB1A-4E28-9475-C4EAFAE1E6E7}.Release|x86.ActiveCfg = Release|x86
-		{8ADC5729-DB1A-4E28-9475-C4EAFAE1E6E7}.Release|x86.Build.0 = Release|x86
+		{C2880823-67E7-4B3D-A481-9ADC9847C39C}.Release|x86.ActiveCfg = Release|Any CPU
+		{C2880823-67E7-4B3D-A481-9ADC9847C39C}.Release|x86.Build.0 = Release|Any CPU
+		{BB14F564-6E92-4FD0-9394-120E517EA5BA}.Release|x86.ActiveCfg = Release|Any CPU
+		{BB14F564-6E92-4FD0-9394-120E517EA5BA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

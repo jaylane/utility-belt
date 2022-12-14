@@ -1,5 +1,5 @@
 ﻿using System;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using UtilityBelt.Lib.Constants;
 using UtilityBelt.Lib.Settings;
 

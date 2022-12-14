@@ -8,18 +8,19 @@ using UtilityBelt.Constants;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using VirindiViewService.Controls;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using UtilityBelt.Lib.Expressions;
 
 namespace UtilityBelt.Tools {
     [Name("AutoSalvage")]
     [Summary("Salvages items in your inventory based on the loot profile currently loaded in VTank")]
     [FullDescription(@"
-<span style='color: red'>
-**Use at your own risk, I'm not responsible if you salvage your super dope untinkered armor that was in your inventory.**
-</span>
+> [!CAUTION]
+> Use at your own risk! This tool can salvage things automatically. I'm not responsible if you salvage your super dope untinkered armor that was in your inventory.
 
 This plugin will attempt to salvage all items in your inventory that match loot rule salvage in your currently loaded VTank loot profile.  This is helpful for cleaning up after vtank misses salvaging items.  It needs to ID all items in your inventory so it may take a minute to run.  It avoids salvaging equipped, tinkered, and imbued. Anything else that matches a salvage loot rule is fair game, <span style='color: red'>**you have been warned**</span>.
+
+Using `/ub autosalvage` without the force parameter will add all matching items to your salvage window. Specifying the force option with `/ub autosalvage force` will salvage one item at a time until all matching items are salvaged.  VTank will combine them depending on your loot profile rules.
     ")]
 
     public class AutoSalvage : ToolBase {
