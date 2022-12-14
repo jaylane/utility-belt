@@ -20,6 +20,7 @@
 - Add Simple XP Meter HUD (UBService)
 - Add framework for character creation (WIP** need to move business logic out of filtercore)
 - Expand Arrow to capture different coordinate formats.
+- Add expressions: wobjectgethealthvalue, wobjectgetstaminavalue, wobjectgetmanavalue
 
 ## 0.2.7 (2022-07-27) [UtilityBeltInstaller-0.2.7.exe](https://gitlab.com/utilitybelt/utilitybelt.gitlab.io/uploads/f24f9359893592252815818da7b3b7ba/UtilityBeltInstaller-0.2.7.exe)
 - Add expression: wobjectgetactivespellids[WorldObject]
