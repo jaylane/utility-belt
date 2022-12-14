@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Chat;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 
 
 namespace UtilityBelt.Tools {

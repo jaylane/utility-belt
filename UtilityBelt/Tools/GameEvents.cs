@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using Decal.Adapter.Wrappers;
 using Decal.Adapter;
 using System.Runtime.InteropServices;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using VirindiViewService.Controls;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -29,14 +29,14 @@ Clicking the `?` button next to the event type dropdown will output to chat the 
 
 You can share a set of defined event handlers with multiple characters by using the `Profiles` tab in the main plugin window. Setting the profile the `[character]` will make the defined event handlers unique to this character.
 
-### Examples
+#### Examples
 
-#### Run the command `/framerate` on login
+##### Run the command `/framerate` on login
 * **Event:** Login
 * **Action:** ChatCommand
 * **Command:** `/framerate`
 
-#### Tell your fellowship the items you lost when your character dies
+##### Tell your fellowship the items you lost when your character dies
 * **Event:** CharacterDeath
 * **Action:** ChatExpression
 * **Command:** `\/f I died and lost\: +$gevt_droppeditems`

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using UtilityBelt.Lib.Settings;
 
 namespace UtilityBelt.Lib.ChatLog

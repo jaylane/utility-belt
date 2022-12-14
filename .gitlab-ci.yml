@@ -1,59 +1,53 @@
-variables:
-  NUGET_PATH: 'C:\Tools\nuget.exe'
-  MSBUILD_PATH: 'C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\msbuild.exe'
-  VSTEST_PATH: 'C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\TestPlatform\vstest.console.exe'
-  NSIS_PATH: 'C:\Program Files (x86)\NSIS\makensis.exe'
-  HUGO_PATH: 'C:\Tools\hugo.exe'
-  CURL_PATH: 'C:\Tools\curl.exe'
-  INSTALLER_PATH: '.\Installer\Install.nsi'
-  BUILD_PATH: '.\bin'
-  STAGING_URL: 'https://ubstaging.surge.sh'
-  DATA_URL: 'https://ubdata.surge.sh'
-  WEB_PATH: 'C:\UtilityBelt\www\'
-
 stages:
   - build
-  - deploy staging
+  - deploy
+  - promote
 
 build:
   stage: build
+  image: registry.gitlab.com/utilitybelt/packages/monocicd-build:1.0.14
   script:
-    - '& "$env:NUGET_PATH" restore'
-    - '& "$env:MSBUILD_PATH" -target:Clean'
-    - '& "$env:MSBUILD_PATH" /p:Configuration=Release /clp:ErrorsOnly'
-    - '& "$env:NSIS_PATH" "$env:INSTALLER_PATH"'
-  artifacts:
-    expire_in: 30 days
-    paths:
-      - '$env:BUILD_PATH\'
-
-deploy staging:
-  stage: deploy staging
-  script:
-    - '$env:UB_INSTALLER = "$env:BUILD_PATH\" + (Get-ChildItem $env:BUILD_PATH\UtilityBeltInstaller*.exe).Name'
-    - '$env:UB_INSTALLER_OUT = ".\public\$env:CI_COMMIT_REF_NAME\" + (Get-ChildItem $env:BUILD_PATH\UtilityBeltInstaller*.exe).Name'
-    - 'Remove-Item -Force ".\public" -Recurse -ErrorAction Ignore; echo 1'
-    - '& "$env:BUILD_PATH\ubdocsgen\UBDocsGen.exe" "$env:CI_COMMIT_REF_NAME"'
-    - '& "$env:HUGO_PATH" --themesDir .\Site\themes\ --destination ".\public\$env:CI_COMMIT_REF_NAME\" --baseURL $env:STAGING_URL/$env:CI_COMMIT_REF_NAME/'
-    - 'Remove-Item -Force "C:\UtilityBelt\www\$env:CI_COMMIT_REF_NAME" -Recurse -ErrorAction Ignore; echo 1'
-    - 'Copy-Item -Path ".\public\*" -Destination "$env:WEB_PATH" -Recurse'
-    - 'python .\scripts\clean-and-generate-staging-index.py'
-    - 'surge --domain $env:STAGING_URL $env:WEB_PATH'
-  artifacts:
-    expire_in: 30 days
-    paths:
-      - '.\public\$env:CI_COMMIT_REF_NAME\'
+    - echo "" > gitversion.env
+    - values=$(dotnet-gitversion)
+    - for s in $(echo $values | jq -r "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" ); do echo GV_$s >> gitversion.env; done
+    - cat gitversion.env | grep -P "^GV_(AssemblySemVer|MajorMinorPatch|NuGetVersionV2|PreReleaseTag|InformationalVersion|Sha)" > build.env
+    - cat build.env
+    - source build.env
+    - changelog=$(cat changelog/v${GV_MajorMinorPatch}.md changelog/vNext.md 2>/dev/null) || true
+    - echo -e "Version:\n${GV_NuGetVersionV2}\nChange Log:\n${changelog}"
+    - dotnet build -c Release -p:PackageReleaseNotes="\"${changelog}\""
   except:
-    - release
-
-pages:
-  stage: .post
-  script:
-  - 'Remove-Item -Force ".\public" -Recurse -ErrorAction Ignore; echo 1'
-  - '& "$env:BUILD_PATH\ubdocsgen\UBDocsGen.exe" release'
-  - '& "$env:HUGO_PATH" --themesDir .\Site\themes\'
+    - tags
   artifacts:
+    expire_in: 7 days
     paths:
-    - public
-  only:
-  - tags
+      - './bin/'
+    reports:
+      dotenv: build.env
+
+deploy gitlab installer:
+  image: registry.gitlab.com/utilitybelt/packages/monocicd-build:1.0.14
+  stage: deploy
+  script:
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "bin/Release/${CI_PROJECT_TITLE}-Installer-${GV_NuGetVersionV2}.exe" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_TITLE}/${GV_NuGetVersionV2}/${CI_PROJECT_TITLE}-Installer-${GV_NuGetVersionV2}.exe"'
+  except:
+    - tags
+  needs:
+    - build
+
+merge and tag release:
+    stage: promote
+    variables:
+        PROJECT_COMMAND: merge-release-master --project=$CI_PROJECT_PATH --id=$CI_PROJECT_ID --sha=$CI_COMMIT_SHA --version=$GV_MajorMinorPatch --name=$CI_PROJECT_TITLE
+    trigger: utilitybelt/mergebot
+    rules:
+        - if: $CI_COMMIT_BRANCH == "release"
+
+promote to release candidate:
+    stage: promote
+    variables:
+        PROJECT_COMMAND: make-release-candidate --project=$CI_PROJECT_PATH --id=$CI_PROJECT_ID --sha=$CI_COMMIT_SHA
+    trigger: utilitybelt/mergebot
+    when: manual
+    rules:
+        - if: $CI_COMMIT_BRANCH == "master"

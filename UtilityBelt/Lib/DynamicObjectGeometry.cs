@@ -2,11 +2,12 @@
 using ACE.DatLoader.Entity;
 using ACE.DatLoader.FileTypes;
 using Decal.Adapter;
-using Microsoft.DirectX;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UBCommon.Messages.Types;
+using Frame = ACE.DatLoader.Entity.Frame;
 
 namespace UtilityBelt.Lib {
     public class DynamicObjectGeometry {

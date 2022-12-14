@@ -71,7 +71,7 @@ namespace UtilityBelt.Views {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void MapWindow_Changed(object sender, UBService.Lib.Settings.SettingChangedEventArgs e) {
+        private void MapWindow_Changed(object sender, UtilityBelt.Service.Lib.Settings.SettingChangedEventArgs e) {
             if (timer.Enabled)
                 return;
             view.Location = new Point(UB.LandscapeMaps.MapWindowX, UB.LandscapeMaps.MapWindowY);

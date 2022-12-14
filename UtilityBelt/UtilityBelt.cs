@@ -11,7 +11,7 @@ using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using UtilityBelt.Tools;
 using UtilityBelt.Views;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using UtilityBelt.Lib.Expressions;
 using System.Threading;
 using ACE.DatLoader;
@@ -181,13 +181,14 @@ namespace UtilityBelt {
         public LSD LSD;
         public Movement Movement;
         public Nametags Nametags;
-        public Networking Networking;
+        public Tools.Networking Networking;
         public NetworkUI NetworkUI;
         public OverlayMap OverlayMap;
         public Player Player;
         public PlayerOptions PlayerOptions;
         public Professors Professors;
         public QuestTracker QuestTracker;
+        public Scripts Scripts;
         public SpellManager SpellManager;
         //public Tags Tags { get; private set; }
         public VisualNav VisualNav;
@@ -220,10 +221,10 @@ namespace UtilityBelt {
         /// <param name="serverName">Name of the server currently logged in to</param>
         public void Startup(string assemblyLocation, string storagePath, string databaseFile, NetServiceHost host, CoreManager core) {
 			try {
-                if (UBLoader.FilterCore.Global.UploadExceptions) {
-                    Exceptionless.ExceptionlessClient.Current.Configuration.IncludePrivateInformation = false;
-                    Exceptionless.ExceptionlessClient.Current.Startup();
-                }
+                //if (UBLoader.FilterCore.Global.UploadExceptions) {
+                //    Exceptionless.ExceptionlessClient.Current.Configuration.IncludePrivateInformation = false;
+                //    Exceptionless.ExceptionlessClient.Current.Startup();
+                //}
                 Core = core;
                 Host = host;
                 DatabaseFile = databaseFile;
@@ -243,7 +244,7 @@ namespace UtilityBelt {
 
                 // if we are logged in already, we need to init manually.
                 // this happens during hot reloads while logged in.
-                if (UBHelper.Core.GameState == UBHelper.GameState.In_Game) {
+                if (Core.CharacterFilter.LoginStatus >= 1) {
                     Init();
                 }
                 else {
@@ -318,7 +319,7 @@ namespace UtilityBelt {
 
             Settings.Changed += Settings_Changed;
             State.Changed += State_Changed;
-            UBLoader.FilterCore.Settings.Changed += FilterSettings_Changed;
+            UBLoader.FilterCore.SettingsGlobal.Changed += FilterSettings_Changed;
         }
 
         private void InitSettings() {
@@ -352,7 +353,7 @@ namespace UtilityBelt {
         }
 
         private void FilterSettings_Changed(object sender, SettingChangedEventArgs e) {
-            if (UBLoader.FilterCore.Settings.ShouldSave || (UBLoader.FilterCore.Settings.IsLoaded && UBLoader.FilterCore.Settings.IsLoading))
+            if (UBLoader.FilterCore.SettingsGlobal.ShouldSave || (UBLoader.FilterCore.SettingsGlobal.IsLoaded && UBLoader.FilterCore.SettingsGlobal.IsLoading))
                 Logger.Debug(e.Setting.FullDisplayValue());
         }
 
@@ -611,7 +612,7 @@ namespace UtilityBelt {
         /// </summary>
         public void Shutdown() {
             try {
-                UBLoader.FilterCore.Settings.Changed -= FilterSettings_Changed;
+                UBLoader.FilterCore.SettingsGlobal.Changed -= FilterSettings_Changed;
                 if (Settings != null) {
                     Settings.Changed -= Settings_Changed;
                     if (Settings.NeedsSave)

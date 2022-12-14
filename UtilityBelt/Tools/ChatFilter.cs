@@ -7,7 +7,7 @@ using UtilityBelt.Lib;
 using UtilityBelt.Lib.Chat;
 using System.Reflection;
 using UtilityBelt.Lib.Settings.Chat;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("ChatFilter")]

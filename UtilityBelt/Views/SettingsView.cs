@@ -13,7 +13,7 @@ using UtilityBelt.Lib.Settings;
 using VirindiViewService;
 using VirindiViewService.Controls;
 using VirindiViewService.XMLParsers;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using Hellosam.Net.Collections;
 
 namespace UtilityBelt.Views {

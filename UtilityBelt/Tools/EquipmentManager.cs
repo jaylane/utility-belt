@@ -10,7 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("EquipmentManager")]
@@ -20,18 +20,21 @@ Equipment Manager allows you to create and execute equipment profiles based on V
 
 When invoked, Equipment Manager will attempt to load a VTank loot profile in one of the following locations:
 
- * Documents\Decal Plugins\UtilityBelt\equip\<Server>\<Character>\<Trade Partner Name>.utl
- * Documents\Decal Plugins\UtilityBelt\equip\<Server>\<Trade Partner Name>.utl
- * Documents\Decal Plugins\UtilityBelt\equip\<Trade Partner Name>.utl
- * Documents\Decal Plugins\UtilityBelt\equip\<Server>\<Character>\default.utl
- * Documents\Decal Plugins\UtilityBelt\equip\<Server>\default.utl
- * Documents\Decal Plugins\UtilityBelt\equip\default.utl
+ * `Documents\Decal Plugins\UtilityBelt\equip\<Server>\<Character>\<Trade Partner Name>.utl`
+ * `Documents\Decal Plugins\UtilityBelt\equip\<Server>\<Trade Partner Name>.utl`
+ * `Documents\Decal Plugins\UtilityBelt\equip\<Trade Partner Name>.utl`
+ * `Documents\Decal Plugins\UtilityBelt\equip\<Server>\<Character>\default.utl`
+ * `Documents\Decal Plugins\UtilityBelt\equip\<Server>\default.utl`
+ * `Documents\Decal Plugins\UtilityBelt\equip\default.utl`
 
-### Example VTank Profiles
+#### Example VTank Profiles
 
- * [Cosmic Jester.utl](/utl/Cosmic Jester.utl) - Matches a suit of armor
- * [Plaguefang.utl](/utl/Plaguefang.utl) - Matches a PF robe and Rynthid Energy Shield
- * [Set A.utl](/utl/Set A.utl) - Matches all items that are equippable and inscribed with 'Set A'
+| Profile | Description |
+|---------|-------------|
+| [Cosmic Jester.utl](../../utl/Cosmic%20Jester.utl) | Matches a suit of armor |
+| [Plaguefang.utl](../../utl/Plaguefang.utl) | Matches a PF robe and Rynthid Energy Shield | 
+| [Set A.utl](../../utl/Set%20A.utl) | Matches all items that are equippable and inscribed with 'Set A' |
+
     ")]
     public class EquipmentManager : ToolBase {
         private static readonly ObjectClass[] ValidEquippableObjectClasses = new[] {

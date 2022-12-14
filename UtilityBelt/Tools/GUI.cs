@@ -1,24 +1,25 @@
 ﻿using System;
 using UtilityBelt.Lib;
-using UBService.Lib.Settings;
 using System.Drawing;
 using System.Linq;
-using UBService;
+using UtilityBelt.Service;
 using ImGuiNET;
 using System.Collections.Generic;
 using ACE.DatLoader.FileTypes;
 using ACE.DatLoader.Entity;
 using Decal.Filters;
 using UtilityBelt.Views.Inspector;
-using Vector4 = ImGuiNET.Vector4;
-using UBService.Views;
+using Vector4 = System.Numerics.Vector4;
+using UtilityBelt.Service.Views;
 using Decal.Adapter.Wrappers;
 using System.IO;
 using System.Security.Cryptography;
-using Hud = UBService.Views.Hud;
-using UBService.Views.SettingsEditor;
+using Hud = UtilityBelt.Service.Views.Hud;
+using UtilityBelt.Service.Views.SettingsEditor;
 using UtilityBelt.Views;
 using System.Reflection;
+using UtilityBelt.Service.Lib.Settings;
+using System.Numerics;
 
 namespace UtilityBelt.Tools {
     [Name("GUI")]
@@ -52,7 +53,7 @@ namespace UtilityBelt.Tools {
         }
 
         public override void Init() {
-            using (Stream manifestResourceStream = GetType().Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.settings.png")) {
+            using (Stream manifestResourceStream = this.GetType().Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.settings.png")) {
                 settingsIcon = new ManagedTexture(new Bitmap(manifestResourceStream));
             }
             CreateHuds();
@@ -62,6 +63,7 @@ namespace UtilityBelt.Tools {
             EnableDemoUI.Changed += ShowHud_Changed;
             EnableGameStateInspector.Changed += ShowHud_Changed;
             demoIsOpen = EnableDemoUI.Value;
+            CreateHuds();
         }
 
         private void DemoHudWithCustomWindow_ShouldShow(object sender, EventArgs e) {
@@ -79,7 +81,6 @@ namespace UtilityBelt.Tools {
 
             var flags = ImGuiWindowFlags.MenuBar;
             var windowIsOpen = ImGui.Begin("Test Window", ref demoIsOpen, flags);
-
 
             if (windowIsOpen) {
                 if (ImGui.BeginMenuBar()) {
@@ -129,13 +130,12 @@ namespace UtilityBelt.Tools {
 
         private void DestroyHuds() {
             if ((!EnableDemoUI || disposedValue) && demoHudWithCustomWindow != null) {
-                demoHudWithCustomWindow.Render -= DemoHudWithCustomWindow_Render;
-                demoHudWithCustomWindow.ShouldHide -= DemoHudWithCustomWindow_ShouldHide;
-                demoHudWithCustomWindow.ShouldShow -= DemoHudWithCustomWindow_ShouldShow;
+                demoHudWithCustomWindow.OnRender -= DemoHudWithCustomWindow_Render;
+                demoHudWithCustomWindow.OnHide -= DemoHudWithCustomWindow_ShouldHide;
+                demoHudWithCustomWindow.OnShow -= DemoHudWithCustomWindow_ShouldShow;
                 demoHudWithCustomWindow.Dispose();
                 demoHudWithCustomWindow = null;
             }
-
             if ((!EnableGameStateInspector || disposedValue) && gameStateInspector != null) {
                 gameStateInspector.Dispose();
                 gameStateInspector = null;
@@ -144,15 +144,16 @@ namespace UtilityBelt.Tools {
 
         private unsafe void CreateHuds() {
             if (EnableDemoUI && demoHudWithCustomWindow == null) {
-                demoHudWithCustomWindow = UBService.UBService.Huds.CreateHud("Demo Hud (Custom Window)");
+                demoHudWithCustomWindow = UtilityBelt.Service.UBService.Huds.CreateHud("Demo Hud (Custom Window)");
                 demoHudWithCustomWindow.DontDrawDefaultWindow = true;
-                demoHudWithCustomWindow.Render += DemoHudWithCustomWindow_Render;
-                demoHudWithCustomWindow.ShouldHide += DemoHudWithCustomWindow_ShouldHide;
-                demoHudWithCustomWindow.ShouldShow += DemoHudWithCustomWindow_ShouldShow;
+
+                demoHudWithCustomWindow.OnRender += DemoHudWithCustomWindow_Render;
+                demoHudWithCustomWindow.OnHide += DemoHudWithCustomWindow_ShouldHide;
+                demoHudWithCustomWindow.OnShow += DemoHudWithCustomWindow_ShouldShow;
             }
 
             if (EnableGameStateInspector && gameStateInspector == null) {
-                gameStateInspector = new Inspector("UB", UB);
+                gameStateInspector = new Inspector("UB Scripting API", UBLoader.FilterCore.Scripts);
                 //gameStateInspector = new Inspector("GameState", **CObjectMaint.s_pcInstance);
             }
         }

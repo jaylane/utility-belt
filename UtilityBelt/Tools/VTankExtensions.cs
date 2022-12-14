@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Constants;
 using VirindiViewService;
@@ -82,7 +82,7 @@ namespace UtilityBelt.Tools {
         private void CheckForClassic() {
             if (!EnableAutoClassicPatch)
                 return;
-            if (!UBLoader.FilterCore.PlayerDescSkillState.ContainsKey(54)) {
+            if (!UBLoader.FilterCore.PlayerDescSkillState.ContainsKey((int)UBCommon.Enums.SkillId.Summoning)) {
                 PatchVTankClassic();
             }
         }

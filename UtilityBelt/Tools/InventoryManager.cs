@@ -11,7 +11,7 @@ using uTank2.LootPlugins;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
 using VTClassic;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using UtilityBelt.Lib.Expressions;
 
 namespace UtilityBelt.Tools {
@@ -21,16 +21,16 @@ namespace UtilityBelt.Tools {
 Provides a command-line interface to inventory management.
 
 ### Example Profiles
-* [aaset.utl](/utl/aaset.utl)
+* [aaset.utl](../../utl/aaset.utl)
   - Hands exactly one set of Ancient Armor
   - example: `/ub ig aaset.utl to Zero Cool`
-* [Kreavon.utl](/utl/Kreavon.utl)
+* [Kreavon.utl](../../utl/Kreavon.utl)
   - Hands all Gem type salvage in your inventory, for the [Town Founder](https://asheron.fandom.com/wiki/Town_Founder) Quest.
   - example: `/ub ig Kreavon.utl to Kreavon`
-* [Caelis Renning.utl](/utl/Caelis Renning.utl)
+* [Caelis Renning.utl](../../utl/Caelis%20Renning.utl)
   - Hands all metal/wood type salvage in your inventory, for the [Town Founder](https://asheron.fandom.com/wiki/Town_Founder) Quest.
   - example: `/ub ig Caelis Renning.utl to Caelis Renning`
-* [Aun Teverea.utl](/utl/Aun Teverea.utl)
+* [Aun Teverea.utl](../../utl/Aun%20Teverea.utl)
   - Hands all cloth type salvage in your inventory, for the [Town Founder](https://asheron.fandom.com/wiki/Town_Founder) Quest.
   - example: `ub ig Aun Teverea.utl to Aun Teverea`
 

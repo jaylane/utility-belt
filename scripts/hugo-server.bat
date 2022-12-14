@@ -1,1 +1,0 @@
-hugo --themesDir ./Site/themes/ server

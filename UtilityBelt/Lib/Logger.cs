@@ -1,5 +1,4 @@
-﻿using Exceptionless;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -166,10 +165,10 @@ namespace UtilityBelt {
 
             try {
                 if (logToMothership && UBLoader.FilterCore.Global.UploadExceptions && !UBLoader.FilterCore.IsDevelopmentVersion()) {
-                    ex.ToExceptionless(false)
-                        .SetUserName(UBLoader.FilterCore.GetAnonymousUserId())
-                        .AddObject(new ExceptionlessUserData())
-                        .Submit();
+                    //ex.ToExceptionless(false)
+                    //    .SetUserName(UBLoader.FilterCore.GetAnonymousUserId())
+                    //    .AddObject(new ExceptionlessUserData())
+                    //    .Submit();
                 }
             }
             catch { }

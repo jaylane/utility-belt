@@ -11,10 +11,10 @@ using UtilityBelt.Lib;
 using System.Threading;
 using System.Diagnostics;
 using System.ComponentModel;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using UtilityBelt.Lib.Networking.Messages;
-using UBNetworking.Lib;
-using UBNetworking.Messages;
+using UtilityBelt.Networking.Lib;
+using UtilityBelt.Networking.Messages;
 using UtilityBelt.Lib.Networking;
 
 namespace UtilityBelt.Tools {

@@ -7,10 +7,11 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using static UtilityBelt.Views.Inspector.Inspector;
-using UBService;
+using UtilityBelt.Service;
 using ImGuiNET;
 using Microsoft.DirectX.Direct3D;
 using System.Runtime.InteropServices;
+using System.Numerics;
 
 namespace UtilityBelt.Views.Inspector {
     /// <summary>
@@ -19,7 +20,7 @@ namespace UtilityBelt.Views.Inspector {
     /// </summary>
     public class EventMonitor : IDisposable {
         private static uint _id = 0;
-        private UBService.Views.Hud hud;
+        private UtilityBelt.Service.Views.Hud hud;
         private Vector2 minWindowSize = new Vector2(300, 200);
         private Vector2 maxWindowSize = new Vector2(99999, 99999);
         private DynamicEventHandler dynamicHandler;
@@ -54,14 +55,14 @@ namespace UtilityBelt.Views.Inspector {
             EventToMonitor = eventToMonitor;
 
             using (Stream manifestResourceStream = GetType().Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.eye.png")) {
-                hud = UBService.UBService.Huds.CreateHud($"EventMonitor: {Name}##EventMonitor{_id++}", new Bitmap(manifestResourceStream));
+                hud = UtilityBelt.Service.UBService.Huds.CreateHud($"EventMonitor: {Name}##EventMonitor{_id++}", new Bitmap(manifestResourceStream));
             }
 
-            hud.Render += Hud_Render;
-            hud.PreRender += Hud_PreRender;
-            hud.ShouldHide += Hud_ShouldHide;
-            hud.CreateTextures += Hud_CreateTextures;
-            hud.DestroyTextures += Hud_DestroyTextures;
+            hud.OnRender += Hud_Render;
+            hud.OnPreRender += Hud_PreRender;
+            hud.OnHide += Hud_ShouldHide;
+            hud.OnCreateTextures += Hud_CreateTextures;
+            hud.OnDestroyTextures += Hud_DestroyTextures;
             CreateTextures();
             SubscribeToEvent();
         }
@@ -187,11 +188,11 @@ namespace UtilityBelt.Views.Inspector {
                 UnsubscribeFromEvent();
                 DestroyTextures();
                 hud.Visible = false;
-                hud.Render -= Hud_Render;
-                hud.PreRender -= Hud_PreRender;
-                hud.ShouldHide -= Hud_ShouldHide;
-                hud.CreateTextures -= Hud_CreateTextures;
-                hud.DestroyTextures -= Hud_DestroyTextures;
+                hud.OnRender -= Hud_Render;
+                hud.OnPreRender -= Hud_PreRender;
+                hud.OnHide -= Hud_ShouldHide;
+                hud.OnCreateTextures -= Hud_CreateTextures;
+                hud.OnDestroyTextures -= Hud_DestroyTextures;
                 hud.Dispose();
                 isDisposed = true;
             }

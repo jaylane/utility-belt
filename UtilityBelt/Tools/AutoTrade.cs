@@ -10,7 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Settings;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("AutoTrade")]
@@ -27,7 +27,7 @@ When enabled, AutoTrade will attempt to load a profile in one the following loca
 * Documents\\Decal Plugins\\UtilityBelt\\autotrade\\&lt;Server&gt;\\default.utl
 * Documents\\Decal Plugins\\UtilityBelt\\autotrade\\default.utl
 
-### Keep/Keep # Rules
+#### Keep/Keep # Rules
 
 AutoTrade supports keep and keep # actions in VTank rules. These actions have the following meanings:
 
@@ -35,16 +35,19 @@ AutoTrade supports keep and keep # actions in VTank rules. These actions have th
  * **Keep # (# > 0)** - Add up to (#) items to trade window that match the rule (may split stacks if applicable)
  * **Keep # (# < 0)** - Add all items minus (#) to trade window that match the rule (may split stacks if applicable)
 
-###  Example VTank Profiles
+####  Example VTank Profiles
 
- * [Shen-Sort I.utl](/utl/Shen-Sort I.utl) - Add trophies/epics/weapons to trade window for sort mule
- * [Shen-Steel I.utl](/utl/Shen-Steel I.utl) - Add full bags of Salvaged Steel to trade window
+| Vendor UTL | Description |
+|------------|-------------|
+| [Shen-Sort I.utl](../../utl/Shen-Sort%20I.utl) | Add trophies/epics/weapons to trade window for sort mule |
+| [Shen-Steel I.utl](../../utl/Shen-Steel%20I.utl) | Add full bags of Salvaged Steel to trade window |
 
-### Auto-Accept List
+#### Auto-Accept List
 
 AutoTrade supports a list of patterns you want to auto-accept any incoming trades from. So, when your trade partner accepts a trade and matches at least one of the patterns in your list, your character will automatically accept the trade. You can add patterns to your character's list, a shared server list, or a global (all servers) list. The patterns can be any .NET regular expression.
 
-**Note**: Formerly, the auto-accept list was stored in the character-specific settings.json file. This will continue to be supported for backwards-compatibility purposes, but the `/ub autotrade autoaccept add/remove` commands will not modify this list. You can use the settings panel to add/remove characters from this list.
+> [!NOTE]
+> Formerly, the auto-accept list was stored in the character-specific settings.json file. This will continue to be supported for backwards-compatibility purposes, but the `/ub autotrade autoaccept add/remove` commands will not modify this list. You can use the settings panel to add/remove characters from this list.
     ")]
     public class AutoTrade : ToolBase {
         private static readonly string AutoAcceptListFileName = "autoAcceptList.json";

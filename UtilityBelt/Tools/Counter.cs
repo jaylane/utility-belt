@@ -6,7 +6,7 @@ using Decal.Adapter;
 using Decal.Adapter.Wrappers;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 
 namespace UtilityBelt.Tools {
     [Name("Counter")]

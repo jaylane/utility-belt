@@ -1,0 +1,23 @@
+- Add `/ub xp export` to write a string version of the current experience policy to use with `/ub xp import <policy>`
+- Add functionality of MagFilter to login as a substring or index after logging out with `/ub login` tool
+- Add expressions getcharacterindex[string name], setnextlogin[string nameOrIndex], clearnextlogin[]
+- Add test mode to Looter to describe items to be looted without looting
+- Add MagTools-style Item Descriptions (with some enhancements)
+- Add expressions: actiontrymove[], actiontrydrop[]
+- Modified expression delayexec[] to return an identifier that can be used to clear the exec with cleardelay[]
+- Add expression: actiontrysplit[]
+- All expressions that accept WorldObjects now also accept ids
+- Improve overall expression performance
+- Add support for foolproof imbues within autotinker
+- Added previously unknown `/ub propertydump` property names
+- Added new [Overlay Maps](/docs/tools/OverlayMaps/)
+- Added settings `Global.KillDisconnectedClients` to automatically close disconnected client windows
+- Fix actiontryapplyitem[] support for casting wand spells
+- add 275+ xp meter, with hud- meta expressions xp*[] and lum*[], no CLI
+- add NameTags.Pet color setting, that defaults to default Player setting, and code to apply.
+- Add UBService decal service, with new view system. Demo with `/ub opt set gui.showdemoui true`
+- Added lua scripting aka "ubscript"
+- Add Simple XP Meter HUD (UBService)
+- Add framework for character creation (WIP** need to move business logic out of filtercore)
+- Expand Arrow to capture different coordinate formats.
+- Add expressions: wobjectgethealthvalue, wobjectgetstaminavalue, wobjectgetmanavalue

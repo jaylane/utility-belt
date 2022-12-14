@@ -12,7 +12,7 @@ using UtilityBelt.Lib.ChatLog;
 using UtilityBelt.Lib.Constants;
 using UtilityBelt.Lib.Settings;
 using VirindiViewService.Controls;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 
 namespace UtilityBelt.Tools {
 
@@ -21,46 +21,48 @@ namespace UtilityBelt.Tools {
     [FullDescription(@"
 The Chat Logger tool is, as its name implies, a way to log messages in your chat window. The logs are driven by a set of user-defined rules that match the message type and a regular expression pattern that matches the text of the message. By default, these messages will be logged to the Chat Log tab in UB, but can also be saved to disk in settings. The logs will be saved at `Documents\Decal Plugins\UtilityBelt\<Server>\<Character>\chat.txt`.
 
-### Chat Log Rules
+#### Chat Log Rules
 
-![](/screenshots/ChatLogSettings.png)
+![Chat Log Settings Plugin Window Preview](../../images/screenshots/ChatLogSettings.png)
 
 To add a new chat log rule:
 1. Create a pattern for messages you'd like to match in the filter field
 2. Select the message types you'd like the filter to apply to
 3. Click the Add Rule button
 
-### Message Types
+#### Message Types
 
 Chat logger supports the following message types:
 
- * ![](/img/chatlog/6119.gif) **Broadcast** - Allegiance MoTD, give messages, craft messages, Mana stone refill, etc.
- * ![](/img/chatlog/1028.gif) **Speech** - Local chat
- * ![](/img/chatlog/1036.gif) **Tell** - Direct tell (whisper) both incoming and outgoing
- * ![](/img/chatlog/2D13.gif) **System** - House maintenance due, Rare discovered
- * ![](/img/chatlog/10BC.gif) **Combat** - Attacks, evades, bleeds
- * ![](/img/chatlog/32CD.gif) **Magic** - Equipment spells, Spell results (resist, heal, stam-to-mana), Spell expiration
- * ![](/img/chatlog/1FA3.gif) **Channel** - Admin/Sentinel channels
- * ![](/img/chatlog/6D9F.gif) **Social** - Patron/Monarch/Vassal/Co-Vassal chat
- * ![](/img/chatlog/1035.gif) **Emote** - Emote text
- * ![](/img/chatlog/73EE.gif) **Advancement** - Level up message, Skill credit message
- * ![](/img/chatlog/1372.gif) **Abuse** - Abuse chat channel
- * ![](/img/chatlog/18D5.gif) **Help** - Help chat channel
- * ![](/img/chatlog/1388.gif) **Appraisal** - 'So - and - so tried and failed to assess you!'
- * ![](/img/chatlog/1374.gif) **Spellcasting** - Spell word messages
- * ![](/img/chatlog/218B.gif) **Allegiance** - Allegiance chat messages
- * ![](/img/chatlog/1436.gif) **Fellowship** - Fellowship chat
- * ![](/img/chatlog/1F88.gif) **World Broadcast** - Global quest messages (Aerlinthe, QQ, etc)
- * ![](/img/chatlog/1382.gif) **Recall** - Recalling home/mansion/hometown messages
- * ![](/img/chatlog/1C72.gif) **Craft** - Tinkering success/failure messages
- * ![](/img/chatlog/26BA.gif) **Salvaging** - Item salvaging messages
- * ![](/img/chatlog/33BF.gif) **General** - General (global) chat messages
- * ![](/img/chatlog/2761.gif) **Trade** - Trade channel chat messages
- * ![](/img/chatlog/2FB9.gif) **LFG** - Looking-For-Group (LFG) chat messages
- * ![](/img/chatlog/624A.gif) **Roleplay** - Roleplay chat messages
- * ![](/img/chatlog/2632.gif) **Admin Tell** - Direct tell from admin
- * ![](/img/chatlog/10E7.gif) **Olthoi** - Olthoi chat channel
- * ![](/img/chatlog/70A0.gif) **Society** - Society chat channel
+| Icon | Type | Description |
+|------|------|-------------|
+| ![Broadcast Chat Icon](../../images/chatlog/6119.gif) | **Broadcast** | Allegiance MoTD, give messages, craft messages, Mana stone refill, etc. |
+| ![Speech Chat Icon](../../images/chatlog/1028.gif) | **Speech** | Local chat |
+| ![Tell Chat Icon](../../images/chatlog/1036.gif) | **Tell** | Direct tell (whisper) both incoming and outgoing |
+| ![System Chat Icon](../../images/chatlog/2D13.gif) | **System** | House maintenance due, Rare discovered |
+| ![Combat Chat Icon](../../images/chatlog/10BC.gif) | **Combat** | Attacks, evades, bleeds |
+| ![Magic Chat Icon](../../images/chatlog/32CD.gif) | **Magic** | Equipment spells, Spell results (resist, heal, stam-to-mana), Spell expiration |
+| ![Channel Chat Icon](../../images/chatlog/1FA3.gif) | **Channel** | Admin/Sentinel channels |
+| ![Social Chat Icon](../../images/chatlog/6D9F.gif) | **Social** | Patron/Monarch/Vassal/Co-Vassal chat |
+| ![Emote Chat Icon](../../images/chatlog/1035.gif) | **Emote** | Emote text |
+| ![Advancement Chat Icon](../../images/chatlog/73EE.gif) | **Advancement** | Level up message, Skill credit message |
+| ![Abuse Chat Icon](../../images/chatlog/1372.gif) | **Abuse** | Abuse chat channel |
+| ![Help Chat Icon](../../images/chatlog/18D5.gif) | **Help** | Help chat channel |
+| ![Appraisal Chat Icon](../../images/chatlog/1388.gif) | **Appraisal** | 'So - and - so tried and failed to assess you!' |
+| ![Spellcasting Chat Icon](../../images/chatlog/1374.gif) | **Spellcasting** | Spell word messages |
+| ![Allegiance Chat Icon](../../images/chatlog/218B.gif) | **Allegiance** | Allegiance chat messages |
+| ![Fellowship Chat Icon](../../images/chatlog/1436.gif) | **Fellowship** | Fellowship chat |
+| ![World Broadcast Chat Icon](../../images/chatlog/1F88.gif) | **World Broadcast** | Global quest messages (Aerlinthe, QQ, etc) |
+| ![Recall Chat Icon](../../images/chatlog/1382.gif) | **Recall** | Recalling home/mansion/hometown messages |
+| ![Craft Chat Icon](../../images/chatlog/1C72.gif) | **Craft** | Tinkering success/failure messages |
+| ![Salvaging Chat Icon](../../images/chatlog/26BA.gif) | **Salvaging** | Item salvaging messages |
+| ![General Chat Icon](../../images/chatlog/33BF.gif) | **General** | General (global) chat messages |
+| ![Trade Chat Icon](../../images/chatlog/2761.gif) | **Trade** | Trade channel chat messages |
+| ![LFG Chat Icon](../../images/chatlog/2FB9.gif) | **LFG** | Looking-For-Group (LFG) chat messages |
+| ![Roleplay Chat Icon](../../images/chatlog/624A.gif) | **Roleplay** | Roleplay chat messages |
+| ![Admin Tell Chat Icon](../../images/chatlog/2632.gif) | **Admin Tell** | Direct tell from admin |
+| ![Olthoi Chat Icon](../../images/chatlog/10E7.gif) | **Olthoi** | Olthoi chat channel |
+| ![Society Chat Icon](../../images/chatlog/70A0.gif) | **Society** | Society chat channel |
     ")]
     public class ChatLogger : ToolBase {
         private string filter = null;

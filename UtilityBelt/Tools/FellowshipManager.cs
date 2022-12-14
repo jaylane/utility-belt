@@ -5,10 +5,9 @@ using UtilityBelt.Lib;
 using System.Text.RegularExpressions;
 using Decal.Adapter.Wrappers;
 using Decal.Adapter;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using UtilityBelt.Lib.Expressions;
 using AcClient;
-using Exceptionless.Extensions;
 using System.Windows.Forms.VisualStyles;
 
 namespace UtilityBelt.Tools {
@@ -296,7 +295,7 @@ namespace UtilityBelt.Tools {
         #region void Create(string _name) // create fellowship with name
         public unsafe void Create(string _name) {
             if (InFellowship) return;
-            if (_name.IsNullOrEmpty()) return;
+            if (string.IsNullOrEmpty(_name)) return;
             AC1Legacy.PStringBase<char> pStringBase = _name;
 
             int share_xp = (int)(*CPlayerSystem.s_pPlayerSystem)->playerModule.PlayerModule.FellowshipShareXP();

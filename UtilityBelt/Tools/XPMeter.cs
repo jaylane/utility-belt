@@ -1,16 +1,17 @@
 ﻿using System;
 using UtilityBelt.Lib;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using AcClient;
 using System.Runtime.InteropServices;
 using ImGuiNET;
+using System.Numerics;
 
 namespace UtilityBelt.Tools {
     [Name("XPMeter")]
     [Summary("Provides an XP Meter overlay that works past 275")]
     [FullDescription(@"TODO: Write this. This is still under development.")]
     public class XPMeter : ToolBase {
-        private UBService.Views.Hud hud;
+        private UtilityBelt.Service.Views.Hud hud;
 
         #region Config
         [Summary("Enabled")]
@@ -200,11 +201,11 @@ namespace UtilityBelt.Tools {
         #region Hud Show/Hide
         internal void Hud_Show() {
             Hud_Hide();
-            hud = UBService.UBService.Huds.CreateHud("XP Meter");
+            hud = UtilityBelt.Service.UBService.Huds.CreateHud("XP Meter");
             hud.ShowInBar = false;
-            hud.ShouldHide += Hud_ShouldHide;
-            hud.Render += Hud_Render;
-            hud.PreRender += Hud_PreRender;
+            hud.OnHide += Hud_ShouldHide;
+            hud.OnRender += Hud_Render;
+            hud.OnPreRender += Hud_PreRender;
 
             hud.WindowSettings |= ImGuiWindowFlags.AlwaysAutoResize;
             hud.WindowSettings |= ImGuiWindowFlags.NoResize;
@@ -213,9 +214,9 @@ namespace UtilityBelt.Tools {
         }
         public void Hud_Hide() {
             if (hud != null) {
-                hud.ShouldHide -= Hud_ShouldHide;
-                hud.Render -= Hud_Render;
-                hud.PreRender -= Hud_PreRender;
+                hud.OnHide -= Hud_ShouldHide;
+                hud.OnRender -= Hud_Render;
+                hud.OnPreRender -= Hud_PreRender;
                 hud.Dispose();
                 hud = null;
             }
@@ -226,7 +227,7 @@ namespace UtilityBelt.Tools {
         private float additionalHeight = 0;
         private void Hud_PreRender(object sender, EventArgs e) {
             hudText = Gloat();
-            if (ImGui.GetIO().KeyShift > 0) {
+            if (ImGui.GetIO().KeyShift) {
                 if (additionalHeight < 32)
                     additionalHeight += 4f;
             }

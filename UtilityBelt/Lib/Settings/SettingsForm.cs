@@ -7,7 +7,7 @@ using System.Text;
 using UtilityBelt.Views;
 using VirindiViewService;
 using VirindiViewService.Controls;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using UtilityBelt.Lib.Settings;
 using UBLoader.Lib;
 

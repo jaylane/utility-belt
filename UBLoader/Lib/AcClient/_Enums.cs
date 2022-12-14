@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Linq;
 using System.Text;
 
+/*
 namespace AcClient {
     public enum CallbackLoseFocusResult : uint {
         lfBlock = 0x0,
@@ -1536,3 +1537,4 @@ namespace AcClient {
 
 
 }
+*/

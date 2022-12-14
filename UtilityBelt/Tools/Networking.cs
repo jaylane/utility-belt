@@ -5,7 +5,7 @@ using System.Text;
 using UtilityBelt.Lib;
 using System.ComponentModel;
 using System.Windows.Forms;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using System.Collections.Concurrent;
 using UtilityBelt.Lib.Networking.Messages;
 using System.Text.RegularExpressions;
@@ -13,14 +13,16 @@ using System.Threading;
 using UtilityBelt.Views;
 using System.Collections.ObjectModel;
 using UtilityBelt.Lib.Networking;
-using UBNetworking;
-using UBNetworking.Lib;
-using UBNetworking.Messages;
+using UtilityBelt.Networking;
+using UtilityBelt.Networking.Lib;
+using UtilityBelt.Networking.Messages;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using System.Reflection;
 using UtilityBelt.Lib.Expressions;
+using Hellosam.Net.Collections;
+using System.Reactive;
 
 namespace UtilityBelt.Tools {
     [Name("Networking")]
@@ -35,7 +37,7 @@ namespace UtilityBelt.Tools {
         public bool Connected { get; internal set; }
         public bool IsRunning { get; private set; }
         public int ClientId { get => ubNet != null ? ubNet.ClientId : 0; }
-        public readonly ObservableConcurrentDictionary<int, ClientInfo> Clients = new ObservableConcurrentDictionary<int, ClientInfo>();
+        public readonly ObservableDictionary<int, ClientInfo> Clients = new ObservableDictionary<int, ClientInfo>();
         
 
         private UBClient ubNet;
@@ -75,9 +77,9 @@ namespace UtilityBelt.Tools {
             }
 
             Logger.WriteToChat($"Broadcasting command to all clients: \"{command}\" with delay inbetween of {delay}ms");
-            DoBroadcast(Clients.Select(c => c.Value), command, delay);
+            DoBroadcast(Clients.Values.Select(c => c), command, delay);
             if (UB.Plugin.Debug)
-                Logger.Debug($"Sent to clients: {string.Join(", ", Clients.Select(c => c.Value.Name).ToArray())}");
+                Logger.Debug($"Sent to clients: {string.Join(", ", Clients.Values.Select(c => c.Name).ToArray())}");
         }
 
         public void DoBroadcast(IEnumerable<ClientInfo> clients, string command, int delay) {
@@ -116,7 +118,7 @@ namespace UtilityBelt.Tools {
                 return;
             }
 
-            var clients = Clients.Select(c => c.Value).Where(c => {
+            var clients = Clients.Values.Select(c => c).Where(c => {
                 foreach (var tag in tags)
                     if (c.Tags.Contains(tag))
                         return true;
@@ -138,13 +140,13 @@ namespace UtilityBelt.Tools {
         public void DoNetClients(string _, Match args) {
             bool showedClients = false;
             var tags = String.IsNullOrEmpty(args.Groups["tags"].Value) ? new string[] { } : args.Groups["tags"].Value.Split(',');
-            foreach (var kv in Clients) {
-                if (tags == null || tags.Count() == 0 || (tags.Count() > 0 && kv.Value.HasTags(tags.ToList()))) {
-                    Logger.WriteToChat($"Client: ({kv.Key}) {kv.Value.Name}//{kv.Value.WorldName}: Tags({(kv.Value.Tags == null ? "null" : String.Join(",", kv.Value.Tags.ToArray()))})", Logger.LogMessageType.Generic, true, false, false);
+            foreach (var kv in Clients.Snapshot) {
+                if (tags == null || tags.Count() == 0 || (tags.Count() > 0 && kv.HasTags(tags.ToList()))) {
+                    Logger.WriteToChat($"Client: ({kv.ClientId}) {kv.Name}//{kv.WorldName}: Tags({(kv.Tags == null ? "null" : String.Join(",", kv.Tags.ToArray()))})", Logger.LogMessageType.Generic, true, false, false);
                     if (UB.Plugin.Debug) {
                         var extra = new StringBuilder("\t");
-                        foreach (var prop in kv.Value.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)) {
-                            extra.Append($"{prop.Name}:{prop.GetValue(kv.Value, null)},");
+                        foreach (var prop in kv.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)) {
+                            extra.Append($"{prop.Name}:{prop.GetValue(kv, null)},");
                         }
                         Logger.Debug(extra.ToString());
                     }
@@ -167,24 +169,24 @@ namespace UtilityBelt.Tools {
         [Example("netclients[test]", "returns a list of all network clients with the tag `test`")]
         public object netclients(string tag = null) {
             var clients = new ExpressionList();
-            foreach (var kv in Clients) {
-                if (string.IsNullOrEmpty(tag) || kv.Value.HasTags(new List<string>() { tag })) {
+            foreach (var kv in Clients.Snapshot) {
+                if (string.IsNullOrEmpty(tag) || kv.HasTags(new List<string>() { tag })) {
                     var clientTags = new ExpressionList();
-                    clientTags.AddRange(kv.Value.Tags.Select(x => (object)x));
+                    clientTags.AddRange(kv.Tags.Select(x => (object)x));
                     var clientData = new ExpressionDictionary();
-                    clientData.Items.Add("ClientId", kv.Value.ClientId);
-                    clientData.Items.Add("PlayerId", kv.Value.PlayerId);
-                    clientData.Items.Add("Position", new ExpressionCoordinates(kv.Value.EW, kv.Value.NS, kv.Value.Z));
-                    clientData.Items.Add("Name", kv.Value.Name);
+                    clientData.Items.Add("ClientId", kv.ClientId);
+                    clientData.Items.Add("PlayerId", kv.PlayerId);
+                    clientData.Items.Add("Position", new ExpressionCoordinates(kv.EW, kv.NS, kv.Z));
+                    clientData.Items.Add("Name", kv.Name);
                     clientData.Items.Add("Tags", clientTags);
-                    clientData.Items.Add("WorldName", kv.Value.WorldName);
-                    clientData.Items.Add("CurrentHealth", kv.Value.CurrentHealth);
-                    clientData.Items.Add("CurrentMana", kv.Value.CurrentMana);
-                    clientData.Items.Add("CurrentStamina", kv.Value.CurrentStamina);
-                    clientData.Items.Add("MaxHealth", kv.Value.MaxHealth);
-                    clientData.Items.Add("MaxMana", kv.Value.MaxMana);
-                    clientData.Items.Add("MaxStamina", kv.Value.MaxStamina);
-                    clientData.Items.Add("Heading", kv.Value.Heading);
+                    clientData.Items.Add("WorldName", kv.WorldName);
+                    clientData.Items.Add("CurrentHealth", kv.CurrentHealth);
+                    clientData.Items.Add("CurrentMana", kv.CurrentMana);
+                    clientData.Items.Add("CurrentStamina", kv.CurrentStamina);
+                    clientData.Items.Add("MaxHealth", kv.MaxHealth);
+                    clientData.Items.Add("MaxMana", kv.MaxMana);
+                    clientData.Items.Add("MaxStamina", kv.MaxStamina);
+                    clientData.Items.Add("Heading", kv.Heading);
                     clients.Items.Add(clientData);
                 }
             }
@@ -215,9 +217,9 @@ namespace UtilityBelt.Tools {
                     lastClientCleanup = DateTime.UtcNow;
                     var clients = Clients.ToArray();
                     foreach (var client in clients) {
-                        if (DateTime.UtcNow - client.Value.LastUpdate > TimeSpan.FromSeconds(15)) {
-                            Logger.WriteToChat($"Client Timed Out: {client.Value.WorldName}//{client.Value.Name}");
-                            Clients.Remove(client.Key);
+                        if (DateTime.UtcNow - client.LastUpdate > TimeSpan.FromSeconds(15)) {
+                            Logger.WriteToChat($"Client Timed Out: {client.WorldName}//{client.Name}");
+                            Clients.Remove(client.ClientId);
                         }
                     }
                 }
@@ -265,6 +267,7 @@ namespace UtilityBelt.Tools {
             RemoveMessageHandler<TrackedItemUpdateMessage>(Handle_TrackedItemUpdateMessage);
             RemoveMessageHandler<CharacterPositionMessage>(Handle_CharacterPositionMessage);
             ubNet.Dispose();
+            ubNet = null;
             IsRunning = false;
         }
 
@@ -371,7 +374,7 @@ namespace UtilityBelt.Tools {
         #region UBNet events
         private void UbNet_OnConnected(object sender, EventArgs e) {
             try {
-                Logger.WriteToChat($"Connected to UBNet", Logger.LogMessageType.Generic, true, false, false);
+                Logger.WriteToChat($"Connected to UBNet", Logger.LogMessageType.Generic, true, false, false); 
                 Connected = true;
                 SendObject(new LoginMessage() {
                     Name = UB.CharacterName,

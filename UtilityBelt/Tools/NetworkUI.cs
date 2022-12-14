@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using UtilityBelt.Lib;
 using UtilityBelt.Views;
-using UBService.Lib.Settings;
+using UtilityBelt.Service.Lib.Settings;
 using System.Collections.ObjectModel;
 using UtilityBelt.Lib.Networking;
 using UtilityBelt.Lib.Settings;
@@ -12,8 +12,8 @@ using Decal.Interop.Input;
 using System.Drawing;
 using VirindiViewService;
 using UtilityBelt.Lib.Dungeon;
-using UBNetworking.Lib;
-using UBNetworking.Messages;
+using UtilityBelt.Networking.Lib;
+using UtilityBelt.Networking.Messages;
 using UtilityBelt.Lib.Networking.Messages;
 using Microsoft.DirectX;
 using System.Windows.Forms;
@@ -24,11 +24,13 @@ namespace UtilityBelt.Tools {
     [FullDescription(@"
 Provides a hud for drawing active network clients. There are also options to follow / use selected item when the full window is show.
 
-![](/screenshots/NetworkUI/mainwindow.png)
-
 To enable, set `NetworkUI.Enabled` to true.  A new icon will appear on your vvs bar, and the hud should start drawing immediately. Other characters need to have `VTank.VitalSharing` enabled for information to be sent across the wire. This option will likely change in the future to be specific to ub networking.
 
 Holding ctrl allows you to click and drag the hud to reposition it, while the window is closed.  Holding shift and clicking on character vitals will select that character.
+
+#### Screenshots
+
+![NetworkUI HUD Preview](../../images/screenshots/NetworkUI/mainwindow.png)
     ")]
     public class NetworkUI : ToolBase {
         private NetworkClientsView clientsView;
@@ -112,9 +114,9 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
             if (drawTimer != null)
                 drawTimer.Stop();
             drawTimer = null;
-            UB.Networking.RemoveMessageHandler<PlayerUpdateMessage>(Handle_PlayerUpdateMessage);
-            UB.Networking.RemoveMessageHandler<TrackedItemUpdateMessage>(Handle_TrackedItemUpdateMessage);
-            UB.Networking.RemoveMessageHandler<CharacterPositionMessage>(Handle_CharacterPositionMessage);
+            UB.Networking?.RemoveMessageHandler<PlayerUpdateMessage>(Handle_PlayerUpdateMessage);
+            UB.Networking?.RemoveMessageHandler<TrackedItemUpdateMessage>(Handle_TrackedItemUpdateMessage);
+            UB.Networking?.RemoveMessageHandler<CharacterPositionMessage>(Handle_CharacterPositionMessage);
             ClearHud();
             if (clientsView != null) {
                 clientsView.view.Moved -= View_Moved;
@@ -204,23 +206,23 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
         }
 
         private void Handle_PlayerUpdateMessage(MessageHeader header, PlayerUpdateMessage message) {
-            var client = UB.Networking.Clients.Where(c => c.Key == header.SendingClientId).FirstOrDefault();
-            if (client.Value != null) {
-                DrawClient(client.Value);
+            var client = UB.Networking.Clients.Where(c => c.ClientId == header.SendingClientId).FirstOrDefault();
+            if (client != null) {
+                DrawClient(client);
             }
         }
 
         private void Handle_TrackedItemUpdateMessage(MessageHeader header, TrackedItemUpdateMessage message) {
-            var client = UB.Networking.Clients.Where(c => c.Key == header.SendingClientId).FirstOrDefault();
-            if (client.Value != null) {
-                DrawClient(client.Value);
+            var client = UB.Networking.Clients.Where(c => c.ClientId == header.SendingClientId).FirstOrDefault();
+            if (client != null) {
+                DrawClient(client);
             }
         }
 
         private void Handle_CharacterPositionMessage(MessageHeader header, CharacterPositionMessage message) {
-            var client = UB.Networking.Clients.Where(c => c.Key == header.SendingClientId).FirstOrDefault();
-            if (client.Value != null) {
-                DrawClient(client.Value);
+            var client = UB.Networking.Clients.Where(c => c.ClientId == header.SendingClientId).FirstOrDefault();
+            if (client != null) {
+                DrawClient(client);
             }
         }
         #endregion event handlers
@@ -307,8 +309,8 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
             try {
                 var tag = GetActiveTab();
                 clients = UB.Networking.Clients.Where((c) => {
-                    return (tag == "All" || c.Value.Tags.Contains(tag)) && c.Value.LastUpdate != DateTime.MinValue;
-                }).Select(c => c.Value);
+                    return (tag == "All" || c.Tags.Contains(tag)) && c.LastUpdate != DateTime.MinValue;
+                }).Select(c => c);
                 if (GetActiveClientCount() != lastClientCount)
                     CreateHud();
                 lastClientCount = GetActiveClientCount();

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Hellosam.Net.Collections;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace UtilityBelt.Lib.Expressions {
     public class ExpressionDictionary : ExpressionObjectBase {
 
         //this class is currently supplied by Exceptionless. Will need to add the package https://www.nuget.org/packages/MSFT.ParallelExtensionsExtras/ once Exceptionless is removed.
-        public ObservableConcurrentDictionary<string, object> Items { get; set; } = new ObservableConcurrentDictionary<string, object>();
+        public ObservableDictionary<string, object> Items { get; set; } = new ObservableDictionary<string, object>();
 
         public ExpressionDictionary() {
             IsSerializable = true;

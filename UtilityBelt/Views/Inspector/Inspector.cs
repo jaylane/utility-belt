@@ -6,11 +6,12 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters;
 using System.Security.Cryptography;
-using UBService;
+using UtilityBelt.Service;
 using static UtilityBelt.Views.DictionaryEditor;
 using static UtilityBelt.Views.Inspector.Inspector;
 
@@ -19,7 +20,7 @@ namespace UtilityBelt.Views.Inspector {
         private static uint _id = 0;
         private static int _pushId = 0;
 
-        private UBService.Views.Hud hud;
+        private UtilityBelt.Service.Views.Hud hud;
         private Vector2 minWindowSize = new Vector2(500, 250);
         private Vector2 maxWindowSize = new Vector2(99999, 99999);
         private Vector4 iconTint = new Vector4(1, 1, 1, 1);
@@ -172,16 +173,16 @@ namespace UtilityBelt.Views.Inspector {
             ToInspect = toInspect;
             Selected = new InspectedObject(GetType().GetProperty("ToInspect", BindingFlags.Public | BindingFlags.Instance), this);
             using (Stream manifestResourceStream = GetType().Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.inspector.png")) {
-                hud = UBService.UBService.Huds.CreateHud($"Inspector: {Name}##Inspector{_id++}", new Bitmap(manifestResourceStream));
+                hud = UtilityBelt.Service.UBService.Huds.CreateHud($"Inspector: {Name}##Inspector{_id++}", new Bitmap(manifestResourceStream));
             }
 
             CreateTextures();
 
-            hud.Render += Hud_Render;
-            hud.PreRender += Hud_PreRender;
-            hud.CreateTextures += Hud_CreateTextures;
-            hud.DestroyTextures += Hud_DestroyTextures;
-            hud.ShouldHide += Hud_ShouldHide;
+            hud.OnRender += Hud_Render;
+            hud.OnPreRender += Hud_PreRender;
+            hud.OnCreateTextures += Hud_CreateTextures;
+            hud.OnDestroyTextures += Hud_DestroyTextures;
+            hud.OnHide += Hud_ShouldHide;
         }
 
         private void Hud_ShouldHide(object sender, EventArgs e) {
@@ -574,7 +575,6 @@ namespace UtilityBelt.Views.Inspector {
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
-
             return null;
         }
 
@@ -641,6 +641,7 @@ namespace UtilityBelt.Views.Inspector {
             Delegate[] delegates = new Delegate[] { };
             if (inspectedObject.MemberInfo is EventInfo eventInfo) {
                 var eventField = inspectedObject.Parent.GetType().GetField(eventInfo.Name, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField);
+
                 if (eventField == null) eventField = inspectedObject.Parent.GetType().GetField(eventInfo.Name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetField);
                 if (eventField == null) eventField = inspectedObject.Parent.GetType().GetField(eventInfo.Name, BindingFlags.Public | BindingFlags.Static | BindingFlags.GetField);
                 if (eventField == null) eventField = inspectedObject.Parent.GetType().GetField(eventInfo.Name, BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.GetField);
@@ -803,11 +804,11 @@ namespace UtilityBelt.Views.Inspector {
                 }
                 inspectors.Clear();
                 DestroyTextures();
-                hud.Render -= Hud_Render;
-                hud.PreRender -= Hud_PreRender;
-                hud.CreateTextures -= Hud_CreateTextures;
-                hud.DestroyTextures -= Hud_DestroyTextures;
-                hud.ShouldHide -= Hud_ShouldHide;
+                hud.OnRender -= Hud_Render;
+                hud.OnPreRender -= Hud_PreRender;
+                hud.OnCreateTextures -= Hud_CreateTextures;
+                hud.OnDestroyTextures -= Hud_DestroyTextures;
+                hud.OnHide -= Hud_ShouldHide;
                 hud?.Dispose();
                 isDisposed = true;
             }
