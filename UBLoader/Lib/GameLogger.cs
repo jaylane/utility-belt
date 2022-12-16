@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UBScript.Enums;
-using UBScript.Interop;
+using UtilityBelt.Scripting.Enums;
+using UtilityBelt.Scripting.Interop;
 
 namespace UBLoader.Lib {
     public class GameLogger : ILogger {

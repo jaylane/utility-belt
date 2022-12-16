@@ -9,10 +9,10 @@ using System.Diagnostics;
 using UtilityBelt.Service.Lib.Settings;
 using System.Text;
 using System.Text.RegularExpressions;
-using UBScript;
+using UtilityBelt.Scripting;
 using UBLoader.Lib;
 using UBLoader.Lib.ScriptInterface;
-using UBScript.Interop;
+using UtilityBelt.Scripting.Interop;
 using System.Collections.ObjectModel;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 using ACE.DatLoader;
@@ -24,6 +24,9 @@ using System.Drawing;
 using System.Threading.Tasks;
 using static UBLoader.FilterCore;
 using UtilityBelt.Networking.Messages;
+using MoonSharp.Interpreter;
+using UtilityBelt.Scripting.ScriptEnvs.Lua;
+using UtilityBelt.Scripting.Enums;
 
 namespace UBLoader {
     [FriendlyName("UtilityBelt")]
@@ -92,7 +95,7 @@ namespace UBLoader {
                 return System.IO.Path.Combine(PluginAssemblyDirectory, $"{PluginAssemblyName}.config");
             }
         }
-        public static UBScript.ScriptManager Scripts { get; private set; }
+        public static UtilityBelt.Scripting.ScriptManager Scripts { get; private set; }
         //public static GameState GameState { get; private set; }
 
         public static event EventHandler<NetworkMessageEventArgs> _ClientDispatch;
@@ -153,10 +156,15 @@ namespace UBLoader {
         #endregion Account Settings
 
         public FilterCore() {
-            System.Resources.ResourceManager rm = new System.Resources.ResourceManager(GetType().Namespace + ".Properties.Resources", System.Reflection.Assembly.GetExecutingAssembly());
-            System.Reflection.Assembly.Load((byte[])rm.GetObject("LiteDB"));
-            System.Reflection.Assembly.Load((byte[])rm.GetObject("Antlr4_Runtime"));
-            System.Reflection.Assembly.Load((byte[])rm.GetObject("websocket_sharp"));
+            try {
+                System.Resources.ResourceManager rm = new System.Resources.ResourceManager("UBLoader.Properties.Resources", GetType().Assembly);
+                rm.IgnoreCase = true;
+                System.Reflection.Assembly.Load((byte[])rm.GetObject("LiteDB"));
+                System.Reflection.Assembly.Load((byte[])rm.GetObject("Antlr4.Runtime"));
+                System.Reflection.Assembly.Load((byte[])rm.GetObject("websocket-sharp"));
+            }
+            catch  {
+            }
         }
 
         /// <summary>
@@ -192,32 +200,47 @@ namespace UBLoader {
                 UBCommon.Lib.Logger.LogAction = (s) => LogError(s);
 
                 if (Global.EnableScripts) {
-                    //await Task.Run(() => {
-                        var options = new ScriptManagerOptions() {
-                            LogAction = (s) => LogError(s),
-                            ScriptDirectory = Global.ScriptStorageDirectory,
-                            StartVSCodeDebugServer = true
-                        };
+                    var options = new ScriptManagerOptions() {
+                        LogAction = (s) => LogError(s),
+                        ScriptDirectory = Global.ScriptStorageDirectory,
+                        StartVSCodeDebugServer = true,
+                        ClientCapabilities = ClientCapability.ImGui
+                    };
 
-                        var gameLogger = new GameLogger();
+                    var gameLogger = new GameLogger();
 
-                        Scripts = new UBScript.ScriptManager(options);
-                        Scripts.RegisterComponent(typeof(ILogger), typeof(GameLogger), true, gameLogger);
-                        Scripts.RegisterComponent(typeof(IClientActionsRaw), typeof(ACClientActions), true, new ACClientActions(gameLogger));
-                        Scripts.RegisterComponent(typeof(PortalDatDatabase), typeof(PortalDatDatabase), true, PortalDat);
-                        Scripts.RegisterComponent(typeof(CellDatDatabase), typeof(CellDatDatabase), true, CellDat);
-                        Scripts.RegisterComponent(typeof(LanguageDatDatabase), typeof(LanguageDatDatabase), true, LanguageDat);
-                        Scripts.Initialize();
+                    Scripts = new UtilityBelt.Scripting.ScriptManager(options);
 
-                        ClientDispatch += FilterCore_ClientDispatch;
-                        ServerDispatch += FilterCore_ServerDispatch;
-                        Core.RenderFrame += (s, e) => {
-                            try {
-                                Scripts.Tick();
-                            }
-                            catch (Exception ex) { gameLogger.Log(ex); }
-                        };
-                    //});
+                    Scripts.RegisterComponent(typeof(ILogger), typeof(GameLogger), true, gameLogger);
+                    Scripts.RegisterComponent(typeof(IClientActionsRaw), typeof(ACClientActions), true, new ACClientActions(gameLogger));
+                    Scripts.RegisterComponent(typeof(PortalDatDatabase), typeof(PortalDatDatabase), true, PortalDat);
+                    Scripts.RegisterComponent(typeof(CellDatDatabase), typeof(CellDatDatabase), true, CellDat);
+                    Scripts.RegisterComponent(typeof(LanguageDatDatabase), typeof(LanguageDatDatabase), true, LanguageDat);
+
+                    // imgui
+                    var imguiAssembly = typeof(ImGuiNET.ImColor).Assembly;
+                    foreach (var type in imguiAssembly.GetTypes()) {
+                        if (type.Namespace == null) {
+                            continue;
+                        }
+                        if (type.Namespace.StartsWith("ImGuiNET") || type.Namespace.StartsWith("UtilityBelt.Service.Views")) {
+                            Scripts.RegisterScriptableType(type);
+                            if (type.IsGenericType || type.Name.Contains("<"))
+                                continue;
+                            Scripts.RegisterScriptableGlobal(type.Name, type);
+                        }
+                    }
+
+                    Scripts.Initialize();
+
+                    ClientDispatch += FilterCore_ClientDispatch;
+                    ServerDispatch += FilterCore_ServerDispatch;
+                    Core.RenderFrame += (s, e) => {
+                        try {
+                            Scripts.Tick();
+                        }
+                        catch (Exception ex) { gameLogger.Log(ex); }
+                    };
                 }
 
                 isEchoFilterServerDispatchListening = true;
