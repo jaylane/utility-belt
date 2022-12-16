@@ -7,9 +7,9 @@ using System.Text.RegularExpressions;
 using System.IO;
 using UBCommon.Enums;
 using System.Collections.ObjectModel;
-using UBScript.Interop;
-using Skill = UBScript.Interop.Skill;
-using UBScript.Events;
+using UtilityBelt.Scripting.Interop;
+using Skill = UtilityBelt.Scripting.Interop.Skill;
+using UtilityBelt.Scripting.Events;
 using ImGuiNET;
 using UBCommon.Messages.Events;
 using System.Drawing;
@@ -28,7 +28,7 @@ using Newtonsoft.Json.Serialization;
 using System.Reflection;
 using System.IO.Compression;
 using WebSocketSharp;
-using LogLevel = UBScript.Enums.LogLevel;
+using LogLevel = UtilityBelt.Scripting.Enums.LogLevel;
 using UtilityBelt.Lib.ScriptInterface;
 using System.Numerics;
 
@@ -492,7 +492,7 @@ namespace UtilityBelt.Tools {
                 var attributeEnchantments = gameState.Character.GetActiveEnchantments(attributeId);
                 var enchantmentBonus = attributeEnchantments.Sum(enchantment => enchantment.StatValue);
 
-                if (gameState.Character.Weenie.Attributes.TryGetValue(attributeId, out UBScript.Interop.Attribute ubAttr)) {
+                if (gameState.Character.Weenie.Attributes.TryGetValue(attributeId, out UtilityBelt.Scripting.Interop.Attribute ubAttr)) {
                     //Logger.WriteToChat($"   UB: {attributeId} Base: {ubAttr.Base} // Current: {ubAttr.Current}");
                     var multEnchants = gameState.Character.GetActiveEnchantments(attributeId).Where(e => (e.Flags & EnchantmentFlags.Multiplicative) != 0);
                     var addEnchants = gameState.Character.GetActiveEnchantments(attributeId).Where(e => (e.Flags & EnchantmentFlags.Additive) != 0);
@@ -524,7 +524,7 @@ namespace UtilityBelt.Tools {
             //attributeIds.Sort((a, b) => a.ToString().CompareTo(b.ToString()));
 
             foreach (VitalId vitalId in vitalIds) {
-                if (gameState.Character.Weenie.Vitals.TryGetValue(vitalId, out UBScript.Interop.Vital ubAttr)) {
+                if (gameState.Character.Weenie.Vitals.TryGetValue(vitalId, out UtilityBelt.Scripting.Interop.Vital ubAttr)) {
                     //Logger.WriteToChat($"   UB: {ubAttr.Type} Base: {ubAttr.Base} // Current: {ubAttr.Current} // Max: {ubAttr.Max}");
                     var multEnchants = gameState.Character.GetActiveEnchantments(vitalId).Where(e => (e.Flags & EnchantmentFlags.Multiplicative) != 0);
                     var addEnchants = gameState.Character.GetActiveEnchantments(vitalId).Where(e => (e.Flags & EnchantmentFlags.Additive) != 0);
@@ -695,7 +695,7 @@ namespace UtilityBelt.Tools {
         }
 
         private List<SpellCast> _castBuffs = new List<SpellCast>();
-        private UBScript.UBScript currentScriptInstance;
+        private UtilityBelt.Scripting.UBScript currentScriptInstance;
         private string _consoleInput = "";
         private List<RemoteScript> _remoteScripts = new List<RemoteScript>();
 
@@ -921,7 +921,7 @@ namespace UtilityBelt.Tools {
             */
         }
 
-        private void CurrentScriptInstance_OnLogText(object sender, UBScript.UBScript.LogEventArgs e) {
+        private void CurrentScriptInstance_OnLogText(object sender, UtilityBelt.Scripting.UBScript.LogEventArgs e) {
             AddLogLine(e.Text, LogLevel.Info);
         }
 

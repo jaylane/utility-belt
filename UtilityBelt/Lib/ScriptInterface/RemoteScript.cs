@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UtilityBelt.Scripting;
 using UtilityBelt.Tools;
 using WebSocketSharp;
 
@@ -20,7 +21,7 @@ namespace UtilityBelt.Lib.ScriptInterface {
         public uint ScriptId { get; }
         public string ScriptName => $"RemoteScript{ScriptId}";
         public string RemoteClientId { get; private set; }
-        public UBScript.UBScript Script { get; private set; }
+        public UBScript Script { get; private set; }
 
         public event EventHandler<EventArgs> OnClosed;
 
@@ -38,7 +39,7 @@ namespace UtilityBelt.Lib.ScriptInterface {
             TryConnect();
         }
 
-        private void Scripts_OnScriptStopped(object sender, UBScript.Events.ScriptEventArgs e) {
+        private void Scripts_OnScriptStopped(object sender, UtilityBelt.Scripting.Events.ScriptEventArgs e) {
             if (!isSelfStopping && e.Script.Name == ScriptName) {
                 Dispose();
             }
@@ -109,7 +110,7 @@ namespace UtilityBelt.Lib.ScriptInterface {
             }
         }
 
-        private void Script_OnLogText(object sender, UBScript.UBScript.LogEventArgs e) {
+        private void Script_OnLogText(object sender, UtilityBelt.Scripting.UBScript.LogEventArgs e) {
             try {
                 ws?.Send((new JObject {
                     { "command", "logs" },

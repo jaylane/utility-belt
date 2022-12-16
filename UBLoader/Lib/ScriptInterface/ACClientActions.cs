@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using ACE.Entity;
 using Decal.Adapter;
 using UBCommon.Enums;
-using UBScript.Interop;
+using UtilityBelt.Scripting.Interop;
 
 namespace UBLoader.Lib.ScriptInterface {
     public class ACClientActions : IClientActionsRaw {
