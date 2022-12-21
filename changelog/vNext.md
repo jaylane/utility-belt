@@ -21,3 +21,4 @@
 - Add framework for character creation (WIP** need to move business logic out of filtercore)
 - Expand Arrow to capture different coordinate formats.
 - Add expressions: wobjectgethealthvalue, wobjectgetstaminavalue, wobjectgetmanavalue
+- Add expressions: vtmacroenabled[]

@@ -1886,6 +1886,15 @@ namespace UtilityBelt.Tools {
             //}
         }
         #endregion //vtgetsetting[string setting]
+        #region vtmacroenabled[]
+        [ExpressionMethod("vtmacroenabled")]
+        [ExpressionReturn(typeof(bool), "Returns true/false")]
+        [Summary("Gets current vtank macro enabled state")]
+        [Example("vtmacroenabled[]", "Gets current vtank macro enabled state")]
+        public object Vtmacroenabled() {
+            return UBHelper.vTank.Instance.MacroEnabled;
+        }
+        #endregion //vtmacroenabled[]
         #region ord[string character]
         [ExpressionMethod("ord")]
         [ExpressionParameter(0, typeof(string), "character", "string to convert")]
