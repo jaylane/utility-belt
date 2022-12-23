@@ -82,7 +82,7 @@ namespace UtilityBelt.Tools {
         private void CheckForClassic() {
             if (!EnableAutoClassicPatch)
                 return;
-            if (!UBLoader.FilterCore.PlayerDescSkillState.ContainsKey((int)UBCommon.Enums.SkillId.Summoning)) {
+            if (!UBLoader.FilterCore.PlayerDescSkillState.ContainsKey((int)UtilityBelt.Common.Enums.SkillId.Summoning)) {
                 PatchVTankClassic();
             }
         }

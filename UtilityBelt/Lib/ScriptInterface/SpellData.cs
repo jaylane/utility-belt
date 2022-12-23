@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UBCommon.Enums;
+using UtilityBelt.Common.Enums;
 
 namespace UtilityBelt.Lib.ScriptInterface {
     public class SpellData {

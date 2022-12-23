@@ -5,13 +5,13 @@ using UtilityBelt.Service.Lib.Settings;
 using UtilityBelt.Lib;
 using System.Text.RegularExpressions;
 using System.IO;
-using UBCommon.Enums;
+using UtilityBelt.Common.Enums;
 using System.Collections.ObjectModel;
 using UtilityBelt.Scripting.Interop;
 using Skill = UtilityBelt.Scripting.Interop.Skill;
 using UtilityBelt.Scripting.Events;
 using ImGuiNET;
-using UBCommon.Messages.Events;
+using UtilityBelt.Common.Messages.Events;
 using System.Drawing;
 using UtilityBelt.Service.Views;
 using ACE.DatLoader;
@@ -181,7 +181,7 @@ namespace UtilityBelt.Tools {
 
             var _selfBuffsByVital = UBLoader.FilterCore.Scripts.GameState.Character.Weenie.Vitals.Keys
                 .Select(vitalId => {
-                    var values = knownSpells.Where(spell => spell.StatModVital == (UBCommon.Enums.Vital)vitalId && (spell.Flags & flags) == flags)
+                    var values = knownSpells.Where(spell => spell.StatModVital == (UtilityBelt.Common.Enums.Vital)vitalId && (spell.Flags & flags) == flags)
                             .GroupBy(spell => spell.Category)
                             .Select(category => {
                                 return category.OrderByDescending(spell => spell.Level);

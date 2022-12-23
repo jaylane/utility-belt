@@ -5,7 +5,7 @@ using Decal.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UBCommon.Messages.Types;
+using UtilityBelt.Common.Messages.Types;
 using Frame = ACE.DatLoader.Entity.Frame;
 
 namespace UtilityBelt.Lib {
