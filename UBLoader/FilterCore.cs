@@ -197,7 +197,7 @@ namespace UBLoader {
                 if (!Global.FrameRate.IsDefault)
                     UBHelper.SimpleFrameLimiter.globalMax = Global.FrameRate;
 
-                UBCommon.Lib.Logger.LogAction = (s) => LogError(s);
+                UtilityBelt.Common.Lib.Logger.LogAction = (s) => LogError(s);
 
                 if (Global.EnableScripts) {
                     var options = new ScriptManagerOptions() {
@@ -217,20 +217,6 @@ namespace UBLoader {
                     Scripts.RegisterComponent(typeof(CellDatDatabase), typeof(CellDatDatabase), true, CellDat);
                     Scripts.RegisterComponent(typeof(LanguageDatDatabase), typeof(LanguageDatDatabase), true, LanguageDat);
 
-                    // imgui
-                    var imguiAssembly = typeof(ImGuiNET.ImColor).Assembly;
-                    foreach (var type in imguiAssembly.GetTypes()) {
-                        if (type.Namespace == null) {
-                            continue;
-                        }
-                        if (type.Namespace.StartsWith("ImGuiNET") || type.Namespace.StartsWith("UtilityBelt.Service.Views")) {
-                            Scripts.RegisterScriptableType(type);
-                            if (type.IsGenericType || type.Name.Contains("<"))
-                                continue;
-                            Scripts.RegisterScriptableGlobal(type.Name, type);
-                        }
-                    }
-
                     Scripts.Initialize();
 
                     ClientDispatch += FilterCore_ClientDispatch;
@@ -238,6 +224,16 @@ namespace UBLoader {
                     Core.RenderFrame += (s, e) => {
                         try {
                             Scripts.Tick();
+                        }
+                        catch (Exception ex) { gameLogger.Log(ex); }
+                    };
+
+                    Core.ChatBoxMessage += (s, e) => {
+                        try {
+                            if (Scripts?.GameState?.WorldState?.EatNextChatMessage == true) {
+                                e.Eat = true;
+                                Scripts.GameState.WorldState.EatNextChatMessage = true;
+                            }
                         }
                         catch (Exception ex) { gameLogger.Log(ex); }
                     };

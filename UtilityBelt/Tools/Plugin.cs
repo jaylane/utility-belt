@@ -20,7 +20,7 @@ using UtilityBelt.Service.Lib.Settings;
 using System.Collections.ObjectModel;
 using Hellosam.Net.Collections;
 using System.Diagnostics;
-using UBCommon.Enums;
+using UtilityBelt.Common.Enums;
 using ChatMessageType = UtilityBelt.Lib.Settings.ChatMessageType;
 
 namespace UtilityBelt.Tools {

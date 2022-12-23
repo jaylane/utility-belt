@@ -17,11 +17,11 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using UBCommon.Enums;
+using UtilityBelt.Common.Enums;
 using UtilityBelt.Service;
 using SkillBase = ACE.DatLoader.Entity.SkillBase;
 using Vector4 = System.Numerics.Vector4;
-using WeaponType = UBCommon.Enums.WeaponType;
+using WeaponType = UtilityBelt.Common.Enums.WeaponType;
 
 namespace UBLoader.Lib {
     public class CharacterCreation : IDisposable {

@@ -6,7 +6,7 @@ using Decal.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UBCommon.Enums;
+using UtilityBelt.Common.Enums;
 using Spell = Decal.Filters.Spell;
 using SpellComponentBase = ACE.DatLoader.Entity.SpellComponentBase;
 using SpellTable = Decal.Filters.SpellTable;

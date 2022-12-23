@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using ACE.Entity;
 using Decal.Adapter;
-using UBCommon.Enums;
+using UtilityBelt.Common.Enums;
 using UtilityBelt.Scripting.Interop;
 
 namespace UBLoader.Lib.ScriptInterface {
@@ -128,9 +128,27 @@ namespace UBLoader.Lib.ScriptInterface {
             catch (Exception ex) { _log.Log(ex); }
         }
 
+
+        [DllImport("Decal.dll")]
+        static extern int DispatchOnChatCommand(ref IntPtr str, [MarshalAs(UnmanagedType.U4)] int target);
+
+        private static bool Decal_DispatchOnChatCommand(string cmd) {
+            IntPtr bstr = Marshal.StringToBSTR(cmd);
+
+            try {
+                bool eaten = (DispatchOnChatCommand(ref bstr, 1) & 0x1) > 0;
+
+                return eaten;
+            }
+            finally {
+                Marshal.FreeBSTR(bstr);
+            }
+        }
+
         public void InvokeChatParser(string text) {
             try {
-                CoreManager.Current.Actions.InvokeChatParser(text);
+                if (!Decal_DispatchOnChatCommand(text))
+                    CoreManager.Current.Actions.InvokeChatParser(text);
             }
             catch (Exception ex) { _log.Log(ex); }
         }
