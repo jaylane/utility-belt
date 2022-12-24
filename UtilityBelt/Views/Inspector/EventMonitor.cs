@@ -58,6 +58,7 @@ namespace UtilityBelt.Views.Inspector {
                 hud = UtilityBelt.Service.UBService.Huds.CreateHud($"EventMonitor: {Name}##EventMonitor{_id++}", new Bitmap(manifestResourceStream));
             }
 
+            hud.Visible = true;
             hud.OnRender += Hud_Render;
             hud.OnPreRender += Hud_PreRender;
             hud.OnHide += Hud_ShouldHide;
@@ -123,9 +124,11 @@ namespace UtilityBelt.Views.Inspector {
                 var size = new Vector2(12, 12);
                 ImGui.PushID(i);
                 if (ImGui.ImageButton((IntPtr)InspectorIcon.UnmanagedComPointer, size, new Vector2(0, 0), new Vector2(1, 1), 1, new Vector4(), tint)) {
-                    inspectors.Add(new Inspector($"{EventToMonitor.Name}#{i}", ev) {
+                    var inspector = new Inspector($"{EventToMonitor.Name}#{i}", ev) {
                         DisposeOnClose = true
-                    });
+                    };
+                    inspector.Hud.Visible = true;
+                    inspectors.Add(inspector);
                 }
                 ImGui.PopID();
                 ImGui.SameLine();

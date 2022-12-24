@@ -61,6 +61,7 @@ namespace UtilityBelt.Views.Inspector {
                 }
             }
 
+            hud.Visible = true;
             hud.OnRender += Hud_Render;
             hud.OnPreRender += Hud_PreRender;
             hud.OnHide += Hud_ShouldHide;
@@ -115,9 +116,11 @@ namespace UtilityBelt.Views.Inspector {
                     if (ev != null) {
                         ImGui.PushID(j);
                         if (ImGui.ImageButton((IntPtr)InspectorIcon.UnmanagedComPointer, size, new Vector2(0, 0), new Vector2(1, 1), 1, new Vector4(), tint)) {
-                            inspectors.Add(new Inspector($"{Name} Results #{j}", ev) {
+                            var inspector = new Inspector($"{Name} Results #{j}", ev) {
                                 DisposeOnClose = true
-                            });
+                            };
+                            inspector.Hud.Visible = true;
+                            inspectors.Add(inspector);
                         }
                         ImGui.PopID();
                         ImGui.SameLine();

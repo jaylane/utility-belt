@@ -11,6 +11,9 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters;
 using System.Security.Cryptography;
+using System.Text;
+using UtilityBelt.Scripting;
+using UtilityBelt.Scripting.Lib.ScriptTypes;
 using UtilityBelt.Service;
 using static UtilityBelt.Views.DictionaryEditor;
 using static UtilityBelt.Views.Inspector.Inspector;
@@ -20,7 +23,6 @@ namespace UtilityBelt.Views.Inspector {
         private static uint _id = 0;
         private static int _pushId = 0;
 
-        private UtilityBelt.Service.Views.Hud hud;
         private Vector2 minWindowSize = new Vector2(500, 250);
         private Vector2 maxWindowSize = new Vector2(99999, 99999);
         private Vector4 iconTint = new Vector4(1, 1, 1, 1);
@@ -37,6 +39,7 @@ namespace UtilityBelt.Views.Inspector {
         private List<MethodInspector> methodInspectors = new List<MethodInspector>();
 
         public static object DRAG_SOURCE_OBJECT = null;
+        private ScriptTypeModule baseMod;
 
         /// <summary>
         /// An inspected object is an object wrapped with MemberInfo/Parent,
@@ -141,6 +144,7 @@ namespace UtilityBelt.Views.Inspector {
         }
 
         public string Name { get; }
+        public UtilityBelt.Service.Views.Hud Hud { get; private set; }
 
         /// <summary>
         /// The object being inspected.
@@ -173,16 +177,19 @@ namespace UtilityBelt.Views.Inspector {
             ToInspect = toInspect;
             Selected = new InspectedObject(GetType().GetProperty("ToInspect", BindingFlags.Public | BindingFlags.Instance), this);
             using (Stream manifestResourceStream = GetType().Assembly.GetManifestResourceStream("UtilityBelt.Resources.icons.inspector.png")) {
-                hud = UtilityBelt.Service.UBService.Huds.CreateHud($"Inspector: {Name}##Inspector{_id++}", new Bitmap(manifestResourceStream));
+                Hud = UtilityBelt.Service.UBService.Huds.CreateHud($"Inspector: {Name}##Inspector{_id++}", new Bitmap(manifestResourceStream));
             }
 
             CreateTextures();
 
-            hud.OnRender += Hud_Render;
-            hud.OnPreRender += Hud_PreRender;
-            hud.OnCreateTextures += Hud_CreateTextures;
-            hud.OnDestroyTextures += Hud_DestroyTextures;
-            hud.OnHide += Hud_ShouldHide;
+            baseMod = ScriptableTypes.GetModule("base");
+
+            Hud.Visible = true;
+            Hud.OnRender += Hud_Render;
+            Hud.OnPreRender += Hud_PreRender;
+            Hud.OnCreateTextures += Hud_CreateTextures;
+            Hud.OnDestroyTextures += Hud_DestroyTextures;
+            Hud.OnHide += Hud_ShouldHide;
         }
 
         private void Hud_ShouldHide(object sender, EventArgs e) {
@@ -258,6 +265,16 @@ namespace UtilityBelt.Views.Inspector {
                     ImGui.SetTooltip(TypeDisplayString(type, false));
                 }
 
+                if (baseMod.TryGetScriptType(type, out var scriptType)) {
+                    var docs = scriptType.Docs?.Summary;
+                    if (!string.IsNullOrEmpty(docs)) {
+                        ImGui.Spacing();
+                        ImGui.TextWrapped(docs);
+                        ImGui.Spacing();
+                        ImGui.Separator();
+                    }
+                }
+
                 if (inspectedObject.Value == null) {
                     ImGui.TextWrapped($"Value: null");
                 }
@@ -325,10 +342,11 @@ namespace UtilityBelt.Views.Inspector {
             ImGui.PushID($"{Selected.GetHashCode()}.RenderSimpleObjectDetails.{++_pushId}");
             if (obj != null && !obj.GetType().IsEnum && !obj.GetType().IsPrimitive) {
                 if (ImGui.ImageButton((IntPtr)EyeTexture.UnmanagedComPointer, iconSize, new Vector2(0, 0), new Vector2(1, 1), 1, new Vector4(), iconTint)) {
-                    Logger.WriteToChat($"Show new inspector");
-                    inspectors.Add(new Inspector(DetailsDisplayString(obj), obj) {
+                    var inspector = new Inspector(DetailsDisplayString(obj), obj) {
                         DisposeOnClose = true
-                    });
+                    };
+                    inspector.Hud.Visible = true;
+                    inspectors.Add(inspector);
                 }
                 ImGui.SameLine();
             }
@@ -362,8 +380,20 @@ namespace UtilityBelt.Views.Inspector {
                     ImGui.PushID(i);
                     ImGui.TableNextColumn();
                     ImGui.Text(DetailsDisplayString(methodInfo));
+
                     if (ImGui.IsItemHovered()) {
-                        ImGui.SetTooltip(GetMethodDisplayString(methodInfo, false));
+                        var str = new StringBuilder();
+                        str.AppendLine(GetMethodDisplayString(methodInfo, false));
+
+                        if (baseMod.TryGetScriptType(inspectedObject.Value.GetType(), out var scriptType)) {
+                            var field = scriptType.Children.FirstOrDefault(c => c.MemberInfo == methodInfo);
+                            if (!string.IsNullOrEmpty(field?.Docs?.Summary)) {
+                                str.AppendLine();
+                                str.AppendLine(field.Docs.Summary);
+                            }
+                        }
+
+                        ImGui.SetTooltip(str.ToString());
                     }
                     ImGui.TableNextColumn();
                     ImGui.Text(TypeDisplayString(methodInfo.ReturnType));
@@ -402,6 +432,14 @@ namespace UtilityBelt.Views.Inspector {
                     Delegate[] delegates = GetEventDelegates(eventInspectedObject);
                     ImGui.TableNextColumn();
                     ImGui.Text($"{member.Name}");
+                    if (ImGui.IsItemHovered()) {
+                        if (baseMod.TryGetScriptType(inspectedObject.Value.GetType(), out var scriptType)) {
+                            var evt = scriptType.Children.FirstOrDefault(c => c.MemberInfo == eventInfo);
+                            if (!string.IsNullOrEmpty(evt?.Docs?.Summary)) {
+                                ImGui.SetTooltip(evt.Docs?.Summary);
+                            }
+                        }
+                    }
                     ImGui.TableNextColumn();
                     ImGui.Text(TypeDisplayString(eventInfo.EventHandlerType.GetGenericArguments().FirstOrDefault()));
                     if (ImGui.IsItemHovered() && eventInfo.EventHandlerType.GetGenericArguments().Length > 0) {
@@ -474,7 +512,18 @@ namespace UtilityBelt.Views.Inspector {
                 ImGui.TableNextColumn();
                 ImGui.Text($"{member.Name}");
                 if (ImGui.IsItemHovered()) {
-                    ImGui.SetTooltip(TypeDisplayString(inspectedMember.Type, false));
+                    var str = new StringBuilder();
+                    str.AppendLine(TypeDisplayString(inspectedMember.Type, false));
+
+                    if (baseMod.TryGetScriptType(inspectedObject.Value.GetType(), out var scriptType)) {
+                        var field = scriptType.Children.FirstOrDefault(c => c.MemberInfo == member);
+                        if (!string.IsNullOrEmpty(field?.Docs?.Summary)) {
+                            str.AppendLine();
+                            str.AppendLine(field.Docs.Summary);
+                        }
+                    }
+
+                    ImGui.SetTooltip(str.ToString());
                 }
                 ImGui.TableNextColumn();
                 RenderSimpleObjectDetails(inspectedMember.Value);
@@ -804,12 +853,12 @@ namespace UtilityBelt.Views.Inspector {
                 }
                 inspectors.Clear();
                 DestroyTextures();
-                hud.OnRender -= Hud_Render;
-                hud.OnPreRender -= Hud_PreRender;
-                hud.OnCreateTextures -= Hud_CreateTextures;
-                hud.OnDestroyTextures -= Hud_DestroyTextures;
-                hud.OnHide -= Hud_ShouldHide;
-                hud?.Dispose();
+                Hud.OnRender -= Hud_Render;
+                Hud.OnPreRender -= Hud_PreRender;
+                Hud.OnCreateTextures -= Hud_CreateTextures;
+                Hud.OnDestroyTextures -= Hud_DestroyTextures;
+                Hud.OnHide -= Hud_ShouldHide;
+                Hud?.Dispose();
                 isDisposed = true;
             }
         }
