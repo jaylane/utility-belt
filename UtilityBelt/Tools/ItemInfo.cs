@@ -11,11 +11,9 @@ using BoolValueKey = uTank2.LootPlugins.BoolValueKey;
 using DoubleValueKey = Decal.Adapter.Wrappers.DoubleValueKey;
 using ObjectClass = Decal.Adapter.Wrappers.ObjectClass;
 using StringValueKey = uTank2.LootPlugins.StringValueKey;
-using System.Text.RegularExpressions;
 using UtilityBelt.Lib.Constants;
 using UtilityBelt.Lib.ItemInfoHelper;
 using static UtilityBelt.Lib.ItemInfoHelper.MiscCalcs;
-using System.Data;
 using System.Linq;
 
 namespace UtilityBelt.Tools {
@@ -73,7 +71,10 @@ namespace UtilityBelt.Tools {
         }
 
         private void Enabled_Changed(object sender, SettingChangedEventArgs e) {
+            try { 
             UpdateSubscriptions();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UpdateSubscriptions() {
@@ -102,11 +103,14 @@ namespace UtilityBelt.Tools {
         //}
 
         private void DescribeOnSelect_Changed(object sender, SettingChangedEventArgs e) {
+            try { 
             UpdateSubscriptions();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Core_ItemSelected(object sender, ItemSelectedEventArgs e) {
-
+            try { 
             //if (mouseClicked) {
                 if (UB.Core.Actions.IsValidObject(e.ItemGuid)) {
                     targetItem = UB.Core.WorldFilter[e.ItemGuid];
@@ -123,8 +127,8 @@ namespace UtilityBelt.Tools {
                 else {
                     Logger.Debug("not a valid item - ignoring");
                 }
-            //}
-            //DisplayItem(e.ItemGuid);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Core_RenderFrame(object sender, EventArgs e) {
@@ -320,16 +324,18 @@ namespace UtilityBelt.Tools {
             if (wo.Values(LongValueKey.NumberTimesTinkered) > 0)
                 sb.Append(", Tinks " + wo.Values(LongValueKey.NumberTimesTinkered));
 
-            if (wo.Values(LongValueKey.MaxDamage) != 0 && wo.Values(DoubleValueKey.Variance) != 0) {
-                sb.Append(", " + (wo.Values(LongValueKey.MaxDamage) - (wo.Values(LongValueKey.MaxDamage) * wo.Values(DoubleValueKey.Variance))).ToString("N2") + "-" + wo.Values(LongValueKey.MaxDamage));
-                if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
-                    sb.Append("(" + GetMaxProperty(wo,WeaponProperty.MaxDmg).ToString() + ")");
-            }
-            else if (wo.Values(LongValueKey.MaxDamage) != 0 && wo.Values(DoubleValueKey.Variance) == 0) {
-                sb.Append(", " + wo.Values(LongValueKey.MaxDamage));
-                sb.Append("(" + mwo.GetBuffedIntValueKey(218103842).ToString() + ")");
-                if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
-                    sb.Append("(" + GetMaxProperty(wo, WeaponProperty.MaxDmg).ToString() + ")");
+            if (wo.ObjectClass != ObjectClass.MissileWeapon) {
+                if (wo.Values(LongValueKey.MaxDamage) != 0 && wo.Values(DoubleValueKey.Variance) != 0) {
+                    sb.Append(", " + (wo.Values(LongValueKey.MaxDamage) - (wo.Values(LongValueKey.MaxDamage) * wo.Values(DoubleValueKey.Variance))).ToString("N2") + "-" + wo.Values(LongValueKey.MaxDamage));
+                    if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
+                        sb.Append("(" + GetMaxProperty(wo, WeaponProperty.MaxDmg).ToString() + ")");
+                }
+                else if (wo.Values(LongValueKey.MaxDamage) != 0 && wo.Values(DoubleValueKey.Variance) == 0) {
+                    sb.Append(", " + wo.Values(LongValueKey.MaxDamage));
+                    //sb.Append("(" + mwo.GetBuffedIntValueKey(218103842).ToString() + ")");
+                    if (wo.Values(LongValueKey.Workmanship, 0) > 0 && UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
+                        sb.Append("(" + GetMaxProperty(wo, WeaponProperty.MaxDmg).ToString() + ")");
+                }
             }
 
             if (wo.Values(DoubleValueKey.Variance) > 0) {
@@ -919,11 +925,24 @@ namespace UtilityBelt.Tools {
         public double CalcMissileDamage {
             get {
                 WorldObject wo = CoreManager.Current.WorldFilter[Id];
-                double dmgMod = DoubleValues[167772174] * 100 - 100;
+                double dmgMod = DoubleValues[63] * 100 - 100;
                 double arrowMax = MaxArrowDmg;
+                double numTimesTinkered = wo.Values(LongValueKey.NumberTimesTinkered, 0);
+                double remainingTinks = 10;
+
+                if (numTimesTinkered > 0) {
+                    remainingTinks = remainingTinks - numTimesTinkered;
+                    if (wo.Values(LongValueKey.Imbued, 0) == 0)
+                        remainingTinks--; //218103842
+                }
+                else {
+                    remainingTinks--;
+                }
                 double maxTinkedMissileMod = (GetMaxProperty(wo, WeaponProperty.MaxDmgMod) + 100 + 4 * 9) / 100;
+                double buffedDmg = GetBuffedIntValueKey(218103842);
+                if (buffedDmg <= 10) buffedDmg += 24;
                 //[MissileOD = (1 + (DamageModifier + 36 {9x Mahogany Tinks})/100) * (ElementalDamage + BD + BT + AmmoMaxDamage)/MaxTinkedMissileMod] - (MaxElementalDamage + 24 {BD8}+ArrowMaxDamage]
-                return (1 + (dmgMod + 4 * 9) / 100) * (BuffedElementalDamageBonus + 24 + arrowMax) / (maxTinkedMissileMod);
+                return (1 + (dmgMod + (4 * remainingTinks)) / 100) * (ElementalDmgBonus + buffedDmg + arrowMax) / maxTinkedMissileMod;
             }
         }
 
@@ -1020,19 +1039,23 @@ namespace UtilityBelt.Tools {
 
             foreach (int spell in ActiveSpells) {
                 if (Dictionaries.DoubleValueKeySpellEffects.ContainsKey(spell) && Dictionaries.DoubleValueKeySpellEffects[spell].Key == key) {
-                    if (Math.Abs(Dictionaries.DoubleValueKeySpellEffects[spell].Change - 1) < double.Epsilon)
+                    if (Math.Abs(Dictionaries.DoubleValueKeySpellEffects[spell].Change - 1) < double.Epsilon) {
                         value /= Dictionaries.DoubleValueKeySpellEffects[spell].Change;
-                    else
+                    }
+                    else {
                         value -= Dictionaries.DoubleValueKeySpellEffects[spell].Change;
+                    }
                 }
             }
 
             foreach (int spell in Spells) {
                 if (Dictionaries.DoubleValueKeySpellEffects.ContainsKey(spell) && Dictionaries.DoubleValueKeySpellEffects[spell].Key == key && Math.Abs(Dictionaries.DoubleValueKeySpellEffects[spell].Bonus - 0) > double.Epsilon) {
-                    if (Math.Abs(Dictionaries.DoubleValueKeySpellEffects[spell].Change - 1) < double.Epsilon)
+                    if (Math.Abs(Dictionaries.DoubleValueKeySpellEffects[spell].Change - 1) < double.Epsilon) {
                         value *= Dictionaries.DoubleValueKeySpellEffects[spell].Bonus;
-                    else
-                        value += Dictionaries.DoubleValueKeySpellEffects[spell].Bonus;
+                    }
+                    else {
+                    value += Dictionaries.DoubleValueKeySpellEffects[spell].Bonus;
+                    }
                 }
             }
 
