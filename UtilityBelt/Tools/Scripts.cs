@@ -83,7 +83,7 @@ namespace UtilityBelt.Tools {
         [Example("/ub lexecs test 1+1", "returns 2. Runs in the context of a loaded script called 'test'")]
         [CommandPattern("lexecs", @"^ *(?<name>\S+) +(?<script>.*)$")]
         public void Lexecs(string command, Match args) {
-            /*
+            
             try {
                 var name = args.Groups["name"].Value;
                 var script = UBLoader.FilterCore.Scripts.GetScript(name);
@@ -101,7 +101,6 @@ namespace UtilityBelt.Tools {
                 Logger.WriteToChat($"Result: [{(res == null ? "null" : res.GetType().ToString())}] {res} ({Math.Round(watch.ElapsedTicks / 10000.0, 3)}ms)");
             }
             catch (Exception ex) { Logger.LogException(ex); }
-            */
         }
         #endregion // /ub lexec
 
@@ -907,7 +906,6 @@ namespace UtilityBelt.Tools {
             selectedScript = script;
 
             _scriptLogs.Clear();
-            /*
             if (currentScriptInstance != null) {
                 currentScriptInstance.OnLogText -= CurrentScriptInstance_OnLogText;
                 currentScriptInstance = null;
@@ -918,7 +916,6 @@ namespace UtilityBelt.Tools {
                 currentScriptInstance = scriptInstance;
                 currentScriptInstance.OnLogText += CurrentScriptInstance_OnLogText;
             }
-            */
         }
 
         private void CurrentScriptInstance_OnLogText(object sender, UtilityBelt.Scripting.UBScript.LogEventArgs e) {
