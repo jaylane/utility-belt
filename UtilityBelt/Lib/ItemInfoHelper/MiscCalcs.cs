@@ -54,23 +54,16 @@ namespace UtilityBelt.Lib.ItemInfoHelper {
             }
 
             float dmgMod = wo.Values((LongValueKey)370, 0);
-            Logger.WriteToChat("dmgMod: " + dmgMod.ToString());
             float critMod = wo.Values((LongValueKey)372, 0);
-            Logger.WriteToChat("critMod: " + critMod.ToString());
             float critDmgMod = wo.Values((LongValueKey)374, 0);
-            Logger.WriteToChat("critDmgMod: " + critDmgMod.ToString());
 
             float avgD = baseDPS * (1 + dmgMod / 100);
-            Logger.WriteToChat("1) Pet dmg: " + avgD);
 
             float avgCritDmgFreq = (float).1 + critMod / 100;
-            Logger.WriteToChat("2) avgCritDmgFreq: " + avgCritDmgFreq);
 
             float avgCD = avgD * 2 * (1 + critDmgMod / 100);
-            Logger.WriteToChat("3) avgCD: " + avgCD);
 
             float avgDmgFreq = 1 - avgCritDmgFreq;
-            Logger.WriteToChat("avgDmgFreq: " + avgDmgFreq);
 
 
             float weightedDPS = avgD * avgDmgFreq + avgCD * avgCritDmgFreq;

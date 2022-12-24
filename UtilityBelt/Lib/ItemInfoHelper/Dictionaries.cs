@@ -371,10 +371,10 @@ namespace UtilityBelt.Lib.ItemInfoHelper {
 			{ 5183, new List<SpellInfo<int>>(){new SpellInfo<int>(LongValueKey_MaxDamage, 24)} }, // Incantation of Blood Drinker Post Feb-2013
 			{ 4395, new List<SpellInfo<int>>(){new SpellInfo<int>(LongValueKey_MaxDamage, 24)} }, // Incantation of Blood Drinker Post Feb-2013
 
-			{ 2598, new List<SpellInfo<int>>(){new SpellInfo<int>(LongValueKey_MaxDamage, 2, 2),new SpellInfo<int>(LongValueKey_ElementalDamageBonus, 2, 2)} }, // Minor Blood Thirst
-			{ 2586, new List<SpellInfo<int>>(){new SpellInfo<int>(LongValueKey_MaxDamage, 4, 4),new SpellInfo<int>(LongValueKey_ElementalDamageBonus, 4, 4)} }, // Major Blood Thirst
-			{ 4661, new List<SpellInfo<int>>(){new SpellInfo<int>(LongValueKey_MaxDamage, 7, 7),new SpellInfo<int>(LongValueKey_ElementalDamageBonus, 7, 7)} }, // Epic Blood Thirst
-			{ 6089, new List<SpellInfo<int>>(){new SpellInfo<int>(LongValueKey_MaxDamage, 10, 10), new SpellInfo<int>(LongValueKey_ElementalDamageBonus, 10, 10) } }, // Legendary Blood Thirst
+			{ 2598, new List<SpellInfo<int>>(){new SpellInfo<int>(LongValueKey_MaxDamage, 2, 2),new SpellInfo<int>(LongValueKey_ElementalDamageBonus, 2)} }, // Minor Blood Thirst
+			{ 2586, new List<SpellInfo<int>>(){new SpellInfo<int>(LongValueKey_MaxDamage, 4, 4),new SpellInfo<int>(LongValueKey_ElementalDamageBonus, 4)} }, // Major Blood Thirst
+			{ 4661, new List<SpellInfo<int>>(){new SpellInfo<int>(LongValueKey_MaxDamage, 7, 7),new SpellInfo<int>(LongValueKey_ElementalDamageBonus, 7)} }, // Epic Blood Thirst
+			{ 6089, new List<SpellInfo<int>>(){new SpellInfo<int>(LongValueKey_MaxDamage, 10, 10), new SpellInfo<int>(LongValueKey_ElementalDamageBonus, 10) } }, // Legendary Blood Thirst
 
 			//{ 2598, new SpellInfo<int>(LongValueKey_ElementalDamageBonus, 2, 2)}, // Minor Blood Thirst
 			//{ 2586, new SpellInfo<int>(LongValueKey_ElementalDamageBonus, 4, 4)}, // Major Blood Thirst
