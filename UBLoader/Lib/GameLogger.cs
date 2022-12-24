@@ -12,8 +12,7 @@ namespace UBLoader.Lib {
         }
 
         public void Log(Exception ex) {
-            FilterCore.LogError($"Exception: ");
-            FilterCore.LogException(ex);
+            FilterCore.LogError($"Exception: {ex}");
         }
     }
 }
