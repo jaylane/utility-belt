@@ -138,7 +138,7 @@
     <PackageReference Include="UtilityBelt.Common" Version="1.0.4" />
     <PackageReference Include="UtilityBelt.Helper" Version="1.0.4" />
     <PackageReference Include="UtilityBelt.Networking" Version="1.0.4" />
-    <PackageReference Include="UtilityBelt.Scripting" Version="2.0.5" />
+    <PackageReference Include="UtilityBelt.Scripting" Version="2.0.6" />
     <PackageReference Include="UtilityBelt.Server" Version="1.0.3" />
     <PackageReference Include="UtilityBelt.Service" Version="2.0.9" />
     <PackageReference Include="WebSocketSharp-netstandard" Version="1.0.1" />
