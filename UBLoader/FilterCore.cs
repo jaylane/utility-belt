@@ -126,8 +126,11 @@ namespace UBLoader {
             [Summary("Enable lua script interface. (If you change this you must relog for it to take effect.)")]
             public Global<bool> EnableScripts = new Global<bool>(true);
 
-            [Summary("Lua script storage directory. (If you change this you must relog for it to take effect.)")]
-            public Global<string> ScriptStorageDirectory = new Global<string>(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins", PluginName, "scripts"));
+            [Summary("Lua script directory. (If you change this you must relog for it to take effect.)")]
+            public Global<string> ScriptDirectory = new Global<string>(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins", PluginName, "scripts"));
+
+            [Summary("Lua script data directory. (If you change this you must relog for it to take effect.)")]
+            public Global<string> ScriptDataDirectory = new Global<string>(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins", PluginName, "scriptdata"));
 
             [Summary("List of scripts to auto load globally. Does not take effect until client is restarted.")]
             public readonly Global<ObservableCollection<string>> AutoLoadScripts = new Global<ObservableCollection<string>>(new ObservableCollection<string>());
@@ -202,9 +205,10 @@ namespace UBLoader {
                 if (Global.EnableScripts) {
                     var options = new ScriptManagerOptions() {
                         LogAction = (s) => LogError(s),
-                        ScriptDirectory = Global.ScriptStorageDirectory,
+                        ScriptDirectory = Global.ScriptDirectory,
                         StartVSCodeDebugServer = true,
-                        ClientCapabilities = ClientCapability.ImGui
+                        ClientCapabilities = ClientCapability.ImGui,
+                        ScriptDataDirectory = Global.ScriptDataDirectory
                     };
 
                     var gameLogger = new GameLogger();
