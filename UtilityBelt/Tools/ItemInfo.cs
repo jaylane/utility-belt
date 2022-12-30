@@ -15,6 +15,8 @@ using UtilityBelt.Lib.Constants;
 using UtilityBelt.Lib.ItemInfoHelper;
 using static UtilityBelt.Lib.ItemInfoHelper.MiscCalcs;
 using System.Linq;
+using System.Diagnostics;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace UtilityBelt.Tools {
     [Name("ItemInfo")]
@@ -26,6 +28,12 @@ namespace UtilityBelt.Tools {
 
         [Summary("Describe items when selected")]
         public readonly Setting<bool> DescribeOnSelect = new Setting<bool>(false);
+
+        [Summary("Describe items when selected by right click")]
+        public readonly Setting<bool> DescribeOnRightClick = new Setting<bool>(false);
+
+        [Summary("Describe items when selected by right click")]
+        public readonly Setting<bool> DescribeOnLeftClick = new Setting<bool>(false);
 
         [Summary("Describe lootable items found by Looter")]
         public readonly Setting<bool> DescribeOnLoot = new Setting<bool>(true);
@@ -51,7 +59,9 @@ namespace UtilityBelt.Tools {
 
         private bool scanningItem = false;
         private WorldObject targetItem = null;
-        private bool subscribed;
+        private bool windowSubscribed;
+        private bool itemselectedSubscribed;
+        private bool mouseClicked = false;
 
         public ItemInfo(UtilityBeltPlugin ub, string name) : base(ub, name) { }
 
@@ -61,39 +71,56 @@ namespace UtilityBelt.Tools {
             try {
                 Enabled.Changed += Enabled_Changed;
                 DescribeOnSelect.Changed += DescribeOnSelect_Changed;
+                DescribeOnRightClick.Changed += DescribeOnRightClick_Changed;
+                DescribeOnLeftClick.Changed += DescribeOnLeftClick_Changed;
 
-                //if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
-                //    UB.Core.CharacterFilter.LoginComplete += CharacterFilter_LoginComplete;
-                //else
-                    UpdateSubscriptions();
+                UpdateSubscriptions();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Enabled_Changed(object sender, SettingChangedEventArgs e) {
             try { 
-            UpdateSubscriptions();
+                UpdateSubscriptions();
+                Stop();
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UpdateSubscriptions() {
-            if (Enabled.Value && DescribeOnSelect.Value && !subscribed) {
-                subscribed = true;
+            if (!itemselectedSubscribed && Enabled.Value && (DescribeOnSelect.Value || DescribeOnRightClick.Value || DescribeOnLeftClick.Value)) {
+                itemselectedSubscribed = true;
                 UB.Core.ItemSelected += Core_ItemSelected;
             }
-            else if (subscribed && Enabled.Value && !DescribeOnSelect.Value) {
-                UB.Core.ItemSelected -= Core_ItemSelected;
-                subscribed = false;
+            if (!windowSubscribed && Enabled.Value && (DescribeOnRightClick.Value || DescribeOnLeftClick.Value)) {
+                UB.Core.WindowMessage += Core_WindowMessage;
+                windowSubscribed = true;
             }
-            else if (subscribed && !Enabled.Value && DescribeOnSelect.Value) {
+
+            if (itemselectedSubscribed && !Enabled.Value) {
+                itemselectedSubscribed = false;
                 UB.Core.ItemSelected -= Core_ItemSelected;
-                subscribed = false;
             }
-            else if (subscribed && !Enabled.Value && !DescribeOnSelect.Value){
+
+            if (itemselectedSubscribed && !DescribeOnRightClick.Value && !DescribeOnLeftClick.Value && !DescribeOnSelect.Value) {
+                itemselectedSubscribed = false;
                 UB.Core.ItemSelected -= Core_ItemSelected;
-                subscribed = false;
             }
+
+            if (windowSubscribed && !DescribeOnRightClick.Value && !DescribeOnLeftClick.Value) {
+                windowSubscribed = false;
+                UB.Core.WindowMessage -= Core_WindowMessage;
+            }
+            if (windowSubscribed && !Enabled.Value) {
+                windowSubscribed = false;
+                UB.Core.WindowMessage -= Core_WindowMessage;
+            }
+            //Logger.WriteToChat("Enabled.Value: " + Enabled.Value);
+            //Logger.WriteToChat("DescribeOnSelect.Value: " + DescribeOnSelect.Value);
+            //Logger.WriteToChat("DescribeOnRightClick.Value: " + DescribeOnRightClick.Value);
+            //Logger.WriteToChat("DescribeOnLeftClick.Value: " + DescribeOnLeftClick.Value);
+            //Logger.WriteToChat("itemselectedSubscribed: " + itemselectedSubscribed);
+            //Logger.WriteToChat("windowSubscribed: " + windowSubscribed);
         }
 
         #region Event Handlers
@@ -103,33 +130,67 @@ namespace UtilityBelt.Tools {
         //}
 
         private void DescribeOnSelect_Changed(object sender, SettingChangedEventArgs e) {
-            try { 
-            UpdateSubscriptions();
+            try {
+                UpdateSubscriptions();
+                Stop();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void DescribeOnRightClick_Changed(object sender, SettingChangedEventArgs e) {
+            try {
+                UpdateSubscriptions();
+                Stop();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+        private void DescribeOnLeftClick_Changed(object sender, SettingChangedEventArgs e) {
+            try {
+                UpdateSubscriptions();
+                Stop();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void Core_WindowMessage(object sender, WindowMessageEventArgs e) {
+            try {
+                //if (e.Msg == 0x084 || e.Msg == 0x020 || e.Msg == 0x200) return;
+                //Logger.WriteToChat(e.Msg.ToString());
+                if (e.Msg != 0x201 && e.Msg != 0x202 && e.Msg != 0x204 && e.Msg != 0x205) { return; }
+                if (DescribeOnLeftClick && e.Msg == 0x201) { mouseClicked = true; }//left click down
+                //if (DescribeOnLeftClick && e.Msg == 0x202) { mouseClicked = false; return; } //left click up
+                if (DescribeOnRightClick && e.Msg == 0x204) mouseClicked = true; //right click down
+                //if (DescribeOnRightClick && e.Msg == 0x205) {
+                //    if (mouseClicked) Logger.WriteToChat("mouse click already enabled");
+                //    else { Logger.WriteToChat("mouse click was diabled"); }
+                //} //right click up
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void Core_ItemSelected(object sender, ItemSelectedEventArgs e) {
-            try { 
-            //if (mouseClicked) {
-                if (UB.Core.Actions.IsValidObject(e.ItemGuid)) {
-                    targetItem = UB.Core.WorldFilter[e.ItemGuid];
-                    if (!targetItem.HasIdData) {
-                        UB.Assessor.Request(targetItem.Id);
-                        UB.Core.RenderFrame += Core_RenderFrame;
-                        scanningItem = true;
+            try {
+                if (((DescribeOnLeftClick.Value || DescribeOnRightClick.Value) && mouseClicked) || DescribeOnSelect) {
+                    if (UB.Core.Actions.IsValidObject(e.ItemGuid)) {
+                        targetItem = UB.Core.WorldFilter[e.ItemGuid];
+                        if (!targetItem.HasIdData) {
+                            UB.Assessor.Request(targetItem.Id);
+                            UB.Core.RenderFrame += Core_RenderFrame;
+                            scanningItem = true;
+                        }
+                        else {
+                            DisplayItem(targetItem.Id);
+                            Stop();
+                        }
                     }
                     else {
-                    DisplayItem(targetItem.Id);
-                        Stop();
+                        Logger.Debug("not a valid item - ignoring");
                     }
-                }
-                else {
-                    Logger.Debug("not a valid item - ignoring");
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
+
 
         private void Core_RenderFrame(object sender, EventArgs e) {
             try {
@@ -152,6 +213,7 @@ namespace UtilityBelt.Tools {
         private void Stop() {
             scanningItem = false;
             targetItem = null;
+            mouseClicked = false;
         }
 
         #region Item Display
@@ -214,10 +276,12 @@ namespace UtilityBelt.Tools {
         protected override void Dispose(bool disposing) {
             base.Dispose(disposing);
 
-            DescribeOnLoot.Changed -= DescribeOnSelect_Changed;
+            DescribeOnSelect.Changed -= DescribeOnSelect_Changed;
+            DescribeOnRightClick.Changed -= DescribeOnRightClick_Changed;
+            DescribeOnLeftClick.Changed -= DescribeOnLeftClick_Changed;
 
-            if (DescribeOnSelect.Value)
-                UB.Core.ItemSelected -= Core_ItemSelected;
+            if (DescribeOnSelect.Value || itemselectedSubscribed) UB.Core.ItemSelected -= Core_ItemSelected;
+            if (windowSubscribed || DescribeOnRightClick.Value || DescribeOnLeftClick.Value) UB.Core.WindowMessage -= Core_WindowMessage;
         }
     }
 
