@@ -9,6 +9,7 @@ using UtilityBelt.Service.Lib.Settings;
 using Decal.Interop.Input;
 using Timer = Decal.Interop.Input.Timer;
 using UBHelper;
+using Exceptionless.Models;
 
 
 namespace UtilityBelt.Tools {
@@ -53,7 +54,7 @@ namespace UtilityBelt.Tools {
 
         private enum looterstate { Closed = 0x0001, Unlocking = 0x0002, Locked = 0x0004, Unlocked = 0x0008, Opening = 0x00016, Open = 0x0032, Looting = 0x0064, Closing = 0x0128, Salvaging = 0x0256, Done = 0x0512 }
 
-        private enum runtype { None = 0x0001, UBUse = 0x0002, UI = 0x0004 }
+        public enum runtype { None = 0x0001, UBUse = 0x0002, UI = 0x0004 }
         private enum containertype { Chest = 0x0001, MyCorpse = 0x0002, MonsterCorpse = 0x0004, Unknown = 0x0008 }
 
         private Dictionary<int, itemstate> containerItems = new Dictionary<int, itemstate>();
@@ -65,21 +66,22 @@ namespace UtilityBelt.Tools {
         private int targetKeyID = 0;
         private string targetKeyName = "";
         private looterstate looterState = looterstate.Done;
-        private runtype runType = runtype.None;
+        public runtype runType = runtype.None;
         private int lootAttemptCount = 0;
         private containertype containerType = containertype.Unknown;
         private DateTime lastAttempt = DateTime.UtcNow;
         private DateTime salvageDelay = DateTime.UtcNow;
 
-        //private int lastOpenContainer = 0;
+        private int lastOpenContainer = 0;
 
         private int unlockAttempt = 0;
         private int openAttempt = 0;
+        private bool first = true;
 
 
         private DateTime startTime = DateTime.MinValue;
 
-        //private looterstate lastLooterState = looterstate.Closed;
+        private looterstate lastLooterState = looterstate.Done;
 
         private List<int> containerItemsList = new List<int>();
 
@@ -128,7 +130,7 @@ namespace UtilityBelt.Tools {
         public Setting<int> DelaySpeed = new Setting<int>(1000);
 
         [Summary("Overall speed of looter in milliseconds (approximate)")]
-        public Setting<int> OverallSpeed = new Setting<int>(60);
+        public Setting<int> OverallSpeed = new Setting<int>(100);
 
         [Summary("Test mode")]
         public Setting<bool> TestMode = new Setting<bool>(false);
@@ -203,9 +205,9 @@ namespace UtilityBelt.Tools {
 
         private void Looter_Changed(object sender, SettingChangedEventArgs e) {
             try {
-                if (OverallSpeed < 30) {
-                    Logger.WriteToChat("OverallSpeed under 30 is not allowed.");
-                    OverallSpeed.Value = 30;
+                if (OverallSpeed < 100) {
+                    Logger.WriteToChat("OverallSpeed under 100 is not allowed.");
+                    OverallSpeed.Value = 100;
                 }
                 if (UtilityBeltPlugin.Instance.Looter.Enabled) {
                     EnableDispatch();
@@ -271,7 +273,7 @@ namespace UtilityBelt.Tools {
                                     //Logger.Debug("*********STARTING TO LOOT************");
                                     startTime = DateTime.UtcNow;
                                     targetContainerID = containerID;
-                                    looterState = looterstate.Open;
+                                    if (runType != runtype.UI) looterState = looterstate.Open;
 
                                     int woid = 0;
                                     for (int i = 0; i < itemCount; i++) { //add world object id's within chest to itemstoid list
@@ -293,17 +295,17 @@ namespace UtilityBelt.Tools {
                                 }
                                 break;
                             case 0x0052: //close container
-                                if (UbOwnedContainer && looterState == looterstate.Closing && e.Message.Value<int>("object") == targetContainerID) {
-                                    looterState = looterstate.Closed;
-                                }
+                                //if (UbOwnedContainer && looterState == looterstate.Closing && e.Message.Value<int>("object") == targetContainerID) {
+                                //    looterState = looterstate.Closed;
+                                //}
                                 break;
                             case 0x01C7: //Item_UseDone (Failure Type)
                                 //1199 WERROR_LOCK_ALREADY_UNLOCKED
                                 //1201 WERROR_LOCK_ALREADY_OPEN
-                                if (e.Message.Value<int>("unknown") == 1199) {
-                                    looterState = looterstate.Unlocked;
-                                }
-                                else if (e.Message.Value<int>("unknown") == 1201) {
+                                //if (e.Message.Value<int>("unknown") == 1199) {
+                                //    looterState = looterstate.Unlocked;
+                                //}
+                                if (e.Message.Value<int>("unknown") == 1201) {
                                     if (UB.Core.Actions.OpenedContainer == targetContainerID) {
                                         looterState = looterstate.Open;
                                     }
@@ -343,6 +345,7 @@ namespace UtilityBelt.Tools {
 
                             }
                             else if (lockedObjIDEffect == 147) {
+                                Logger.WriteToChat("Chest Unlocked");
                                 looterState = looterstate.Unlocked;
                             }
                         }
@@ -368,7 +371,8 @@ namespace UtilityBelt.Tools {
                 var requestingInfoItems = containerItems.Where(x => x.Value == itemstate.RequestingInfo);
 
                 if (writeChat) {
-                    var testMode = TestMode ? "" : " TEST MODE:";
+                    var testMode = "";
+                    if (TestMode) testMode = " TEST MODE ";
                     //Logger.WriteToChat("*********************DONE LOOTING*****************************");
                     if (needsToBeLootedItems.Count() + blacklistedItems.Count() <= 0) {
                         Logger.WriteToChat("Looter" + testMode + " completed in " + Util.GetFriendlyTimeDifference(DateTime.UtcNow - startTime).ToString() + " Scanned " + containerItems.Count() + " items and looted " + lootedItems.Count() + " items");
@@ -379,35 +383,22 @@ namespace UtilityBelt.Tools {
                 }
                 UnLockVtankSettings();
 
-                //lastOpenContainer = 0;
-
                 containerItems.Clear();
                 containerItemsList.Clear();
 
-                looterState = looterstate.Done;
-                //lastLooterState = looterstate.Done;
                 UbOwnedContainer = false;
                 lootAttemptCount = 0;
-
                 needToSalvage = false;
-
-
                 unlockAttempt = 0;
                 openAttempt = 0;
-
                 targetKeyID = 0;
                 containerType = containertype.Unknown;
-
                 startTime = DateTime.MinValue;
-
                 inAir = false;
                 jumpCount = 0;
                 jumping = false;
-
                 lastAttempt = DateTime.UtcNow;
                 salvageDelay = DateTime.UtcNow;
-
-                //if (salvaging) salvageDelayTimer.Timeout -= SalvageDelay_Timeout;
                 salvaging = false;
 
 
@@ -415,7 +406,6 @@ namespace UtilityBelt.Tools {
                     salvageDelayTimer.Stop();
                     salvageDelayTimer = null;
                 }
-
 
                 if (runType == runtype.UI && HasMoreKeys(targetKeyName)) {
                     //if (writeChat) Logger.WriteToChat("*******END OF DONE LOOTING RESTARTING********");
@@ -464,21 +454,34 @@ namespace UtilityBelt.Tools {
         }
 
         private bool HasMoreKeys(string key) {
-            if (Util.GetItemCountInInventoryByName(key) <= 0) {
-                return false;
+            try {
+                if (Util.GetItemCountInInventoryByName(key) <= 0) {
+                    return false;
+                }
+                return true;
+            }
+            catch (Exception ex) {
+                Logger.LogException(ex);
             }
             return true;
         }
         private bool IsContainerPlayer(int container) {
-            if (container == 0) return false;
-            if (UB.Core.WorldFilter[container].Id == UB.Core.CharacterFilter.Id) { // main pack
-                return true;
+            try {
+                if (container == 0) return false;
+                if (UB.Core.WorldFilter[container].Id == UB.Core.CharacterFilter.Id) { // main pack
+                    return true;
+                }
+                if (UB.Core.WorldFilter[container].Container == UB.Core.CharacterFilter.Id) { // side pack
+                    return true;
+                }
+                return false;
             }
-            if (UB.Core.WorldFilter[container].Container == UB.Core.CharacterFilter.Id) { // side pack
-                return true;
+            catch (Exception ex) {
+                Logger.LogException(ex);
             }
             return false;
-        }
+
+}
 
         private void UpdateContainerItems(int item, itemstate state) {
             try {
@@ -534,6 +537,8 @@ namespace UtilityBelt.Tools {
                     var inv = CoreManager.Current.WorldFilter.GetInventory();
                     foreach (WorldObject invItem in inv) {
                         waitingForInvItems = false;
+
+                        WorldObject wo = UB.Core.WorldFilter[invItem.Id];
                         if (uTank2.PluginCore.PC.FLootPluginQueryNeedsID(invItem.Id)) {
                             UB.Assessor.Request(invItem.Id);
                             waitingForInvItems = true;
@@ -578,7 +583,7 @@ namespace UtilityBelt.Tools {
             else {
                 if (containerItems[item] != itemstate.RequestingInfo) {
                     UB.Assessor.Request(item);
-                    UB.Core.Actions.RequestId(item);
+                    //UB.Core.Actions.RequestId(item);
                     containerItems[item] = itemstate.RequestingInfo;
                 }
             }
@@ -586,28 +591,49 @@ namespace UtilityBelt.Tools {
 
         public void StartUI(int container, string key) {
             try {
-                //Logger.WriteToChat("*******START OF UI USING KEY******");
+                List<int> itemsToId = new List<int>();
+                List<int> inventory = new List<int>();
+
+                foreach (WorldObject item in CoreManager.Current.WorldFilter.GetInventory()) {
+                    if (uTank2.PluginCore.PC.FLootPluginQueryNeedsID(item.Id)) itemsToId.Add(item.Id);
+                }
+
                 targetContainerID = container;
                 targetKeyName = key;
+                targetKeyID = Util.FindInventoryObjectByName(key).Id;
+
                 int keyCount = Util.GetItemCountInInventoryByName(key);
+
                 if (keyCount <= 0) {
-                    Logger.WriteToChat("Looter: O/ut of keys to use");
+                    Logger.WriteToChat("Looter: Out of keys to use");
                     LooterFinished?.Invoke(this, EventArgs.Empty);
                     DoneLooting(false, true);
                     return;
                 }
-                targetKeyID = Util.FindInventoryObjectByName(key).Id;
-                EnableDispatch();
-                EnableBaseTimer();
+
                 looterState = looterstate.Unlocking;
                 lastAttempt = DateTime.UtcNow;
                 runType = runtype.UI;
                 UbOwnedContainer = true;
+
+                if (itemsToId.Count() > 0) {
+                    Logger.WriteToChat("scanning inventory before starting...");
+                    new Assessor.Job(UB.Assessor, ref itemsToId, (_) => { }, () => {
+                            EnableDispatch();
+                            EnableBaseTimer();
+                        }
+                    );
+                }
+                else {
+                    EnableDispatch();
+                    EnableBaseTimer();
+                }
             }
             catch (Exception ex) {
                 Logger.LogException(ex);
             }
         }
+
 
         public void StopLooter() {
             try {
@@ -672,10 +698,17 @@ namespace UtilityBelt.Tools {
         }
 
         private bool CanIJump() {
-            if (jumpCount > 3) return false;
-            if (UB.Core.CharacterFilter.Stamina <= 5) return false;
-            if (Util.GetFriendlyBurden() > 200) return false;
-            return true;
+            try {
+                if (jumpCount > 3) return false;
+                if (UB.Core.CharacterFilter.Stamina <= 5) return false;
+                if (Util.GetFriendlyBurden() > 200) return false;
+                return true;
+
+            }
+            catch (Exception ex) {
+                Logger.LogException(ex);
+                return true;
+            }
         }
 
         public void OpenContainer(int chest) {
@@ -700,10 +733,11 @@ namespace UtilityBelt.Tools {
                 //    lastOpenContainer = UB.Core.Actions.OpenedContainer;
                 //}
                 //
-                //if (lastLooterState != looterState) {
-                //    Logger.WriteToChat("looterState changed from " + lastLooterState + " to " + looterState);
-                //    lastLooterState = looterState;
-                //}
+                if (lastLooterState != looterState) {
+                    //Logger.WriteToChat("looterState changed from " + lastLooterState + " to " + looterState);
+                    first = true;
+                    lastLooterState = looterState;
+                }
 
                 switch (looterState) {
                     case looterstate.Closed:
@@ -735,7 +769,7 @@ namespace UtilityBelt.Tools {
                         lastAttempt = DateTime.UtcNow;
                         break;
                     case looterstate.Unlocking:
-                        if (DateTime.UtcNow - lastAttempt >= TimeSpan.FromMilliseconds(DelaySpeed)) {
+                        if (first || DateTime.UtcNow - lastAttempt >= TimeSpan.FromMilliseconds(DelaySpeed)) {
                             if (unlockAttempt >= MaxUnlockAttempts) {
                                 Logger.WriteToChat("Reached max number of unlock attempts");
                                 DoneLooting(false, false);
@@ -744,6 +778,7 @@ namespace UtilityBelt.Tools {
                             UB.Core.Actions.SelectItem(targetKeyID);
                             UB.Core.Actions.ApplyItem(targetKeyID, targetContainerID);
                             unlockAttempt++;
+                            first = false;
                         }
                         break;
                     case looterstate.Open:
@@ -753,7 +788,8 @@ namespace UtilityBelt.Tools {
                         if ((!Enabled && runType != runtype.UI) && UB.Core.Actions.OpenedContainer == targetContainerID) {
                             DoneLooting(false, false);
                         }
-                        if (DateTime.UtcNow - lastAttempt >= TimeSpan.FromMilliseconds(DelaySpeed)) {
+                        if (UB.Core.Actions.OpenedContainer == targetContainerID) looterState = looterstate.Open;
+                        if (first || DateTime.UtcNow - lastAttempt >= TimeSpan.FromMilliseconds(DelaySpeed)) {
                             if (openAttempt >= MaxOpenAttempts) {
                                 Logger.WriteToChat("Reached max number of opening attempts");
                                 DoneLooting(false, false);
@@ -761,6 +797,7 @@ namespace UtilityBelt.Tools {
                             lastAttempt = DateTime.UtcNow;
                             UB.Core.Actions.UseItem(targetContainerID, 0);
                             openAttempt++;
+                            first = false;
                         }
                         break;
                     case looterstate.Looting:
@@ -831,10 +868,12 @@ namespace UtilityBelt.Tools {
                         }
                         break;
                     case looterstate.Closing:
-                        if (DateTime.UtcNow - lastAttempt >= TimeSpan.FromMilliseconds(DelaySpeed)) {
+                        if (UB.Core.Actions.OpenedContainer == 0) looterState = looterstate.Closed;
+                        if (first || DateTime.UtcNow - lastAttempt >= TimeSpan.FromMilliseconds(DelaySpeed)) {
                             //Logger.WriteToChat("attempting to close");
                             lastAttempt = DateTime.UtcNow;
                             UB.Core.Actions.UseItem(targetContainerID, 0);
+                            first = false;
                         }
                         break;
                     case looterstate.Salvaging:

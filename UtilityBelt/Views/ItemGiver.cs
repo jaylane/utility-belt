@@ -315,6 +315,7 @@ namespace UtilityBelt.Views {
                 }
                 else {
                     Logger.WriteToChat("Looter stopped");
+                    UB.Looter.runType = Tools.Looter.runtype.None;
                     UB.Looter.StopLooter();
                     Looter_StartButton.Text = "Start";
                     looterRunning = false;
