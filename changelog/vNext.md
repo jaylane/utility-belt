@@ -22,4 +22,4 @@
 - Expand Arrow to capture different coordinate formats.
 - Add expressions: wobjectgethealthvalue, wobjectgetstaminavalue, wobjectgetmanavalue
 - Add expressions: vtmacroenabled[]
-- Added iteminfo settings to describe on mouse clicks
+- Added iteminfo settings to describe on mouse clicks and misc fixes
