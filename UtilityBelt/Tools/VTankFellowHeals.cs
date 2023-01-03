@@ -122,12 +122,14 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
             UB.Core.ChatBoxMessage -= Core_ChatBoxMessage;
             UB.Core.RenderFrame -= Core_RenderFrame;
             UB.Core.CharacterFilter.ChangePortalMode -= CharacterFilter_ChangePortalMode;
-            UB.Networking.RemoveMessageHandler<PlayerUpdateMessage>(Handle_PlayerUpdateMessage);
-            UB.Networking.RemoveMessageHandler<CastAttemptMessage>(Handle_CastAttemptMessage);
-            UB.Networking.RemoveMessageHandler<CastSuccessMessage>(Handle_CastSuccessMessage);
-            UB.Networking.RemoveMessageHandler<LoginMessage>(Handle_LoginMessage);
-            UB.Networking.OnConnected -= Networking_OnConnected;
-            UB.Networking.OnRemoteClientConnected -= Networking_OnRemoteClientConnected;
+            if (UB?.Networking != null) {
+                UB.Networking.RemoveMessageHandler<PlayerUpdateMessage>(Handle_PlayerUpdateMessage);
+                UB.Networking.RemoveMessageHandler<CastAttemptMessage>(Handle_CastAttemptMessage);
+                UB.Networking.RemoveMessageHandler<CastSuccessMessage>(Handle_CastSuccessMessage);
+                UB.Networking.RemoveMessageHandler<LoginMessage>(Handle_LoginMessage);
+                UB.Networking.OnConnected -= Networking_OnConnected;
+                UB.Networking.OnRemoteClientConnected -= Networking_OnRemoteClientConnected;
+            }
             isRunning = false;
         }
 
