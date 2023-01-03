@@ -114,9 +114,11 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
             if (drawTimer != null)
                 drawTimer.Stop();
             drawTimer = null;
-            UB.Networking?.RemoveMessageHandler<PlayerUpdateMessage>(Handle_PlayerUpdateMessage);
-            UB.Networking?.RemoveMessageHandler<TrackedItemUpdateMessage>(Handle_TrackedItemUpdateMessage);
-            UB.Networking?.RemoveMessageHandler<CharacterPositionMessage>(Handle_CharacterPositionMessage);
+            if (UB?.Networking != null) {
+                UB.Networking?.RemoveMessageHandler<PlayerUpdateMessage>(Handle_PlayerUpdateMessage);
+                UB.Networking?.RemoveMessageHandler<TrackedItemUpdateMessage>(Handle_TrackedItemUpdateMessage);
+                UB.Networking?.RemoveMessageHandler<CharacterPositionMessage>(Handle_CharacterPositionMessage);
+            }
             ClearHud();
             if (clientsView != null) {
                 clientsView.view.Moved -= View_Moved;

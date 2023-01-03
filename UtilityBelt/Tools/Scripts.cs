@@ -31,6 +31,8 @@ using WebSocketSharp;
 using LogLevel = UtilityBelt.Scripting.Enums.LogLevel;
 using UtilityBelt.Lib.ScriptInterface;
 using System.Numerics;
+using System.Runtime.InteropServices;
+using UBHelper;
 
 namespace UtilityBelt.Tools {
     [Name("Scripts")]
@@ -599,8 +601,21 @@ namespace UtilityBelt.Tools {
         [Summary("asdf2")]
         [Usage("/ub asdf2")]
         [Example("/ub asdf2", "asdf")]
-        [CommandPattern("asdf2", @"^ *$")]
+        [CommandPattern("asdf2", @"^.*$")]
         public unsafe void asdf2(string command, Match args) {
+            try {
+                uint x = 0;
+                if (uint.TryParse(args.Value.Trim(), out var res)) {
+                    x = res;
+                }
+
+                //for (uint i = 0; i < 1000; i++) {
+                WriteToChat($"Setting visibility... {(uint)UBHelper.UIElement.SVIT}");
+                //}
+            }
+            catch (Exception ex) {
+                Logger.LogException(ex);
+            }
             //AcClient.CM_Allegiance.Event_BreakAllegiance(0x50006885);
             //AcClient.CM_Allegiance.Event_SwearAllegiance(0x50006885);
 
@@ -610,7 +625,7 @@ namespace UtilityBelt.Tools {
 
             //for (var i = 0; i < 5; i++) {
             //AcClient.CM_Combat.Event_TargetedMeleeAttack((uint)UB.Core.Actions.CurrentSelection, AcClient.ATTACK_HEIGHT.HIGH_ATTACK_HEIGHT, 1);
-            AcClient.CM_Combat.Event_TargetedMissileAttack((uint)UB.Core.Actions.CurrentSelection, AcClient.ATTACK_HEIGHT.LOW_ATTACK_HEIGHT, 1);
+            //AcClient.CM_Combat.Event_TargetedMissileAttack((uint)UB.Core.Actions.CurrentSelection, AcClient.ATTACK_HEIGHT.LOW_ATTACK_HEIGHT, 1);
             //AcClient.CM_Inventory.Event_GetAndWieldItem((uint)UB.Core.Actions.CurrentSelection, (uint)EquipMask.Shield);
             //}
 

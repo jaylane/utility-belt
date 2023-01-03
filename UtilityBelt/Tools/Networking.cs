@@ -428,7 +428,7 @@ namespace UtilityBelt.Tools {
         /// <typeparam name="T">the message type to subscribe to</typeparam>
         /// <param name="handler">handler method</param>
         public void AddMessageHandler<T>(Action<MessageHeader, T> handler) {
-            ubNet.AddMessageHandler(handler);
+            ubNet?.AddMessageHandler(handler);
         }
 
         /// <summary>
@@ -437,7 +437,7 @@ namespace UtilityBelt.Tools {
         /// <typeparam name="T">the message type to subscribe to</typeparam>
         /// <param name="handler">handler method</param>
         public void RemoveMessageHandler<T>(Action<MessageHeader, T> handler) {
-            ubNet.RemoveMessageHandler(handler);
+            ubNet?.RemoveMessageHandler(handler);
         }
         #endregion Network Message Handlers
 
