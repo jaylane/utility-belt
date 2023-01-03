@@ -111,7 +111,7 @@ namespace UtilityBelt.Lib.ItemInfoHelper {
             table.Rows.Add(44, 1, 0, 370, 48, .44); //ua
             table.Rows.Add(44, 1, 0, 400, 54, .44); //ua
             table.Rows.Add(44, 1, 0, 420, 56, .44); //ua
-            table.Rows.Add(44, 1, 0, 430, 69, .44); //ua
+            table.Rows.Add(44, 1, 0, 430, 59, .44); //ua
             #endregion
 
             #region light weaponry http://acpedia.org/wiki/Light_Weaponry
@@ -354,12 +354,12 @@ namespace UtilityBelt.Lib.ItemInfoHelper {
             #endregion
 
             #region wands http://acpedia.org/wiki/Magic_Casters
-            table.Rows.Add(34, 0, 0, 290, 0, 0, 0, 0, 1.03); //void
-            table.Rows.Add(34, 0, 0, 315, 0, 0, 0, 0, 1.06); //void
-            table.Rows.Add(34, 0, 0, 335, 0, 0, 0, 0, 1.09); //void
-            table.Rows.Add(34, 0, 0, 360, 0, 0, 0, 0, 1.13); //void
-            table.Rows.Add(34, 0, 0, 375, 0, 0, 0, 0, 1.16); //void
-            table.Rows.Add(34, 0, 0, 385, 0, 0, 0, 0, 1.18); //void
+            table.Rows.Add(34, 0, 0, 290, 0, 0, 0, 0, 1.03); //war
+            table.Rows.Add(34, 0, 0, 315, 0, 0, 0, 0, 1.06); //war
+            table.Rows.Add(34, 0, 0, 335, 0, 0, 0, 0, 1.09); //war
+            table.Rows.Add(34, 0, 0, 360, 0, 0, 0, 0, 1.13); //war
+            table.Rows.Add(34, 0, 0, 375, 0, 0, 0, 0, 1.16); //war
+            table.Rows.Add(34, 0, 0, 385, 0, 0, 0, 0, 1.18); //war
 
             table.Rows.Add(43, 0, 0, 290, 0, 0, 0, 0, 1.03); //void
             table.Rows.Add(43, 0, 0, 315, 0, 0, 0, 0, 1.06); //void
@@ -367,6 +367,7 @@ namespace UtilityBelt.Lib.ItemInfoHelper {
             table.Rows.Add(43, 0, 0, 360, 0, 0, 0, 0, 1.13); //void
             table.Rows.Add(43, 0, 0, 375, 0, 0, 0, 0, 1.16); //void
             table.Rows.Add(43, 0, 0, 385, 0, 0, 0, 0, 1.18); //void
+            table.Rows.Add(43, 12, 0, 385, 0, 0, 0, 0, 1.18); //void vr wand - not sure why this is different
 
             #endregion
             return table;

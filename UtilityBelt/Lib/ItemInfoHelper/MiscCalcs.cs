@@ -19,9 +19,9 @@ namespace UtilityBelt.Lib.ItemInfoHelper {
                 multiStrike = 1;
             }
             double skill = 0;
-            if (worldObject.Values(LongValueKey.EquipSkill, 0) != 0)
-                skill = worldObject.Values(LongValueKey.EquipSkill);
-            else skill = worldObject.Values(LongValueKey.WieldReqAttribute);
+            //if (worldObject.Values(LongValueKey.EquipSkill, 0) != 0)
+                skill = worldObject.Values((LongValueKey)159, 0);
+            //else skill = worldObject.Values(LongValueKey.WieldReqAttribute);
 
             DataRow[] result = weaponMods.Select("Skill = " + skill + " AND Mastery = " + worldObject.Values((LongValueKey)353, 0)
                 + " AND WieldReq = " + worldObject.Values(LongValueKey.WieldReqValue, 0) + " AND MultiStrike = " + multiStrike);

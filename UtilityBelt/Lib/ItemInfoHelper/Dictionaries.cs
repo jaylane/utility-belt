@@ -82,16 +82,20 @@ namespace UtilityBelt.Lib.ItemInfoHelper {
             { 9, "Crossbow" },
             { 10, "Thrown" },
             { 11, "Two Handed Combat" },
+            { 12, "Wand" },
         };
 
         
         public static Dictionary<int, string> Slayers = new Dictionary<int, string>
         {
             { 1, "Olthoi" },
+            { 5, "Lugian" },
             { 6, "Tumerok" },
+            { 8, "Tusker" },
             { 14, "Undead" },
             { 19, "Virindi" },
             { 22, "Shadow" },
+            { 30, "Skeleton" },
             { 31, "Human" },
             { 38, "FireElemental" },
             { 42, "LightningElemental" },

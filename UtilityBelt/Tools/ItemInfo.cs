@@ -55,6 +55,12 @@ namespace UtilityBelt.Tools {
 
         [Summary("Show retail max values next to actual values")]
         public readonly Setting<bool> ShowRetailMax = new Setting<bool>(false);
+
+        [Summary("Show door info")]
+        public readonly Setting<bool> ShowDoorInfo = new Setting<bool>(false);
+
+        [Summary("Show Npc info")]
+        public readonly Setting<bool> ShowNpcInfo = new Setting<bool>(false);
         #endregion
 
         private bool scanningItem = false;
@@ -170,6 +176,9 @@ namespace UtilityBelt.Tools {
 
         private void Core_ItemSelected(object sender, ItemSelectedEventArgs e) {
             try {
+                if (!ShowDoorInfo && UB.Core.WorldFilter[e.ItemGuid].ObjectClass == ObjectClass.Door) return;
+                if (!ShowNpcInfo && UB.Core.WorldFilter[e.ItemGuid].ObjectClass == ObjectClass.Npc) return;
+
                 if (((DescribeOnLeftClick.Value || DescribeOnRightClick.Value) && mouseClicked) || DescribeOnSelect) {
                     if (UB.Core.Actions.IsValidObject(e.ItemGuid)) {
                         targetItem = UB.Core.WorldFilter[e.ItemGuid];
@@ -290,6 +299,7 @@ namespace UtilityBelt.Tools {
         private readonly WorldObject wo;
         private readonly MyWorldObject mwo;
 
+
         public ItemDescriptions(WorldObject worldObject) {
             wo = worldObject;
             mwo = MyWorldObjectCreator.Create(worldObject);
@@ -298,10 +308,10 @@ namespace UtilityBelt.Tools {
         public override string ToString() {
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
-            if (wo.Values(LongValueKey.DamageType, 0) > 0 || wo.Values((LongValueKey)353) > 0) {
+            if (wo.Values((LongValueKey)45, 0) > 0 || wo.Values((LongValueKey)353) > 0) {
                 sb.Append(" (");
-                if (wo.Values(LongValueKey.DamageType, 0) > 0)
-                    sb.Append((DamageTypes)wo.Values(LongValueKey.DamageType));
+                if (wo.Values((LongValueKey)45, 0) > 0)
+                    sb.Append((DamageTypes)wo.Values((LongValueKey)45, 0));
                 if (wo.Values((LongValueKey)353) > 0) {
                     if (Dictionaries.MasteryInfo.ContainsKey(wo.Values((LongValueKey)353)))
                         sb.Append(" " + Dictionaries.MasteryInfo[wo.Values((LongValueKey)353)]);
@@ -391,7 +401,7 @@ namespace UtilityBelt.Tools {
             if (wo.ObjectClass != ObjectClass.MissileWeapon) {
                 if (wo.Values(LongValueKey.MaxDamage) != 0 && wo.Values(DoubleValueKey.Variance) != 0) {
                     sb.Append(", " + (wo.Values(LongValueKey.MaxDamage) - (wo.Values(LongValueKey.MaxDamage) * wo.Values(DoubleValueKey.Variance))).ToString("N2") + "-" + wo.Values(LongValueKey.MaxDamage));
-                    if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
+                    if (wo.Values(DoubleValueKey.SalvageWorkmanship, 0) > 0 && UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
                         sb.Append("(" + GetMaxProperty(wo, WeaponProperty.MaxDmg).ToString() + ")");
                 }
                 else if (wo.Values(LongValueKey.MaxDamage) != 0 && wo.Values(DoubleValueKey.Variance) == 0) {
@@ -405,30 +415,30 @@ namespace UtilityBelt.Tools {
             if (wo.Values(DoubleValueKey.Variance) > 0) {
                 sb.Append(", " + Math.Round(wo.Values(DoubleValueKey.Variance), 2).ToString() + "v");
                 //MyWorldObject.GetMaxProperty(wo, MyWorldObject.WeaponProperty.MaxVar);
-                if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
+                if (wo.Values(DoubleValueKey.SalvageWorkmanship, 0) > 0 && UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
                     sb.Append("(" + GetMaxProperty(wo, WeaponProperty.MaxVar).ToString() + ")");
             }
 
             if (wo.Values(LongValueKey.ElementalDmgBonus, 0) != 0) {
                 sb.Append(", +" + wo.Values(LongValueKey.ElementalDmgBonus));
-                if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax) 
+                if (wo.Values(DoubleValueKey.SalvageWorkmanship, 0) > 0 && UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax) 
                     sb.Append("(" + GetMaxProperty(wo, WeaponProperty.MaxElementalDmgBonus).ToString() + ")");
             }
 
             if (wo.Values(DoubleValueKey.DamageBonus, 1) != 1) {
                 sb.Append(", +" + Math.Round(((wo.Values(DoubleValueKey.DamageBonus) - 1) * 100)) + "%");
-                if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
+                if (wo.Values(DoubleValueKey.SalvageWorkmanship, 0) > 0 && UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
                     sb.Append("(" + GetMaxProperty(wo, WeaponProperty.MaxDmgMod).ToString() + ")");
             }
 
             if (wo.Values(DoubleValueKey.ElementalDamageVersusMonsters, 1) != 1) {
                 sb.Append(", +" + Math.Round(((wo.Values(DoubleValueKey.ElementalDamageVersusMonsters) - 1) * 100)) + "%");
-                if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
+                if (wo.Values(DoubleValueKey.SalvageWorkmanship, 0) > 0 && UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
                     sb.Append("(" + ((GetMaxProperty(wo, WeaponProperty.MaxElementalDmgVsMonsters) - 1) * 100).ToString() + ")");
                 sb.Append(" vs. Monsters");
             }
 
-                if (wo.Values(DoubleValueKey.AttackBonus, 1) != 1) {
+            if (wo.Values(DoubleValueKey.AttackBonus, 1) != 1) {
                 sb.Append(", " + Math.Round((mwo.AttackBonus - 1) * 100) + "%a");
                 if (mwo.AttackBonus != mwo.BuffedAttackBonus)
                     sb.Append(" (" + Math.Round((mwo.BuffedAttackBonus - 1) * 100) + ")");
@@ -488,7 +498,7 @@ namespace UtilityBelt.Tools {
                     sb.Append(", Damage " + Math.Round(mwo.CalcMissileDamage, 2).ToString());
                 }
 
-                if (wo.ObjectClass == ObjectClass.MeleeWeapon) {
+                if (wo.Values(DoubleValueKey.SalvageWorkmanship, 0) > 0 && wo.ObjectClass == ObjectClass.MeleeWeapon) {
                     sb.Append(", Damage " + Math.Round(mwo.CalcMeleeDamage, 2).ToString());
                 }
             }
@@ -599,14 +609,14 @@ namespace UtilityBelt.Tools {
             }
 
             if (wo.ObjectClass == ObjectClass.MeleeWeapon) {
-                if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailComparison) {
+                if (wo.Values(DoubleValueKey.SalvageWorkmanship, 0) > 0 && UtilityBeltPlugin.Instance.ItemInfo.ShowRetailComparison) {
                     double od = mwo.CalcMeleeDamage - (GetMaxProperty(wo, WeaponProperty.MaxDmg));
                     sb.Append(" (OD +" + Math.Round(od, 2).ToString() + ")");
                 }
             }
 
             if (wo.ObjectClass == ObjectClass.MissileWeapon) {
-                if (UtilityBeltPlugin.Instance.ItemInfo.ShowRetailComparison) {
+                if (wo.Values(DoubleValueKey.SalvageWorkmanship, 0) > 0 && UtilityBeltPlugin.Instance.ItemInfo.ShowRetailComparison) {
                     double od = mwo.CalcMissileDamage - (GetMaxProperty(wo, WeaponProperty.MaxElementalDmgBonus) + 24 + mwo.MaxArrowDmg);
                     sb.Append(" (OD +" + Math.Round(od, 2).ToString() + ")");
                 }
@@ -674,6 +684,8 @@ namespace UtilityBelt.Tools {
                     if (mwo.CritDamResistRating > 0) { if (!first) sb.Append(", "); sb.Append("CDR " + mwo.CritDamResistRating); first = false; }
                     if (mwo.HealBoostRating > 0) { if (!first) sb.Append(", "); sb.Append("HB " + mwo.HealBoostRating); first = false; }
                     if (mwo.VitalityRating > 0) { if (!first) sb.Append(", "); sb.Append("V " + mwo.VitalityRating); first = false; }
+                    if (mwo.GearPkDamageRating > 0) { if (!first) sb.Append(", "); sb.Append("PKD " + mwo.GearPkDamageRating); first = false; }
+                    if (mwo.GearPkDamageResistRating > 0) { if (!first) sb.Append(", "); sb.Append("PKDR " + mwo.GearPkDamageResistRating); first = false; }
                     sb.Append("]");
                 }
             }
@@ -682,14 +694,24 @@ namespace UtilityBelt.Tools {
                 double dmgRes = wo.Values((LongValueKey)308, 0);
                 double critDmg = wo.Values((LongValueKey)314, 0);
                 double critDmgRes = wo.Values((LongValueKey)316, 0);
+                double healBoost = wo.Values((LongValueKey)323, 0);
+                double maxHealth = wo.Values((LongValueKey)379, 0);
+                double pkDamageRating = wo.Values((LongValueKey)381, 0);
+                double pkDamageResist = wo.Values((LongValueKey)382, 0);
 
-                if (dmg + dmgRes + critDmg + critDmgRes > 0) {
+                if (dmg + dmgRes + critDmg + critDmgRes + healBoost + maxHealth > 0) {
                     sb.Append(", [");
                     bool first = true;
                     if (dmg > 0) { sb.Append("D " + dmg.ToString()); first = false; }
                     if (dmgRes > 0) { if (!first) sb.Append(", "); sb.Append("DR " + dmgRes.ToString()); first = false; }
                     if (critDmg > 0) { if (!first) sb.Append(", "); sb.Append("CD " + critDmg.ToString()); first = false; }
                     if (critDmgRes > 0) { if (!first) sb.Append(", "); sb.Append("CDR " + critDmgRes.ToString()); first = false; }
+                    if (critDmg > 0) { if (!first) sb.Append(", "); sb.Append("CD " + critDmg.ToString()); first = false; }
+                    if (critDmgRes > 0) { if (!first) sb.Append(", "); sb.Append("CDR " + critDmgRes.ToString()); first = false; }
+                    if (healBoost > 0) { if (!first) sb.Append(", "); sb.Append("HB " + healBoost.ToString()); first = false; }
+                    if (maxHealth > 0) { if (!first) sb.Append(", "); sb.Append("V " + maxHealth.ToString()); first = false; }
+                    if (pkDamageRating > 0) { if (!first) sb.Append(", "); sb.Append("PKD " + pkDamageRating.ToString()); first = false; }
+                    if (pkDamageResist > 0) { if (!first) sb.Append(", "); sb.Append("PKDR " + pkDamageResist.ToString()); first = false; }
                     sb.Append("]");
                 }
             }
@@ -923,15 +945,19 @@ namespace UtilityBelt.Tools {
 
         public int VitalityRating => IntValues.ContainsKey(379) ? IntValues[379] : -1;
 
+        public int GearPkDamageRating => IntValues.ContainsKey(383) ? IntValues[383] : -1;
+
+        public int GearPkDamageResistRating => IntValues.ContainsKey(384) ? IntValues[384] : -1;
+
         /// <summary>
         /// Returns the sum of all the ratings found on this item, or -1 if no ratings exist.
         /// </summary>
         public int TotalRating {
             get {
-                if (DamRating == -1 && DamResistRating == -1 && CritRating == -1 && CritResistRating == -1 && CritDamRating == -1 && CritDamResistRating == -1 && HealBoostRating == -1 && VitalityRating == -1)
+                if (DamRating == -1 && DamResistRating == -1 && CritRating == -1 && CritResistRating == -1 && CritDamRating == -1 && CritDamResistRating == -1 && HealBoostRating == -1 && VitalityRating == -1 && GearPkDamageRating == -1 && GearPkDamageResistRating == -1)
                     return -1;
 
-                return Math.Max(DamRating, 0) + Math.Max(DamResistRating, 0) + Math.Max(CritRating, 0) + Math.Max(CritResistRating, 0) + Math.Max(CritDamRating, 0) + Math.Max(CritDamResistRating, 0) + Math.Max(HealBoostRating, 0) + Math.Max(VitalityRating, 0);
+                return Math.Max(DamRating, 0) + Math.Max(DamResistRating, 0) + Math.Max(CritRating, 0) + Math.Max(CritResistRating, 0) + Math.Max(CritDamRating, 0) + Math.Max(CritDamResistRating, 0) + Math.Max(HealBoostRating, 0) + Math.Max(VitalityRating, 0) + Math.Max(GearPkDamageRating, 0) + Math.Max(GearPkDamageResistRating, 0);
             }
         }
 
@@ -994,13 +1020,18 @@ namespace UtilityBelt.Tools {
                 double numTimesTinkered = wo.Values(LongValueKey.NumberTimesTinkered, 0);
                 double remainingTinks = 10;
 
-                if (numTimesTinkered > 0) {
-                    remainingTinks = remainingTinks - numTimesTinkered;
-                    if (wo.Values(LongValueKey.Imbued, 0) == 0)
-                        remainingTinks--; //218103842
+                if (wo.Values(DoubleValueKey.SalvageWorkmanship, -1) >= 0) {
+                    if (numTimesTinkered > 0) {
+                        remainingTinks = remainingTinks - numTimesTinkered;
+                        if (wo.Values(LongValueKey.Imbued, 0) == 0)
+                            remainingTinks--; //218103842
+                    }
+                    else {
+                        remainingTinks--;
+                    }
                 }
                 else {
-                    remainingTinks--;
+                    remainingTinks = 0;
                 }
                 double maxTinkedMissileMod = (GetMaxProperty(wo, WeaponProperty.MaxDmgMod) + 100 + 4 * 9) / 100;
                 double buffedDmg = GetBuffedIntValueKey(218103842);
