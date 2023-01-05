@@ -42,14 +42,9 @@ namespace UBLoader.Lib.ScriptInterface {
             catch (Exception ex) { _log.Log(ex); }
         }
 
-        public void AutoWield(uint objectId, int slot) {
+        public void AutoWield(uint objectId, EquipMask slot) {
             try {
-                if (slot > -1) {
-                    CoreManager.Current.Actions.AutoWield((int)objectId, slot, 1, 0);
-                }
-                else {
-                    CoreManager.Current.Actions.AutoWield((int)objectId);
-                }
+                AcClient.CM_Inventory.Event_GetAndWieldItem(objectId, (uint)slot);
             }
             catch (Exception ex) { _log.Log(ex); }
         }
