@@ -140,7 +140,7 @@
     <PackageReference Include="UtilityBelt.Networking" Version="1.0.4" />
     <PackageReference Include="UtilityBelt.Scripting" Version="2.0.15" />
     <PackageReference Include="UtilityBelt.Server" Version="1.0.3" />
-    <PackageReference Include="UtilityBelt.Service" Version="2.0.14">
+    <PackageReference Include="UtilityBelt.Service" Version="2.0.15">
       <ExcludeAssets>runtime; build;</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="WebSocketSharp-netstandard" Version="1.0.1" />
