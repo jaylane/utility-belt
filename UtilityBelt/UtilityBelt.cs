@@ -18,6 +18,7 @@ using ACE.DatLoader;
 using System.IO;
 using Microsoft.DirectX.Direct3D;
 using System.Runtime.InteropServices;
+using UtilityBelt.Service;
 
 namespace UtilityBelt {
 
@@ -146,8 +147,8 @@ namespace UtilityBelt {
 
         internal List<ToolBase> LoadedTools = new List<ToolBase>();
         private static List<string> expressionExceptions = new List<string>();
-        public CellDatDatabase CellDat => UBLoader.FilterCore.CellDat;
-        public PortalDatDatabase PortalDat => UBLoader.FilterCore.PortalDat;
+        public CellDatDatabase CellDat => UBService.CellDat;
+        public PortalDatDatabase PortalDat => UBService.PortalDat;
 
         #region Tools
         public Plugin Plugin;
@@ -188,7 +189,6 @@ namespace UtilityBelt {
         public PlayerOptions PlayerOptions;
         public Professors Professors;
         public QuestTracker QuestTracker;
-        public Scripts Scripts;
         public SpellManager SpellManager;
         //public Tags Tags { get; private set; }
         public VisualNav VisualNav;
