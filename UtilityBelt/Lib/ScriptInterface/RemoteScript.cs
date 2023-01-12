@@ -6,11 +6,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UtilityBelt.Scripting;
 using UtilityBelt.Tools;
 using WebSocketSharp;
 
 namespace UtilityBelt.Lib.ScriptInterface {
+    /*
     internal class RemoteScript : IDisposable {
         private static string WEBSOCKET_SERVER = "ws://localhost:8181/acclient-server";
         private static uint _NextId = 1;
@@ -140,4 +140,5 @@ namespace UtilityBelt.Lib.ScriptInterface {
             }
         }
     }
+    */
 }

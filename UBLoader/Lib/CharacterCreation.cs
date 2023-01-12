@@ -485,8 +485,8 @@ namespace UBLoader.Lib {
             }
         }
 
-        private static PortalDatDatabase PortalDat => UBLoader.FilterCore.PortalDat;
-        private static LanguageDatDatabase LanguageDat => UBLoader.FilterCore.LanguageDat;
+        private static PortalDatDatabase PortalDat => UBService.PortalDat;
+        private static LanguageDatDatabase LanguageDat => UBService.LanguageDat;
         private static StringTable UI_Pregame_Strings;
         private readonly List<Template> Templates = new List<Template>();
         private readonly List<Heritage> Heritages = new List<Heritage>();

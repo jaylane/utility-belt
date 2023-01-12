@@ -9,10 +9,7 @@ using System.Diagnostics;
 using UtilityBelt.Service.Lib.Settings;
 using System.Text;
 using System.Text.RegularExpressions;
-using UtilityBelt.Scripting;
 using UBLoader.Lib;
-using UBLoader.Lib.ScriptInterface;
-using UtilityBelt.Scripting.Interop;
 using System.Collections.ObjectModel;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 using ACE.DatLoader;
@@ -25,8 +22,6 @@ using System.Threading.Tasks;
 using static UBLoader.FilterCore;
 using UtilityBelt.Networking.Messages;
 using MoonSharp.Interpreter;
-using UtilityBelt.Scripting.ScriptEnvs.Lua;
-using UtilityBelt.Scripting.Enums;
 
 namespace UBLoader {
     [FriendlyName("UtilityBelt")]
@@ -71,9 +66,6 @@ namespace UBLoader {
         public static string PluginName { get { return "UtilityBelt"; } }
         public static string PluginAssemblyNamespace { get { return "UtilityBelt.UtilityBeltPlugin"; } }
         public static string PluginAssemblyName { get { return "UtilityBelt.dll"; } }
-        public static CellDatDatabase CellDat { get; private set; }
-        public static PortalDatDatabase PortalDat { get; private set; }
-        public static LanguageDatDatabase LanguageDat { get; private set; }
 
         public static List<MessageData> _messageDatas = new List<MessageData>();
 
@@ -95,8 +87,6 @@ namespace UBLoader {
                 return System.IO.Path.Combine(PluginAssemblyDirectory, $"{PluginAssemblyName}.config");
             }
         }
-        public static UtilityBelt.Scripting.ScriptManager Scripts { get; private set; }
-        //public static GameState GameState { get; private set; }
 
         public static event EventHandler<NetworkMessageEventArgs> _ClientDispatch;
         public static event EventHandler<NetworkMessageEventArgs> _ServerDispatch;
@@ -123,18 +113,6 @@ namespace UBLoader {
             [Summary("Upload exceptions to the mothership")]
             public Global<bool> UploadExceptions = new Global<bool>(true);
 
-            [Summary("Enable lua script interface. (If you change this you must relog for it to take effect.)")]
-            public Global<bool> EnableScripts = new Global<bool>(true);
-
-            [Summary("Lua script directory. (If you change this you must relog for it to take effect.)")]
-            public Global<string> ScriptDirectory = new Global<string>(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins", PluginName, "scripts"));
-
-            [Summary("Lua script data directory. (If you change this you must relog for it to take effect.)")]
-            public Global<string> ScriptDataDirectory = new Global<string>(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Decal Plugins", PluginName, "scriptdata"));
-
-            [Summary("List of scripts to auto load globally. Does not take effect until client is restarted.")]
-            public readonly Global<ObservableCollection<string>> AutoLoadScripts = new Global<ObservableCollection<string>>(new ObservableCollection<string>());
-
             [Summary("Show Character Creation UI")]
             public Setting<bool> ShowCharacterCreationUI = new Setting<bool>(false);
 
@@ -151,8 +129,7 @@ namespace UBLoader {
         #region Account Settings
         [Summary("Account Settings")]
         public class AccountSettings : ISetting {
-            [Summary("List of scripts to auto load for this account. Does not take effect until client is restarted.")]
-            public readonly Account<ObservableCollection<string>> AutoLoadScripts = new Account<ObservableCollection<string>>(new ObservableCollection<string>());
+
         }
         public static AccountSettings Account = new AccountSettings();
         private ClientInfoMessage _message;
@@ -191,7 +168,6 @@ namespace UBLoader {
                 Global.FrameRate.Changed += FrameRate_Changed;
                 Global.HotReload.Changed += HotReload_Changed;
                 Global.ShowCharacterCreationUI.Changed += ShowCharacterCreationUI_Changed;
-                LoadDats();
                 UBHelper.Core.GameStateChanged += Core_GameStateChanged;
                 UBHelper.Core.Kevorkian += Core_Kevorkian;
 
@@ -200,85 +176,10 @@ namespace UBLoader {
                 if (!Global.FrameRate.IsDefault)
                     UBHelper.SimpleFrameLimiter.globalMax = Global.FrameRate;
 
-                UtilityBelt.Common.Lib.Logger.LogAction = (s) => LogError(s);
-
-                if (Global.EnableScripts) {
-                    var options = new ScriptManagerOptions() {
-                        LogAction = (s) => LogError(s),
-                        ScriptDirectory = Global.ScriptDirectory,
-                        StartVSCodeDebugServer = true,
-                        ClientCapabilities = ClientCapability.ImGui,
-                        ScriptDataDirectory = Global.ScriptDataDirectory
-                    };
-
-                    var gameLogger = new GameLogger();
-
-                    Scripts = new UtilityBelt.Scripting.ScriptManager(options);
-
-                    Scripts.RegisterComponent(typeof(ILogger), typeof(GameLogger), true, gameLogger);
-                    Scripts.RegisterComponent(typeof(IClientActionsRaw), typeof(ACClientActions), true, new ACClientActions(gameLogger));
-                    Scripts.RegisterComponent(typeof(PortalDatDatabase), typeof(PortalDatDatabase), true, PortalDat);
-                    Scripts.RegisterComponent(typeof(CellDatDatabase), typeof(CellDatDatabase), true, CellDat);
-                    Scripts.RegisterComponent(typeof(LanguageDatDatabase), typeof(LanguageDatDatabase), true, LanguageDat);
-
-                    Scripts.Initialize();
-
-                    ClientDispatch += FilterCore_ClientDispatch;
-                    ServerDispatch += FilterCore_ServerDispatch;
-                    Core.RenderFrame += (s, e) => {
-                        try {
-                            Scripts.Tick();
-                        }
-                        catch (Exception ex) { gameLogger.Log(ex); }
-                    };
-
-                    Core.ChatBoxMessage += (s, e) => {
-                        try {
-                            if (Scripts?.GameState?.WorldState?.EatNextChatMessage == true) {
-                                e.Eat = true;
-                                Scripts.GameState.WorldState.EatNextChatMessage = true;
-                            }
-                        }
-                        catch (Exception ex) { gameLogger.Log(ex); }
-                    };
-                }
-
                 isEchoFilterServerDispatchListening = true;
                 ServerDispatch += EchoFilter_ServerDispatch;
             }
             catch (Exception ex) { LogException(ex); }
-        }
-
-        private void FilterCore_ServerDispatch(object sender, NetworkMessageEventArgs e) {
-            if (Global.EnableScripts) {
-                try {
-                    _messageDatas.Add(new MessageData() {
-                        Data = e.Message.RawData,
-                        Direction = MessageData.MessageDirection.In
-                    });
-                    Scripts.HandleIncoming(e.Message.RawData);
-                    _ServerDispatch?.Invoke(sender, e);
-                }
-                catch (Exception ex) {
-                    FilterCore.LogException(ex);
-                }
-            }
-        }
-
-        private void FilterCore_ClientDispatch(object sender, NetworkMessageEventArgs e) {
-            if (Global.EnableScripts) {
-                try {
-                    _messageDatas.Add(new MessageData() {
-                        Data = e.Message.RawData,
-                        Direction = MessageData.MessageDirection.Out
-                    });
-                    Scripts.HandleOutgoing(e.Message.RawData);
-                    _ClientDispatch?.Invoke(sender, e);
-                }
-                catch (Exception ex) {
-                    FilterCore.LogException(ex);
-                }
-            }
         }
 
         private void ShowCharacterCreationUI_Changed(object sender, SettingChangedEventArgs e) {
@@ -406,30 +307,6 @@ namespace UBLoader {
             settingsUIHud.Hud.Visible = false;
         }
 
-        private void LoadDats() {
-            var datDirectory = "";
-            var cellDatPath = System.IO.Path.Combine(datDirectory, "client_cell_1.dat");
-            var portalDatPath = System.IO.Path.Combine(datDirectory, "client_portal.dat");
-            var languageDatPath = System.IO.Path.Combine(datDirectory, "client_local_English.dat");
-
-            if (!System.IO.File.Exists(cellDatPath)) {
-                LogError($"Unable to load cellDat: {cellDatPath}");
-                return;
-            }
-            if (!System.IO.File.Exists(portalDatPath)) {
-                LogError($"Unable to load portalDat: {portalDatPath}");
-                return;
-            }
-            if (!System.IO.File.Exists(languageDatPath)) {
-                LogError($"Unable to load languageDat: {portalDatPath}");
-                return;
-            }
-
-            CellDat = new CellDatDatabase(cellDatPath, true);
-            PortalDat = new PortalDatDatabase(portalDatPath, true);
-            LanguageDat = new LanguageDatDatabase(languageDatPath, true);
-        }
-
         private void Core_RenderFrame(object sender, EventArgs e) {
             try {
                 if (needsReload && PluginsReady && DateTime.UtcNow - lastFileChange > TimeSpan.FromSeconds(1)) {
@@ -497,26 +374,6 @@ namespace UBLoader {
             SettingsAccount.Load();
 
             didAccountInit = true;
-
-            if (Global.EnableScripts) {
-                AutoLoadScripts();
-            }
-        }
-
-        private void AutoLoadScripts() {
-            var scripts = new List<string>();
-            scripts.AddRange(Global.AutoLoadScripts.Value);
-            scripts.AddRange(Account.AutoLoadScripts.Value);
-            var distinctScripts = scripts.Distinct();
-            
-            // todo: do we want to support some kind of load order... ? like for script dependencies?
-
-            foreach (var script in distinctScripts) {
-                try {
-                    Scripts.StartScript(script);
-                }
-                catch (Exception ex) { LogException(ex); }
-            }
         }
 
         private void PluginWatcher_Changed(object sender, FileSystemEventArgs e) {
@@ -593,7 +450,6 @@ namespace UBLoader {
                 if (SettingsAccount != null && SettingsAccount.NeedsSave)
                     SettingsAccount.Save();
                 Global.FrameRate.Changed -= FrameRate_Changed;
-                Scripts?.Dispose();
                 SettingsGlobal?.Dispose();
                 SettingsAccount?.Dispose();
                 UBHelper.Core.GameStateChanged -= Core_GameStateChanged;

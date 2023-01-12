@@ -153,7 +153,7 @@ namespace UtilityBelt.Tools {
             }
 
             if (EnableGameStateInspector && gameStateInspector == null) {
-                gameStateInspector = new Inspector("UB Scripting API", UBLoader.FilterCore.Scripts.GlobalScriptContext.Context.Globals["game"].UserData.Object);
+                //gameStateInspector = new Inspector("UB Scripting API", UBLoader.FilterCore.Scripts.GlobalScriptContext.Context.Globals["game"].UserData.Object);
             }
         }
 
