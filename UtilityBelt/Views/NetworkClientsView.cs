@@ -105,7 +105,7 @@ namespace UtilityBelt.Views {
         }
 
         private IEnumerable<ClientInfo> GetActiveClients() {
-            return UB.Networking.Clients.Select(c => c).Where(c => currentTab == "All" || c.Tags.Contains(currentTab));
+            return UB.Networking.Clients.Values.Select(c => c).Where(c => currentTab == "All" || c.Tags.Contains(currentTab));
         }
 
         private void All_UseSelected_Hit(object sender, EventArgs e) {

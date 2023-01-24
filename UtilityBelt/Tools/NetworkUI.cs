@@ -208,21 +208,21 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
         }
 
         private void Handle_PlayerUpdateMessage(MessageHeader header, PlayerUpdateMessage message) {
-            var client = UB.Networking.Clients.Where(c => c.ClientId == header.SendingClientId).FirstOrDefault();
+            var client = UB.Networking.Clients.Values.Where(c => c.ClientId == header.SendingClientId).FirstOrDefault();
             if (client != null) {
                 DrawClient(client);
             }
         }
 
         private void Handle_TrackedItemUpdateMessage(MessageHeader header, TrackedItemUpdateMessage message) {
-            var client = UB.Networking.Clients.Where(c => c.ClientId == header.SendingClientId).FirstOrDefault();
+            var client = UB.Networking.Clients.Values.Where(c => c.ClientId == header.SendingClientId).FirstOrDefault();
             if (client != null) {
                 DrawClient(client);
             }
         }
 
         private void Handle_CharacterPositionMessage(MessageHeader header, CharacterPositionMessage message) {
-            var client = UB.Networking.Clients.Where(c => c.ClientId == header.SendingClientId).FirstOrDefault();
+            var client = UB.Networking.Clients.Values.Where(c => c.ClientId == header.SendingClientId).FirstOrDefault();
             if (client != null) {
                 DrawClient(client);
             }
@@ -310,7 +310,7 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
         private void Hud_OnRender() {
             try {
                 var tag = GetActiveTab();
-                clients = UB.Networking.Clients.Where((c) => {
+                clients = UB.Networking.Clients.Values.Where((c) => {
                     return (tag == "All" || c.Tags.Contains(tag)) && c.LastUpdate != DateTime.MinValue;
                 }).Select(c => c);
                 if (GetActiveClientCount() != lastClientCount)
