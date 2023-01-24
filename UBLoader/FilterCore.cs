@@ -171,8 +171,6 @@ namespace UBLoader {
                 UBHelper.Core.GameStateChanged += Core_GameStateChanged;
                 UBHelper.Core.Kevorkian += Core_Kevorkian;
 
-                UBHelper.Core.FilterStartup(PluginAssemblyPath, Global.PluginStorageDirectory);
-
                 if (!Global.FrameRate.IsDefault)
                     UBHelper.SimpleFrameLimiter.globalMax = Global.FrameRate;
 

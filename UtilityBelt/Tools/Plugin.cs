@@ -1892,7 +1892,7 @@ namespace UtilityBelt.Tools {
         [Summary("Returns the size of the dictionary")]
         [Example("dictsize[dictcreate[a,b,c,d]]", "Returns 2 as the example dict is `a=>b, c=>d`")]
         public double DictionarySize(ExpressionDictionary dict) {
-            return dict.Items.Count();
+            return dict.Items.Count;
         }
         #endregion //dictsize[dict dict]
 

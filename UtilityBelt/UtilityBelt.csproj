@@ -88,6 +88,9 @@
       <HintPath>..\deps\utank2-i.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UtilityBelt.Helper">
+      <HintPath>..\deps\UtilityBelt.Helper.dll</HintPath>
+    </Reference>
     <Reference Include="VCS5">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\deps\VCS5.dll</HintPath>
@@ -850,10 +853,9 @@
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="TaskParallelLibrary" Version="1.0.2856.0" />
-    <PackageReference Include="UtilityBelt.Common" Version="1.0.6" />
-    <PackageReference Include="UtilityBelt.Helper" Version="1.0.4" />
+    <PackageReference Include="UtilityBelt.Common" Version="1.0.7" />
     <PackageReference Include="UtilityBelt.Networking" Version="1.0.4" />
-    <PackageReference Include="UtilityBelt.Service" Version="2.0.16">
+    <PackageReference Include="UtilityBelt.Service" Version="2.0.17">
       <ExcludeAssets>runtime; build;</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="Websocket.Client" Version="4.4.43" />

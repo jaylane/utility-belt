@@ -21,8 +21,8 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using System.Reflection;
 using UtilityBelt.Lib.Expressions;
-using Hellosam.Net.Collections;
 using System.Reactive;
+using Hellosam.Net.Collections;
 
 namespace UtilityBelt.Tools {
     [Name("Networking")]
@@ -215,7 +215,7 @@ namespace UtilityBelt.Tools {
             try {
                 if (DateTime.UtcNow - lastClientCleanup > TimeSpan.FromSeconds(3)) {
                     lastClientCleanup = DateTime.UtcNow;
-                    var clients = Clients.ToArray();
+                    var clients = Clients.Values.ToArray();
                     foreach (var client in clients) {
                         if (DateTime.UtcNow - client.LastUpdate > TimeSpan.FromSeconds(15)) {
                             Logger.WriteToChat($"Client Timed Out: {client.WorldName}//{client.Name}");
