@@ -642,6 +642,7 @@ namespace UtilityBelt {
                     try {
                         tool.Dispose();
                     }
+                    catch (FileNotFoundException) { }
                     catch (Exception ex) { Logger.LogException(ex); }
                 }
 

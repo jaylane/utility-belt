@@ -13,48 +13,53 @@ using System.Threading;
 using UtilityBelt.Views;
 using System.Collections.ObjectModel;
 using UtilityBelt.Lib.Networking;
-using UtilityBelt.Networking;
-using UtilityBelt.Networking.Lib;
-using UtilityBelt.Networking.Messages;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using System.Reflection;
 using UtilityBelt.Lib.Expressions;
-using System.Reactive;
 using Hellosam.Net.Collections;
+using UtilityBelt.Service;
+using Newtonsoft.Json;
+using UtilityBelt.Networking.Messages;
+using AcClient;
+using static UtilityBelt.Tools.Networking;
+using Decal.Adapter.Wrappers;
+using UtilityBelt.Networking.Lib;
+using Decal.Adapter;
+using UtilityBelt.Networking;
+using UtilityBelt.Service.Lib.ACClientModule;
+using ProtoBuf;
 
 namespace UtilityBelt.Tools {
     [Name("Networking")]
     [Summary("Provides client communication via a local tcp server.")]
     [FullDescription(@"Allows clients to communicate with each other via a local tcp server.  Clients can  have tags added to them using the setting `Networking.Tags`.  Tags can be used in combination with the `/ub bct` command to broadcast a command to all characters of a specific tag.  See below for examples.")]
     public class Networking : ToolBase {
-        public event EventHandler OnConnected;
-        public event EventHandler OnDisconnected;
-        public event EventHandler<RemoteClientConnectionEventArgs> OnRemoteClientConnected;
-        public event EventHandler<RemoteClientConnectionEventArgs> OnRemoteClientDisconnected;
+        private DateTime lastClientDataSend = DateTime.UtcNow;
 
-        public bool Connected { get; internal set; }
-        public bool IsRunning { get; private set; }
-        public int ClientId { get => ubNet != null ? ubNet.ClientId : 0; }
-        public readonly ObservableDictionary<int, ClientInfo> Clients = new ObservableDictionary<int, ClientInfo>();
-        
+        public event EventHandler<EventArgs> OnConnected;
+        public event EventHandler<EventArgs> OnDisconnected;
+        public event EventHandler<RemoteClientEventArgs> OnRemoteClientConnected;
+        public event EventHandler<RemoteClientEventArgs> OnRemoteClientDisconnected;
+        public event EventHandler<RemoteClientEventArgs> OnRemoteClientUpdated;
 
-        private UBClient ubNet;
 
-        private ConcurrentQueue<Action> GameThreadActionQueue = new ConcurrentQueue<Action>();
-        private DateTime lastClientCleanup = DateTime.MinValue;
+        public readonly ObservableCollection<ClientData> Clients = new ObservableCollection<ClientData>();
+
+        public class RemoteClientEventArgs : EventArgs {
+            public ClientData ClientData { get; set; }
+
+            public RemoteClientEventArgs(ClientData clientData) {
+                ClientData = clientData;
+            }
+        }
 
         #region Config
-        [Summary("Networking server host")]
-        public readonly Setting<string> ServerHost = new Setting<string>("127.0.0.1");
-
-        [Summary("Networking server port")]
-        public readonly Setting<int> ServerPort = new Setting<int>(42163);
-
         [Summary("Character identifier tags. You can use these with the /ub bct command to limit which characters are broadcast to.")]
         public readonly CharacterState<ObservableCollection<string>> Tags = new CharacterState<ObservableCollection<string>>(new ObservableCollection<string>());
         #endregion Config
+
 
         #region Commands
         #region /ub bc <millisecondDelay> <command>
@@ -77,15 +82,19 @@ namespace UtilityBelt.Tools {
             }
 
             Logger.WriteToChat($"Broadcasting command to all clients: \"{command}\" with delay inbetween of {delay}ms");
-            DoBroadcast(Clients.Values.Select(c => c), command, delay);
-            if (UB.Plugin.Debug)
-                Logger.Debug($"Sent to clients: {string.Join(", ", Clients.Values.Select(c => c.Name).ToArray())}");
-        }
-
-        public void DoBroadcast(IEnumerable<ClientInfo> clients, string command, int delay) {
-            var i = 1;
-            foreach (var client in clients)
-                SendObject(new CommandBroadcastMessage(command, i++ * delay), client.ClientId);
+            UB.Plugin.AddDelayedCommand(command, 0);
+            foreach (var client in Clients.ToList()) {
+                delay += delay;
+                TypedBroadcast<CommandBroadcastResponse, CommandBroadcastRequest>(new CommandBroadcastRequest(command, delay), new ClientFilter(client.Id),
+                    (sendingClientId, currentRequest, totalRequests, success, response) => {
+                        if (sendingClientId > 0) {
+                            var remote = Clients.FirstOrDefault(c => c.Id == sendingClientId);
+                            if (remote is not null) {
+                                WriteToChat($"{remote} ack'd command broadcast request. ({command} /// {delay}ms)");
+                            }
+                        }
+                    });
+            }
         }
         #endregion /ub bc <millisecondDelay> <command>
         #region /ub bct <teamslist> <millisecondDelay> <command>
@@ -118,17 +127,26 @@ namespace UtilityBelt.Tools {
                 return;
             }
 
-            var clients = Clients.Values.Select(c => c).Where(c => {
-                foreach (var tag in tags)
-                    if (c.Tags.Contains(tag))
-                        return true;
-                return false;
-            });
-
             Logger.WriteToChat($"Broadcasting command to clients with tags ({String.Join(",", tags.ToArray())}): \"{command}\" with delay inbetween of {delay}ms");
-            DoBroadcast(clients, command, delay);
-            if (UB.Plugin.Debug)
-                Logger.Debug($"Sent to clients: {string.Join(", ", clients.Select(c => c.Name).ToArray())}");
+            if (tags.Where(t => UBService.UBNet.UBNetClient.Tags.Contains(t)).Any()) {
+                UB.Plugin.AddDelayedCommand(command, 0);
+            }
+            foreach (var client in Clients.Where(c => c.HasAnyTags(tags)).ToList()) {
+                delay += delay;
+                TypedBroadcast<CommandBroadcastResponse, CommandBroadcastRequest>(new CommandBroadcastRequest(command, delay), new ClientFilter(client.Id),
+                    (sendingClientId, currentRequest, totalRequests, success, response) => {
+                        if (sendingClientId > 0) {
+                            var remote = Clients.FirstOrDefault(c => c.Id == sendingClientId);
+                            if (remote is not null) {
+                                //WriteToChat($"{remote} ack'd command broadcast request. ({command} /// {delay}ms)");
+                            }
+                        }
+                    });
+            }
+        }
+
+        private void Tags_Changed(object sender, SettingChangedEventArgs e) {
+            UBService.UBNet?.UBNetClient?.AddTags(Tags.Value);
         }
         #endregion /ub bc <millisecondDelay> <command>
         #region /ub netclients
@@ -136,20 +154,18 @@ namespace UtilityBelt.Tools {
         [Usage("/ub netclients <tag>")]
         [Example("/ub netclients", "Show all clients on the ub network")]
         [Example("/ub netclients one", "Show all clients on the ub network with tag `one`")]
-        [CommandPattern("netclients", @"^(?<tags>[a-z,]*)$")]
+        [CommandPattern("netclients", @"^((?<tags>([^""\s,]+|""[^""]+"")),?)*$")]
         public void DoNetClients(string _, Match args) {
             bool showedClients = false;
-            var tags = String.IsNullOrEmpty(args.Groups["tags"].Value) ? new string[] { } : args.Groups["tags"].Value.Split(',');
-            foreach (var kv in Clients.Snapshot) {
-                if (tags == null || tags.Count() == 0 || (tags.Count() > 0 && kv.HasTags(tags.ToList()))) {
-                    Logger.WriteToChat($"Client: ({kv.ClientId}) {kv.Name}//{kv.WorldName}: Tags({(kv.Tags == null ? "null" : String.Join(",", kv.Tags.ToArray()))})", Logger.LogMessageType.Generic, true, false, false);
-                    if (UB.Plugin.Debug) {
-                        var extra = new StringBuilder("\t");
-                        foreach (var prop in kv.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)) {
-                            extra.Append($"{prop.Name}:{prop.GetValue(kv, null)},");
-                        }
-                        Logger.Debug(extra.ToString());
-                    }
+            var tags = new List<string>();
+
+            for (var i = 0; i < args.Groups["tags"].Captures.Count; i++) {
+                tags.Add(args.Groups["tags"].Captures[i].Value.Trim('"'));
+            }
+
+            foreach (var client in UBService.UBNet.UBNetClient.Clients.Values) {
+                if (tags.Count() == 0 || tags.Any(t => client.Tags.Contains(t))) {
+                    Logger.WriteToChat(client.ToString(), Logger.LogMessageType.Generic, true, false, false);
                     showedClients = true;
                 }
             }
@@ -169,24 +185,24 @@ namespace UtilityBelt.Tools {
         [Example("netclients[test]", "returns a list of all network clients with the tag `test`")]
         public object netclients(string tag = null) {
             var clients = new ExpressionList();
-            foreach (var kv in Clients.Snapshot) {
-                if (string.IsNullOrEmpty(tag) || kv.HasTags(new List<string>() { tag })) {
+            foreach (var client in Clients) {
+                if (string.IsNullOrEmpty(tag) || client.HasAnyTags(new List<string>() { tag })) {
                     var clientTags = new ExpressionList();
-                    clientTags.AddRange(kv.Tags.Select(x => (object)x));
+                    clientTags.AddRange(client.RemoteClient.Tags.Select(x => (object)x));
                     var clientData = new ExpressionDictionary();
-                    clientData.Items.Add("ClientId", kv.ClientId);
-                    clientData.Items.Add("PlayerId", kv.PlayerId);
-                    clientData.Items.Add("Position", new ExpressionCoordinates(kv.EW, kv.NS, kv.Z));
-                    clientData.Items.Add("Name", kv.Name);
+                    clientData.Items.Add("ClientId", (double)client.Id);
+                    clientData.Items.Add("PlayerId", (double)client.PlayerId);
+                    clientData.Items.Add("Position", new ExpressionCoordinates((double)client.EW, (double)client.NS, (double)client.Z));
+                    clientData.Items.Add("Name", client.Name);
                     clientData.Items.Add("Tags", clientTags);
-                    clientData.Items.Add("WorldName", kv.WorldName);
-                    clientData.Items.Add("CurrentHealth", kv.CurrentHealth);
-                    clientData.Items.Add("CurrentMana", kv.CurrentMana);
-                    clientData.Items.Add("CurrentStamina", kv.CurrentStamina);
-                    clientData.Items.Add("MaxHealth", kv.MaxHealth);
-                    clientData.Items.Add("MaxMana", kv.MaxMana);
-                    clientData.Items.Add("MaxStamina", kv.MaxStamina);
-                    clientData.Items.Add("Heading", kv.Heading);
+                    clientData.Items.Add("WorldName", client.WorldName);
+                    clientData.Items.Add("CurrentHealth", (double)client.CurrentHealth);
+                    clientData.Items.Add("CurrentMana", (double)client.CurrentMana);
+                    clientData.Items.Add("CurrentStamina", (double)client.CurrentStamina);
+                    clientData.Items.Add("MaxHealth", (double)client.MaxHealth);
+                    clientData.Items.Add("MaxMana", (double)client.MaxMana);
+                    clientData.Items.Add("MaxStamina", (double)client.MaxStamina);
+                    clientData.Items.Add("Heading", (double)client.Heading);
                     clients.Items.Add(clientData);
                 }
             }
@@ -202,250 +218,333 @@ namespace UtilityBelt.Tools {
 
         public override void Init() {
             base.Init();
-            StartClient();
-            UB.Core.RenderFrame += Core_RenderFrame;
-            Tags.Changed += Tags_Changed;
-        }
 
-        private void Tags_Changed(object sender, SettingChangedEventArgs e) {
-            SendObject(new ClientInfoMessage(UB.CharacterName, UB.WorldName, Tags.Value.ToList()));
-        }
-
-        private void Core_RenderFrame(object sender, EventArgs e) {
             try {
-                if (DateTime.UtcNow - lastClientCleanup > TimeSpan.FromSeconds(3)) {
-                    lastClientCleanup = DateTime.UtcNow;
-                    var clients = Clients.Values.ToArray();
-                    foreach (var client in clients) {
-                        if (DateTime.UtcNow - client.LastUpdate > TimeSpan.FromSeconds(15)) {
-                            Logger.WriteToChat($"Client Timed Out: {client.WorldName}//{client.Name}");
-                            Clients.Remove(client.ClientId);
+                UBService.UBNet.UBNetClient.OnRemoteClientConnected += UBNetClient_OnRemoteClientConnected;
+                UBService.UBNet.UBNetClient.OnRemoteClientUpdated += UBNetClient_OnRemoteClientUpdated;
+                UBService.UBNet.UBNetClient.OnRemoteClientDisconnected += UBNetClient_OnRemoteClientDisconnected;
+                UBService.UBNet.UBNetClient.OnConnected += UBNetClient_OnConnected;
+                UBService.UBNet.UBNetClient.OnDisconnected += UBNetClient_OnDisconnected;
+
+                UBService.UBNet.UBNetClient.OnTypedChannelMessage += UBNetClient_OnTypedChannelMessage;
+                UBService.UBNet.UBNetClient.OnTypedBroadcastRequest += UBNetClient_OnTypedBroadcastRequest;
+
+                UBService.UBNet.UBNetClient.SubscribeToChannel("utilitybelt");
+
+                if (UBHelper.Core.GameState == UBHelper.GameState.In_Game) {
+                    InitClients();
+                }
+                else {
+                    UBHelper.Core.GameStateChanged += Core_GameStateChanged;
+                }
+
+                Tags.Changed += Tags_Changed;
+
+                Tags_Changed(null, null);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+        }
+
+        private void UBNetClient_OnTypedBroadcastRequest(object sender, TypedBroadcastEventArgs e) {
+            if (e.IsType(typeof(CommandBroadcastRequest)) && e.TryDeserialize<CommandBroadcastRequest>(out var commandMessage)) {
+                UB.Plugin.AddDelayedCommand(commandMessage.Command, commandMessage.Delay);
+                UBService.UBNet?.UBNetClient?.SendBroadcastResponse(new CommandBroadcastResponse(true, commandMessage.Command, commandMessage.Delay), e.Message);
+            }
+        }
+
+        private void UBNetClient_OnTypedChannelMessage(object sender, TypedChannelMessageReceivedEventArgs e) {
+            var client = Clients.FirstOrDefault(c => c.Id == e.Message.SendingClientId);
+            if (client is null)
+                return;
+            if (e.IsType(typeof(ClientData)) && e.TryDeserialize<ClientData>(out var clientData)) {
+                HandleClientData(e.Message.SendingClientId, clientData);
+            }
+            else if (e.IsType(typeof(TrackedItemUpdateMessage)) && e.TryDeserialize<TrackedItemUpdateMessage>(out var trackedItemUpdateMessage)) {
+                HandleTrackedItemUpdateMessage(e.Message.SendingClientId, trackedItemUpdateMessage);
+            }
+            else if (e.IsType(typeof(CharacterPositionMessage)) && e.TryDeserialize<CharacterPositionMessage>(out var characterPositionMessage)) {
+                HandleCharacterPositionMessage(e.Message.SendingClientId, characterPositionMessage);
+            }
+            else if (e.IsType(typeof(VitalUpdateMessage)) && e.TryDeserialize<VitalUpdateMessage>(out var vitalUpdateMessage)) {
+                HandleVitalUpdateMessage(e.Message.SendingClientId, vitalUpdateMessage);
+            }
+
+            if (DateTime.UtcNow - lastClientDataSend > TimeSpan.FromSeconds(5)) {
+                SendClientData(true);
+                lastClientDataSend = DateTime.UtcNow;
+            }
+        }
+
+        private void Core_GameStateChanged(UBHelper.GameState previous, UBHelper.GameState new_state) {
+            try {
+                if (new_state == UBHelper.GameState.In_Game) {
+                    UBHelper.Core.GameStateChanged -= Core_GameStateChanged;
+                    InitClients();
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void InitClients() {
+            try {
+                if (UBService.UBNet.UBNetClient?.IsConnected == true) {
+                    foreach (var client in UBService.UBNet.UBNetClient.Clients.Values) {
+                        var clientData = new ClientData(client.Id);
+                        if (!Clients.Where(c => c.Id == client.Id).Any()) {
+                            Clients.Add(clientData);
                         }
+                    }
+
+                    SendClientData(true);
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        internal void ChannelBroadcast<T>(string channel, T obj) {
+            try {
+                UBService.UBNet.UBNetClient.PublishToChannel(channel, obj);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        internal void TypedBroadcast<TResponse, TRequest>(TRequest obj, ClientFilter filter = null, Action<uint, uint, uint, bool, TResponse> progressHandler = null, TimeSpan? timeout = null) {
+            try {
+                UBService.UBNet.UBNetClient.SendBroadcastRequest(obj, filter, progressHandler, timeout);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void UBNetClient_OnConnected(object sender, EventArgs e) {
+            try {
+                foreach (var client in UBService.UBNet.UBNetClient.Clients.Values) {
+                    if (client.Type != ClientType.GameClient || UBService.UBNet.UBNetClient.Id == client.Id)
+                        continue;
+                    var clientData = new ClientData(client.Id);
+                    if (!Clients.Where(c => c.Id == client.Id).Any()) {
+                        Clients.Add(clientData);
+                        OnRemoteClientConnected?.Invoke(this, new RemoteClientEventArgs(clientData));
                     }
                 }
 
-                while (GameThreadActionQueue.TryDequeue(out Action action)) {
-                    action.Invoke();
+                SendClientData(true);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void UBNetClient_OnDisconnected(object sender, EventArgs e) {
+            try {
+                foreach (var client in Clients.ToArray()) {
+                    OnRemoteClientDisconnected?.Invoke(this, new RemoteClientEventArgs(client));
+                }
+                Clients.Clear();
+                OnDisconnected?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        private void UBNetClient_OnRemoteClientUpdated(object sender, ClientEventArgs e) {
+            try {
+                if (e.Client.Type != ClientType.GameClient || UBService.UBNet.UBNetClient.Id == e.Client.Id)
+                    return;
+                var existing = Clients.FirstOrDefault(c => c.Id == e.Client.Id);
+                if (existing == null) {
+                    var clientData = new ClientData(e.Client.Id);
+                    Clients.Add(clientData);
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void StartClient() {
-            if (ubNet != null) {
-                StopClient();
+        private void UBNetClient_OnRemoteClientConnected(object sender, ClientEventArgs e) {
+            try {
+                if (e.Client.Type != ClientType.GameClient || UBService.UBNet.UBNetClient.Id == e.Client.Id)
+                    return;
+
+                var existing = Clients.FirstOrDefault(c => c.Id == e.Client.Id);
+                if (existing == null) {
+                    var clientData = new ClientData(e.Client.Id);
+                    Clients.Add(clientData);
+                    OnRemoteClientConnected?.Invoke(this, new RemoteClientEventArgs(clientData));
+                }
+
+                SendClientData(true);
+
+                WriteToChat($"{e.Client.Name} connected.");
             }
-
-            Action<Action> runOnMainThread = (a) => { GameThreadActionQueue.Enqueue(a); };
-            Action<string> log = (s) => { runOnMainThread.Invoke(() => Logger.LogException(s)); };
-            ubNet = new UBClient(ServerHost, ServerPort, log, runOnMainThread, new HotReloadSerializationBinder());
-            ubNet.OnMessageReceived += UbNet_OnMessageReceived;
-            ubNet.OnRemoteClientConnected += UbNet_OnRemoteClientConnected;
-            ubNet.OnRemoteClientDisconnected += UbNet_OnRemoteClientDisconnected;
-            AddMessageHandler<LoginMessage>(Handle_LoginMessage);
-            AddMessageHandler<PlayerUpdateMessage>(Handle_PlayerUpdateMessage);
-            AddMessageHandler<CommandBroadcastMessage>(Handle_CommandBroadcastMessage);
-            AddMessageHandler<ClientInfoMessage>(Handle_ClientInfo);
-            AddMessageHandler<TrackedItemUpdateMessage>(Handle_TrackedItemUpdateMessage);
-            AddMessageHandler<CharacterPositionMessage>(Handle_CharacterPositionMessage);
-            ubNet.OnConnected += UbNet_OnConnected;
-            ubNet.OnDisconnected += UbNet_OnDisconnected;
-            IsRunning = true;
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        public void StopClient() {
-            if (ubNet == null)
-                return;
-            ubNet.OnDisconnected -= UbNet_OnDisconnected;
-            ubNet.OnMessageReceived -= UbNet_OnMessageReceived;
-            ubNet.OnRemoteClientConnected -= UbNet_OnRemoteClientConnected;
-            ubNet.OnRemoteClientDisconnected -= UbNet_OnRemoteClientDisconnected;
-            RemoveMessageHandler<LoginMessage>(Handle_LoginMessage);
-            RemoveMessageHandler<PlayerUpdateMessage>(Handle_PlayerUpdateMessage);
-            RemoveMessageHandler<CommandBroadcastMessage>(Handle_CommandBroadcastMessage);
-            RemoveMessageHandler<ClientInfoMessage>(Handle_ClientInfo);
-            RemoveMessageHandler<TrackedItemUpdateMessage>(Handle_TrackedItemUpdateMessage);
-            RemoveMessageHandler<CharacterPositionMessage>(Handle_CharacterPositionMessage);
-            ubNet.Dispose();
-            ubNet = null;
-            IsRunning = false;
-        }
+        private void UBNetClient_OnRemoteClientDisconnected(object sender, ClientEventArgs e) {
+            try {
+                if (e.Client.Type != ClientType.GameClient || UBService.UBNet.UBNetClient.Id == e.Client.Id)
+                    return;
 
-        internal void RunOnGameThread(Action action) {
-            GameThreadActionQueue.Enqueue(action);
-        }
-
-        private ClientInfo GetClient(MessageHeader header) {
-            if (!Clients.ContainsKey(header.SendingClientId)) {
-                var client = new ClientInfo(header.SendingClientId);
-                Clients.Add(header.SendingClientId, client);
+                var existing = Clients.FirstOrDefault(c => c.Id == e.Client.Id);
+                if (existing != null) {
+                    Clients.Remove(existing);
+                    OnRemoteClientDisconnected?.Invoke(this, new RemoteClientEventArgs(existing));
+                }
+                WriteToChat($"{e.Client.Name} disconnected.");
             }
-            return Clients[header.SendingClientId];
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        internal void SendClientData(bool forced) {
+            try {
+                if (UBHelper.Core.GameState != UBHelper.GameState.In_Game)
+                    return;
+
+                var data = GetClientData();
+                if (data is not null) {
+                    ChannelBroadcast("utilitybelt", data);
+                }
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        internal ClientData GetClientData() {
+            try {
+                if (UBHelper.vTank.Instance == null || !UB.VTank.VitalSharing || UBHelper.Core.GameState != UBHelper.GameState.In_Game)
+                    return null;
+
+                var me = UtilityBeltPlugin.Instance.Core.CharacterFilter.Id;
+                var pos = PhysicsObject.GetPosition(me);
+                var lc = PhysicsObject.GetLandcell(me);
+                return new ClientData(UBService.UBNet.UBNetClient.Id) {
+                    PlayerId = UB.Core.CharacterFilter.Id,
+                    CurrentHealth = UB.Core.Actions.Vital[VitalType.CurrentHealth],
+                    CurrentStamina = UB.Core.Actions.Vital[VitalType.CurrentStamina],
+                    CurrentMana = UB.Core.Actions.Vital[VitalType.CurrentMana],
+
+                    MaxHealth = UB.Core.Actions.Vital[VitalType.MaximumHealth],
+                    MaxStamina = UB.Core.Actions.Vital[VitalType.MaximumStamina],
+                    MaxMana = UB.Core.Actions.Vital[VitalType.MaximumMana],
+
+                    Z = pos.Z,
+                    EW = Geometry.LandblockToEW((uint)lc, pos.X),
+                    NS = Geometry.LandblockToNS((uint)lc, pos.Y),
+                    Heading = UtilityBeltPlugin.Instance.Core.Actions.Heading,
+                    LandCell = (uint)lc,
+
+                    WorldName = UB.Core.CharacterFilter.Server,
+
+                    TrackedItems = UB.VTankFellowHeals.GetTrackedItems()
+                };
+            }
+            catch {
+                return null;
+            }
         }
 
         #region UBNet Message Handlers
-        private void Handle_ClientInfo(MessageHeader header, ClientInfoMessage message) {
-            var client = GetClient(header);
-            if (client == null)
-                return;
-            //Logger.WriteToChat($"Got ClientInfo from: {client.ClientId} {message.CharacterName}//{message.WorldName} ({(message.Tags == null ? "null" : String.Join(",", message.Tags.ToArray()))})");
-            if (message.Tags != null)
-                client.Tags = message.Tags;
-            client.Name = message.CharacterName;
-            client.WorldName = message.WorldName;
-            client.LastUpdate = DateTime.UtcNow;
-        }
-
-        private void Handle_TrackedItemUpdateMessage(MessageHeader header, TrackedItemUpdateMessage message) {
-            var client = GetClient(header);
-            client.LastUpdate = DateTime.UtcNow;
-            if (message.TrackedItems != null)
-                client.TrackedItems = message.TrackedItems;
-
-            //Logger.WriteToChat($"Got tracked items from {client.Name}: {String.Join(", ", client.TrackedItems.Select(i => $"{i.Name}:{i.Count}").ToArray())}");
-        }
-
-        private void Handle_CharacterPositionMessage(MessageHeader header, CharacterPositionMessage message) {
-            var client = GetClient(header);
-            client.HasPositionInfo = true;
-            client.Z = message.Z;
-            client.NS = message.NS;
-            client.EW = message.EW;
-            client.LandCell = message.LandCell;
-            client.Heading = message.Heading;
-            client.LastUpdate = DateTime.UtcNow;
-        }
-
-        private void UbNet_OnMessageReceived(object sender, OnMessageEventArgs e) {
-            switch (e.Header.Type) {
-                case MessageHeaderType.Serialized:
-                    if (Clients.TryGetValue(e.Header.SendingClientId, out ClientInfo client))
-                        client.LastUpdate = DateTime.UtcNow;
-                    break;
+        private void HandleCharacterPositionMessage(uint sendingClientId, CharacterPositionMessage positionMessage) {
+            try {
+                if (UBService.UBNet.UBNetClient.Id == sendingClientId)
+                    return;
+                if (!UBService.UBNet.UBNetClient.Clients.Values.Where(c => c.Id == sendingClientId).Any())
+                    return;
+                var existing = Clients.FirstOrDefault(c => c.Id == sendingClientId);
+                if (existing is not null) {
+                    existing.HasPositionInfo = true;
+                    existing.Z = positionMessage.Z;
+                    existing.NS = positionMessage.NS;
+                    existing.EW = positionMessage.EW;
+                    existing.LandCell = (uint)positionMessage.LandCell;
+                    existing.Heading = positionMessage.Heading;
+                    OnRemoteClientUpdated?.Invoke(this, new RemoteClientEventArgs(existing));
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void HandleDisconnectedClient(int clientId) {
-            //Logger.WriteToChat($"Got disconnect: {clientId}");
-            if (Clients.TryGetValue(clientId, out ClientInfo client)) {
-                Logger.WriteToChat($"Client Disconnected: {client.WorldName}//{client.Name}");
-                Clients.Remove(clientId);
+        private void HandleTrackedItemUpdateMessage(uint sendingClientId, TrackedItemUpdateMessage trackedItemUpdate) {
+            try {
+                if (UBService.UBNet.UBNetClient.Id == sendingClientId)
+                    return;
+                if (!UBService.UBNet.UBNetClient.Clients.Values.Where(c => c.Id == sendingClientId).Any())
+                    return;
+                var existing = Clients.FirstOrDefault(c => c.Id == sendingClientId);
+                if (existing is not null) {
+                    if (trackedItemUpdate.TrackedItems != null)
+                        existing.TrackedItems = trackedItemUpdate.TrackedItems;
+                    OnRemoteClientUpdated?.Invoke(this, new RemoteClientEventArgs(existing));
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void Handle_LoginMessage(MessageHeader header, LoginMessage message) {
-            var client = GetClient(header);
-            //Logger.WriteToChat($"\tGot loginmessage from: {client.ClientId} {message.Name}//{message.WorldName} ({(message.Tags == null ? "null" : String.Join(",", message.Tags.ToArray()))})");
-            client.Name = message.Name;
-            client.WorldName = message.WorldName;
-            if (message.Tags != null)
-                client.Tags = message.Tags;
-            client.LastUpdate = DateTime.UtcNow;
-
-            if (!client.HasLoginInfo) {
-                client.HasLoginInfo = true;
-                Logger.WriteToChat($"Client Connected: {client.WorldName}//{client.Name}");
-                SendObject(new LoginMessage() {
-                    Name = UB.CharacterName,
-                    WorldName = UB.WorldName,
-                    Tags = Tags.Value.ToList()
-                });
+        private void HandleVitalUpdateMessage(uint sendingClientId, VitalUpdateMessage vitalUpdate) {
+            try {
+                if (UBService.UBNet.UBNetClient.Id == sendingClientId)
+                    return;
+                var existing = Clients.FirstOrDefault(c => c.Id == sendingClientId);
+                if (existing is not null) {
+                    existing.HasVitalInfo = true;
+                    existing.CurrentHealth = vitalUpdate.CurrentHealth;
+                    existing.CurrentMana = vitalUpdate.CurrentMana;
+                    existing.CurrentStamina = vitalUpdate.CurrentStamina;
+                    existing.MaxHealth = vitalUpdate.MaxHealth;
+                    existing.MaxMana = vitalUpdate.MaxMana;
+                    existing.MaxStamina = vitalUpdate.MaxStamina;
+                    OnRemoteClientUpdated?.Invoke(this, new RemoteClientEventArgs(existing));
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
-        private void Handle_PlayerUpdateMessage(MessageHeader header, PlayerUpdateMessage message) {
-            var client = GetClient(header);
-            //Logger.WriteToChat($"\tGot PlayerUpdateMessage from: {client.ClientId} {client.Name}//{client.WorldName}");
-            client.CurrentHealth = message.CurHealth;
-            client.CurrentStamina = message.CurStam;
-            client.CurrentMana = message.CurMana;
-            client.MaxHealth = message.MaxHealth;
-            client.MaxStamina = message.MaxStam;
-            client.MaxMana = message.MaxMana;
-            client.PlayerId = message.PlayerId;
-            client.LastUpdate = DateTime.UtcNow;
-        }
-
-        private void Handle_CommandBroadcastMessage(MessageHeader header, CommandBroadcastMessage message) {
-            UB.Plugin.AddDelayedCommand(message.Command, message.Delay);
+        private void HandleClientData(uint sendingClientId, ClientData clientData) {
+            try {
+                if (UBService.UBNet.UBNetClient.Id == sendingClientId)
+                    return;
+                if (!UBService.UBNet.UBNetClient.Clients.Values.Where(c => c.Id == sendingClientId).Any()) {
+                    return;
+                }
+                var existing = Clients.FirstOrDefault(c => c.Id == sendingClientId);
+                if (existing is not null) {
+                    existing.CurrentHealth = clientData.CurrentHealth;
+                    existing.CurrentMana = clientData.CurrentMana;
+                    existing.CurrentStamina = clientData.CurrentStamina;
+                    existing.EW = clientData.EW;
+                    existing.HasPositionInfo = clientData.HasPositionInfo;
+                    existing.Heading = clientData.Heading;
+                    existing.LandCell = clientData.LandCell;
+                    existing.MaxHealth = clientData.MaxHealth;
+                    existing.MaxMana = clientData.MaxMana;
+                    existing.MaxStamina = clientData.MaxStamina;
+                    existing.NS = clientData.NS;
+                    existing.PlayerId = clientData.PlayerId;
+                    existing.TrackedItems = clientData.TrackedItems;
+                    existing.WorldName = clientData.WorldName;
+                    existing.Z = clientData.Z;
+                }
+                else {
+                    existing = clientData;
+                    Clients.Add(clientData);
+                }
+                OnRemoteClientUpdated?.Invoke(this, new RemoteClientEventArgs(clientData));
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
         #endregion UBNet Message Handlers
 
-        #region UBNet events
-        private void UbNet_OnConnected(object sender, EventArgs e) {
-            try {
-                Logger.WriteToChat($"Connected to UBNet", Logger.LogMessageType.Generic, true, false, false); 
-                Connected = true;
-                SendObject(new LoginMessage() {
-                    Name = UB.CharacterName,
-                    WorldName = UB.WorldName,
-                    Tags = Tags.Value.ToList()
-                });
-                OnConnected?.Invoke(this, e);
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void UbNet_OnDisconnected(object sender, EventArgs e) {
-            try {
-                Logger.WriteToChat($"Disconnected from UBNet", Logger.LogMessageType.Generic, true, false, false);
-                Connected = false;
-                var keys = Clients.Keys.ToArray();
-                foreach (var k in keys)
-                    Clients.Remove(k);
-                OnDisconnected?.Invoke(this, e);
-            }
-            catch (Exception ex) { Logger.LogException(ex); }
-        }
-
-        private void UbNet_OnRemoteClientConnected(object sender, RemoteClientConnectionEventArgs e) {
-            OnRemoteClientConnected?.Invoke(this, e);
-        }
-
-        private void UbNet_OnRemoteClientDisconnected(object sender, RemoteClientConnectionEventArgs e) {
-            OnRemoteClientDisconnected?.Invoke(this, e);
-            HandleDisconnectedClient(e.ClientId);
-        }
-        #endregion UBNet events
-
-        public void SendObject(object obj, int targetClientId=0) {
-            ubNet.SendObject(new MessageHeader() {
-                SendingClientId = ubNet.ClientId,
-                Type = MessageHeaderType.Serialized,
-                TargetClientId = targetClientId
-            }, obj);
-        }
-
-        public virtual Type GetMessageType(string typeStr) {
-            var res = typeof(UBClient).Assembly.GetType(typeStr);
-            return res == null ? GetType().Assembly.GetType(typeStr) : res;
-        }
-
-        #region Network Message Handlers
-        /// <summary>
-        /// Adds a message handler for the specified type T
-        /// </summary>
-        /// <typeparam name="T">the message type to subscribe to</typeparam>
-        /// <param name="handler">handler method</param>
-        public void AddMessageHandler<T>(Action<MessageHeader, T> handler) {
-            ubNet?.AddMessageHandler(handler);
-        }
-
-        /// <summary>
-        /// Removes a message handler for the specified type T
-        /// </summary>
-        /// <typeparam name="T">the message type to subscribe to</typeparam>
-        /// <param name="handler">handler method</param>
-        public void RemoveMessageHandler<T>(Action<MessageHeader, T> handler) {
-            ubNet?.RemoveMessageHandler(handler);
-        }
-        #endregion Network Message Handlers
-
         protected override void Dispose(bool disposing) {
             base.Dispose(disposing);
-            Tags.Changed -= Tags_Changed;
-            UB.Core.RenderFrame -= Core_RenderFrame;
-            StopClient();
+
+
+            try {
+                UBService.UBNet.UBNetClient.UnsubscribeFromChannel("utilitybelt");
+
+                UBService.UBNet.UBNetClient.OnRemoteClientConnected -= UBNetClient_OnRemoteClientConnected;
+                UBService.UBNet.UBNetClient.OnRemoteClientUpdated -= UBNetClient_OnRemoteClientUpdated;
+                UBService.UBNet.UBNetClient.OnRemoteClientDisconnected -= UBNetClient_OnRemoteClientDisconnected;
+                UBService.UBNet.UBNetClient.OnConnected -= UBNetClient_OnConnected;
+                UBService.UBNet.UBNetClient.OnDisconnected -= UBNetClient_OnDisconnected;
+
+                UBService.UBNet.UBNetClient.OnTypedChannelMessage -= UBNetClient_OnTypedChannelMessage;
+            }
+            catch { }
         }
     }
 }

@@ -148,13 +148,9 @@ Section "" CoreSection
 	File "${BUILDPATH}\UBLoader.pdb"
 	File "${BUILDPATH}\UtilityBelt.pdb"
 	File "${BUILDPATH}\UtilityBelt.dll"
-	File "${BUILDPATH}\UtilityBelt.Networking.dll"
-	File "${BUILDPATH}\UtilityBelt.Server.exe"
 	File "${BUILDPATH}\0Harmony.dll"
 	File "${BUILDPATH}\Exceptionless.dll"
 	File "${BUILDPATH}\Exceptionless.Models.dll"
-	File "${BUILDPATH}\Websocket.Client.dll"
-	File "${BUILDPATH}\websocket-sharp.dll"
 	File "${BUILDPATH}\System.Drawing.Common.dll"
 	File "${BUILDPATH}\System.Reactive.dll"
 	File "${BUILDPATH}\System.Runtime.CompilerServices.Unsafe.dll"
@@ -209,6 +205,9 @@ Section -FinishSection
 	Delete "$INSTDIR\UtilityBelt.Scripting.dll"
 	Delete "$INSTDIR\UtilityBelt.Scripting.pdb"
 	Delete "$INSTDIR\UtilityBelt.Scripting.ScriptTypes.json"
+	Delete "$INSTDIR\UtilityBelt.Networking.dll"
+	Delete "$INSTDIR\UtilityBelt.Networking.pdb"
+	Delete "$INSTDIR\UtilityBelt.Networking.ScriptTypes.json"
 
     ; make sure dotnet 4.8 is installed
     Call CheckAndDownloadDotNet48

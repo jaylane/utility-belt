@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UtilityBelt.Tools;
-using WebSocketSharp;
 
 namespace UtilityBelt.Lib.ScriptInterface {
     /*

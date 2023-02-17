@@ -17,6 +17,7 @@ using UtilityBelt.Networking.Messages;
 using UtilityBelt.Lib.Networking.Messages;
 using Microsoft.DirectX;
 using System.Windows.Forms;
+using UtilityBelt.Service;
 
 namespace UtilityBelt.Tools {
     [Name("NetworkUI")]
@@ -39,8 +40,7 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
         private TimerClass drawTimer;
         private DxTexture arrowTexture = null;
         private int lastClientCount = 0;
-        private IEnumerable<ClientInfo> clients;
-        private ClientInfo mouseDownClient;
+        private ClientData mouseDownClient;
         private const int HUD_X_OFFSET = 4;
         private const int HUD_Y_OFFSET = 60;
         private const int ROW_SIZE = 20;
@@ -54,6 +54,8 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
         private const short WM_MOUSEMOVE = 0x0200;
         private const short WM_LBUTTONDOWN = 0x0201;
         private const short WM_LBUTTONUP = 0x0202;
+
+        private List<ClientData> clients => UB.Networking.Clients.ToList();
 
         #region Config
         [Summary("Show network clients ui (for viewing / controlling networked characters)")]
@@ -70,6 +72,9 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
 
         [Summary("Tracked Items")]
         public readonly Setting<ObservableCollection<TrackedItem>> TrackedItems = new Setting<ObservableCollection<TrackedItem>>(new ObservableCollection<TrackedItem>());
+
+        [Summary("The tag to show in the network UI")]
+        public readonly CharacterState<string> SelectedTag = new CharacterState<string>("All");
         #endregion Config
 
         public NetworkUI(UtilityBeltPlugin ub, string name) : base(ub, name) {
@@ -82,7 +87,19 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
             Enabled.Changed += Enabled_Changed;
             ShowHudWhenClosed.Changed += ShowHudWhenClosed_Changed;
 
-            TryStart();
+            if (UBHelper.Core.GameState == UBHelper.GameState.In_Game) {
+                TryStart();
+            }
+            else {
+                UBHelper.Core.GameStateChanged += Core_GameStateChanged;
+            }
+        }
+
+        private void Core_GameStateChanged(UBHelper.GameState previous, UBHelper.GameState new_state) {
+            if (new_state == UBHelper.GameState.In_Game) {
+                UBHelper.Core.GameStateChanged -= Core_GameStateChanged;
+                TryStart();
+            }
         }
 
         private void TryStart() {
@@ -91,9 +108,7 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
                     CreateTextures();
                     clientsView = new NetworkClientsView(UB);
                     CreateHud();
-                    UB.Networking.AddMessageHandler<PlayerUpdateMessage>(Handle_PlayerUpdateMessage);
-                    UB.Networking.AddMessageHandler<TrackedItemUpdateMessage>(Handle_TrackedItemUpdateMessage);
-                    UB.Networking.AddMessageHandler<CharacterPositionMessage>(Handle_CharacterPositionMessage);
+                    UB.Networking.OnRemoteClientUpdated += Networking_OnRemoteClientUpdated;
                     clientsView.view.Moved += View_Moved;
                     clientsView.view.VisibleChanged += View_VisibleChanged;
                     
@@ -115,9 +130,7 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
                 drawTimer.Stop();
             drawTimer = null;
             if (UB?.Networking != null) {
-                UB.Networking?.RemoveMessageHandler<PlayerUpdateMessage>(Handle_PlayerUpdateMessage);
-                UB.Networking?.RemoveMessageHandler<TrackedItemUpdateMessage>(Handle_TrackedItemUpdateMessage);
-                UB.Networking?.RemoveMessageHandler<CharacterPositionMessage>(Handle_CharacterPositionMessage);
+                UB.Networking.OnRemoteClientUpdated -= Networking_OnRemoteClientUpdated;
             }
             ClearHud();
             if (clientsView != null) {
@@ -207,22 +220,9 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
             }
         }
 
-        private void Handle_PlayerUpdateMessage(MessageHeader header, PlayerUpdateMessage message) {
-            var client = UB.Networking.Clients.Values.Where(c => c.ClientId == header.SendingClientId).FirstOrDefault();
-            if (client != null) {
-                DrawClient(client);
-            }
-        }
+        private void Networking_OnRemoteClientUpdated(object sender, Networking.RemoteClientEventArgs e) {
+            var client = UB.Networking.Clients.Where(c => c.Id == e.ClientData.Id).FirstOrDefault();
 
-        private void Handle_TrackedItemUpdateMessage(MessageHeader header, TrackedItemUpdateMessage message) {
-            var client = UB.Networking.Clients.Values.Where(c => c.ClientId == header.SendingClientId).FirstOrDefault();
-            if (client != null) {
-                DrawClient(client);
-            }
-        }
-
-        private void Handle_CharacterPositionMessage(MessageHeader header, CharacterPositionMessage message) {
-            var client = UB.Networking.Clients.Values.Where(c => c.ClientId == header.SendingClientId).FirstOrDefault();
             if (client != null) {
                 DrawClient(client);
             }
@@ -250,7 +250,7 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
 
         private int GetActiveClientCount() {
             var tag = GetActiveTab();
-            return UB.Networking.Clients.Values.Where(c => tag == "All" || c.Tags.Contains(tag)).Count();
+            return UB.Networking.Clients.Where(c => tag == "All" || c.RemoteClient?.Tags?.Contains(tag) == true).Count();
         }
 
         private void CreateTextures() {
@@ -309,9 +309,12 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
 
         private void Hud_OnRender() {
             try {
+                if (!UBService.IsInGame)
+                    return;
+
                 var tag = GetActiveTab();
-                clients = UB.Networking.Clients.Values.Where((c) => {
-                    return (tag == "All" || c.Tags.Contains(tag)) && c.LastUpdate != DateTime.MinValue;
+                var clients = this.clients.Where((c) => {
+                    return (tag == "All" || c.RemoteClient?.Tags?.Contains(tag) == true); // && c.LastUpdate != DateTime.MinValue;
                 }).Select(c => c);
                 if (GetActiveClientCount() != lastClientCount)
                     CreateHud();
@@ -322,19 +325,15 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
                 hud.Texture.Fill(new Rectangle(0, 0, hud.Texture.Width, hud.Texture.Height), Color.Transparent);
                 var offset = 0;
                 foreach (var client in clients) {
-                    if (tag == "All" || client.Tags.Contains(tag)) {
-                        DrawClientTextures(hud.Texture, offset, client);
-                        offset += ROW_SIZE;
-                    }
+                    DrawClientTextures(hud.Texture, offset, client);
+                    offset += ROW_SIZE;
                 }
                 try {
                     hud.Texture.BeginText("Arial", 7, 100, false, 1, 255);
                     offset = 0;
                     foreach (var client in clients) {
-                        if (tag == "All" || client.Tags.Contains(tag)) {
-                            DrawClientText(hud.Texture, offset, client);
-                            offset += ROW_SIZE;
-                        }
+                        DrawClientText(hud.Texture, offset, client);
+                        offset += ROW_SIZE;
                     }
                 }
                 catch (Exception ex) { Logger.LogException(ex); }
@@ -347,10 +346,8 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
                     //DrawClientTextSmall(hud.Texture, 0, null);
                     offset = 0;
                     foreach (var client in clients) {
-                        if (tag == "All" || client.Tags.Contains(tag)) {
-                            DrawClientTextSmall(hud.Texture, offset, client);
-                            offset += ROW_SIZE;
-                        }
+                        DrawClientTextSmall(hud.Texture, offset, client);
+                        offset += ROW_SIZE;
                     }
                 }
                 catch (Exception ex) { Logger.LogException(ex); }
@@ -364,12 +361,12 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
             }
         }
 
-        private void DrawClient(ClientInfo client) {
+        private void DrawClient(ClientData client) {
             //todo: draw only the updated client..
             //hud.Render();
         }
 
-        private void DrawClientTextures(DxTexture texture, int offset, ClientInfo client) {
+        private void DrawClientTextures(DxTexture texture, int offset, ClientData client) {
             DrawCharNameBackground(texture, offset, client);
             if (UB.Core.CharacterFilter.Id != client.PlayerId) { // Don't draw arrow for self
                 DrawRangeIndicator(texture, offset, client);
@@ -377,7 +374,7 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
             }
         }
 
-        private void DrawRangeIndicator(DxTexture texture, int offset, ClientInfo client) {
+        private void DrawRangeIndicator(DxTexture texture, int offset, ClientData client) {
             var distance = client.DistanceTo();
             var me = UB.Core.CharacterFilter.Id;
             var ew = Geometry.LandblockToEW((uint)PhysicsObject.GetLandcell(me), PhysicsObject.GetPosition(me).X);
@@ -397,7 +394,7 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
             hud.Texture.DrawTextureWithTransform(arrowTexture, transform, tint.ToArgb());
         }
 
-        private void DrawCharTrackedItems(DxTexture texture, int offset, ClientInfo client) {
+        private void DrawCharTrackedItems(DxTexture texture, int offset, ClientData client) {
             var x = CHAR_NAME_WIDTH + PADDING + RANGE_WIDTH;
             if (client == null)
                 return;
@@ -408,7 +405,7 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
             }
         }
 
-        private void DrawCharNameBackground(DxTexture texture, int offset, ClientInfo client) {
+        private void DrawCharNameBackground(DxTexture texture, int offset, ClientData client) {
             var opacity = 180;
             var area = new Rectangle(1, offset + 1, HUD_WIDTH - 2, ROW_SIZE - 2);
             var topLeft = new PointF(area.Left, area.Top);
@@ -434,10 +431,10 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
             texture.DrawLine(bottomLeft, topLeft, Color.Black, 1);
         }
 
-        private void DrawClientText(DxTexture texture, int offset, ClientInfo client) {
+        private void DrawClientText(DxTexture texture, int offset, ClientData client) {
             var area = new Rectangle(0, offset, HUD_WIDTH, ROW_SIZE);
             // character name in the vitals area
-            var characterName = client == null ? UB.Core.CharacterFilter.Name : $"{client.Name}";
+            var characterName = client == null ? UB.Core.CharacterFilter.Name : $"{client.Id} {client.Name}";
             texture.WriteText(characterName, Color.White, VirindiViewService.WriteTextFormats.SingleLine, new Rectangle(area.X + 2, area.Y + 1, CHAR_NAME_WIDTH, ROW_SIZE));
             // health % in the vitals area
             texture.WriteText($"{((double)client.CurrentHealth / Math.Max(client.MaxHealth, 1)) * 100:N0}%", Color.White, VirindiViewService.WriteTextFormats.Right, new Rectangle(area.X + 2, area.Y + 1, CHAR_NAME_WIDTH, ROW_SIZE));
@@ -461,7 +458,7 @@ Holding ctrl allows you to click and drag the hud to reposition it, while the wi
             }
         }
 
-        private void DrawClientTextSmall(DxTexture texture, int offset, ClientInfo client) {
+        private void DrawClientTextSmall(DxTexture texture, int offset, ClientData client) {
             var area = new Rectangle(0, offset, HUD_WIDTH, ROW_SIZE);
             // stamina % in the vitals area
             texture.WriteText($"{((double)client.CurrentStamina / Math.Max(client.MaxStamina, 1)) * 100:N0}%", Color.FromArgb(255, 0, 0, 0), VirindiViewService.WriteTextFormats.SingleLine, new Rectangle(area.X + 2, area.Y + HEALTH_BAR_HEIGHT, CHAR_NAME_WIDTH, ROW_SIZE));

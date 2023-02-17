@@ -8,6 +8,10 @@ using System.Timers;
 using VirindiViewService.Controls;
 using UtilityBelt.Service.Lib.Settings;
 using UtilityBelt.Lib.Networking;
+using UtilityBelt.Lib.Networking.Messages;
+using UtilityBelt.Service;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using UtilityBelt.Networking;
 
 namespace UtilityBelt.Views {
     public class NetworkClientsView : BaseView {
@@ -18,7 +22,6 @@ namespace UtilityBelt.Views {
         internal HudButton All_UseSelected;
         internal HudTextBox All_Delay;
         private DateTime lastDraw = DateTime.MinValue;
-        private string currentTab = "All";
 
         public class TabInfo {
             public HudFixedLayout Layout { get; set; }
@@ -31,7 +34,7 @@ namespace UtilityBelt.Views {
             public HudFixedLayout Layout { get; set; }
             public List<HudControl> Children { get; } = new List<HudControl>();
 
-            public ClientInfo Client { get; set; } = null;
+            public ClientData Client { get; set; } = null;
 
             public string CharacterName {
                 get {
@@ -104,8 +107,8 @@ namespace UtilityBelt.Views {
             return int.TryParse(All_Delay.Text, out delay);
         }
 
-        private IEnumerable<ClientInfo> GetActiveClients() {
-            return UB.Networking.Clients.Values.Select(c => c).Where(c => currentTab == "All" || c.Tags.Contains(currentTab));
+        private IEnumerable<ClientData> GetActiveClients() {
+            return UB.Networking.Clients.Select(c => c).Where(c => UB.NetworkUI.SelectedTag == "All" || c.RemoteClient?.Tags?.Contains(UB.NetworkUI.SelectedTag) == true);
         }
 
         private void All_UseSelected_Hit(object sender, EventArgs e) {
@@ -117,7 +120,22 @@ namespace UtilityBelt.Views {
                 Logger.Error($"Unable to parse client delay to int: {All_Delay.Text}");
             }
             var cmd = $"/ub mexec actiontryuseitem[wobjectfindbyid[{UB.Core.Actions.CurrentSelection}]]";
-            UB.Networking.DoBroadcast(GetActiveClients(), cmd, delay);
+
+
+            Logger.WriteToChat($"Broadcasting command to {(UB.NetworkUI.SelectedTag == "All" ? "all clients" : $"clients with tag '{UB.NetworkUI.SelectedTag}'")}: \"{cmd}\" with delay inbetween of {delay}ms");
+            var currentDelay = 0;
+            foreach (var client in GetActiveClients().ToList()) {
+                currentDelay += delay;
+                UB.Networking.TypedBroadcast<CommandBroadcastResponse, CommandBroadcastRequest>(new CommandBroadcastRequest(cmd, currentDelay), new ClientFilter(client.Id),
+                    (sendingClientId, currentRequest, totalRequests, success, response) => {
+                        if (sendingClientId > 0) {
+                            var remote = GetActiveClients().FirstOrDefault(c => c.Id == sendingClientId);
+                            if (remote is not null) {
+                                Logger.WriteToChat($"{remote} ack'd command broadcast request. ({cmd} /// {delay}ms)");
+                            }
+                        }
+                    });
+            }
         }
 
         private void All_FollowMe_Hit(object sender, EventArgs e) {
@@ -125,7 +143,20 @@ namespace UtilityBelt.Views {
                 Logger.Error($"Unable to parse client delay to int: {All_Delay.Text}");
             }
             var cmd = $"/ub follow {UB.Core.CharacterFilter.Name}";
-            UB.Networking.DoBroadcast(GetActiveClients(), cmd, delay);
+            Logger.WriteToChat($"Broadcasting command to {(UB.NetworkUI.SelectedTag == "All" ? "all clients" : $"clients with tag '{UB.NetworkUI.SelectedTag}'")}: \"{cmd}\" with delay inbetween of {delay}ms");
+            var currentDelay = 0;
+            foreach (var client in GetActiveClients().ToList()) {
+                currentDelay += delay;
+                UB.Networking.TypedBroadcast<CommandBroadcastResponse, CommandBroadcastRequest>(new CommandBroadcastRequest(cmd, currentDelay), new ClientFilter(client.Id),
+                    (sendingClientId, currentRequest, totalRequests, success, response) => {
+                        if (sendingClientId > 0) {
+                            var remote = GetActiveClients().FirstOrDefault(c => c.Id == sendingClientId);
+                            if (remote is not null) {
+                                Logger.WriteToChat($"{remote} ack'd command broadcast request. ({cmd} /// {delay}ms)");
+                            }
+                        }
+                    });
+            }
         }
 
         private void View_VisibleChanged(object sender, EventArgs e) {
@@ -142,8 +173,8 @@ namespace UtilityBelt.Views {
 
         private void UpdateTabs() {
             if (NotebookTags != null) {
-                currentTab = NotebookTags[NotebookTags.CurrentTab].Name;
                 tabs.Clear();
+                NotebookTags.OpenTabChange -= NotebookTags_OpenTabChange;
                 NotebookTags.Dispose();
                 NotebookTags = null;
             }
@@ -151,7 +182,9 @@ namespace UtilityBelt.Views {
             NotebookTags = new HudTabView();
             TabLayout.AddControl(NotebookTags, new Rectangle(0, 0, 600, 800));
 
-            var tags = UB.Networking.Tags.Value.ToList();
+            NotebookTags.OpenTabChange += NotebookTags_OpenTabChange;
+
+            var tags = UBService.UBNet.UBNetClient.Tags.ToList();
             tags.Insert(0, "All");
             foreach (var tag in tags) {
                 var parent = new HudFixedLayout();
@@ -160,9 +193,13 @@ namespace UtilityBelt.Views {
                 tabs.Add(tag, new TabInfo() {
                     Layout = parent
                 });
-                if (!string.IsNullOrEmpty(currentTab) && currentTab == tag)
+                if (!string.IsNullOrEmpty(UB.NetworkUI.SelectedTag) && UB.NetworkUI.SelectedTag == tag)
                     NotebookTags.CurrentTab = NotebookTags.TabCount - 1;
             }
+        }
+
+        private void NotebookTags_OpenTabChange(object sender, EventArgs e) {
+            UB.NetworkUI.SelectedTag.Value = NotebookTags[NotebookTags.CurrentTab].Name;
         }
 
         private void WindowPosition_Changed(object sender, SettingChangedEventArgs e) {
@@ -177,8 +214,8 @@ namespace UtilityBelt.Views {
         protected override void Dispose(bool disposing) {
             UB.NetworkUI.WindowPositionX.Changed -= NetClientWindowPosition_Changed;
             UB.NetworkUI.WindowPositionY.Changed -= NetClientWindowPosition_Changed;
-            UB.Networking.Tags.Changed -= Tags_Changed;
             view.VisibleChanged -= View_VisibleChanged;
+            UB.Networking.Tags.Changed -= Tags_Changed;
             base.Dispose(disposing);
         }
     }
