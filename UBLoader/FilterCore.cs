@@ -132,7 +132,6 @@ namespace UBLoader {
 
         }
         public static AccountSettings Account = new AccountSettings();
-        private ClientInfoMessage _message;
         #endregion Account Settings
 
         public FilterCore() {
@@ -157,8 +156,6 @@ namespace UBLoader {
                     return setting.FieldInfo.DeclaringType == typeof(GlobalSettings);
                 });
                 SettingsGlobal.Load();
-
-                _message = new UtilityBelt.Networking.Messages.ClientInfoMessage();
 
                 if (Global.UploadExceptions) {
                     //Exceptionless.ExceptionlessClient.Current.Configuration.IncludePrivateInformation = false;

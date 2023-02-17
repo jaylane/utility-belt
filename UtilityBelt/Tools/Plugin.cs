@@ -22,6 +22,7 @@ using Hellosam.Net.Collections;
 using System.Diagnostics;
 using UtilityBelt.Common.Enums;
 using ChatMessageType = UtilityBelt.Lib.Settings.ChatMessageType;
+using AcClient;
 
 namespace UtilityBelt.Tools {
     public class DelayedCommand {
@@ -186,6 +187,34 @@ namespace UtilityBelt.Tools {
                 help += "}\nFor help with a specific command, use `/ub help [command]`";
 
                 Logger.WriteToChat(help);
+            }
+        }
+
+        #endregion
+
+        byte repeat = 0;
+
+        #region /ub test
+        [Summary("test")]
+        [Usage("/ubtest")]
+        [Example("/ub test", "test")]
+        [CommandPattern("test", @"^(?<Command>\S+)?$")]
+        unsafe public void Test(string command, Match args) {
+            var argCommand = args.Groups["Command"].Value;
+           
+            var amt = (float)(new Random()).NextDouble();
+
+            CM_Character.Event_PlayerOptionChangedEvent(PlayerOption.AutoRepeatAttack_PlayerOption, repeat);
+            CM_Character.SendNotice_ReloadOptions();
+            repeat = repeat == 0 ? (byte)1 : (byte)0;
+
+            if (CoreManager.Current.Actions.CombatMode == CombatState.Melee) {
+                CM_Combat.SendNotice_DesiredAttackPowerChanged(amt);
+                CM_Combat.Event_TargetedMeleeAttack((uint)0x812208E1, ATTACK_HEIGHT.MEDIUM_ATTACK_HEIGHT, amt);
+            }
+            else if (CoreManager.Current.Actions.CombatMode == CombatState.Missile) {
+                CM_Combat.SendNotice_DesiredAttackPowerChanged(amt);
+                CM_Combat.Event_TargetedMissileAttack((uint)0x812208E1, ATTACK_HEIGHT.MEDIUM_ATTACK_HEIGHT, amt);
             }
         }
 

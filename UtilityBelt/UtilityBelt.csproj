@@ -854,11 +854,10 @@
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="TaskParallelLibrary" Version="1.0.2856.0" />
     <PackageReference Include="UtilityBelt.Common" Version="1.0.7" />
-    <PackageReference Include="UtilityBelt.Networking" Version="1.0.4" />
-    <PackageReference Include="UtilityBelt.Service" Version="2.0.17">
+    <PackageReference Include="UtilityBelt.Networking" Version="2.0.1" />
+    <PackageReference Include="UtilityBelt.Service" Version="2.0.21">
       <ExcludeAssets>runtime; build;</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Websocket.Client" Version="4.4.43" />
   </ItemGroup>
   <ItemGroup>
     <Reference Update="System">

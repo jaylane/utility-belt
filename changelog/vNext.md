@@ -23,3 +23,4 @@
 - Add expressions: wobjectgethealthvalue, wobjectgetstaminavalue, wobjectgetmanavalue
 - Add expressions: vtmacroenabled[]
 - Added iteminfo settings to describe on mouse clicks and misc fixes
+- Updated to support new ubnet
