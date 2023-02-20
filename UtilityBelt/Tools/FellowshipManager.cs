@@ -350,7 +350,7 @@ namespace UtilityBelt.Tools {
         [Example("getfellowid[0]", "Returns the id of the first Fellowship Member")]
         public unsafe object GetfellowID(double value) {
             if (value < MemberCount)
-                return (*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0._fellowship_table.GetByIndex((int)value)->_key;
+                return (double)(*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0._fellowship_table.GetByIndex((int)value)->_key;
             return 0;
         }
         #endregion
@@ -422,7 +422,6 @@ namespace UtilityBelt.Tools {
                 List<string> members = new List<string>();
                 var table = (*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0._fellowship_table;
                 for (int i = 0; i < MemberCount; i++) members.Add(table[i]->_data._name.ToString());
-                members.Sort();
                 foreach (var member in members)
                     list.Items.Add(member);
             }
@@ -438,7 +437,7 @@ namespace UtilityBelt.Tools {
             var list = new ExpressionList();
             if (MemberCount > 0) {
                 var table = (*ClientFellowshipSystem.s_pFellowshipSystem)->m_pFellowship->a0._fellowship_table;
-                for (int i = 0; i < MemberCount; i++) list.Items.Add(table[i]->_key);
+                for (int i = 0; i < MemberCount; i++) list.Items.Add((double)table[i]->_key);
             }
             return list;
         }
