@@ -176,8 +176,13 @@ namespace UtilityBelt.Tools {
 
         private void Core_ItemSelected(object sender, ItemSelectedEventArgs e) {
             try {
-                if (!ShowDoorInfo && UB.Core.WorldFilter[e.ItemGuid].ObjectClass == ObjectClass.Door) return;
-                if (!ShowNpcInfo && UB.Core.WorldFilter[e.ItemGuid].ObjectClass == ObjectClass.Npc) return;
+                if (UB.Core.Actions.IsValidObject(e.ItemGuid)) {
+                    if (!ShowDoorInfo && UB.Core.WorldFilter[e.ItemGuid].ObjectClass == ObjectClass.Door) return;
+                    if (!ShowNpcInfo && UB.Core.WorldFilter[e.ItemGuid].ObjectClass == ObjectClass.Npc) return;
+                }
+                else {
+                    return;
+                }
 
                 if (((DescribeOnLeftClick.Value || DescribeOnRightClick.Value) && mouseClicked) || DescribeOnSelect) {
                     if (UB.Core.Actions.IsValidObject(e.ItemGuid)) {
@@ -308,7 +313,7 @@ namespace UtilityBelt.Tools {
         public override string ToString() {
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
-            if (wo.Values((LongValueKey)45, 0) > 0 || wo.Values((LongValueKey)353) > 0) {
+            if ((wo.Values((LongValueKey)45, 0) > 0 || wo.Values((LongValueKey)353) > 0) && wo.ObjectClass != ObjectClass.Armor && wo.ObjectClass != ObjectClass.Clothing ) {
                 sb.Append(" (");
                 if (wo.Values((LongValueKey)45, 0) > 0)
                     sb.Append((DamageTypes)wo.Values((LongValueKey)45, 0));
@@ -704,8 +709,6 @@ namespace UtilityBelt.Tools {
                     bool first = true;
                     if (dmg > 0) { sb.Append("D " + dmg.ToString()); first = false; }
                     if (dmgRes > 0) { if (!first) sb.Append(", "); sb.Append("DR " + dmgRes.ToString()); first = false; }
-                    if (critDmg > 0) { if (!first) sb.Append(", "); sb.Append("CD " + critDmg.ToString()); first = false; }
-                    if (critDmgRes > 0) { if (!first) sb.Append(", "); sb.Append("CDR " + critDmgRes.ToString()); first = false; }
                     if (critDmg > 0) { if (!first) sb.Append(", "); sb.Append("CD " + critDmg.ToString()); first = false; }
                     if (critDmgRes > 0) { if (!first) sb.Append(", "); sb.Append("CDR " + critDmgRes.ToString()); first = false; }
                     if (healBoost > 0) { if (!first) sb.Append(", "); sb.Append("HB " + healBoost.ToString()); first = false; }
