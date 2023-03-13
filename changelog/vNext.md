@@ -24,4 +24,5 @@
 - Add expressions: vtmacroenabled[]
 - Added iteminfo settings to describe on mouse clicks and misc fixes
 - Updated to support new ubnet
+- Fix autotinker bug causing it to randomly stop
 - Misc iteminfo fixes
