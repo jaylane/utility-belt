@@ -273,7 +273,10 @@ namespace UtilityBelt.Tools {
                                     //Logger.Debug("*********STARTING TO LOOT************");
                                     startTime = DateTime.UtcNow;
                                     targetContainerID = containerID;
-                                    if (runType != runtype.UI) looterState = looterstate.Open;
+                                    if (runType != runtype.UI && looterState != looterstate.Looting) {
+                                        //Logger.WriteToChat("runType != runtype.UI");
+                                        looterState = looterstate.Open;
+                                    }
 
                                     int woid = 0;
                                     for (int i = 0; i < itemCount; i++) { //add world object id's within chest to itemstoid list
@@ -306,6 +309,7 @@ namespace UtilityBelt.Tools {
                                 //    looterState = looterstate.Unlocked;
                                 //}
                                 if (e.Message.Value<int>("unknown") == 1201) {
+                                    //Logger.WriteToChat("item_usedone");
                                     if (UB.Core.Actions.OpenedContainer == targetContainerID) {
                                         looterState = looterstate.Open;
                                     }
@@ -334,7 +338,7 @@ namespace UtilityBelt.Tools {
                     case 0xF750: //chest unlocked/locked (147/148)
                         int lockedObjID = e.Message.Value<int>("object");
                         int lockedObjIDEffect = e.Message.Value<int>("effect");
-                        if (lockedObjID == targetContainerID) {
+                        if (UbOwnedContainer && lockedObjID == targetContainerID) {
                             if (lockedObjIDEffect == 148) {
                                 if (looterState == looterstate.Closing) {
                                     looterState = looterstate.Closed;
@@ -345,7 +349,7 @@ namespace UtilityBelt.Tools {
 
                             }
                             else if (lockedObjIDEffect == 147) {
-                                Logger.WriteToChat("Chest Unlocked");
+                                //Logger.WriteToChat("Chest Unlocked");
                                 looterState = looterstate.Unlocked;
                             }
                         }
@@ -385,6 +389,8 @@ namespace UtilityBelt.Tools {
 
                 containerItems.Clear();
                 containerItemsList.Clear();
+                looterState = looterstate.Done;
+                lastLooterState = looterstate.Done;
 
                 UbOwnedContainer = false;
                 lootAttemptCount = 0;
@@ -727,12 +733,12 @@ namespace UtilityBelt.Tools {
         private void BaseTimer_Timeout(Timer Source) {
             try {
 
-                //if (lastOpenContainer != UB.Core.Actions.OpenedContainer) {
-                //    Logger.WriteToChat("lastOpenContainer changed from " + lastOpenContainer + " to " + UB.Core.Actions.OpenedContainer);
-                //    
-                //    lastOpenContainer = UB.Core.Actions.OpenedContainer;
-                //}
-                //
+                if (lastOpenContainer != UB.Core.Actions.OpenedContainer) {
+                    //Logger.WriteToChat("lastOpenContainer changed from " + lastOpenContainer + " to " + UB.Core.Actions.OpenedContainer);
+                    
+                    lastOpenContainer = UB.Core.Actions.OpenedContainer;
+                }
+                
                 if (lastLooterState != looterState) {
                     //Logger.WriteToChat("looterState changed from " + lastLooterState + " to " + looterState);
                     first = true;
