@@ -895,35 +895,43 @@ The Rend All button will automatically do the following:
         }
         
         private void UpdateTinkList(int tinkCount, WorldObject targetItem, WorldObject targetSalvage, double successChance) {
-            HudList.HudListRowAccessor newTinkRow = AutoTinkerList.AddRow();
-            ((HudStaticText)newTinkRow[0]).Text = tinkCount.ToString();
-            ((HudStaticText)newTinkRow[1]).Text = Util.GetObjectName(targetItem.Id).ToString();
-            ((HudStaticText)newTinkRow[2]).Text = Util.GetObjectName(targetSalvage.Id).Replace(" Salvage","") + "(" + Math.Round(targetSalvage.Values(DoubleValueKey.SalvageWorkmanship),2, MidpointRounding.AwayFromZero) + ") " ;
-            ((HudStaticText)newTinkRow[3]).Text = successChance.ToString("P");
-            ((HudStaticText)newTinkRow[4]).Text = targetSalvage.Id.ToString();
-            ((HudStaticText)newTinkRow[5]).Text = targetItem.Id.ToString();
+            try { 
+                HudList.HudListRowAccessor newTinkRow = AutoTinkerList.AddRow();
+                ((HudStaticText)newTinkRow[0]).Text = tinkCount.ToString();
+                ((HudStaticText)newTinkRow[1]).Text = Util.GetObjectName(targetItem.Id).ToString();
+                ((HudStaticText)newTinkRow[2]).Text = Util.GetObjectName(targetSalvage.Id).Replace(" Salvage","") + "(" + Math.Round(targetSalvage.Values(DoubleValueKey.SalvageWorkmanship),2, MidpointRounding.AwayFromZero) + ") " ;
+                ((HudStaticText)newTinkRow[3]).Text = successChance.ToString("P");
+                ((HudStaticText)newTinkRow[4]).Text = targetSalvage.Id.ToString();
+                ((HudStaticText)newTinkRow[5]).Text = targetItem.Id.ToString();
+                }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void UpdateAutoImbueList(int tinkCount, WorldObject targetItem, WorldObject targetSalvage, double successChance) {
-            HudList.HudListRowAccessor newTinkRow = AutoImbueList.AddRow();
-            ((HudStaticText)newTinkRow[0]).Text = tinkCount.ToString();
-            ((HudStaticText)newTinkRow[1]).Text = Util.GetObjectName(targetItem.Id).ToString();
-            ((HudStaticText)newTinkRow[2]).Text = Util.GetObjectName(targetSalvage.Id).Replace(" Salvage", "") + "(" + Math.Round(targetSalvage.Values(DoubleValueKey.SalvageWorkmanship), 2, MidpointRounding.AwayFromZero) + ") ";
-            ((HudStaticText)newTinkRow[3]).Text = successChance.ToString("P");
-            ((HudStaticText)newTinkRow[4]).Text = targetSalvage.Id.ToString();
-            ((HudStaticText)newTinkRow[5]).Text = targetItem.Id.ToString();
+            try { 
+                HudList.HudListRowAccessor newTinkRow = AutoImbueList.AddRow();
+                ((HudStaticText)newTinkRow[0]).Text = tinkCount.ToString();
+                ((HudStaticText)newTinkRow[1]).Text = Util.GetObjectName(targetItem.Id).ToString();
+                ((HudStaticText)newTinkRow[2]).Text = Util.GetObjectName(targetSalvage.Id).Replace(" Salvage", "") + "(" + Math.Round(targetSalvage.Values(DoubleValueKey.SalvageWorkmanship), 2, MidpointRounding.AwayFromZero) + ") ";
+                ((HudStaticText)newTinkRow[3]).Text = successChance.ToString("P");
+                ((HudStaticText)newTinkRow[4]).Text = targetSalvage.Id.ToString();
+                ((HudStaticText)newTinkRow[5]).Text = targetItem.Id.ToString();
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
 
 
         private void UpdateUI(int inputSalvageID, bool succeeded) {
+            try {
             //Logger.WriteToChat("updating UI");
             if (AutoTinkerList.RowCount > 0) {
                 for (int i = 0; i <= AutoTinkerList.RowCount; i++) {
                     HudList.HudListRowAccessor autoTinkerListRow = AutoTinkerList[i];
                     HudStaticText salvageID = (HudStaticText)autoTinkerListRow[4];
                     int.TryParse(salvageID.Text, out int salvageIdInt);
-                    if (salvageIdInt == inputSalvageID) {
+                    Logger.Debug("salvageID: " + salvageID.Text.ToString() + " ---- " + "inputSalvageID: " + inputSalvageID.ToString());
+                        if (salvageIdInt == inputSalvageID) {
                         for (int c = 0; c <= AutoTinkerList.ColumnCount - 2; c++) {
                             HudStaticText col = (HudStaticText)autoTinkerListRow[c];
                             if (succeeded) {
@@ -955,7 +963,9 @@ The Rend All button will automatically do the following:
                         break;
                     }
                 }
+                }
             }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void SetTinkerSkills() {

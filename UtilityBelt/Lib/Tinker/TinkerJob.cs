@@ -30,6 +30,7 @@ namespace UtilityBelt.Lib.Tinker {
         WorldObject tinkeringSalvage;
         string tinkeringSalvageName;
         double tinkeringSalvageWorkmanship;
+        int tinkeringSalvageId = 0;
         private int tinkerCount = -1;
         TinkerJob activeJob;
         int lastSkill = 0;
@@ -105,7 +106,8 @@ namespace UtilityBelt.Lib.Tinker {
                 }
                 tinkeringItemName = string.Format("{0} {1}", material.Name.Trim(), tinkeringItemName);
                 tinkeringSalvage = CoreManager.Current.WorldFilter[nextSalvage];
-                tinkeringSalvageName = Util.GetObjectName(tinkeringSalvage.Id).Replace("Salvaged ", "").Replace("Salvage ", "").Replace("Salvage", "").Replace("(100)", "").Trim();
+                tinkeringSalvageId = tinkeringSalvage.Id;
+                tinkeringSalvageName = Util.GetObjectName(tinkeringSalvageId).Replace("Salvaged ", "").Replace("Salvage ", "").Replace("Salvage", "").Replace("(100)", "").Trim();
                 tinkeringSalvageWorkmanship = tinkeringSalvage.Values(DoubleValueKey.SalvageWorkmanship);
                 CoreManager.Current.Actions.SelectItem(nextSalvage);
 
@@ -139,6 +141,7 @@ namespace UtilityBelt.Lib.Tinker {
             tinkeringSalvage = null;
             tinkeringSalvageName = "";
             tinkeringSalvageWorkmanship = 0;
+            tinkeringSalvageId = 0;
             salvageToBeApplied.Clear();
             salvageApplied.Clear();
             itemID = 0;
@@ -170,8 +173,8 @@ namespace UtilityBelt.Lib.Tinker {
                         string chatcapItem = match.Groups["item"].Value;
                         if (tinkeringItemName == chatcapItem && tinkeringSalvageWorkmanship.ToString("0.00") == chatcapWK.ToString() && chatcapSalvage.Trim() == tinkeringSalvageName.Trim()) {
                             Logger.Debug(result + ": " + chatcapSalvage + " " + chatcapWK + " on " + chatcapItem);
-                            Logger.Debug("sending tinkerjob changed event " + tinkeringSalvage.Id);
-                            SendTinkerJobEvent(tinkeringSalvage.Id, true);
+                            Logger.Debug("sending tinkerjob changed event " + tinkeringSalvageId);
+                            SendTinkerJobEvent(tinkeringSalvageId, true);
                             tinking = false;
                             if (activeJob.salvageToBeApplied.Count > 0) {
                                 DoNextTink();
@@ -190,8 +193,8 @@ namespace UtilityBelt.Lib.Tinker {
                         string result = "foolproof success";
                         if (chatcapSalvage.ToLower().Replace("foolproof", "").Trim() == tinkeringSalvageName.ToLower().Replace("foolproof", "").Trim()) {
                             Logger.Debug(result + ": " + chatcapSalvage + " on " + tinkeringItemName);
-                            Logger.Debug("sending tinkerjob changed event " + tinkeringSalvage.Id);
-                            SendTinkerJobEvent(tinkeringSalvage.Id, true);
+                            Logger.Debug("sending tinkerjob changed event " + tinkeringSalvageId);
+                            SendTinkerJobEvent(tinkeringSalvageId, true);
                             tinking = false;
                             if (activeJob.salvageToBeApplied.Count > 0) {
                                 DoNextTink();
@@ -214,17 +217,11 @@ namespace UtilityBelt.Lib.Tinker {
                         string chatcapWK = match.Groups["workmanship"].Value;
                         string chatcapItem = match.Groups["item"].Value;
                         if (tinkeringItemName == chatcapItem && tinkeringSalvageWorkmanship.ToString("0.00") == chatcapWK.ToString() && chatcapSalvage == tinkeringSalvageName.Trim()) {
-                            Logger.Debug(result + ": " + chatcapSalvage + " " + chatcapWK + " on " + chatcapItem);
-                            SendTinkerJobEvent(tinkeringSalvage.Id, false);
-                            //Logger.WriteToChat("failed job and have " + activeJob.salvageToBeApplied.Count() + " remaining");
+                            SendTinkerJobEvent(tinkeringSalvageId, false);
                             Logger.Debug("done tinkering item");
                             TinkerJobFinished?.Invoke(this, EventArgs.Empty);
-                            //Stop();
                         }
                         else {
-                            //Logger.WriteToChat(chatcapSalvage.ToString());
-                            //Logger.WriteToChat(chatcapWK.ToString());
-                            //Logger.WriteToChat(chatcapItem.ToString());
                             Logger.Debug("AutoTinker: did not match failure " + "chat salvageWK:  " + chatcapWK.ToString() + " real salvageWK: " + tinkeringSalvageWorkmanship.ToString("0.00") + " chat item name: " + chatcapItem + " real item name: " + tinkeringItemName + "chat salv name: " + chatcapSalvage + "real salv name: " + tinkeringSalvageName.Trim());
                         }
                     }
