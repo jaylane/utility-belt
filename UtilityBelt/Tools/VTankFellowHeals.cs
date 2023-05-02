@@ -20,6 +20,7 @@ using Newtonsoft.Json;
 using UtilityBelt.Common.Enums;
 using AcClient;
 using static UtilityBelt.Tools.Networking;
+using ACE.DatLoader.Entity;
 
 namespace UtilityBelt.Tools {
     [Name("VTankFellowHeals")]
@@ -35,7 +36,7 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
         private DateTime lastCastSuccess = DateTime.MinValue;
         private bool isRunning;
         private bool needsVitalUpdate = true;
-        private TimeSpan vitalReportInterval = TimeSpan.FromMilliseconds(50);
+        private TimeSpan vitalReportInterval = TimeSpan.FromMilliseconds(150);
         private DateTime lastTrackedItemUpdate = DateTime.MinValue;
         private TimeSpan trackedItemUpdateInterval = TimeSpan.FromSeconds(5);
         private DateTime lastPositionUpdate = DateTime.MinValue;
@@ -110,8 +111,22 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
 
         private void Handle_CastSuccess(uint sendingClientId, CastSuccessMessage message) {
             try {
-                if (sendingClientId == UBService.UBNet.UBNetClient?.Id)
+                if (sendingClientId == UBService.UBNet.UBNetClient?.Id || !UB.Core.Actions.IsValidObject(message.Target))
                     return;
+                /*
+                string tWo = "Unknown";
+                if (UB.Core.Actions.IsValidObject(message.Target)) {
+                    tWo = UB.Core.WorldFilter[message.Target].Name;
+                }
+
+                var spell = Spells.GetSpell(message.SpellId);
+                string spellName = "Unknown";
+                if (spell != null) {
+                    spellName = spell.Name;
+                }
+
+                Logger.Debug($"vTank.LogSpellCast: Target: 0x{message.Target:X8} ({tWo}) // Spell: 0x{message.SpellId:X8} ({spellName}) // Duration: {message.Duration}");
+                */
                 UBHelper.vTank.Instance?.LogSpellCast(message.Target, message.SpellId, message.Duration);
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -119,8 +134,21 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
 
         private void Handle_CastAttempt(uint sendingClientId, CastAttemptMessage message) {
             try {
-                if (sendingClientId == UBService.UBNet.UBNetClient?.Id)
+                if (sendingClientId == UBService.UBNet.UBNetClient?.Id || !UB.Core.Actions.IsValidObject(message.Target))
                     return;
+                /*
+                string tWo = "Unknown";
+                if (UB.Core.Actions.IsValidObject(message.Target)) {
+                    tWo = UB.Core.WorldFilter[message.Target].Name;
+                }
+
+                var spell = Spells.GetSpell(message.SpellId);
+                string spellName = "Unknown";
+                if (spell != null) {
+                    spellName = spell.Name;
+                }
+                Logger.Debug($"vTank.LogCastAttempt: Target: 0x{message.Target:X8} ({tWo}) // Spell: 0x{message.SpellId:X8} ({spellName}) // Skill: {message.Skill}");
+                */
                 UBHelper.vTank.Instance?.LogCastAttempt(message.SpellId, message.Target, message.Skill);
             }
             catch (Exception ex) { Logger.LogException(ex); }

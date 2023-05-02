@@ -24,5 +24,6 @@
 - Add expressions: vtmacroenabled[]
 - Added iteminfo settings to describe on mouse clicks and misc fixes
 - Updated to support new ubnet
+- Fix bug where debuffs for invalid targets forwarded to vtank would cause it to stop the macro
 - Fix autotinker bug causing it to randomly stop
 - Misc iteminfo fixes
