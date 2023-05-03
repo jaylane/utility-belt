@@ -86,7 +86,7 @@ namespace UtilityBelt.Tools {
             int currentDelay = 0;
             foreach (var client in Clients.ToList()) {
                 currentDelay += delay;
-                Logger.WriteToChat($"Sending {client.Name}: \"{command}\" with delay inbetween of {currentDelay}ms");
+                Logger.WriteToChat($"Sending {client.Name}: \"{command}\" with delay inbetween of {delay}ms");
                 TypedBroadcast<CommandBroadcastResponse, CommandBroadcastRequest>(new CommandBroadcastRequest(command, currentDelay), new ClientFilter(client.Id),
                     (sendingClientId, currentRequest, totalRequests, success, response) => {
                         if (sendingClientId > 0) {
