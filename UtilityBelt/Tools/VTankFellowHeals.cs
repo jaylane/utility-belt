@@ -50,6 +50,8 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
         private VitalUpdateMessage lastVitals;
         private DateTime lastClientDataUpdate;
 
+        private Queue<Action> _networkActionQueue = new Queue<Action>();
+
         public int LastAttemptedSpellId { get; private set; }
         public int LastAttemptedTarget { get; private set; }
         public int LastCastSpellId { get; private set; }
@@ -127,7 +129,9 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
 
                 Logger.Debug($"vTank.LogSpellCast: Target: 0x{message.Target:X8} ({tWo}) // Spell: 0x{message.SpellId:X8} ({spellName}) // Duration: {message.Duration}");
                 */
-                UBHelper.vTank.Instance?.LogSpellCast(message.Target, message.SpellId, message.Duration);
+                _networkActionQueue.Enqueue(() => {
+                    UBHelper.vTank.Instance?.LogSpellCast(message.Target, message.SpellId, message.Duration);
+                });
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -149,7 +153,9 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
                 }
                 Logger.Debug($"vTank.LogCastAttempt: Target: 0x{message.Target:X8} ({tWo}) // Spell: 0x{message.SpellId:X8} ({spellName}) // Skill: {message.Skill}");
                 */
-                UBHelper.vTank.Instance?.LogCastAttempt(message.SpellId, message.Target, message.Skill);
+                _networkActionQueue.Enqueue(() => {
+                    UBHelper.vTank.Instance?.LogCastAttempt(message.SpellId, message.Target, message.Skill);
+                });
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -226,6 +232,10 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
                 if (DateTime.UtcNow - lastClientDataUpdate > TimeSpan.FromSeconds(3)) {
                     lastClientDataUpdate = DateTime.UtcNow;
                     UB.Networking.SendClientData(true);
+                }
+
+                while (_networkActionQueue.Count > 0) {
+                    _networkActionQueue.Dequeue().Invoke();
                 }
             }
             catch (Exception ex) { Logger.LogException(ex); }
@@ -400,7 +410,9 @@ This allows VTank to heal/restam/remana characters on your same pc, even when th
                     maxStam = update.MaxStamina
                 };
                 try {
-                    UBHelper.vTank.Instance.HelperPlayerUpdate(helperUpdate);
+                    _networkActionQueue.Enqueue(() => {
+                        UBHelper.vTank.Instance.HelperPlayerUpdate(helperUpdate);
+                    });
                 }
                 catch { }
             }
