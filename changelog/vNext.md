@@ -27,3 +27,4 @@
 - Fix bug where debuffs for invalid targets forwarded to vtank would cause it to stop the macro
 - Fix autotinker bug causing it to randomly stop
 - Misc iteminfo fixes
+- Fix ub bc/bct command delays for remote clients
