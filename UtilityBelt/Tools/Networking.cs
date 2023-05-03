@@ -83,14 +83,16 @@ namespace UtilityBelt.Tools {
 
             Logger.WriteToChat($"Broadcasting command to all clients: \"{command}\" with delay inbetween of {delay}ms");
             UB.Plugin.AddDelayedCommand(command, 0);
+            int currentDelay = 0;
             foreach (var client in Clients.ToList()) {
-                delay += delay;
-                TypedBroadcast<CommandBroadcastResponse, CommandBroadcastRequest>(new CommandBroadcastRequest(command, delay), new ClientFilter(client.Id),
+                currentDelay += delay;
+                Logger.WriteToChat($"Sending {client.Name}: \"{command}\" with delay inbetween of {currentDelay}ms");
+                TypedBroadcast<CommandBroadcastResponse, CommandBroadcastRequest>(new CommandBroadcastRequest(command, currentDelay), new ClientFilter(client.Id),
                     (sendingClientId, currentRequest, totalRequests, success, response) => {
                         if (sendingClientId > 0) {
                             var remote = Clients.FirstOrDefault(c => c.Id == sendingClientId);
                             if (remote is not null) {
-                                WriteToChat($"{remote} ack'd command broadcast request. ({command} /// {delay}ms)");
+                                WriteToChat($"{remote} ack'd command broadcast request. ({command} /// {currentDelay}ms)");
                             }
                         }
                     });
@@ -131,14 +133,15 @@ namespace UtilityBelt.Tools {
             if (tags.Where(t => UBService.UBNet.UBNetClient.Tags.Contains(t)).Any()) {
                 UB.Plugin.AddDelayedCommand(command, 0);
             }
+            int currentDelay = 0;
             foreach (var client in Clients.Where(c => c.HasAnyTags(tags)).ToList()) {
-                delay += delay;
-                TypedBroadcast<CommandBroadcastResponse, CommandBroadcastRequest>(new CommandBroadcastRequest(command, delay), new ClientFilter(client.Id),
+                currentDelay += delay;
+                TypedBroadcast<CommandBroadcastResponse, CommandBroadcastRequest>(new CommandBroadcastRequest(command, currentDelay), new ClientFilter(client.Id),
                     (sendingClientId, currentRequest, totalRequests, success, response) => {
                         if (sendingClientId > 0) {
                             var remote = Clients.FirstOrDefault(c => c.Id == sendingClientId);
                             if (remote is not null) {
-                                //WriteToChat($"{remote} ack'd command broadcast request. ({command} /// {delay}ms)");
+                                //WriteToChat($"{remote} ack'd command broadcast request. ({command} /// {currentDelay}ms)");
                             }
                         }
                     });
