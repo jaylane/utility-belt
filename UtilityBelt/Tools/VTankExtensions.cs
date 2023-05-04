@@ -12,12 +12,17 @@ using UtilityBelt.Lib;
 using UtilityBelt.Lib.Constants;
 using VirindiViewService;
 using static uTank2.PluginCore;
+using HarmonyLib;
+using System.Reflection.Emit;
+using System.Collections.ObjectModel;
 
 namespace UtilityBelt.Tools {
     [Name("VTankExtensions")]
     public class VTankExtensions : ToolBase {
-        internal static Harmony.HarmonyInstance harmonyClassic;
-        internal static Harmony.HarmonyInstance harmonyExpressions;
+        internal static Harmony harmonyClassic;
+        internal static Harmony harmonyExtensions;
+        internal static Harmony harmonyExpressions;
+        internal static VTankExtensions instance;
 
         private struct CastReplacementInfo {
             public string Name { get; set; }
@@ -29,6 +34,8 @@ namespace UtilityBelt.Tools {
         #region config
         [Summary("Enable automatically attempting to detect classic servers and patching vtank to support old skills.")]
         public readonly Setting<bool> EnableAutoClassicPatch = new Setting<bool>(true);
+        [Summary("Additional debuffs to cast. Debuffs cast in order directly after Magic Yield.")]
+        public readonly Setting<ObservableCollection<string>> AdditionalDebuffs = new Setting<ObservableCollection<String>>(new ObservableCollection<string>());
         #endregion // config
 
         #region Commands
@@ -68,6 +75,10 @@ namespace UtilityBelt.Tools {
             else {
                 UBHelper.Core.GameStateChanged += Core_GameStateChanged;
             }
+
+            // so we can reference settings and things from static methods used in the transpiler patch
+            instance = this;
+            PatchVTankExtensions();          
         }
 
         private void Core_GameStateChanged(UBHelper.GameState previous, UBHelper.GameState new_state) {
@@ -101,10 +112,29 @@ namespace UtilityBelt.Tools {
         private static MethodInfo getMySpellFunc;
         private static bool isClassicPatched;
 
+        public static void PatchVTankExtensions() {
+            try {
+                if (harmonyExtensions != null) {
+                    Logger.Error("[UB] VTank extensions are already patched! Skipping");
+                    return;
+                }
+                harmonyExtensions = new Harmony(harmonyNamespace + ".extensions");
+
+                #region AdditionalDebuffs
+                Type pickSpell = typeof(uTank2.PluginCore).Assembly.GetType("hi");
+                Type arg1 = typeof(uTank2.PluginCore).Assembly.GetType("hi+a");
+                harmonyExtensions.Patch(AccessTools.Method(pickSpell, "a", new Type[] { arg1.MakeByRefType() }), transpiler: new HarmonyMethod(typeof(VTankExtensions), nameof(PickSpellTranspiler)));
+                #endregion AdditionalDebuffs   
+            }
+            catch (Exception e) {
+                Logger.LogException(e);
+            }
+        }
+
         public static void PatchVTankExpressions(Del_EvaluateExpression handler) {
             try {
                 if (harmonyExpressions == null)
-                    harmonyExpressions = Harmony.HarmonyInstance.Create(harmonyNamespace + ".expressions");
+                    harmonyExpressions = new Harmony(harmonyNamespace + ".expressions");
 
                 if (expressionHandler != null) {
                     Logger.Error("[UB] VTank expressions are already patched! Skipping");
@@ -117,52 +147,152 @@ namespace UtilityBelt.Tools {
                 Type vtExprAct = typeof(uTank2.PluginCore).Assembly.GetType("dv");
                 MethodInfo vtExprAct_original = vtExprAct.GetMethod("c", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { }, null);
                 MethodInfo vtExprAct_prefix = typeof(VTankExtensions).GetMethod("ExecuteExpressionActionPatch_Prefix");
-                harmonyExpressions.Patch(vtExprAct_original, new Harmony.HarmonyMethod(vtExprAct_prefix));
+                harmonyExpressions.Patch(vtExprAct_original, new HarmonyMethod(vtExprAct_prefix));
                 #endregion
 
                 #region Expression
                 Type vtExpression = typeof(uTank2.PluginCore).Assembly.GetType("b3");
                 MethodInfo vtExpression_original = vtExpression.GetMethod("c", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { }, null);
                 MethodInfo vtExpression_prefix = typeof(VTankExtensions).GetMethod("ExecuteExpressionPatch_Prefix");
-                harmonyExpressions.Patch(vtExpression_original, new Harmony.HarmonyMethod(vtExpression_prefix));
+                harmonyExpressions.Patch(vtExpression_original, new HarmonyMethod(vtExpression_prefix));
                 #endregion
 
                 #region ChatCapture
                 Type vtChatCapture = typeof(uTank2.PluginCore).Assembly.GetType("c5");
                 MethodInfo vtChatCapture_original = vtChatCapture.GetMethod("c", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { }, null);
                 MethodInfo vtChatCapture_prefix = typeof(VTankExtensions).GetMethod("ExecuteChatCapturePatch_Prefix");
-                harmonyExpressions.Patch(vtChatCapture_original, new Harmony.HarmonyMethod(vtChatCapture_prefix));
+                harmonyExpressions.Patch(vtChatCapture_original, new HarmonyMethod(vtChatCapture_prefix));
                 #endregion
 
                 #region ButtonExpression
                 Type vtButtonExpression = typeof(uTank2.PluginCore).Assembly.GetType("c9");
                 MethodInfo vtButtonExpression_original = vtButtonExpression.GetMethod("a", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(object), typeof(EventArgs) }, null);
                 MethodInfo vtButtonExpression_prefix = typeof(VTankExtensions).GetMethod("ExecuteButtonExpressionPatch_Prefix");
-                harmonyExpressions.Patch(vtButtonExpression_original, new Harmony.HarmonyMethod(vtButtonExpression_prefix));
+                harmonyExpressions.Patch(vtButtonExpression_original, new HarmonyMethod(vtButtonExpression_prefix));
                 #endregion
 
                 #region ExpressionChatAction
                 Type vtExpressionChatAction = typeof(uTank2.PluginCore).Assembly.GetType("n");
                 MethodInfo vtExpressionChatAction_original = vtExpressionChatAction.GetMethod("c", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { }, null);
                 MethodInfo vtExpressionChatAction_prefix = typeof(VTankExtensions).GetMethod("ExecuteExpressionChatActionPatch_Prefix");
-                harmonyExpressions.Patch(vtExpressionChatAction_original, new Harmony.HarmonyMethod(vtExpressionChatAction_prefix));
+                harmonyExpressions.Patch(vtExpressionChatAction_original, new HarmonyMethod(vtExpressionChatAction_prefix));
                 #endregion
 
                 #region VTOptGet
                 Type vtOptGet = typeof(uTank2.PluginCore).Assembly.GetType("fl");
                 MethodInfo vtOptGet_original = vtOptGet.GetMethod("c", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { }, null);
                 MethodInfo vtOptGet_prefix = typeof(VTankExtensions).GetMethod("ExecuteOptGet_Prefix");
-                harmonyExpressions.Patch(vtOptGet_original, new Harmony.HarmonyMethod(vtOptGet_prefix));
+                harmonyExpressions.Patch(vtOptGet_original, new HarmonyMethod(vtOptGet_prefix));
                 #endregion
 
                 #region VTOptSet
                 Type vtOptSet = typeof(uTank2.PluginCore).Assembly.GetType("dt");
                 MethodInfo vtOptSet_original = vtOptSet.GetMethod("c", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { }, null);
                 MethodInfo vtOptSet_prefix = typeof(VTankExtensions).GetMethod("ExecuteOptSet_Prefix");
-                harmonyExpressions.Patch(vtOptSet_original, new Harmony.HarmonyMethod(vtOptSet_prefix));
+                harmonyExpressions.Patch(vtOptSet_original, new HarmonyMethod(vtOptSet_prefix));
                 #endregion
             }
             catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        [HarmonyTranspiler]
+        static IEnumerable<CodeInstruction> PickSpellTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg) {
+            var instructionList = instructions.ToList();
+            var targetLabel = ilg.DefineLabel();
+            var seenLdloc3 = 0;
+            var retSeen = 0;
+            Label retLabel = ilg.DefineLabel();
+            //this gets the label from the end that most branches jump to return
+            for (var i = 0; i < instructionList.Count; i++) {
+                var instr = instructionList[i];
+                if (instr.opcode == OpCodes.Ret) {
+                    retSeen++;
+                    if (retSeen == 2) {
+                        retLabel = instr.labels[0];
+                    }
+                }
+            }
+            for (var i = 0; i < instructionList.Count; i++) {
+                var instr = instructionList[i];
+                yield return instr;
+                if (instr.opcode == OpCodes.Ldloc_3) {
+                    seenLdloc3++;
+                    if (seenLdloc3 != 5) {
+                        continue;
+                    }
+                    //inject at the 5th ldloc.3, this injects after the magic yield check before the weakening curse check
+                    var continueLabel = ilg.DefineLabel();
+                    var method = AccessTools.Method(typeof(VTankExtensions), nameof(CastAdditionalDebuffs));
+                    yield return new CodeInstruction(OpCodes.Ldarg_0); //push this (hi.cs)
+                    yield return new CodeInstruction(OpCodes.Ldloc_3); //push local variable a2 that has the monster data
+                    yield return new CodeInstruction(OpCodes.Call, method); //receives this
+                    yield return new CodeInstruction(OpCodes.Brfalse_S, continueLabel); //jump to the nop if we didnt choose to cast a debuff
+                    yield return new CodeInstruction(OpCodes.Ldarg_1); //A_0 = hi.a.b; this gets set after every debuff
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_1);
+                    yield return new CodeInstruction(OpCodes.Stind_I4);
+                    yield return new CodeInstruction(OpCodes.Leave, retLabel); //leave the protected area to return.                 
+                    var nop = new CodeInstruction(OpCodes.Nop); //jump to a nop to continue back to checking weakening curse
+                    nop.labels.Add(continueLabel);
+                    yield return nop;
+                }
+            }
+        }
+
+        public static bool CastAdditionalDebuffs(object hi, object d1_a) {
+            var debuffs = VTankExtensions.instance.AdditionalDebuffs;
+            try {
+                //logic to copy from vtank to test a spell at the right level, find the remaining time, then cast it
+                // if (a2.i && dz.j.b(a1.b, dz.p.a(dz.f.b("Magic Yield Other I"), a1)) <= timeSpan)
+                /*
+                {
+                    A_0 = hi.a.b;
+                    this.c = dz.f.b("Magic Yield Other I");
+                    this.d = hi.b.b;
+                    return;
+                }
+                */
+                //first check is only continue if yield is enabled for the monster. a2.i &&
+                var shouldYield = (bool)d1_a.GetFieldValue("i");
+
+                if (!shouldYield) {
+                    return false;
+                }
+
+                for (int i = 0; i < debuffs.Value.Count; i++) {
+                    var debuff = debuffs.Value[i];
+                    var dz = typeof(uTank2.PluginCore).GetField("dz", BindingFlags.NonPublic | BindingFlags.Static).GetValue(uTank2.PluginCore.PC);
+                    spellFactory = dz.GetType().GetField("f", BindingFlags.Public | BindingFlags.Instance).GetValue(dz);
+                    getMySpellFunc = spellFactory.GetType().GetMethod("b", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { typeof(string) }, null);
+
+                    // dz.f.b("spell name") get a spell from whatever spell factory/dict
+                    var spell = (uTank2.MySpell)getMySpellFunc.Invoke(spellFactory, new object[] { debuff });
+
+                    Type pickSpell = typeof(uTank2.PluginCore).Assembly.GetType("hi");
+                    var something = typeof(uTank2.PluginCore).Assembly.GetType("hi+b");
+
+                    var a1 = dz.GetFieldValue("p").GetFieldValue("a");
+                    var dzpa = dz.GetFieldValue("p").GetType().GetMethod("a", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { typeof(uTank2.MySpell), typeof(uTank2.PluginCore).Assembly.GetType("f7") }, null);
+
+                    // dz.p.a(spellresult, a1) looks like this changes the chosen spell to be debuff fallback and maybe the right level to cast?
+                    var dzpaResult = dzpa.Invoke(dz.GetFieldValue("p"), new object[] { spell, a1 });
+
+                    // dz.j.b(a1.b, dzparesult) = timespan
+                    var timeRemaining = (TimeSpan)dz.GetFieldValue("j").GetType().GetMethod("b", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { a1.GetFieldValue("b").GetType(), dzpaResult.GetType() }, null).Invoke(dz.GetFieldValue("j"), new object[] { a1.GetFieldValue("b"), dzpaResult });
+                    // if timeremainging on the debuff is under 10 seconds. todo implement checking the rebuff time setting.
+                    if (timeRemaining.Seconds < 10) {
+                        var spellField = pickSpell.GetField("c", BindingFlags.NonPublic | BindingFlags.Instance);
+                        //this.c = spell
+                        spellField.SetValue(hi, spell);
+                        //this.d = hi.b.something looks like this a flag to track what debuff was applied. 1 is the magic yield debuff.
+                        pickSpell.GetField("d", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(hi, System.Enum.GetValues(something).GetValue(1));
+                        return true;
+                    }
+                }
+            }
+            catch (Exception e) {
+                Logger.LogException(e);
+            }
+            return false;
         }
 
         public static void UnpatchVTankExpressions() {
@@ -191,7 +321,7 @@ namespace UtilityBelt.Tools {
                 }
 
                 if (harmonyClassic == null)
-                    harmonyClassic = Harmony.HarmonyInstance.Create(harmonyNamespace + ".classic");
+                    harmonyClassic = new Harmony(harmonyNamespace + ".classic");
 
                 #region patch AddSpellsBySkillId
                 Type vtankBuffing = typeof(uTank2.PluginCore).Assembly.GetType("eq");
@@ -208,19 +338,19 @@ namespace UtilityBelt.Tools {
                     return;
                 }
                 MethodInfo addSpellsBySkillId_Prefix = typeof(VTankExtensions).GetMethod("AddSpellsBySkillId_Prefix");
-                harmonyClassic.Patch(addSpellsBySkillId_original, new Harmony.HarmonyMethod(addSpellsBySkillId_Prefix));
+                harmonyClassic.Patch(addSpellsBySkillId_original, new HarmonyMethod(addSpellsBySkillId_Prefix));
                 #endregion patch AddSpellsBySkillId
 
                 #region patch GetSkillNameFromId
                 MethodInfo getSkillNameFromId_original = vtankBuffing.GetMethod("a", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(int) }, null);
                 MethodInfo getSkillNameFromId_prefix = typeof(VTankExtensions).GetMethod("GetSkillNameFromId_Prefix");
-                harmonyClassic.Patch(getSkillNameFromId_original, new Harmony.HarmonyMethod(getSkillNameFromId_prefix));
+                harmonyClassic.Patch(getSkillNameFromId_original, new HarmonyMethod(getSkillNameFromId_prefix));
                 #endregion patch GetSkillNameFromId
 
                 #region patch translateSpell
                 MethodInfo translateSpell_original = typeof(uTank2.PluginCore).Assembly.GetType("fk").GetMethod("b", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { typeof(uTank2.MySpell), typeof(bool) }, null);
                 MethodInfo translateSpell_postfix = typeof(VTankExtensions).GetMethod("TranslateSpell_Postfix");
-                harmonyClassic.Patch(translateSpell_original, null, new Harmony.HarmonyMethod(translateSpell_postfix));
+                harmonyClassic.Patch(translateSpell_original, null, new HarmonyMethod(translateSpell_postfix));
                 #endregion patch translateSpell
 
                 #region patch CastSpell
@@ -228,7 +358,7 @@ namespace UtilityBelt.Tools {
                 var sh = s.GetType().GetField("h", BindingFlags.Instance | BindingFlags.Public).GetValue(s);
                 MethodInfo castSpell_original = sh.GetType().GetMethod("a", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(uTank2.MySpell), typeof(int), typeof(bool) }, null);
                 MethodInfo castSpell_Prefix = typeof(VTankExtensions).GetMethod("CastSpell_Prefix");
-                harmonyClassic.Patch(castSpell_original, new Harmony.HarmonyMethod(castSpell_Prefix));
+                harmonyClassic.Patch(castSpell_original, new HarmonyMethod(castSpell_Prefix));
                 #endregion patch CastSpell
 
 

@@ -19,7 +19,7 @@ using Hellosam.Net.Collections;
 using Newtonsoft.Json;
 using VirindiViewService.Controls;
 using System.Collections;
-using Harmony;
+using HarmonyLib;
 using Decal.Filters;
 using Decal.Adapter;
 using System.Security.Cryptography;

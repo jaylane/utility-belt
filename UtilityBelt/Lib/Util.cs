@@ -15,8 +15,6 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.DirectX;
 using UtilityBelt.Lib;
-using uTank2;
-using Harmony;
 
 namespace UtilityBelt {
     public static class Util {
