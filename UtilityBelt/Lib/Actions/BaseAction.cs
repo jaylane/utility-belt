@@ -48,7 +48,10 @@ namespace UtilityBelt.Lib.Actions {
 
         public virtual BaseAction Clone() {
             var settings = UtilityBeltPlugin.Instance.Settings.SerializerSettings;
-            return (BaseAction)JsonConvert.DeserializeObject(JsonConvert.SerializeObject(this, settings), settings);
+            return (BaseAction)JsonConvert.DeserializeObject(
+                JsonConvert.SerializeObject(this, settings),
+                BaseAction.FromType(this.Type).GetType(),
+                settings);
         }
     }
 }
