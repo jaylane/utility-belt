@@ -15,12 +15,15 @@ using static uTank2.PluginCore;
 using HarmonyLib;
 using System.Reflection.Emit;
 using System.Collections.ObjectModel;
+using uTank2;
 
 namespace UtilityBelt.Tools {
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
+    internal class VTankPatchSetting : Attribute {}
     [Name("VTankExtensions")]
     public class VTankExtensions : ToolBase {
         internal static Harmony harmonyClassic;
-        internal static Harmony harmonyExtensions;
+        internal static Dictionary<string, Harmony> HarmonyPatches = new();
         internal static Harmony harmonyExpressions;
         internal static VTankExtensions instance;
 
@@ -34,9 +37,18 @@ namespace UtilityBelt.Tools {
         #region config
         [Summary("Enable automatically attempting to detect classic servers and patching vtank to support old skills.")]
         public readonly Setting<bool> EnableAutoClassicPatch = new Setting<bool>(true);
+        [VTankPatchSetting]
         [Summary("Additional debuffs to cast. Debuffs cast in order directly after Magic Yield.")]
         public readonly Setting<ObservableCollection<string>> AdditionalDebuffs = new Setting<ObservableCollection<String>>(new ObservableCollection<string>());
+        [VTankPatchSetting]
+        [Summary("Will attempt to ignore some errors that can crash VTank")]       
+        public readonly Setting<bool> DontStopOnError = new Setting<bool>(true);
+        [VTankPatchSetting]
+        [Summary("Use real client locations from UB Network when following")]       
+        public readonly Setting<bool> BetterFollowing = new Setting<bool>(true);
         #endregion // config
+
+        private Dictionary<string, Harmony> VTankSettingPatches = new();
 
         #region Commands
         #region /ub dumpskills
@@ -81,6 +93,20 @@ namespace UtilityBelt.Tools {
             PatchVTankExtensions();          
         }
 
+        private void VTankPatchSettingChanged(object sender, SettingChangedEventArgs e) {
+            var state = e.Setting.GetValue();
+            var patchName = e.Setting.Name;
+            var patchNamespace = harmonyNamespace + "." + patchName;
+            if (IsTruthy(state) && !VTankSettingPatches.ContainsKey(patchNamespace)) {
+                var harmony = new Harmony(patchNamespace);
+                this.GetType().GetMethod(e.Setting.Name + "Patch", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(this, new[] { harmony });
+                VTankSettingPatches[patchNamespace] = harmony;
+            } else if (!IsTruthy(state) && VTankSettingPatches.ContainsKey(patchNamespace)) {
+                VTankSettingPatches[patchNamespace].UnpatchAll(patchNamespace);
+                VTankSettingPatches.Remove(patchNamespace);
+            }
+        }
+
         private void Core_GameStateChanged(UBHelper.GameState previous, UBHelper.GameState new_state) {
             try {
                 if (new_state == UBHelper.GameState.In_Game) {
@@ -112,22 +138,53 @@ namespace UtilityBelt.Tools {
         private static MethodInfo getMySpellFunc;
         private static bool isClassicPatched;
 
-        public static void PatchVTankExtensions() {
+        public void PatchVTankExtensions() {
             try {
-                if (harmonyExtensions != null) {
-                    Logger.Error("[UB] VTank extensions are already patched! Skipping");
-                    return;
-                }
-                harmonyExtensions = new Harmony(harmonyNamespace + ".extensions");
-
-                #region AdditionalDebuffs
-                Type pickSpell = typeof(uTank2.PluginCore).Assembly.GetType("hi");
-                Type arg1 = typeof(uTank2.PluginCore).Assembly.GetType("hi+a");
-                harmonyExtensions.Patch(AccessTools.Method(pickSpell, "a", new Type[] { arg1.MakeByRefType() }), transpiler: new HarmonyMethod(typeof(VTankExtensions), nameof(PickSpellTranspiler)));
-                #endregion AdditionalDebuffs   
+                // appply all the patches by their settings
+                this.GetType()
+                    .GetFields()
+                    .Where(field => field.IsDefined(typeof(VTankPatchSetting)))
+                    .Do(field => {
+                        var patchHandler = this.GetType().GetMethod(nameof(VTankPatchSettingChanged), BindingFlags.NonPublic | BindingFlags.Instance);
+                        var settingField = field.GetValue(this);
+                        var eventField = settingField.GetType().GetEvent("Changed");
+                        eventField.AddEventHandler(field.GetValue(this), Delegate.CreateDelegate(eventField.EventHandlerType, this, patchHandler));
+                        patchHandler.Invoke(this, new[] {null, new SettingChangedEventArgs((string)settingField.GetPropValue("Name"), (string)settingField.GetPropValue("FullName"), (ISetting)settingField) });
+                    });
             }
             catch (Exception e) {
                 Logger.LogException(e);
+            }
+        }
+
+        private void AdditionalDebuffsPatch(object patchHarmony) {
+            var harmony = (Harmony)patchHarmony;
+            Type pickSpell = typeof(uTank2.PluginCore).Assembly.GetType("hi");
+            Type arg1 = typeof(uTank2.PluginCore).Assembly.GetType("hi+a");
+            harmony.Patch(AccessTools.Method(pickSpell, "a", new Type[] { arg1.MakeByRefType() }), transpiler: new HarmonyMethod(typeof(VTankExtensions), nameof(PickSpellTranspiler)));
+        }
+
+        private void DontStopOnErrorPatch(object patchHarmony) {
+            var harmony = (Harmony)patchHarmony;
+            // This is the vtank message for doing meta message matching
+            Type messageProcessor = typeof(uTank2.PluginCore).Assembly.GetType("hl");
+            harmony.Patch(AccessTools.Method(messageProcessor, "f"), finalizer: new HarmonyMethod(typeof(VTankExtensions), nameof(IgnoreMessageExceptions)));
+        }
+
+        private void BetterFollowingPatch(object patchHarmony) {
+            var harmony = (Harmony)patchHarmony;
+            Type vtankWorld = typeof(uTank2.PluginCore).Assembly.GetType("f9");
+            // This is the VTank method is for getting location of world objects
+            // The patch is to retrieve more exact positions of clients within UB Networking
+            harmony.Patch(AccessTools.Method(vtankWorld, "a", new Type[] { typeof(int), typeof(HooksWrapper) }), prefix: new HarmonyMethod(typeof(VTankExtensions), nameof(FollowExactly)));
+        }
+
+        public static void FollowExactly(ref sCoord __result, int A_0, HooksWrapper A_1) {
+            var clients = VTankExtensions.instance.UB.Networking.Clients.ToList();
+            foreach(var client in clients) {
+                if (client.PlayerId == A_0 && client.HasPositionInfo) {
+                    __result = new sCoord(client.EW, client.NS, client.Z);
+                }
             }
         }
 
@@ -195,6 +252,17 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
+        public static Exception IgnoreMessageExceptions(Exception __exception, ref bool __result) {
+            //harmony itself can generate a null reference exception
+            if (__exception != null && __exception is InvalidOperationException || __exception is NullReferenceException) {
+                Logger.LogException(__exception);
+                __result = false;
+                return null;
+            }
+
+            return __exception;
+        }
+
         [HarmonyTranspiler]
         static IEnumerable<CodeInstruction> PickSpellTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilg) {
             var instructionList = instructions.ToList();
@@ -223,6 +291,7 @@ namespace UtilityBelt.Tools {
                     //inject at the 5th ldloc.3, this injects after the magic yield check before the weakening curse check
                     var continueLabel = ilg.DefineLabel();
                     var method = AccessTools.Method(typeof(VTankExtensions), nameof(CastAdditionalDebuffs));
+                    yield return new CodeInstruction(OpCodes.Pop); //remove the just pushed value
                     yield return new CodeInstruction(OpCodes.Ldarg_0); //push this (hi.cs)
                     yield return new CodeInstruction(OpCodes.Ldloc_3); //push local variable a2 that has the monster data
                     yield return new CodeInstruction(OpCodes.Call, method); //receives this
@@ -234,6 +303,7 @@ namespace UtilityBelt.Tools {
                     var nop = new CodeInstruction(OpCodes.Nop); //jump to a nop to continue back to checking weakening curse
                     nop.labels.Add(continueLabel);
                     yield return nop;
+                    yield return instr; //redo the pushed value
                 }
             }
         }
@@ -949,6 +1019,12 @@ namespace UtilityBelt.Tools {
                 return (double)obj != 0;
             if (obj.GetType() == typeof(string))
                 return ((string)obj).Length > 0;
+            if (obj.GetType() == typeof(bool))
+                return (bool)obj;
+            var genArgs = obj.GetType().GetGenericArguments();
+            if (genArgs.Length == 1 && typeof(Collection<>).MakeGenericType(genArgs).IsAssignableFrom(obj.GetType().BaseType)) {
+                return (int)obj.GetType().GetProperty("Count").GetValue(obj) > 0;
+            }
 
             return true;
         }
