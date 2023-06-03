@@ -1050,7 +1050,7 @@ namespace UtilityBelt.Tools {
                 double perfectVariance = MiscCalcs.GetMaxProperty(wo, WeaponProperty.MaxVar);
                 double varianceTinks = Math.Round(Math.Log(perfectVariance / Variance, 0.8), 2);
                 double odValue = GetBuffedIntValueKey(218103842) - varianceTinks;
-                return odValue - Variance;
+                return odValue;
             }
         }
 
