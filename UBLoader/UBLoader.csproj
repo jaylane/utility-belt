@@ -110,7 +110,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Lib.Harmony" Version="1.2.0.1" />
+    <PackageReference Include="Lib.Harmony" Version="2.2.2" />
     <PackageReference Include="MSBuildTasks" Version="1.5.0.235" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0">
@@ -139,8 +139,8 @@
       <Private>False</Private>
     </PackageReference>
     <PackageReference Include="UtilityBelt.Common" Version="1.0.7" />
-    <PackageReference Include="UtilityBelt.Networking" Version="2.0.1" />
-    <PackageReference Include="UtilityBelt.Service" Version="2.1.0">
+    <PackageReference Include="UtilityBelt.Networking" Version="2.1.0" />
+    <PackageReference Include="UtilityBelt.Service" Version="2.1.2">
       <ExcludeAssets>runtime; build;</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
