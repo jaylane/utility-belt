@@ -2,7 +2,6 @@
 using ACE.DatLoader;
 using ACE.DatLoader.Entity;
 using ACE.DatLoader.FileTypes;
-using Harmony;
 using ImGuiNET;
 using Microsoft.DirectX.Direct3D;
 using System;
