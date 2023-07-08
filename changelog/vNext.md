@@ -28,3 +28,4 @@
 - Fix autotinker bug causing it to randomly stop
 - Misc iteminfo fixes
 - Fix ub bc/bct command delays for remote clients
+- Added experiment VTank.MetaTickRateOverride setting to override vtanks internal meta tick rate.
