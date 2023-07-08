@@ -40,9 +40,12 @@ namespace UtilityBelt.Tools {
         [Hotkey("VitalSharing", "Toggle VitalSharing functionality")]
         public readonly Setting<bool> VitalSharing = new Setting<bool>(true);
 
-        [Summary("PatchExpressionEngine")]
+        [Summary("Overrides vtank's meta expression engine. This allows for new meta expression functions and language features.")]
         [Hotkey("PatchExpressionEngine", "Overrides vtank's meta expression engine. This allows for new meta expression functions and language features.")]
         public readonly Setting<bool> PatchExpressionEngine = new Setting<bool>(false);
+
+        [Summary("This will override the VTank meta \"tick rate\" (default 293ms). Might break other things? Set to -1 to disable, 0 to tick every frame, or > 0 to tick every x milliseconds. Setting this to >293 does nothing.")]
+        public readonly Setting<int> MetaTickRateOverride = new Setting<int>(-1);
 
         [Summary("Detect and fix vtank nav portal loops")]
         public readonly Setting<bool> FixPortalLoops = new Setting<bool>(false);
@@ -2035,6 +2038,10 @@ namespace UtilityBelt.Tools {
         private int portalExitCount = 0;
         private int lastPortalExitLandcell = 0;
         private List<string> expressionExceptions = new List<string>();
+
+        Dictionary<string, Lib.Models.CompiledExpression> _compiledExpressions = new Dictionary<string, Lib.Models.CompiledExpression>();
+        private bool _hasVTankTickRateEnabled;
+        private DateTime _lastVTankMetaTick = DateTime.UtcNow;
         //private bool isClassicPatched;
 
         public VTankControl(UtilityBeltPlugin ub, string name) : base(ub, name) {
@@ -2085,7 +2092,6 @@ namespace UtilityBelt.Tools {
             }
         }
 
-        Dictionary<string, Lib.Models.CompiledExpression> _compiledExpressions = new Dictionary<string, Lib.Models.CompiledExpression>();
         public Lib.Models.CompiledExpression CompileExpression(string expression) {
             Lib.Models.CompiledExpression compiledExpression = null;
             if (_compiledExpressions.TryGetValue(expression, out compiledExpression)) {
@@ -2150,6 +2156,17 @@ namespace UtilityBelt.Tools {
         }
         #endregion
 
+        private void Current_RenderFrame(object sender, EventArgs e) {
+            try {
+                var macroEnabled = UBHelper.vTank.Instance.MacroEnabled && (bool)UBHelper.vTank.Instance.GetSetting("EnableMeta") == true;
+                if (macroEnabled && (MetaTickRateOverride == 0 || DateTime.UtcNow - _lastVTankMetaTick > TimeSpan.FromMilliseconds(MetaTickRateOverride))) {
+                    _lastVTankMetaTick = DateTime.UtcNow;
+                    UBHelper.vTank.Instance.LogicObject.TryPokeMacro();
+                }
+            }
+            catch(Exception ex) { Logger.WriteToChat(ex.Message); }
+        }
+
         private void VTankControl_PropertyChanged(object sender, SettingChangedEventArgs e) {
             if (e.PropertyName.Equals("FixPortalLoops")) {
                 if (FixPortalLoops && !isFixingPortalLoops) {
@@ -2199,6 +2216,24 @@ namespace UtilityBelt.Tools {
         public void Enable() {
             UBHelper.vTank.Enable();
             UB.Core.CharacterFilter.Logoff += CharacterFilter_Logoff;
+
+            if (MetaTickRateOverride.Value >= 0) {
+                CoreManager.Current.RenderFrame += Current_RenderFrame;
+                _hasVTankTickRateEnabled = true;
+            }
+
+            MetaTickRateOverride.Changed += VTankMetaTickRate_Changed;
+        }
+
+        private void VTankMetaTickRate_Changed(object sender, SettingChangedEventArgs e) {
+            if (MetaTickRateOverride.Value >= 0 && !_hasVTankTickRateEnabled) {
+                CoreManager.Current.RenderFrame += Current_RenderFrame;
+                _hasVTankTickRateEnabled = true;
+            }
+            else if (MetaTickRateOverride < 0 && _hasVTankTickRateEnabled) {
+                CoreManager.Current.RenderFrame -= Current_RenderFrame;
+                _hasVTankTickRateEnabled = false;
+            }
         }
 
         private void CharacterFilter_Logoff(object sender, Decal.Adapter.Wrappers.LogoffEventArgs e) {
@@ -2220,6 +2255,10 @@ namespace UtilityBelt.Tools {
         protected override void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
+                    if (_hasVTankTickRateEnabled) {
+                        CoreManager.Current.RenderFrame -= Current_RenderFrame;
+                    }
+                    MetaTickRateOverride.Changed -= VTankMetaTickRate_Changed;
                     FixPortalLoops.Changed -= VTankControl_PropertyChanged;
                     PatchExpressionEngine.Changed -= VTankControl_PropertyChanged;
                     UB.Core.CharacterFilter.LoginComplete -= CharacterFilter_LoginComplete;
