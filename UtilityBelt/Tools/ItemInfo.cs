@@ -15,8 +15,7 @@ using UtilityBelt.Lib.Constants;
 using UtilityBelt.Lib.ItemInfoHelper;
 using static UtilityBelt.Lib.ItemInfoHelper.MiscCalcs;
 using System.Linq;
-using System.Diagnostics;
-using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 
 namespace UtilityBelt.Tools {
     [Name("ItemInfo")]
@@ -86,7 +85,7 @@ namespace UtilityBelt.Tools {
         }
 
         private void Enabled_Changed(object sender, SettingChangedEventArgs e) {
-            try { 
+            try {
                 UpdateSubscriptions();
                 Stop();
             }
@@ -265,7 +264,7 @@ namespace UtilityBelt.Tools {
                 sb.Insert(0, $"<Tell:IIDString:{Util.GetChatId()}:select|{itemInfo.Id}>{Util.GetObjectName(itemInfo.Id)}</Tell >");
             }
             else {
-                sb.Insert(0, $"<Tell:IIDString:{Util.GetChatId()}:select|{itemInfo.Id}>{ ruleName + " - " + Util.GetObjectName(itemInfo.Id)}</Tell >");
+                sb.Insert(0, $"<Tell:IIDString:{Util.GetChatId()}:select|{itemInfo.Id}>{ruleName + " - " + Util.GetObjectName(itemInfo.Id)}</Tell >");
             }
             //sb.Append(@"<\\Tell>");
 
@@ -274,7 +273,7 @@ namespace UtilityBelt.Tools {
 
             if (!silent)
                 Logger.WriteToChat("ItemInfo: " + sb.ToString());
-                //MyClasses.VCS_Connector.SendChatTextCategorized("IDs", sb.ToString(), 13, 0);
+            //MyClasses.VCS_Connector.SendChatTextCategorized("IDs", sb.ToString(), 13, 0);
 
             if (AutoClipboard.Value) {
                 try {
@@ -304,26 +303,16 @@ namespace UtilityBelt.Tools {
         private readonly WorldObject wo;
         private readonly MyWorldObject mwo;
 
-
         public ItemDescriptions(WorldObject worldObject) {
             wo = worldObject;
             mwo = MyWorldObjectCreator.Create(worldObject);
         }
 
         public override string ToString() {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            var sb = new StringBuilder();
 
-            if ((wo.Values((LongValueKey)45, 0) > 0 || wo.Values((LongValueKey)353) > 0) && wo.ObjectClass != ObjectClass.Armor && wo.ObjectClass != ObjectClass.Clothing ) {
-                sb.Append(" (");
-                if (wo.Values((LongValueKey)45, 0) > 0)
-                    sb.Append((DamageTypes)wo.Values((LongValueKey)45, 0));
-                if (wo.Values((LongValueKey)353) > 0) {
-                    if (Dictionaries.MasteryInfo.ContainsKey(wo.Values((LongValueKey)353)))
-                        sb.Append(" " + Dictionaries.MasteryInfo[wo.Values((LongValueKey)353)]);
-                    else
-                        sb.Append(" Unknown mastery " + wo.Values((LongValueKey)353));
-                }
-                sb.Append(")");
+            if (wo.ObjectClass is ObjectClass.MissileWeapon or ObjectClass.MeleeWeapon or ObjectClass.WandStaffOrb) {
+                AppendWeaponDamageTypeAndMastery(sb);
             }
 
             int set = wo.Values((LongValueKey)265, 0);
@@ -377,7 +366,7 @@ namespace UtilityBelt.Tools {
 
 
             if (wo.Values((DoubleValueKey)136, 0) >= 1)
-                sb.Append(", CrushB (" + wo.Values((DoubleValueKey)136, 0) +")");
+                sb.Append(", CrushB (" + wo.Values((DoubleValueKey)136, 0) + ")");
 
             if (wo.Values((DoubleValueKey)147, 0) >= 1)
                 sb.Append(", BS (" + wo.Values((DoubleValueKey)147, 0) + ")");
@@ -426,7 +415,7 @@ namespace UtilityBelt.Tools {
 
             if (wo.Values(LongValueKey.ElementalDmgBonus, 0) != 0) {
                 sb.Append(", +" + wo.Values(LongValueKey.ElementalDmgBonus));
-                if (wo.Values(DoubleValueKey.SalvageWorkmanship, 0) > 0 && UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax) 
+                if (wo.Values(DoubleValueKey.SalvageWorkmanship, 0) > 0 && UtilityBeltPlugin.Instance.ItemInfo.ShowRetailMax)
                     sb.Append("(" + GetMaxProperty(wo, WeaponProperty.MaxElementalDmgBonus).ToString() + ")");
             }
 
@@ -472,28 +461,28 @@ namespace UtilityBelt.Tools {
                 sb.Append(", (");
 
                 // (Damage)
-                    if (wo.ObjectClass == ObjectClass.MeleeWeapon)
-                        sb.Append(mwo.CalcedBuffedTinkedDoT.ToString("N1") + "/" + mwo.GetBuffedIntValueKey((int)LongValueKey.MaxDamage));
+                if (wo.ObjectClass == ObjectClass.MeleeWeapon)
+                    sb.Append(mwo.CalcedBuffedTinkedDoT.ToString("N1") + "/" + mwo.GetBuffedIntValueKey((int)LongValueKey.MaxDamage));
 
-                    if (wo.ObjectClass == ObjectClass.MissileWeapon)
-                        sb.Append(mwo.CalcedBuffedMissileDamage.ToString("N1"));
+                if (wo.ObjectClass == ObjectClass.MissileWeapon)
+                    sb.Append(mwo.CalcedBuffedMissileDamage.ToString("N1"));
 
-                    if (wo.ObjectClass == ObjectClass.WandStaffOrb)
-                        sb.Append(((mwo.GetBuffedDoubleValueKey((int)DoubleValueKey.ElementalDamageVersusMonsters) - 1) * 100).ToString("N1"));
+                if (wo.ObjectClass == ObjectClass.WandStaffOrb)
+                    sb.Append(((mwo.GetBuffedDoubleValueKey((int)DoubleValueKey.ElementalDamageVersusMonsters) - 1) * 100).ToString("N1"));
 
                 // (AttackBonus/MeleeDefenseBonus/ManaCBonus)
-                    sb.Append(" ");
+                sb.Append(" ");
 
-                    if (wo.Values(DoubleValueKey.AttackBonus, 1) != 1)
-                        sb.Append(Math.Round(((mwo.GetBuffedDoubleValueKey((int)DoubleValueKey.AttackBonus) - 1) * 100)).ToString("N1") + "/");
+                if (wo.Values(DoubleValueKey.AttackBonus, 1) != 1)
+                    sb.Append(Math.Round(((mwo.GetBuffedDoubleValueKey((int)DoubleValueKey.AttackBonus) - 1) * 100)).ToString("N1") + "/");
 
-                    if (wo.Values(DoubleValueKey.MeleeDefenseBonus, 1) != 1)
-                        sb.Append(Math.Round(((mwo.GetBuffedDoubleValueKey((int)DoubleValueKey.MeleeDefenseBonus) - 1) * 100)).ToString("N1"));
+                if (wo.Values(DoubleValueKey.MeleeDefenseBonus, 1) != 1)
+                    sb.Append(Math.Round(((mwo.GetBuffedDoubleValueKey((int)DoubleValueKey.MeleeDefenseBonus) - 1) * 100)).ToString("N1"));
 
-                    if (wo.Values(DoubleValueKey.ManaCBonus) != 0)
-                        sb.Append("/" + Math.Round(mwo.GetBuffedDoubleValueKey((int)DoubleValueKey.ManaCBonus) * 100));
+                if (wo.Values(DoubleValueKey.ManaCBonus) != 0)
+                    sb.Append("/" + Math.Round(mwo.GetBuffedDoubleValueKey((int)DoubleValueKey.ManaCBonus) * 100));
 
-                    sb.Append(")");
+                sb.Append(")");
                 //}
             }
 
@@ -616,14 +605,18 @@ namespace UtilityBelt.Tools {
             if (wo.ObjectClass == ObjectClass.MeleeWeapon) {
                 if (wo.Values(DoubleValueKey.SalvageWorkmanship, 0) > 0 && UtilityBeltPlugin.Instance.ItemInfo.ShowRetailComparison) {
                     double od = mwo.CalcMeleeDamage - (GetMaxProperty(wo, WeaponProperty.MaxDmg));
-                    sb.Append(" (OD +" + Math.Round(od, 2).ToString() + ")");
+                    double roundedOd = Math.Round(od, 2);
+                    var odString = od > 0 ? $"+{roundedOd}" : $"{roundedOd}";
+                    sb.Append($" (OD {odString})");
                 }
             }
 
             if (wo.ObjectClass == ObjectClass.MissileWeapon) {
                 if (wo.Values(DoubleValueKey.SalvageWorkmanship, 0) > 0 && UtilityBeltPlugin.Instance.ItemInfo.ShowRetailComparison) {
                     double od = mwo.CalcMissileDamage - (GetMaxProperty(wo, WeaponProperty.MaxElementalDmgBonus) + 24 + mwo.MaxArrowDmg);
-                    sb.Append(" (OD +" + Math.Round(od, 2).ToString() + ")");
+                    double roundedOd = Math.Round(od, 2);
+                    var odString = od > 0 ? $"+{roundedOd}" : $"{roundedOd}";
+                    sb.Append($" (OD {odString})");
                 }
             }
 
@@ -733,6 +726,32 @@ namespace UtilityBelt.Tools {
             }
 
             return sb.ToString();
+        }
+
+        private void AppendWeaponDamageTypeAndMastery(StringBuilder stringBuilder) {
+            const LongValueKey weaponDamageKey = (LongValueKey)45;
+            const LongValueKey weaponMasteryKey = (LongValueKey)353;
+
+            var weaponDamageIntValue = wo.Values(weaponDamageKey, 0);
+            var hasWeaponDamageType = weaponDamageIntValue > 0;
+
+            var weaponMasteryIntValue = wo.Values(weaponMasteryKey);
+            var hasWeaponMastery = weaponMasteryIntValue > 0;
+
+            if (!hasWeaponDamageType && !hasWeaponMastery) {
+                return;
+            }
+
+            var damageType = hasWeaponDamageType ? $"{(DamageTypes)weaponDamageIntValue}" : string.Empty;
+
+            var masteryType = string.Empty;
+            if (hasWeaponMastery) {
+                masteryType = Dictionaries.MasteryInfo.ContainsKey(weaponMasteryIntValue)
+                    ? $"{Dictionaries.MasteryInfo[weaponMasteryIntValue]}"
+                    : $"Unknown mastery {weaponMasteryIntValue}";
+            }
+
+            stringBuilder.Append($" ({$"{damageType} {masteryType}".Trim()})");
         }
     }
 
@@ -965,7 +984,7 @@ namespace UtilityBelt.Tools {
         }
 
         /// <summary>
-        /// This will take the current AmorLevel of the item, subtract any buffs, subtract tinks as 20 AL each (not including imbue), and add any impen cantrips.
+        /// This will take the current ArmorLevel of the item, subtract any buffs, subtract tinks as 20 AL each (not including imbue), and add any impen cantrips.
         /// </summary>
         public int CalcedStartingArmorLevel {
             get {
@@ -1152,7 +1171,7 @@ namespace UtilityBelt.Tools {
                         value *= Dictionaries.DoubleValueKeySpellEffects[spell].Bonus;
                     }
                     else {
-                    value += Dictionaries.DoubleValueKeySpellEffects[spell].Bonus;
+                        value += Dictionaries.DoubleValueKeySpellEffects[spell].Bonus;
                     }
                 }
             }
