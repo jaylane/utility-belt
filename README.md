@@ -31,6 +31,7 @@ Pull requests are welcome. For major changes, please open an issue / join [Disco
 * Aquafir
 * Brycter
 * Cosmic Jester
+* delasteve
 * dpbarrett
 * FlaggAC
 * enknamel
