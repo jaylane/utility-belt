@@ -220,7 +220,7 @@ namespace UtilityBelt {
         /// <param name="characterName">Name of the logged in character</param>
         /// <param name="serverName">Name of the server currently logged in to</param>
         public void Startup(string assemblyLocation, string storagePath, string databaseFile, NetServiceHost host, CoreManager core) {
-			try {
+            try {
                 //if (UBLoader.FilterCore.Global.UploadExceptions) {
                 //    Exceptionless.ExceptionlessClient.Current.Configuration.IncludePrivateInformation = false;
                 //    Exceptionless.ExceptionlessClient.Current.Startup();
@@ -251,15 +251,15 @@ namespace UtilityBelt {
                     Core.CharacterFilter.Login += CharacterFilter_Login;
                 }
             }
-			catch (Exception ex) { Logger.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         private void CharacterFilter_Login(object sender, EventArgs e) {
-			try {
+            try {
                 Core.CharacterFilter.Login -= CharacterFilter_Login;
                 Init();
             }
-			catch (Exception ex) { Logger.LogException(ex); }
+            catch (Exception ex) { Logger.LogException(ex); }
         }
 
         /// <summary>
@@ -312,7 +312,7 @@ namespace UtilityBelt {
             if (Plugin.CheckForUpdates) {
                 UpdateChecker.CheckForUpdate();
             }
-            
+
             if (UBHelper.Core.version < 2020112000) {
                 Logger.Error($"UBHelper.dll is out of date. 2020112000 Expected, received {UBHelper.Core.version}");
             }
@@ -469,7 +469,7 @@ namespace UtilityBelt {
                         Logger.Error($"Command not found! Type \"ub help\" for a list of commands.");
 
                         if (partialMatches.Count > 0) {
-                            Logger.Error($"Did you mean one of these? { string.Join(", ", partialMatches.ToArray())}");
+                            Logger.Error($"Did you mean one of these? {string.Join(", ", partialMatches.ToArray())}");
                         }
                     }
                 }
@@ -572,9 +572,39 @@ namespace UtilityBelt {
         private void InitHotkeys() {
             var toolInfos = GetToolInfos();
 
-            // toggle boolean settings
             foreach (var toolInfo in toolInfos) {
                 var tool = toolInfo.GetValue(this);
+
+                foreach (var method in toolInfo.FieldType.GetMethods()) {
+                    var hotkeyAttrs = method.GetCustomAttributes(typeof(HotkeyAttribute), true);
+
+                    foreach (var attr in hotkeyAttrs) {
+                        var title = ((HotkeyAttribute)attr).Title;
+                        var description = ((HotkeyAttribute)attr).Description;
+
+                        try {
+                            bool HotkeyActionDelegate() {
+                                try {
+                                    method.Invoke(tool, new object[] { });
+                                }
+                                catch (Exception ex) {
+                                    Logger.LogException(ex);
+                                    Logger.Error(ex.Message);
+                                }
+
+                                return true;
+                            }
+
+                            HotkeyWrapperManager.AddHotkey(HotkeyActionDelegate, title, description, 0, false, false, false);
+                        }
+                        catch (Exception ex) {
+                            Logger.LogException(ex);
+                            Logger.Error($"Unable to add hotkey {title}: {ex.Message}");
+                        }
+                    }
+                }
+
+                // toggle boolean settings
                 foreach (var field in toolInfo.FieldType.GetFields()) {
                     var hotkeyAttrs = field.GetCustomAttributes(typeof(HotkeyAttribute), true);
 
@@ -582,20 +612,21 @@ namespace UtilityBelt {
                         var title = ((HotkeyAttribute)attr).Title;
                         var description = ((HotkeyAttribute)attr).Description;
                         try {
-                            delHotkeyAction del = () => {
+                            bool HotkeyActionDelegate() {
                                 try {
                                     var setting = ((ISetting)field.GetValue(tool));
                                     setting.SetValue(!(bool)setting.GetValue());
-                                    if (!Plugin.Debug)
-                                        Logger.WriteToChat($"Toggle Hotkey Pressed: {toolInfo.Name}.{field.Name} = {field.GetValue(tool)}");
+                                    if (!Plugin.Debug) Logger.WriteToChat($"Toggle Hotkey Pressed: {toolInfo.Name}.{field.Name} = {field.GetValue(tool)}");
                                 }
                                 catch (Exception ex) {
                                     Logger.LogException(ex);
                                     Logger.Error(ex.Message);
                                 }
+
                                 return true;
-                            };
-                            HotkeyWrapperManager.AddHotkey(del, title, description, 0, false, false, false);
+                            }
+
+                            HotkeyWrapperManager.AddHotkey(HotkeyActionDelegate, title, description, 0, false, false, false);
                         }
                         catch (Exception ex) {
                             Logger.LogException(ex);

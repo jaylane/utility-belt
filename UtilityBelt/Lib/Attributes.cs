@@ -109,7 +109,7 @@ namespace UtilityBelt.Lib {
         }
     }
 
-    [AttributeUsage(AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method)]
     public class HotkeyAttribute : Attribute {
         public string Title { get; }
         public string Description { get; }

@@ -84,6 +84,32 @@ namespace UtilityBelt.Tools {
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
+        [Hotkey("Copy ItemInfo with Link", "Copy the currently selected object to clipboard with selectable link.")]
+        public void CopyItemInfoWithLink() {
+            var itemDescription = GetItemDescription(true);
+
+            System.Windows.Forms.Clipboard.SetDataObject(itemDescription);
+        }
+
+        [Hotkey("Copy ItemInfo", "Copy the currently selected object to clipboard.")]
+        public void CopyItemInfo() {
+            var itemDescription = GetItemDescription(false);
+
+            System.Windows.Forms.Clipboard.SetDataObject(itemDescription);
+        }
+
+        private string GetItemDescription(bool makeSelectable) {
+            int currentSelection = UB.Core.Actions.CurrentSelection;
+            var itemDescription = new ItemDescriptions(CoreManager.Current.WorldFilter[currentSelection]);
+
+            var objectName = Util.GetObjectName(currentSelection);
+            if (makeSelectable) {
+                objectName = $"<Tell:IIDString:{Util.GetChatId()}:select|{currentSelection}>{Util.GetObjectName(currentSelection)}</Tell>";
+            }
+
+            return $"{objectName}{itemDescription}";
+        }
+
         private void Enabled_Changed(object sender, SettingChangedEventArgs e) {
             try {
                 UpdateSubscriptions();
