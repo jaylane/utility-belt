@@ -86,12 +86,18 @@ namespace UtilityBelt.Lib {
         static void Shutdown_DHS() {
             try {
                 Decal.Adapter.CoreManager.Current.HotkeySystem.Hotkey -= new EventHandler<Decal.Adapter.Wrappers.HotkeyEventArgs>(HotkeySystem_Hotkey);
+                foreach (var hk in RegisteredDecalHotkeys) {
+                    Decal.Adapter.CoreManager.Current.HotkeySystem.DeleteHotkey(PluginName, $"{PluginName}: {hk}");
+                }
             }
             catch { }
         }
 
         static void Shutdown_VHS() {
-
+            foreach (var hk in SenderHotkeyActions.Keys) {
+                ((VirindiHotkeySystem.VHotkeyInfo)hk).Fired2 -= new EventHandler<VirindiHotkeySystem.VHotkeyInfo.cEatableFiredEventArgs>(ii_Fired2);
+                VirindiHotkeySystem.VHotkeySystem.InstanceReal.RemoveHotkey((VirindiHotkeySystem.VHotkeyInfo)hk);
+            }
         }
 
         #endregion Shutdown
