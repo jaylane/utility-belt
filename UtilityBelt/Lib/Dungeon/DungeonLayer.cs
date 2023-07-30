@@ -7,8 +7,8 @@ using VirindiViewService;
 namespace UtilityBelt.Lib.Dungeon {
     public class DungeonLayer {
         public List<DungeonCell> Cells = new List<DungeonCell>();
-        public int Width { get { return maxX - minX + 10; } }
-        public int Height { get { return maxY - minY + 10; } }
+        public int Width => Util.GetClosestPower(maxX - minX + 10);
+        public int Height => Util.GetClosestPower(maxY - minY + 10);
 
         public int roundedZ;
         public int minX = 0;

@@ -793,7 +793,9 @@ Draws an overlay with dungeon maps on your screen, with data courtesy of lifesto
             }
             else if (dungeon.Width > 0 && dungeon.Height > 0) {
                 dungeon.LoadCells();
-                mapTexture = new DxTexture(new Size(dungeon.Width * TextureCache.TileScale, dungeon.Height * TextureCache.TileScale));
+                var width = Util.GetClosestPower(dungeon.Width * TextureCache.TileScale);
+                var height = Util.GetClosestPower(dungeon.Height * TextureCache.TileScale);
+                mapTexture = new DxTexture(new Size(width, height));
                 labelsTexture = new DxTexture(new Size(dungeon.Width * TextureCache.TileScale, dungeon.Height * TextureCache.TileScale));
 
                 if (!isManualLoad) {
