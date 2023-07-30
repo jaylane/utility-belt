@@ -703,5 +703,12 @@ namespace UtilityBelt {
             if (value < 24 * 60 * 60) return $"{(int)((value / 3600) % 24):n0}h{(int)((value / 60) % 60):n0}m{(int)(value % 60):n0}s";
             return $"{(int)(value / 86400):n0}d{(int)((value / 3600) % 24):n0}h{(int)((value / 60) % 60):n0}m{(int)(value % 60):n0}s";
         }
+
+        public static int GetClosestPower(int x) {
+            if (x < 2) {
+                return 1;
+            }
+            return (int)Math.Pow(2, (int)Math.Log(x - 1, 2) + 1);
+        }
     }
 }
