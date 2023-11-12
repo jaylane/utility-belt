@@ -2095,8 +2095,8 @@ namespace UtilityBelt.Tools {
         public Lib.Models.CompiledExpression CompileExpression(string expression) {
             Lib.Models.CompiledExpression compiledExpression = null;
             if (_compiledExpressions.TryGetValue(expression, out compiledExpression)) {
-                return compiledExpression;
-                //_compiledExpressions.Remove()
+                //return compiledExpression;
+                _compiledExpressions.Remove(expression);
             }
 
             try {
@@ -2108,6 +2108,10 @@ namespace UtilityBelt.Tools {
                 MetaExpressionsParser.ParseContext parseContext = expressionParser.parse();
                 compiledExpression = new Lib.Models.CompiledExpression(parseContext);
                 _compiledExpressions.Add(expression, compiledExpression);
+
+                if (UB.Plugin.Debug) {
+                    CoreManager.Current.Actions.AddChatText(parseContext.ToStringTree(expressionParser).Replace("\n","OK").Replace("\r","FPP"), 1);
+                }
 
                 return compiledExpression;
             }

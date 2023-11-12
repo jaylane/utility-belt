@@ -146,9 +146,11 @@ namespace UtilityBelt.Lib.Expressions {
         public override object VisitStringAtomExp(MetaExpressionsParser.StringAtomExpContext context) {
             var str = context.GetText();
             if (str.StartsWith("`"))
-                return Regex.Replace(str.Substring(1, str.Length - 2), @"\\(.)", "$1");
+                str = Regex.Replace(str.Substring(1, str.Length - 2), @"\\(.)", "$1");
             else
-                return Regex.Replace(str, @"\\(.)", "$1");
+               str = Regex.Replace(str, @"\\(.)", "$1").Trim(' ');
+
+            return str;
         }
 
         /// <summary>
@@ -167,6 +169,35 @@ namespace UtilityBelt.Lib.Expressions {
         /// <returns></returns>
         public override object VisitParenthesisExp(MetaExpressionsParser.ParenthesisExpContext context) {
             return Visit(context.expression());
+        }
+
+        public override object VisitInlineFunction([NotNull] MetaExpressionsParser.InlineFunctionContext context) {
+            var args = context.functionArgs().GetText().Replace("(", "").Replace(")","").Split(',');
+            return new ExpressionUserFunction(args.Select(a => a.Trim()).ToList(), context.functionBody().GetText());
+        }
+
+        public override object VisitUserFunctionCallExp([NotNull] MetaExpressionsParser.UserFunctionCallExpContext context) {
+            var varname = Visit(context.expression());
+
+            object funcVar = varname;
+
+            if (!(funcVar is ExpressionUserFunction userFunction)) {
+                throw new Exception($"Cannot call function {funcVar}. It was of type {GetFriendlyType(funcVar.GetType())} instead of UserFunction! (value: {funcVar})");
+            }
+
+            var arguments = new List<object>();
+            var argDebug = new List<string>();
+
+            for (var i = 0; i < context.userFunctionCallArgs().expression().Length; i++) {
+                var val = Visit(context.userFunctionCallArgs().expression(i));
+                arguments.Add(val);
+                argDebug.Add($"${(userFunction.ArgNames.Count > i ? userFunction.ArgNames[i] : "?")}={val}");
+            }
+            if (UtilityBeltPlugin.Instance.Plugin.Debug) {
+                Logger.WriteToChat($"Called function {userFunction} with args: {string.Join(", ", argDebug)}");
+            }
+
+            return userFunction.Call(arguments);
         }
 
         /// <summary>
@@ -190,6 +221,8 @@ namespace UtilityBelt.Lib.Expressions {
 
                 var isParamsKeyword = argTypes.Length > 0 && argTypes.Last() == typeof(ParamArrayAttribute);
                 var hasDefaults = parameters.Length > 0 && parameters.Last().IsOptional;
+
+                var overloads = new List<object>();
 
                 for (var i=0; i < parameters.Length; i++) {
                     // dependency injection
@@ -215,6 +248,11 @@ namespace UtilityBelt.Lib.Expressions {
                     // object type means allow anything
                     if (argTypes[i] == typeof(object))
                         continue;
+
+                    // try and convert expression strings to UserFunctions
+                    if (argTypes[i] == typeof(ExpressionUserFunction) && arguments[i] is string argString) {
+                        arguments[i] = new ExpressionUserFunction(expressionMethod.ArgMapping, argString);
+                    }
 
                     // try and convert ids to worldobjects
                     if (argTypes[i] == typeof(ExpressionWorldObject) && arguments[i].GetType() == typeof(double)) {
