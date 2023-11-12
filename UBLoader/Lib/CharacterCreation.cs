@@ -746,7 +746,7 @@ namespace UBLoader.Lib {
                                 ImGui.PushID(_id++); // image button id 
                                 {
                                     ImGui.PushStyleColor(ImGuiCol.Button, 0x00000000); // button color
-                                    if (ImGui.ImageButton(attr.Locked ? (IntPtr)LockOnTexture.UnmanagedComPointer : (IntPtr)LockOffTexture.UnmanagedComPointer, lockIconSize, new Vector2(0, 0), new Vector2(1, 1), 0, new Vector4())) {
+                                    if (ImGui.ImageButton(attr.Locked ? (IntPtr)LockOnTexture.UnmanagedComPointer : (IntPtr)LockOffTexture.UnmanagedComPointer, lockIconSize, new Vector2(0, 0), new Vector2(1, 1), 0, new Vector4(), new Vector4())) {
                                         attr.Locked = !attr.Locked;
                                         attr.Update();
                                     }

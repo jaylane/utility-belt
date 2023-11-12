@@ -165,4 +165,13 @@ namespace UtilityBelt.Lib {
             Color = color;
         }
     }
+
+    [AttributeUsage(AttributeTargets.Method)]
+    public class ExpressionStringArgsConversionAttribute : Attribute {
+        public List<string> Args { get; } = new List<string>();
+
+        public ExpressionStringArgsConversionAttribute(params string[] args) {
+            Args = args.ToList();
+        }
+    }
 }
