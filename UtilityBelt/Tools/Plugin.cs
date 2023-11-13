@@ -163,13 +163,6 @@ namespace UtilityBelt.Tools {
         [CommandPattern("", @"^$")]
         public void ShowVersion(string _, Match _1) {
             Logger.WriteToChat("UtilityBelt Version v" + Util.GetVersion(true) + "\n Type `/ub help` or `/ub help <command>` for help.");
-            EvaluateExpression(@"(() => {
-  listreduce[$_, () => {
-    `this is a comment lol, last statement in a function body is implicitly returned`;
-    $_total = $_{0}+$_{1};
-    $_total
-  }]
-})(1,2,3)", false);
         }
         #endregion
         #region /ub help
