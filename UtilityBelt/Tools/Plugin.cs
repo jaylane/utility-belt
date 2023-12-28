@@ -23,7 +23,6 @@ using System.Diagnostics;
 using UtilityBelt.Common.Enums;
 using ChatMessageType = UtilityBelt.Lib.Settings.ChatMessageType;
 using AcClient;
-using System.Runtime.InteropServices;
 
 namespace UtilityBelt.Tools {
     public class DelayedCommand {
@@ -1028,18 +1027,18 @@ namespace UtilityBelt.Tools {
         #region ifthen[]
         [ExpressionMethod("ifthen")]
         [ExpressionParameter(0, typeof(object), "value", "value to check for truthiness")]
-        [ExpressionParameter(1, typeof(ExpressionUserFunction), "trueexpr", "expression string to evaluate if value is truthy")]
-        [ExpressionParameter(2, typeof(ExpressionUserFunction), "falseexpr", "expression string to evaluate if value is *not* truthy, optional")]
+        [ExpressionParameter(1, typeof(string), "trueexpr", "expression string to evaluate if value is truthy")]
+        [ExpressionParameter(2, typeof(string), "falseexpr", "expression string to evaluate if value is *not* truthy, optional")]
         [ExpressionReturn(typeof(object), "Returns the result of evaluating the conditional expression string")]
         [Summary("If value is truthy, will execute the trueexpr string and return the results. If value is *not* truthy it will evaluate falseexpr string and return the results")]
         [Example("ifthen[1, `chatbox[\\`true\\`]`,`chatbox[\\`false\\`]`]", "writes `true` to the chatbox")]
         [Example("ifthen[0, `chatbox[\\`true\\`]`,`chatbox[\\`false\\`]`]", "writes `false` to the chatbox")]
-        public object IfThen(object condition, ExpressionUserFunction trueExpression, ExpressionUserFunction falseExpression =null) {
+        public object IfThen(object condition, string trueExpression, string falseExpression=null) {
             if (ExpressionVisitor.IsTruthy(condition)) {
-                return trueExpression.Call();
+                return UB.VTank.EvaluateExpression(trueExpression, true);
             }
             else if (falseExpression != null) {
-                return falseExpression.Call();
+                return UB.VTank.EvaluateExpression(falseExpression, true);
             }
 
             return (double)0;
@@ -1642,18 +1641,25 @@ namespace UtilityBelt.Tools {
         #region listfilter[list list, string expression]
         [ExpressionMethod("listfilter")]
         [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to filter")]
-        [ExpressionParameter(1, typeof(ExpressionUserFunction), "expression", "The expression to use for filtering. $0 (getvar[\\`0\\`]) will be set to the current iteration count, $1 will be set to the current item. return 1 to include, 0 to exclude")]
+        [ExpressionParameter(1, typeof(string), "expression", "The expression to use for filtering. $0 (getvar[\\`0\\`]) will be set to the current iteration count, $1 will be set to the current item. return 1 to include, 0 to exclude")]
         [ExpressionReturn(typeof(ExpressionList), "Returns a new filtered list")]
         [Summary("Creates a new list filtered by the specified expression")]
-        [Example("listfilter[wobjectfindallbyobjectclass[24],($player)=>{ wobjectgetintprop[$player,25]==275 }]", "creates a new list with all nearby level 275 characters")]
         [Example("listfilter[wobjectfindallbyobjectclass[24],`wobjectgetintprop[$1,25]==275`]", "creates a new list with all nearby level 275 characters")]
-        [ExpressionStringArgsConversion("1", "0")]
-        public object ListFilter(ExpressionList list, ExpressionUserFunction userFunction) {
+        public object ListFilter(ExpressionList list, string expression) {
             var results = new ExpressionList();
+            var compiled = UB.VTank.CompileExpression(expression);
             var i = 0;
+            var _0 = UB.VTank.Getvar("0");
+            var _1 = UB.VTank.Getvar("1");
+            var _2 = UB.VTank.Getvar("2");
             foreach (var item in list.Items) {
-                if (ExpressionVisitor.IsTruthy(userFunction.Call(new List<object>() { item, i++ }))) {
+                UB.VTank.Setvar("0", i++);
+                UB.VTank.Setvar("1", item);
+                if (ExpressionVisitor.IsTruthy(compiled.Run())) {
                     results.Items.Add(item);
+                    UB.VTank.Setvar("0", _0);
+                    UB.VTank.Setvar("1", _1);
+                    UB.VTank.Setvar("2", _2);
                 }
             }
             return results;
@@ -1662,17 +1668,24 @@ namespace UtilityBelt.Tools {
         #region listmap[list list, string expression]
         [ExpressionMethod("listmap")]
         [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to map")]
-        [ExpressionParameter(0, typeof(ExpressionUserFunction), "expression", "The expression to use for mapping. $0 (getvar[\\`0\\`]) will be set to the current iteration count, $1 will be set to the current item. return the mapped result")]
+        [ExpressionParameter(0, typeof(string), "expression", "The expression to use for mapping. $0 (getvar[\\`0\\`]) will be set to the current iteration count, $1 will be set to the current item. return the mapped result")]
         [ExpressionReturn(typeof(ExpressionList), "Returns a new mapped list")]
         [Summary("Creates a new list mapped by the specified expression")]
-        [Example("listmap[wobjectfindallbyobjectclass[24],(player)=>{ wobjectgetname[$player] }", "creates a new list with all nearby players names")]
         [Example("listmap[wobjectfindallbyobjectclass[24],`wobjectgetstringprop[$1,5]", "creates a new list with all nearby players titles")]
-        [ExpressionStringArgsConversion("1", "0")]
-        public object ListMap(ExpressionList list, ExpressionUserFunction userFunction) {
+        public object ListMap(ExpressionList list, string expression) {
             var results = new ExpressionList();
+            var compiled = UB.VTank.CompileExpression(expression);
             var i = 0;
+            var _0 = UB.VTank.Getvar("0");
+            var _1 = UB.VTank.Getvar("1");
+            var _2 = UB.VTank.Getvar("2");
             foreach (var item in list.Items) {
-                results.Items.Add(userFunction.Call(new List<object>() { item, i++ }));
+                UB.VTank.Setvar("0", i++);
+                UB.VTank.Setvar("1", item);
+                results.Items.Add(compiled.Run());
+                UB.VTank.Setvar("0", _0);
+                UB.VTank.Setvar("1", _1);
+                UB.VTank.Setvar("2", _2);
             }
             return results;
         }
@@ -1680,17 +1693,25 @@ namespace UtilityBelt.Tools {
         #region listreduce[list list, string expression]
         [ExpressionMethod("listreduce")]
         [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to reduce to a single value")]
-        [ExpressionParameter(1, typeof(ExpressionUserFunction), "expression", "The expression to use for reducing. If using a UserFunction then the first argument is the current item, the second argument is the reduced value, and the third argument is the current iteration count. If using a string expression, $0 (getvar[\\`0\\`]) will be set to the current iteration count, $1 will be set to the current item, $2 will be set to the current reduced value, return the modified result")]
+        [ExpressionParameter(1, typeof(string), "expression", "The expression to use for reducing. $0 (getvar[\\`0\\`]) will be set to the current iteration count, $1 will be set to the current item, $2 will be set to the current reduced value, return the modified result")]
         [ExpressionReturn(typeof(ExpressionList), "Returns a list reduced to a single value")]
         [Summary("Reduces a list down into a single value")]
-        [Example("listreduce[wobjectfindallbyobjectclass[24],(current,result)=>{ $result+wobjectgetintprop[$current,25] }]", "find the sum of all nearby character levels")]
         [Example("listreduce[wobjectfindallbyobjectclass[24],`$2+wobjectgetintprop[$1,25]`]", "find the sum of all nearby character levels")]
-        [ExpressionStringArgsConversion("1", "2", "0")]
-        public object ListReduce(ExpressionList list, ExpressionUserFunction userFunction) {
+        public object ListReduce(ExpressionList list, string expression) { 
             object result = 0;
+            var compiled = UB.VTank.CompileExpression(expression);
             var i = 0;
+            var _0 = UB.VTank.Getvar("0");
+            var _1 = UB.VTank.Getvar("1");
+            var _2 = UB.VTank.Getvar("2");
             foreach (var item in list.Items) {
-                result = userFunction.Call(new List<object>() { item, result, i++ });
+                UB.VTank.Setvar("0", i++);
+                UB.VTank.Setvar("1", item);
+                UB.VTank.Setvar("2", result);
+                result = compiled.Run();
+                UB.VTank.Setvar("0", _0);
+                UB.VTank.Setvar("1", _1);
+                UB.VTank.Setvar("2", _2);
             }
             return result;
         }
@@ -1698,21 +1719,22 @@ namespace UtilityBelt.Tools {
         #region listsort[list list, string expression]
         [ExpressionMethod("listsort")]
         [ExpressionParameter(0, typeof(ExpressionList), "list", "The list to sort")]
-        [ExpressionParameter(1, typeof(ExpressionUserFunction), "expression", "The expression to use for sorting. $1 (getvar[\\`1\\`]) will be set to item a, $2 will be set item b, return 0 if they are equal, -1 if $1 is less than $2, and 1 if $1 is greater than $2")]
+        [ExpressionParameter(1, typeof(string), "expression", "The expression to use for sorting. $1 (getvar[\\`1\\`]) will be set to item a, $2 will be set item b, return 0 if they are equal, -1 if $1 is less than $2, and 1 if $1 is greater than $2")]
         [ExpressionReturn(typeof(ExpressionList), "Returns a new list sorted by expression")]
         [Summary("Creates a list from another, sorted by expression")]
-        [Example("listsort[listcreate[1,4,6,2,3,6,7,9,2,2],(a,b)=>{ iif[$a==$b,0,iif[$a>$b,-1,1]]`] }]", "Sort a list of numbers in descending order")]
         [Example("listsort[wobjectfindallbyobjectclass[24],`setvar[la,wobjectgetintprop[$1,25]];setvar[lb,wobjectgetintprop[$2,25]];iif[$la==$lb,0,iif[$la<$lb,-1,1]]`]", "get a list of all characters sorted by level")]
-        [ExpressionStringArgsConversion("1", "2")]
-        public object ListSort(ExpressionList list, ExpressionUserFunction userFunction = null) {
+        public object ListSort(ExpressionList list, string expression="") {
             var results = new ExpressionList();
             var orig = list.Items.ToList();
-            if (userFunction == null) {
+            if (string.IsNullOrEmpty(expression)) {
                 orig.Sort();
             }
             else {
+                var compiled = UB.VTank.CompileExpression(expression);
                 orig.Sort((a, b) => {
-                    return Convert.ToInt32(userFunction.Call(new List<object>() { a, b }));
+                    UB.VTank.Setvar("1", a);
+                    UB.VTank.Setvar("2", b);
+                    return Convert.ToInt32(compiled.Run());
                 });
             }
             foreach (var item in orig) {

@@ -73,7 +73,6 @@ namespace UtilityBelt {
         public Dictionary<string, string> Examples = new Dictionary<string, string>();
         public string Summary { get; }
         public string Signature { get => $"{Name}[{string.Join(", ", ArgumentTypes.Select(t => ExpressionVisitor.GetFriendlyType(t)).ToArray())}]"; }
-        public List<string> ArgMapping { get; } = new List<string>();
 
         public ExpressionMethod(FieldInfo fieldInfo, MethodInfo method) {
             FieldInfo = fieldInfo;
@@ -109,11 +108,6 @@ namespace UtilityBelt {
             var summaryAttrs = method.GetCustomAttributes(typeof(SummaryAttribute), true);
             foreach (var attr in summaryAttrs) {
                 Summary = ((SummaryAttribute)attr).Summary;
-            }
-
-            var argConversionAttrs = method.GetCustomAttributes(typeof(ExpressionStringArgsConversionAttribute), true);
-            foreach (var attr in argConversionAttrs) {
-                ArgMapping = ((ExpressionStringArgsConversionAttribute)attr).Args;
             }
         }
     }

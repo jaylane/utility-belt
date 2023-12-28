@@ -9,13 +9,9 @@ namespace UtilityBelt.Lib.Expressions {
     public class ExpressionList : ExpressionObjectBase {
         public ObservableCollection<object> Items { get; set; } = new ObservableCollection<object>();
 
-        public ExpressionList(IEnumerable<object> items = null) {
+        public ExpressionList() {
             IsSerializable = true;
             Items.CollectionChanged += Items_CollectionChanged;
-
-            if (items != null) {
-                AddRange(items);
-            }
         }
 
         private void Items_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) {

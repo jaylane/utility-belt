@@ -138,9 +138,9 @@
       <PrivateAssets>all</PrivateAssets>
       <Private>False</Private>
     </PackageReference>
-    <PackageReference Include="UtilityBelt.Common" Version="1.1.0" />
+    <PackageReference Include="UtilityBelt.Common" Version="1.0.7" />
     <PackageReference Include="UtilityBelt.Networking" Version="2.1.0" />
-    <PackageReference Include="UtilityBelt.Service" Version="2.2.2">
+    <PackageReference Include="UtilityBelt.Service" Version="2.1.2">
       <ExcludeAssets>runtime; build;</ExcludeAssets>
     </PackageReference>
   </ItemGroup>

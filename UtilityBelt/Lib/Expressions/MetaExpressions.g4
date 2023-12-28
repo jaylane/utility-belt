@@ -2,15 +2,12 @@ grammar MetaExpressions;
 
 parse               : (expression (';' expression)* ';'?) EOF;
 
-expression          
+expression          : '(' expression ')'                                                          #parenthesisExp
 
-                    : '(' functionArgs ')' '=>' '{' ( functionBody | ) '}'                        #inlineFunction
-                    | STRING '[' expressionList ']'                                               #functionCall
                     | id=( '$' | '@' | '&' ) expression                                           #getvarAtomExp
-                    | expression '(' ( userFunctionCallArgs ) ')'                                 #userFunctionCallExp 
-                    | '(' expression ')'                                                          #parenthesisExp
                     | expression ('{' (c=':' | (c=':' i2=expression) | i1=expression | (i1=expression c=':' i2=expression) | (i1=expression c=':')) '}')    #getindexAtomExp
                     | (MINUS)? NUMBER                                                             #numericAtomExp
+                    | STRING expressionList                                                       #functionCall
                     | '~' expression                                                              #bitwiseComplementOp
                     | expression op=( '>>' | '<<' ) expression                                    #bitshiftOps
                     | expression op=( '&' | '^' | '|' ) expression                                #bitwiseOps
@@ -25,20 +22,15 @@ expression
                     | STRING                                                                      #stringAtomExp                    
                     | HEXNUMBER                                                                   #hexNumberAtomExp
                     | .                                                                           #catchallAtomExp
-                    |                                                                             #emptyExp
                     ;
-                    
-expressionList      : expression (',' expression)* ;
-functionBody        : expression (';' expression)* ';'? ;
-userFunctionCallArgs: expression (',' expression)* ;
 
-functionArgs        : (STRING (',' STRING)*)? ;
+expressionList      : '[' (expression (',' expression)*)? ']' ;
 
 BOOL                : ([tT][rR][uU][eE] | [fF][aA][lL][sS][eE]) ;
 MINUS               : '-';
 NUMBER              : (DIGIT* '.'? DIGIT+);
 HEXNUMBER           : '0x' [0-9A-Fa-f]+;
-STRING              : ( ('`' (BSLASH '`' | ~[`])* '`') | (([a-zA-Z_'"] | BSLASH .)+ ([a-zA-Z0-9_'" ]+ | BSLASH .)*) {if (!string.IsNullOrEmpty(_localctx?.GetText())) { this._text = _localctx.GetText().Trim(); } } ) ;
+STRING              : ( ('`' (BSLASH '`' | ~[`])* '`') | (([a-zA-Z_'"] | BSLASH .)+ ([a-zA-Z0-9_'" ]+ | BSLASH .)*) ) ;
 WHITESPACE          : [ \t\r\n]+ -> skip;
 
 fragment DIGIT      : [0-9] ;
