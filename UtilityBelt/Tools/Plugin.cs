@@ -43,11 +43,11 @@ namespace UtilityBelt.Tools {
         private static int _nextId = 1;
 
         public int Id;
-        public ExpressionUserFunction Expression;
+        public string Expression;
         public double Delay;
         public DateTime RunAt;
 
-        public DelayedExpression(ExpressionUserFunction expression, double delayMilliseconds) {
+        public DelayedExpression(string expression, double delayMilliseconds) {
             Id = _nextId++;
             Expression = expression;
             Delay = delayMilliseconds;
@@ -400,7 +400,7 @@ namespace UtilityBelt.Tools {
                 UB.Core.RenderFrame += Core_RenderFrame_Delay;
             }
         }
-        public DelayedExpression AddDelayedExpression(ExpressionUserFunction expression, double delay) {
+        public DelayedExpression AddDelayedExpression(string expression, double delay) {
             var delayed = new DelayedExpression(expression, delay);
             Logger.Debug($"Scheduling expression `{expression}` (id {delayed.Id}) with delay of {delay}ms. Clear with clearexec[{delayed.Id}]");
 
@@ -425,7 +425,7 @@ namespace UtilityBelt.Tools {
 
                 while (delayedExpressions.Count > 0 && delayedExpressions[0].RunAt <= DateTime.UtcNow) {
                     LogDebug($"Executing expression `{delayedExpressions[0].Expression}` (delay was {delayedExpressions[0].Delay}ms)");
-                    delayedExpressions[0].Expression.Call();
+                    UB.VTank.EvaluateExpression(delayedExpressions[0].Expression, true);
                     delayedExpressions.RemoveAt(0);
                 }
 
@@ -986,22 +986,22 @@ namespace UtilityBelt.Tools {
         #region Expressions
         #region exec[]
         [ExpressionMethod("exec")]
-        [ExpressionParameter(0, typeof(ExpressionUserFunction), "text", "The expression string to evaluate")]
+        [ExpressionParameter(0, typeof(string), "text", "The expression string to evaluate")]
         [ExpressionReturn(typeof(object), "Returns the result of evaluating the expression string")]
         [Summary("Evaluates a string as an expression")]
         [Example("exec[`1+1`]", "returns 2")]
-        public object Exec(ExpressionUserFunction expression) {
-            return expression.Call();
+        public object Exec(string expression) {
+            return UB.VTank.EvaluateExpression(expression, true);
         }
         #endregion //exec[]
         #region delayexec[]
         [ExpressionMethod("delayexec")]
         [ExpressionParameter(0, typeof(double), "delay", "The delay in milliseconds. 1 second = 1000 milliseconds.")]
-        [ExpressionParameter(1, typeof(ExpressionUserFunction), "text", "The expression string to evaluate")]
+        [ExpressionParameter(1, typeof(string), "text", "The expression string to evaluate")]
         [ExpressionReturn(typeof(object), "Returns the id of the delayexec")]
         [Summary("Evaluates a string as an expression, after the specified delay")]
         [Example("delayexec[1000, `1+1`]", "evaluates the expression `1+1` after a 1000ms (1s) delay")]
-        public object DelayExec(double delay, ExpressionUserFunction expression) {
+        public object DelayExec(double delay, string expression) {
             var delayed = AddDelayedExpression(expression, delay);
             return (double)delayed.Id;
         }
