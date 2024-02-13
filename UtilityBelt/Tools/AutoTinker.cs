@@ -11,9 +11,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using UtilityBelt.Lib;
 using UtilityBelt.Lib.Tinker;
-using System.ComponentModel;
 using UBHelper;
-using UtilityBelt.Lib.Settings;
 using UtilityBelt.Service.Lib.Settings;
 
 namespace UtilityBelt.Tools {
@@ -115,6 +113,10 @@ The Rend All button will automatically do the following:
         #region Config
         [Summary("Minimum percentage required to perform tinker")]
         public readonly Setting<float> MinPercentage = new Setting<float>(99.5f);
+
+
+        [Summary("Max number of tinker attempts.")]
+        public Setting<int> MaxTinks = new Setting<int>(10);
 
         #endregion
 
@@ -324,19 +326,26 @@ The Rend All button will automatically do the following:
 
         public void AutoTinkMaxTinksCombo_Change(object sender, EventArgs e) {
             try {
+                HudStaticText maxTinksString = (HudStaticText)(AutoTinkMaxTinksCombo[AutoTinkMaxTinksCombo.Current]);
+                int.TryParse(maxTinksString.Text, out int maxTinks);
+                MaxTinks.Value = maxTinks;
+                Logger.WriteToChat("Updated max tink value to " + MaxTinks.Value);
                 Stop();
-                if (storedTargetItem == null) {
-                    //Logger.WriteToChat("select an item first");
+
+                /*if (storedTargetItem == null) {
+                    Logger.WriteToChat("select an item first");
                     return;
                 }
                 Logger.Debug("PopulateListButton_Hit");
                 runType = "single";
                 SetTinkerSkills();
+                WriteToChat("before if");
                 if (isPopulating) {
                     WriteToChat("is populating is running");
                     return;
                 }
                 else {
+                    WriteToChat("in else");
                     tinkerJobManager.Stop();
                     isPopulating = true;
                     List<int> rescanItem = new List<int>();
@@ -371,8 +380,11 @@ The Rend All button will automatically do the following:
 
                     HudStaticText c = (HudStaticText)(AutoTinkCombo[AutoTinkCombo.Current]);
                     string currentSalvageChoice = c.Text.ToString();
-                    HudStaticText maxTinksString = (HudStaticText)(AutoTinkMaxTinksCombo[AutoTinkMaxTinksCombo.Current]);
-                    int.TryParse(maxTinksString.Text, out int maxTinks);
+                    //HudStaticText maxTinksString = (HudStaticText)(AutoTinkMaxTinksCombo[AutoTinkMaxTinksCombo.Current]);
+                    //int.TryParse(maxTinksString.Text, out int maxTinks);
+                    //Logger.WriteToChat("updating MaxTinks.Value to " + MaxTinks.Value.ToString());
+                    //MaxTinks.Value = maxTinks;
+                    //Logger.WriteToChat("MaxTinks.Value " + MaxTinks.Value.ToString());
 
                     new Assessor.Job(UB.Assessor, ref rescanItem, (_) => { }, () => {
                         tinkerJobManager.TinkerListFinished += TinkerList_Finished;
@@ -384,7 +396,7 @@ The Rend All button will automatically do the following:
                         rescanItem.Clear();
                     });
                     tinkerJob.minPercent = minPercent;
-                }
+                }*/
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -1027,12 +1039,23 @@ The Rend All button will automatically do the following:
         } 
 
         public void PopulateAutoTinkMaxTinksCombo() {
+            //Logger.WriteToChat("populating autotinkmaxtinkscombo");
             AutoTinkMaxTinksCombo.Clear();
 
             for (int i = 1; i <= 10; i++) {
                 AutoTinkMaxTinksCombo.AddItem(i.ToString(), null);
             }
-            AutoTinkMaxTinksCombo.Current = AutoTinkMaxTinksCombo.Count - 1;
+
+            if (MaxTinks.Value > 0 && MaxTinks.Value <= 10) {
+                AutoTinkMaxTinksCombo.Current = MaxTinks.Value - 1;
+                Logger.Debug("loaded max tink value: " + MaxTinks.Value.ToString());
+            }
+            else {
+                AutoTinkMaxTinksCombo.Current = 10;
+            }
+
+
+            //AutoTinkMaxTinksCombo.Current = AutoTinkMaxTinksCombo.Count - 1;
         }
 
         public double GetDPS(double maxDamage, double variance) {
