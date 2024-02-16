@@ -31,3 +31,4 @@
 - Added experiment VTank.MetaTickRateOverride setting to override vtanks internal meta tick rate.
 - Hotkeys are not properly unregistered during plugin shutdown
 - Fix issue where dungeon/landscape map textures were getting cut off
+- Add setting to store last max tink value
