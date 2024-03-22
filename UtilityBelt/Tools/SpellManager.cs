@@ -535,7 +535,7 @@ When loading you can use the best version of a spell available, determined by yo
             SpellCastSubMenu* menu = (SpellCastSubMenu*)((&(myUI->m_subMenus)) + ((_tab) * (sizeof(SpellCastSubMenu) / 4)));
 
             // get spell name, for prettiness
-            AC1Legacy.PStringBase<char> name = new AC1Legacy.PStringBase<char>();
+            AC1Legacy.PStringBase<byte> name = new();
             ClientMagicSystem.s_pMagicSystem->GetSpellName(&name, _spellID);
 
             // if index came in as -1, add to end:
