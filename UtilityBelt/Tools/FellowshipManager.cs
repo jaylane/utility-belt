@@ -296,7 +296,7 @@ namespace UtilityBelt.Tools {
         public unsafe void Create(string _name) {
             if (InFellowship) return;
             if (string.IsNullOrEmpty(_name)) return;
-            AC1Legacy.PStringBase<char> pStringBase = _name.TrimEnd('\0') + '\0';
+            AC1Legacy.PStringBase<byte> pStringBase = _name.TrimEnd('\0') + '\0';
 
             int share_xp = (int)(*CPlayerSystem.s_pPlayerSystem)->playerModule.PlayerModule.FellowshipShareXP();
             CM_Fellowship.Event_Create(&pStringBase, share_xp);

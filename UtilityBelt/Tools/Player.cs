@@ -212,7 +212,7 @@ namespace UtilityBelt.Tools {
         public unsafe void Player_Strings_LoadPage() {
             CBaseQualities* playerQualities = &(*CPhysicsObj.player_object)->weenie_obj->m_pQualities->a0.a1;
             var table = playerQualities->_strStatsTable;
-            AcClient.PackableHashData<uint, AC1Legacy.PStringBase<char>>*[] mytable = new AcClient.PackableHashData<uint, AC1Legacy.PStringBase<char>>*[16];
+            AcClient.PackableHashData<uint, AC1Legacy.PStringBase<byte>>*[] mytable = new AcClient.PackableHashData<uint, AC1Legacy.PStringBase<byte>>*[16];
             if (StartIDX >= table->_currNum) StartIDX = 0;
             table->CopyTo(mytable, StartIDX);
             int iter = 0;
@@ -285,7 +285,7 @@ namespace UtilityBelt.Tools {
             int iter = 0;
             foreach (var j in mytable) {
                 if (j == null) continue;
-                AC1Legacy.PStringBase<char>* skillName = AC1Legacy.PStringBase<char>.null_string;
+                AC1Legacy.PStringBase<byte>* skillName = AC1Legacy.PStringBase<byte>.null_string;
                 SkillSystem.InqSkillName(j->_key, skillName);
                 string left = $"{j->_key}";
                 string text = $"({j->_key}){*skillName}";
