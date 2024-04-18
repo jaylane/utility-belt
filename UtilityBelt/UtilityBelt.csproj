@@ -853,9 +853,9 @@
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="TaskParallelLibrary" Version="1.0.2856.0" />
-    <PackageReference Include="UtilityBelt.Common" Version="1.1.1" />
+    <PackageReference Include="UtilityBelt.Common" Version="1.2.0" />
     <PackageReference Include="UtilityBelt.Networking" Version="2.1.0" />
-    <PackageReference Include="UtilityBelt.Service" Version="2.2.11">
+    <PackageReference Include="UtilityBelt.Service" Version="2.2.12">
       <ExcludeAssets>runtime; build;</ExcludeAssets>
     </PackageReference>
   </ItemGroup>

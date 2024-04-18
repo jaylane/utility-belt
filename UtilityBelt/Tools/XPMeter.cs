@@ -183,8 +183,8 @@ namespace UtilityBelt.Tools {
         internal Hook ClientObjMaintSystem__Handle_Qualities__PrivateUpdateInt64_hook = new AcClient.Hook(0x00559C40, 0x006AF9DB);
         // .text:00559C40 ; public: unsigned long __thiscall ClientObjMaintSystem::Handle_Qualities__PrivateUpdateInt64(unsigned char,unsigned long,__int64)
         // .text:006AF9DB                 call    ?Handle_Qualities__PrivateUpdateInt64@ClientObjMaintSystem@@QAEKEK_J@Z ; ClientObjMaintSystem::Handle_Qualities__PrivateUpdateInt64(uchar,ulong,__int64)
-        [UnmanagedFunctionPointer(CallingConvention.ThisCall)] internal unsafe delegate UInt32 ClientObjMaintSystem__Handle_Qualities__PrivateUpdateInt64_def(ClientObjMaintSystem* This, byte wts, UInt32 stype, Int64 val);
-        private unsafe UInt32 ClientObjMaintSystem__Handle_Qualities__PrivateUpdateInt64(ClientObjMaintSystem* This, byte wts, UInt32 stype, Int64 val) {
+        [UnmanagedFunctionPointer(CallingConvention.ThisCall)] internal unsafe delegate UInt32 ClientObjMaintSystem__Handle_Qualities__PrivateUpdateInt64_def(ClientObjMaintSystem* This, char wts, UInt32 stype, Int64 val);
+        private unsafe UInt32 ClientObjMaintSystem__Handle_Qualities__PrivateUpdateInt64(ClientObjMaintSystem* This, char wts, UInt32 stype, Int64 val) {
             switch (stype) {
                 case 2:
                     if (val - lastXP > 0) accum_XP += val - lastXP;
@@ -248,7 +248,7 @@ namespace UtilityBelt.Tools {
                 }
                 ImGui.SameLine();
                 if (ImGui.Button("/say", new Vector2(50, 20))) {
-                    AC1Legacy.PStringBase<byte> text = Gloat();
+                    AC1Legacy.PStringBase<char> text = Gloat();
                     CM_Communication.Event_Talk(&text);
                 }
             }
