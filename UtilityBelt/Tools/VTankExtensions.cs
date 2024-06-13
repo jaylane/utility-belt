@@ -207,16 +207,36 @@ namespace UtilityBelt.Tools {
                 d.Add(new Regex("^You reduce (?<targetname>.*) to a drained, twisted corpse!$"));
                 d.Add(new Regex("^(?<targetname>.*) is dessicated by your attack!$"));
                 d.Add(new Regex("^(?<targetname>.*)'s last strength withers before you!$"));
+
                 var harmony = (Harmony)patchHarmony;
                 var bo = typeof(uTank2.PluginCore).Assembly.GetType("bo");
                 MethodInfo vtExprAct_original = bo.GetMethod("a", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(object), typeof(ChatTextInterceptEventArgs) }, new ParameterModifier[] { });
                 MethodInfo vtExprAct_prefix = typeof(VTankExtensions).GetMethod("ExecuteEnableCleaveModPatch_Prefix");
                 harmony.Patch(vtExprAct_original, new HarmonyMethod(vtExprAct_prefix));
+
+                var gj = typeof(uTank2.PluginCore).Assembly.GetType("gj");
+                MethodInfo vtExprAct_original2 = bo.GetMethod("a", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(object), typeof(ChatTextInterceptEventArgs) }, new ParameterModifier[] { });
+                MethodInfo vtExprAct_prefix2 = typeof(VTankExtensions).GetMethod("ExecuteEnableCleaveModPatch2_Prefix");
+                harmony.Patch(vtExprAct_original2, new HarmonyMethod(vtExprAct_prefix2));
             }
             catch (Exception ex) { Logger.LogException(ex); }
         }
 
         public static bool ExecuteEnableCleaveModPatch_Prefix(ref object __instance, object A_0, ChatTextInterceptEventArgs A_1) {
+            try {
+                foreach (var r in d) {
+                    if (r.IsMatch(A_1.Text)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return true;
+        }
+
+        public static bool ExecuteEnableCleaveModPatch2_Prefix(ref object __instance, object A_0, ChatTextInterceptEventArgs A_1) {
             try {
                 foreach (var r in d) {
                     if (r.IsMatch(A_1.Text)) {
