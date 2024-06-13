@@ -26,6 +26,7 @@ namespace UtilityBelt.Tools {
         internal static Dictionary<string, Harmony> HarmonyPatches = new();
         internal static Harmony harmonyExpressions;
         internal static VTankExtensions instance;
+        private static List<Regex> d = new List<Regex>(99);
 
         private struct CastReplacementInfo {
             public string Name { get; set; }
@@ -46,6 +47,9 @@ namespace UtilityBelt.Tools {
         [VTankPatchSetting]
         [Summary("Use real client locations from UB Network when following")]       
         public readonly Setting<bool> BetterFollowing = new Setting<bool>(true);
+        [VTankPatchSetting]
+        [Summary("Enable cleave mod support (spells hit multiple targets)")]
+        public readonly Setting<bool> EnableCleaveMod = new Setting<bool>(false);
         #endregion // config
 
         private Dictionary<string, Harmony> VTankSettingPatches = new();
@@ -162,6 +166,68 @@ namespace UtilityBelt.Tools {
             Type pickSpell = typeof(uTank2.PluginCore).Assembly.GetType("hi");
             Type arg1 = typeof(uTank2.PluginCore).Assembly.GetType("hi+a");
             harmony.Patch(AccessTools.Method(pickSpell, "a", new Type[] { arg1.MakeByRefType() }), transpiler: new HarmonyMethod(typeof(VTankExtensions), nameof(PickSpellTranspiler)));
+        }
+
+        private void EnableCleaveModPatch(object patchHarmony) {
+            try {
+                d.Clear();
+                d.Add(new Regex("^You knock (?<targetname>.*) into next Morningthaw!$"));
+                d.Add(new Regex("^You obliterate (?<targetname>.*)!$"));
+                d.Add(new Regex("^(?<targetname>.*) is utterly destroyed by your attack!$"));
+                d.Add(new Regex("^(?<targetname>.*) catches your attack, with dire consequences!$"));
+                d.Add(new Regex("^The deadly force of your attack is so strong that (?<targetname>.*)'s ancestors feel it!$"));
+                d.Add(new Regex("^You smite (?<targetname>.*) mightily!$"));
+                d.Add(new Regex("^You slay (?<targetname>.*) viciously enough to impart death several times over!$"));
+                d.Add(new Regex("^You killed (?<targetname>.*)!$"));
+                d.Add(new Regex("^(?<targetname>.*) is torn to ribbons by your assault!$"));
+                d.Add(new Regex("^You cleave (?<targetname>.*) in twain!$"));
+                d.Add(new Regex("^Your killing blow nearly turns (?<targetname>.*) inside-out!$"));
+                d.Add(new Regex("^You split (?<targetname>.*) apart!$"));
+                d.Add(new Regex("^The thunder of crushing (?<targetname>.*) is followed by the deafening silence of death!$"));
+                d.Add(new Regex("^You beat (?<targetname>.*) to a lifeless pulp!$"));
+                d.Add(new Regex("^(?<targetname>.*) is shattered by your assault!$"));
+                d.Add(new Regex("^You flatten (?<targetname>.*)'s body with the force of your assault!$"));
+                d.Add(new Regex("^(?<targetname>.*) is fatally punctured!$"));
+                d.Add(new Regex("^(?<targetname>.*)'s perforated corpse falls before you!$"));
+                d.Add(new Regex("^You run (?<targetname>.*) through!$"));
+                d.Add(new Regex("^(?<targetname>.*)'s death is preceded by a sharp, stabbing pain!$"));
+                d.Add(new Regex("^You bring (?<targetname>.*) to a fiery end!$"));
+                d.Add(new Regex("^(?<targetname>.*) is incinerated by your assault!$"));
+                d.Add(new Regex("^(?<targetname>.*) is reduced to cinders!$"));
+                d.Add(new Regex("^(?<targetname>.*)'s seared corpse smolders before you!$"));
+                d.Add(new Regex("^Your lightning coruscates over (?<targetname>.*)'s mortal remains!$"));
+                d.Add(new Regex("^Blistered by lightning, (?<targetname>.*) falls!$"));
+                d.Add(new Regex("^Electricity tears (?<targetname>.*) apart!$"));
+                d.Add(new Regex("^Your assault sends (?<targetname>.*) to an icy death!$"));
+                d.Add(new Regex("^Your attack stops (?<targetname>.*) cold!$"));
+                d.Add(new Regex("^(?<targetname>.*) suffers a frozen fate!$"));
+                d.Add(new Regex("^(?<targetname>.*)'s last strength dissolves before you!$"));
+                d.Add(new Regex("^(?<targetname>.*) is liquified by your attack!$"));
+                d.Add(new Regex("^You reduce (?<targetname>.*) to a sizzling, oozing mass!$"));
+                d.Add(new Regex("^You reduce (?<targetname>.*) to a drained, twisted corpse!$"));
+                d.Add(new Regex("^(?<targetname>.*) is dessicated by your attack!$"));
+                d.Add(new Regex("^(?<targetname>.*)'s last strength withers before you!$"));
+                var harmony = (Harmony)patchHarmony;
+                var bo = typeof(uTank2.PluginCore).Assembly.GetType("bo");
+                MethodInfo vtExprAct_original = bo.GetMethod("a", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(object), typeof(ChatTextInterceptEventArgs) }, new ParameterModifier[] { });
+                MethodInfo vtExprAct_prefix = typeof(VTankExtensions).GetMethod("ExecuteEnableCleaveModPatch_Prefix");
+                harmony.Patch(vtExprAct_original, new HarmonyMethod(vtExprAct_prefix));
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+        }
+
+        public static bool ExecuteEnableCleaveModPatch_Prefix(ref object __instance, object A_0, ChatTextInterceptEventArgs A_1) {
+            try {
+                foreach (var r in d) {
+                    if (r.IsMatch(A_1.Text)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex) { Logger.LogException(ex); }
+
+            return true;
         }
 
         private void DontStopOnErrorPatch(object patchHarmony) {
@@ -317,7 +383,7 @@ namespace UtilityBelt.Tools {
                 {
                     A_0 = hi.a.b;
                     this.c = dz.f.b("Magic Yield Other I");
-                    this.d = hi.b.b;
+                    d = hi.b.b;
                     return;
                 }
                 */
@@ -353,7 +419,7 @@ namespace UtilityBelt.Tools {
                         var spellField = pickSpell.GetField("c", BindingFlags.NonPublic | BindingFlags.Instance);
                         //this.c = spell
                         spellField.SetValue(hi, spell);
-                        //this.d = hi.b.something looks like this a flag to track what debuff was applied. 1 is the magic yield debuff.
+                        //d = hi.b.something looks like this a flag to track what debuff was applied. 1 is the magic yield debuff.
                         pickSpell.GetField("d", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(hi, System.Enum.GetValues(something).GetValue(1));
                         return true;
                     }
