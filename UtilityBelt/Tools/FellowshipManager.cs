@@ -408,7 +408,7 @@ namespace UtilityBelt.Tools {
         [Summary("Returns 1 if your fellowship is open, or you are the leader, and the fellowship is not full")]
         [Example("getfellowshipcanrecruit[]", "Returns 1 if you're in a fellowship, and are the leader, or the fellowship is open, and the fellowship is not full")]
         public object GetfellowshipCanRecruit() {
-            return (IsLeader || Open) && MemberCount < 9;
+            return InFellowship && (IsLeader || Open) && MemberCount < 9;
         }
         #endregion
         #region getfellownames[]
