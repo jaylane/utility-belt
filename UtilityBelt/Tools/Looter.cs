@@ -1,15 +1,17 @@
-using System;
+using AcClient;
 using Decal.Adapter;
+using Decal.Adapter.Wrappers;
+using Decal.Interop.Input;
+using Exceptionless.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using UtilityBelt.Lib;
-using uTank2;
-using Decal.Adapter.Wrappers;
-using UtilityBelt.Service.Lib.Settings;
-using Decal.Interop.Input;
-using Timer = Decal.Interop.Input.Timer;
 using UBHelper;
-using Exceptionless.Models;
+using uTank2;
+using UtilityBelt.Lib;
+using UtilityBelt.Lib.Expressions;
+using UtilityBelt.Service.Lib.Settings;
+using Timer = Decal.Interop.Input.Timer;
 
 
 namespace UtilityBelt.Tools {
@@ -134,6 +136,37 @@ namespace UtilityBelt.Tools {
 
         [Summary("Test mode")]
         public Setting<bool> TestMode = new Setting<bool>(false);
+
+        #region Expressions
+        #region hascorpsebeenopenedbyme[wobject obj]
+        [ExpressionMethod("hascorpsebeenopenedbyme")]
+        [ExpressionParameter(0, typeof(ExpressionWorldObject), "obj", "The corpse to check")]
+        [ExpressionReturn(typeof(double), "Returns 1 if opened, 0 otherwise")]
+        [Summary("Checks if the the passed corpse wobject has been opened by me")]
+        [Example("hascorpsebeenopenedbyme[wobjectgetselection[]]", "Checks if the the passed corpse wobject has been opened by me")]
+        public object HasCorpseOpenedByMe(ExpressionWorldObject wobject) {
+            return ACCWeenieObject.HasCorpseBeenOpened((uint)wobject.Id);
+        }
+        #endregion
+        #region getcorpsesunopenedbyme[]
+        [ExpressionMethod("getcorpsesunopenedbyme")]
+        [ExpressionReturn(typeof(ExpressionList), "A list of corpses unopened by me")]
+        [Summary("Gets a list of corpse ids unopened by me")]
+        [Example("getcorpsesunopenedbyme[]", "Gets a list of corpse ids that were killed by me, and unopened by me")]
+        public object GetCorpsesUnopenedByMe() {
+            var foundCorpses = new ExpressionList();
+
+            using var corpses = CoreManager.Current.WorldFilter.GetByObjectClass(ObjectClass.Corpse);
+            foreach (var corpse in corpses) {
+                if (ACCWeenieObject.HasCorpseBeenOpened((uint)corpse.Id) == 0) {
+                    foundCorpses.Items.Add(corpse.Id);
+                }
+            }
+
+            return foundCorpses;
+        }
+        #endregion
+        #endregion
 
         public Looter(UtilityBeltPlugin ub, string name) : base(ub, name) {
 
