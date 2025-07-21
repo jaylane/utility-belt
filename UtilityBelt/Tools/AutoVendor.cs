@@ -98,12 +98,6 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         private bool showMerchantInfoCooldown = false;
         private List<int> itemsToId = new List<int>();
 
-        // Batch processing state management
-        private List<List<WorldObject>> sellBatches = new List<List<WorldObject>>();
-        private int currentSellBatch = 0;
-        private DateTime lastSellTime = DateTime.MinValue;
-        private bool isProcessingSellBatches = false;
-
         private int expectedPyreals = 0;
         private readonly Dictionary<int, int> myPyreals = new Dictionary<int, int>();
         private readonly Dictionary<int, int> pendingBuy = new Dictionary<int, int>();
@@ -140,12 +134,6 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
 
         [Summary("Tine between open vendor attempts (in milliseconds)")]
         public readonly Setting<int> TriesTime = new Setting<int>(5000);
-
-        [Summary("Maximum number of items to sell in one transaction")]
-        public readonly Setting<int> MaxItems = new Setting<int>(99);
-
-        [Summary("Timeout between sell all button clicks (in milliseconds)")]
-        public readonly Setting<int> TimeoutBetweenSales = new Setting<int>(1000);
         #endregion
 
         #region Commands
@@ -529,35 +517,13 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         }
         private void CheckDone() {
             //Logger.WriteToChat($"CheckDone {((double)((DateTime.UtcNow.ToFileTimeUtc() - 116444736000000000) / 10) / 1000000):n6} expectedPyreals:{expectedPyreals} pendingSell({pendingSell.Count}):{string.Join(",",pendingSell.Select(x=>x.ToString("X8")).ToArray())} pendingBuy({pendingBuy.Count}):{string.Join(",", pendingBuy.Select(x=>x.Key.ToString("X8")+"*"+x.Value).ToArray())}");
-            
-            // Check if current transaction (batch or regular) is complete
-            bool transactionComplete = expectedPyreals < 50 && pendingSell.Count() == 0 && pendingBuy.Count() == 0;
-            
-            if (transactionComplete) {
-                if (isProcessingSellBatches && currentSellBatch < sellBatches.Count) {
-                    // Current batch is complete, but more batches remain
-                    LogDebug($"CheckDone: Batch {currentSellBatch}/{sellBatches.Count} completed, preparing for next batch");
-                    lastEvent = DateTime.MinValue; // Clear event timer to allow next batch processing
-                    needsToSell = false; // Reset sell flag for next batch
-                } else {
-                    // All transactions complete (no batches or all batches finished)
-                    lastEvent = DateTime.MinValue;
-                    shouldAutoStack = UB.InventoryManager.AutoStack;
-                    shouldAutoCram = UB.InventoryManager.AutoCram;
-                    
-                    // Clean up batch processing state if we were processing batches
-                    if (isProcessingSellBatches) {
-                        LogDebug("CheckDone: All batches completed, cleaning up batch processing state");
-                        isProcessingSellBatches = false;
-                        currentSellBatch = 0;
-                        sellBatches.Clear();
-                        lastSellTime = DateTime.MinValue;
-                    }
-                }
+            if (expectedPyreals < 50 && pendingSell.Count() == 0 && pendingBuy.Count() == 0) {
+                lastEvent = DateTime.MinValue;
+                shouldAutoStack = UB.InventoryManager.AutoStack;
+                shouldAutoCram = UB.InventoryManager.AutoCram;
             }
-            else {
+            else
                 lastEvent = DateTime.UtcNow;
-            }
             bailTimer = DateTime.UtcNow;
         }
         private void EchoFilter_ClientDispatch(object sender, NetworkMessageEventArgs e) {
@@ -834,12 +800,6 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             //UB.InventoryManager.Resume();
             isRunning = needsToBuy = needsToSell = false;
 
-            // Clear batch processing state
-            isProcessingSellBatches = false;
-            currentSellBatch = 0;
-            sellBatches.Clear();
-            lastSellTime = DateTime.MinValue;
-
             pendingBuy.Clear();
             pendingSell.Clear();
 
@@ -920,36 +880,13 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                             CheckDone();
                         }
                         else if (needsToSell) {
-                            if (isProcessingSellBatches) {
-                                // Batch processing mode - check timeout only if this isn't the first sell time
-                                if (lastSellTime == DateTime.MinValue || DateTime.UtcNow - lastSellTime >= TimeSpan.FromMilliseconds(TimeoutBetweenSales.Value)) {
-                                    needsToSell = false;
-                                    UB.Core.Actions.VendorSellAll();
-                                    LogDebug($"VendorSellAll - Batch {currentSellBatch}/{sellBatches.Count}");
-                                    lastSellTime = DateTime.UtcNow;
-                                    CheckDone();
-                                }
-                                // If timeout hasn't elapsed, wait for next frame
-                            } else {
-                                // Normal single-batch mode
-                                needsToSell = false;
-                                UB.Core.Actions.VendorSellAll();
-                                //Logger.Debug("VendorSellAll");
-                                CheckDone();
-                            }
+                            needsToSell = false;
+                            UB.Core.Actions.VendorSellAll();
+                            //Logger.Debug("VendorSellAll");
+                            CheckDone();
                         }
                         else {
-                            // Check if we need to process the next batch
-                            if (isProcessingSellBatches && currentSellBatch < sellBatches.Count) {
-                                if (ProcessNextSellBatch()) {
-                                    LogDebug($"Started processing batch {currentSellBatch}/{sellBatches.Count}");
-                                } else {
-                                    LogDebug("Failed to process next batch, calling DoVendoring");
-                                    DoVendoring();
-                                }
-                            } else {
-                                DoVendoring();
-                            }
+                            DoVendoring();
                         }
                     }
                     // vendor closed?
@@ -1027,23 +964,11 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                 if (buyItems.Count > 0)
                     nextBuyItem = buyItems[0].Item;
 
-                // Check if we need batch processing for sell items
-                if (sellItems.Count > MaxItems.Value) {
-                    BuildSellBatches(sellItems);
-                    if (sellBatches.Count > 0) {
-                        isProcessingSellBatches = true;
-                        currentSellBatch = 0;
-                        LogDebug($"DoVendoring: Starting batch processing with {sellBatches.Count} batches");
-                        // Process first batch with the existing logic below, but limit to first batch
-                        sellItems = sellBatches[0];
-                    }
-                }
-
                 int totalSellValue = 0;
                 int sellItemCount = 0;
 
                 StringBuilder sellAdded = new StringBuilder("Autovendor Sell List: ");
-                while (sellItemCount < sellItems.Count && sellItemCount < MaxItems.Value) { // Configurable item limit per transaction
+                while (sellItemCount < sellItems.Count && sellItemCount < 99) { // GDLE limits transactions to 99 items. (less than 100)
                     var item = sellItems[sellItemCount];
                     var value = GetVendorBuyPrice(item);
                     var stackSize = item.Values(LongValueKey.StackCount, 1);
@@ -1244,86 +1169,6 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                 return buyPrice1.CompareTo(buyPrice2);
             });
             return sellObjects;
-        }
-
-        private void BuildSellBatches(List<WorldObject> sellItems) {
-            sellBatches.Clear();
-            currentSellBatch = 0;
-            isProcessingSellBatches = false;
-            lastSellTime = DateTime.MinValue;
-
-            if (sellItems.Count == 0) {
-                return;
-            }
-
-            int maxItemsPerBatch = Math.Max(1, MaxItems.Value); // Ensure at least 1 item per batch
-            
-            for (int i = 0; i < sellItems.Count; i += maxItemsPerBatch) {
-                var batch = new List<WorldObject>();
-                int endIndex = Math.Min(i + maxItemsPerBatch, sellItems.Count);
-                
-                for (int j = i; j < endIndex; j++) {
-                    batch.Add(sellItems[j]);
-                }
-                
-                sellBatches.Add(batch);
-            }
-
-            LogDebug($"BuildSellBatches: Created {sellBatches.Count} batches from {sellItems.Count} items (max {maxItemsPerBatch} per batch)");
-        }
-
-        private bool ProcessNextSellBatch() {
-            if (!isProcessingSellBatches || sellBatches.Count == 0) {
-                return false;
-            }
-
-            if (currentSellBatch >= sellBatches.Count) {
-                // All batches completed
-                isProcessingSellBatches = false;
-                currentSellBatch = 0;
-                sellBatches.Clear();
-                LogDebug("ProcessNextSellBatch: All batches completed");
-                return false;
-            }
-
-            var currentBatch = sellBatches[currentSellBatch];
-            UB.Core.Actions.VendorClearSellList();
-            Reset_pendingSell();
-
-            int totalSellValue = 0;
-            StringBuilder sellAdded = new StringBuilder($"Autovendor Sell List (Batch {currentSellBatch + 1}/{sellBatches.Count}): ");
-
-            for (int i = 0; i < currentBatch.Count; i++) {
-                var item = currentBatch[i];
-                var value = GetVendorBuyPrice(item);
-                var stackSize = item.Values(LongValueKey.StackCount, 1);
-
-                if (stackSize < 0) {
-                    stackSize = (new UBHelper.Weenie(item.Id)).StackCount;
-                    if (stackSize == 0)
-                        stackSize = 1;
-                }
-
-                if (i > 0)
-                    sellAdded.Append(", ");
-                sellAdded.Append(Util.GetObjectName(item.Id));
-
-                pendingSell.Add(item.Id);
-                UB.Core.Actions.SelectItem(item.Id);
-                UB.Core.Actions.VendorAddSellList(item.Id);
-                totalSellValue += (int)(value * stackSize);
-            }
-
-            if (currentBatch.Count > 0) {
-                Logger.Debug(sellAdded.ToString() + " - " + totalSellValue);
-                expectedPyreals = totalSellValue;
-                needsToSell = true;
-                currentSellBatch++;
-                lastSellTime = DateTime.UtcNow;
-                return true;
-            }
-
-            return false;
         }
 
         private bool ItemIsSafeToGetRidOf(WorldObject wo) {
