@@ -8,6 +8,7 @@ Have a feature / suggestion / bug report? Join us in [Discord](https://discord.g
 
 ## Building
 
+ 
 - Update to decal beta (you can build without updating, but you wont be able to load the plugin)
 - Pull latest master
 - If you have previously built this project:

@@ -134,6 +134,13 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
 
         [Summary("Tine between open vendor attempts (in milliseconds)")]
         public readonly Setting<int> TriesTime = new Setting<int>(5000);
+
+        [Summary("Maximum number of items to sell in one transaction")]
+        public readonly Setting<int> MaxItems = new Setting<int>(20);
+
+        [Summary("Timeout between sell all button clicks (in milliseconds)")]
+        public readonly Setting<int> TimeoutBetweenSales = new Setting<int>(60000);
+
         #endregion
 
         #region Commands
@@ -826,7 +833,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         }
         public void Core_RenderFrame(object sender, EventArgs e) {
             try {
-                if (DateTime.UtcNow - bailTimer > TimeSpan.FromSeconds(60)) {
+                if (DateTime.UtcNow - bailTimer > TimeSpan.FromSeconds(6000)) {
                     WriteToChat("bail, Timeout expired");
                     Stop();
                 }
@@ -869,7 +876,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     }
                 }
 
-                if (DateTime.UtcNow - lastEvent >= TimeSpan.FromMilliseconds(15000)) {
+                if (DateTime.UtcNow - lastEvent >= TimeSpan.FromMilliseconds(65000)) {
                     if (lastEvent != DateTime.MinValue) // minvalue was not set, so it expired naturally:
                         Logger.Debug($"Event Timeout. Pyreals: {expectedPyreals:n0}, Sell List: {pendingSell.Count():n0}, Buy List: {pendingBuy.Count():n0}");
                     if (HasVendorOpen()) { // not needed any more, but leaving it in for good measure.
