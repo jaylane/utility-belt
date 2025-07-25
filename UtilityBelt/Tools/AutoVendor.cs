@@ -934,7 +934,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                                 // Normal single-batch mode
                                 needsToSell = false;
                                 UB.Core.Actions.VendorSellAll();
-                                //Logger.Debug("VendorSellAll");
+                                Logger.Debug("VendorSellAll");
                                 CheckDone();
                             }
                         }
