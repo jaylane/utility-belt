@@ -138,14 +138,14 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         [Summary("Attempts to open vendor on /ub vendor open[p]")]
         public readonly Setting<int> Tries = new Setting<int>(4);
 
-        [Summary("Tine between open vendor attempts (in milliseconds)")]
+        [Summary("Time between open vendor attempts (in milliseconds)")]
         public readonly Setting<int> TriesTime = new Setting<int>(5000);
 
         [Summary("Maximum number of items to sell in one transaction")]
-        public readonly Setting<int> MaxItems = new Setting<int>(20);
+        public readonly Setting<int> MaxItemsPerTransaction = new Setting<int>(24);
 
-        [Summary("Timeout between sell all button clicks (in milliseconds)")]
-        public readonly Setting<int> TimeoutBetweenSales = new Setting<int>(60000);
+        [Summary("Timeout between each sale transaction in seconds")]
+        public readonly Setting<int> TimeoutBetweenTransactions = new Setting<int>(5);
         #endregion
 
         #region Commands
