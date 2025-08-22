@@ -142,10 +142,10 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         public readonly Setting<int> TriesTime = new Setting<int>(5000);
 
         [Summary("Maximum number of items to sell in one transaction")]
-        public readonly Setting<int> MaxItemsPerTransaction = new Setting<int>(24);
+        public readonly Setting<int> MaxItemsPerTransaction = new Setting<int>(99);
 
         [Summary("Timeout between each sale transaction in seconds")]
-        public readonly Setting<int> TimeoutBetweenTransactions = new Setting<int>(5);
+        public readonly Setting<int> TimeoutBetweenTransactions = new Setting<int>(0);
         #endregion
 
         #region Commands
