@@ -32,4 +32,4 @@
 - Hotkeys are not properly unregistered during plugin shutdown
 - Fix issue where dungeon/landscape map textures were getting cut off
 - Add setting to store last max tink value
-- Add AutoVendor MaxItemsPerTransaction and TimeoutBetweenTransactions settings
+- Added AutoVendor MaxItemsPerTransaction and TimeoutBetweenTransactions settings.
