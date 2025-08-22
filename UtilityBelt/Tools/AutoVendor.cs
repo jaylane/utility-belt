@@ -98,6 +98,19 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         private bool showMerchantInfoCooldown = false;
         private List<int> itemsToId = new List<int>();
 
+        // Sell batching state tracking
+        private DateTime lastSellTransactionTime = DateTime.MinValue;
+        private bool waitingForSellDelay = false;
+        private List<WorldObject> remainingSellItems = new List<WorldObject>();
+        private bool processingSellBatches = false;
+        private bool needsDelayAfterSell = false; // Flag to set delay after sell completes
+        
+        // Dynamic timeout calculation for batching
+        private DateTime dynamicBailTimeout = DateTime.MinValue;
+        private TimeSpan lastDelayStartTime = TimeSpan.Zero;
+        private int totalBatchCount = 0;
+        private int currentBatchNumber = 0;
+
         private int expectedPyreals = 0;
         private readonly Dictionary<int, int> myPyreals = new Dictionary<int, int>();
         private readonly Dictionary<int, int> pendingBuy = new Dictionary<int, int>();
@@ -134,6 +147,12 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
 
         [Summary("Tine between open vendor attempts (in milliseconds)")]
         public readonly Setting<int> TriesTime = new Setting<int>(5000);
+
+        [Summary("Maximum items to sell per transaction")]
+        public readonly Setting<int> MaxItemsPerTransaction = new Setting<int>(99);
+
+        [Summary("Timeout between sale transactions in seconds")]
+        public readonly Setting<int> TimeoutBetweenTransactionsSeconds = new Setting<int>(0);
         #endregion
 
         #region Commands
@@ -517,6 +536,18 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         }
         private void CheckDone() {
             //Logger.WriteToChat($"CheckDone {((double)((DateTime.UtcNow.ToFileTimeUtc() - 116444736000000000) / 10) / 1000000):n6} expectedPyreals:{expectedPyreals} pendingSell({pendingSell.Count}):{string.Join(",",pendingSell.Select(x=>x.ToString("X8")).ToArray())} pendingBuy({pendingBuy.Count}):{string.Join(",", pendingBuy.Select(x=>x.Key.ToString("X8")+"*"+x.Value).ToArray())}");
+            
+            // Check if we need to set up a delay after sell completion
+            if (needsDelayAfterSell && expectedPyreals < 50 && pendingSell.Count() == 0 && pendingBuy.Count() == 0) {
+                needsDelayAfterSell = false;
+                lastSellTransactionTime = DateTime.UtcNow;
+                waitingForSellDelay = true;
+                LogDebug($"Sell transaction complete, starting {TimeoutBetweenTransactionsSeconds} second delay before next batch");
+                lastEvent = DateTime.UtcNow;
+                RefreshBailTimer();
+                return;
+            }
+            
             if (expectedPyreals < 50 && pendingSell.Count() == 0 && pendingBuy.Count() == 0) {
                 lastEvent = DateTime.MinValue;
                 shouldAutoStack = UB.InventoryManager.AutoStack;
@@ -524,7 +555,27 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             }
             else
                 lastEvent = DateTime.UtcNow;
+            RefreshBailTimer();
+        }
+
+        private void RefreshBailTimer() {
             bailTimer = DateTime.UtcNow;
+            // Set timeout for current batch only, not all remaining batches
+            if (processingSellBatches && remainingSellItems.Count > 0) {
+                dynamicBailTimeout = DateTime.UtcNow.AddSeconds(TimeoutBetweenTransactionsSeconds + 20); // Current batch timeout + 30s buffer
+                LogDebug($"Dynamic timeout set for {TimeoutBetweenTransactionsSeconds + 20} seconds (single batch timeout)");
+            } else {
+                dynamicBailTimeout = DateTime.UtcNow.AddSeconds(120); // Standard timeout when not batching
+            }
+        }
+
+        private bool IsTimedOut() {
+            // Use dynamic timeout if we're in batch processing mode
+            if (processingSellBatches && dynamicBailTimeout != DateTime.MinValue) {
+                return DateTime.UtcNow > dynamicBailTimeout;
+            }
+            // Otherwise use standard 60-second timeout
+            return DateTime.UtcNow - bailTimer > TimeSpan.FromSeconds(60);
         }
         private void EchoFilter_ClientDispatch(object sender, NetworkMessageEventArgs e) {
             try {
@@ -785,6 +836,13 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             UBHelper.Vendor.VendorClosed += UBHelper_VendorClosed;
             waitingForAutoStackCram = false;
             needsToBuy = needsToSell = false;
+            
+            // Reset sell batching state
+            lastSellTransactionTime = DateTime.MinValue;
+            waitingForSellDelay = false;
+            remainingSellItems.Clear();
+            processingSellBatches = false;
+            needsDelayAfterSell = false;
             UB.Core.EchoFilter.ServerDispatch += EchoFilter_ServerDispatch;
             UB.Core.EchoFilter.ClientDispatch += EchoFilter_ClientDispatch;
             UB.Core.RenderFrame += Core_RenderFrame;
@@ -826,7 +884,7 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
         }
         public void Core_RenderFrame(object sender, EventArgs e) {
             try {
-                if (DateTime.UtcNow - bailTimer > TimeSpan.FromSeconds(60)) {
+                if (IsTimedOut()) {
                     WriteToChat("bail, Timeout expired");
                     Stop();
                 }
@@ -869,9 +927,22 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     }
                 }
 
-                if (DateTime.UtcNow - lastEvent >= TimeSpan.FromMilliseconds(15000)) {
+                // Use dynamic timeout for lastEvent - longer during batch delays
+                var eventTimeoutMs = waitingForSellDelay ? (TimeoutBetweenTransactionsSeconds * 1000 + 15000) : 15000;
+                
+                if (DateTime.UtcNow - lastEvent >= TimeSpan.FromMilliseconds(eventTimeoutMs)) {
                     if (lastEvent != DateTime.MinValue) // minvalue was not set, so it expired naturally:
                         Logger.Debug($"Event Timeout. Pyreals: {expectedPyreals:n0}, Sell List: {pendingSell.Count():n0}, Buy List: {pendingBuy.Count():n0}");
+                    
+                    // Check if we're waiting for sell delay between batches
+                    if (waitingForSellDelay) {
+                        if (DateTime.UtcNow - lastSellTransactionTime < TimeSpan.FromSeconds(TimeoutBetweenTransactionsSeconds)) {
+                            return; // Still waiting for delay - no need to refresh timers constantly
+                        }
+                        waitingForSellDelay = false;
+                        LogDebug($"Sell delay complete, continuing with next batch");
+                    }
+                    
                     if (HasVendorOpen()) { // not needed any more, but leaving it in for good measure.
                         if (needsToBuy) {
                             needsToBuy = false;
@@ -959,99 +1030,143 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
                     return;
                 }
 
+                // Handle sell batching
                 VendorItem nextBuyItem = null;
-
                 if (buyItems.Count > 0)
                     nextBuyItem = buyItems[0].Item;
 
-                int totalSellValue = 0;
-                int sellItemCount = 0;
-
-                StringBuilder sellAdded = new StringBuilder("Autovendor Sell List: ");
-                while (sellItemCount < sellItems.Count && sellItemCount < 99) { // GDLE limits transactions to 99 items. (less than 100)
-                    var item = sellItems[sellItemCount];
-                    var value = GetVendorBuyPrice(item);
-                    var stackSize = item.Values(LongValueKey.StackCount, 1);
-                    bool nestedBreak = false;
-
-                    if (stackSize < 0) {
-                        stackSize = (new UBHelper.Weenie(item.Id)).StackCount;
-                        if (stackSize == 0)
-                            stackSize = 1;
+                // If we don't have remaining sell items, populate the list
+                if (remainingSellItems.Count == 0 && !processingSellBatches) {
+                    remainingSellItems = new List<WorldObject>(sellItems);
+                    processingSellBatches = remainingSellItems.Count > 0;
+                    
+                    if (processingSellBatches) {
+                        // Refresh bailTimer and set dynamic timeout when starting batch processing
+                        RefreshBailTimer();
+                        LogDebug($"Starting sell batching with {remainingSellItems.Count} total items, max {MaxItemsPerTransaction} per batch");
                     }
+                }
 
-                    // dont sell notes if we are trying to buy notes...
-                    if (((nextBuyItem != null && nextBuyItem.ObjectClass == ObjectClass.TradeNote) || nextBuyItem == null) && item.ObjectClass == ObjectClass.TradeNote) {
-                        Logger.Debug($"AutoVendor bail: buyItem: {(nextBuyItem == null ? "null" : nextBuyItem.Name)} sellItem: {Util.GetObjectName(item.Id)}");
-                        break;
-                    }
+                // Process sell batches
+                if (processingSellBatches && remainingSellItems.Count > 0) {
+                    int totalSellValue = 0;
+                    int sellItemCount = 0;
+                    int batchLimit = Math.Min(MaxItemsPerTransaction, Math.Min(remainingSellItems.Count, 99)); // GDLE limits transactions to 99 items
+                    
+                    StringBuilder sellAdded = new StringBuilder("Autovendor Sell List (Batch): ");
+                    var itemsToProcess = remainingSellItems.Take(batchLimit).ToList();
+                    
+                    foreach (var item in itemsToProcess) {
+                        var value = GetVendorBuyPrice(item);
+                        var stackSize = item.Values(LongValueKey.StackCount, 1);
+                        bool shouldSkip = false;
 
-                    // if we are selling notes to buy something, sell the minimum amount
-                    if (nextBuyItem != null && item.ObjectClass == ObjectClass.TradeNote) {
-                        if (sellItemCount > 0) break; // if we already have items to sell, sell those first
-                        if (!PyrealsWillFitInMainPack(value)) {
-                            Util.ThinkOrWrite($"AutoVendor Fatal - No inventory room to sell {Util.GetObjectName(item.Id)}", UB.AutoVendor.Think);
-                            Stop();
-                            return;
+                        if (stackSize < 0) {
+                            stackSize = (new UBHelper.Weenie(item.Id)).StackCount;
+                            if (stackSize == 0)
+                                stackSize = 1;
                         }
 
-                        // see if we already have a single stack of this item
-                        using (var inventoryNotes = UB.Core.WorldFilter.GetInventory()) {
-                            inventoryNotes.SetFilter(new ByObjectClassFilter(ObjectClass.TradeNote));
-                            foreach (var wo in inventoryNotes) {
-                                if (wo.Name == item.Name && wo.Values(LongValueKey.StackCount, 0) == 1) {
-                                    Logger.Debug($"AutoVendor Selling single {Util.GetObjectName(wo.Id)} so we can afford to buy: " + nextBuyItem.Name);
-                                    needsToSell = true;
-                                    if (sellItemCount > 0)
-                                        sellAdded.Append(", ");
-                                    sellAdded.Append(Util.GetObjectName(wo.Id));
-                                    pendingSell.Add(wo.Id);
-                                    UB.Core.Actions.VendorAddSellList(wo.Id);
-                                    totalSellValue += (int)(value);
-                                    sellItemCount++;
-                                    nestedBreak = true;
-                                    break;
+                        // dont sell notes if we are trying to buy notes...
+                        if (((nextBuyItem != null && nextBuyItem.ObjectClass == ObjectClass.TradeNote) || nextBuyItem == null) && item.ObjectClass == ObjectClass.TradeNote) {
+                            Logger.Debug($"AutoVendor bail: buyItem: {(nextBuyItem == null ? "null" : nextBuyItem.Name)} sellItem: {Util.GetObjectName(item.Id)}");
+                            shouldSkip = true;
+                        }
+
+                        // if we are selling notes to buy something, sell the minimum amount
+                        if (!shouldSkip && nextBuyItem != null && item.ObjectClass == ObjectClass.TradeNote) {
+                            if (sellItemCount > 0) {
+                                shouldSkip = true; // if we already have items to sell, sell those first
+                            } else {
+                                if (!PyrealsWillFitInMainPack(value)) {
+                                    Util.ThinkOrWrite($"AutoVendor Fatal - No inventory room to sell {Util.GetObjectName(item.Id)}", UB.AutoVendor.Think);
+                                    Stop();
+                                    return;
                                 }
-                            }
-                        }
-                        if (nestedBreak)
-                            break;
-                        DoSplit(item, 1);
-                        return;
-                    }
 
-                    // cant sell the whole stack? split it into what we can sell
-                    if (!PyrealsWillFitInMainPack(totalSellValue + (int)(value * stackSize))) {
-                        if (sellItemCount < 1) {
-                            stackSize = (int)(((new Weenie(UB.Core.CharacterFilter.Id)).FreeSpace - 2) * PYREAL_STACK_SIZE / value);
-                            if (stackSize > 0) {
-                                DoSplit(item, stackSize);
+                                // see if we already have a single stack of this item
+                                using (var inventoryNotes = UB.Core.WorldFilter.GetInventory()) {
+                                    inventoryNotes.SetFilter(new ByObjectClassFilter(ObjectClass.TradeNote));
+                                    foreach (var wo in inventoryNotes) {
+                                        if (wo.Name == item.Name && wo.Values(LongValueKey.StackCount, 0) == 1) {
+                                            Logger.Debug($"AutoVendor Selling single {Util.GetObjectName(wo.Id)} so we can afford to buy: " + nextBuyItem.Name);
+                                            needsToSell = true;
+                                            if (sellItemCount > 0)
+                                                sellAdded.Append(", ");
+                                            sellAdded.Append(Util.GetObjectName(wo.Id));
+                                            pendingSell.Add(wo.Id);
+                                            UB.Core.Actions.VendorAddSellList(wo.Id);
+                                            totalSellValue += (int)(value);
+                                            sellItemCount++;
+                                            remainingSellItems.Remove(item);
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (sellItemCount > 0) break;
+                                DoSplit(item, 1);
                                 return;
                             }
-                            Util.ThinkOrWrite($"AutoVendor Fatal - No inventory room to sell {Util.GetObjectName(item.Id)}", UB.AutoVendor.Think);
-                            Stop();
-                            return;
                         }
-                        break;
+
+                        if (shouldSkip) {
+                            remainingSellItems.Remove(item);
+                            continue;
+                        }
+
+                        // cant sell the whole stack? split it into what we can sell
+                        if (!PyrealsWillFitInMainPack(totalSellValue + (int)(value * stackSize))) {
+                            if (sellItemCount < 1) {
+                                stackSize = (int)(((new Weenie(UB.Core.CharacterFilter.Id)).FreeSpace - 2) * PYREAL_STACK_SIZE / value);
+                                if (stackSize > 0) {
+                                    DoSplit(item, stackSize);
+                                    return;
+                                }
+                                Util.ThinkOrWrite($"AutoVendor Fatal - No inventory room to sell {Util.GetObjectName(item.Id)}", UB.AutoVendor.Think);
+                                Stop();
+                                return;
+                            }
+                            break;
+                        }
+
+                        if (sellItemCount > 0)
+                            sellAdded.Append(", ");
+                        sellAdded.Append(Util.GetObjectName(item.Id));
+
+                        pendingSell.Add(item.Id);
+                        UB.Core.Actions.SelectItem(item.Id);
+                        UB.Core.Actions.VendorAddSellList(item.Id);
+                        totalSellValue += (int)(value * stackSize);
+                        sellItemCount++;
                     }
 
-                    if (sellItemCount > 0)
-                        sellAdded.Append(", ");
-                    sellAdded.Append(Util.GetObjectName(item.Id));
+                    // Remove processed items from remaining list
+                    foreach (var item in itemsToProcess.Take(sellItemCount)) {
+                        remainingSellItems.Remove(item);
+                    }
 
-                    pendingSell.Add(item.Id);
-                    UB.Core.Actions.SelectItem(item.Id);
-                    UB.Core.Actions.VendorAddSellList(item.Id);
-                    totalSellValue += (int)(value * stackSize);
-                    ++sellItemCount;
+                    if (sellItemCount > 0) {
+                        var batchInfo = remainingSellItems.Count > 0 ? $" (Batch {Math.Ceiling((double)(sellItems.Count - remainingSellItems.Count) / MaxItemsPerTransaction)} of {Math.Ceiling((double)sellItems.Count / MaxItemsPerTransaction)})" : "";
+                        LogDebug($"{sellAdded.ToString()}{batchInfo} - {totalSellValue}");
+                        expectedPyreals = totalSellValue;
+                        needsToSell = true;
+                        
+                        // Flag to set up delay AFTER the sell completes, not before
+                        if (remainingSellItems.Count > 0) {
+                            needsDelayAfterSell = true;
+                            LogDebug($"Batch ready to sell, {remainingSellItems.Count} items remaining for next batch.");
+                        } else {
+                            processingSellBatches = false;
+                            needsDelayAfterSell = false;
+                            LogDebug("Final batch ready to sell.");
+                        }
+                        return;
+                    }
                 }
 
-                if (sellItemCount > 0) {
-                    Logger.Debug(sellAdded.ToString() + " - " + totalSellValue);
-                    expectedPyreals = totalSellValue;
-                    needsToSell = true;
-                    return;
-                }
+                // No more items to sell
+                processingSellBatches = false;
+                remainingSellItems.Clear();
                 Stop();
             } catch (Exception ex) { Logger.LogException(ex); }
         }
@@ -1204,6 +1319,11 @@ Documents\Decal Plugins\UtilityBelt\autovendor\default.utl
             test_mode.Append("Sell Items:\n");
             List<WorldObject> sellObjects = GetSellItems();
             sellObjects.Sort(delegate (WorldObject wo1, WorldObject wo2) { return Util.GetOverallSlot(wo1) - Util.GetOverallSlot(wo2); });
+            
+            if (sellObjects.Count > MaxItemsPerTransaction) {
+                test_mode.Append($"  NOTE: {sellObjects.Count} items will be processed in {Math.Ceiling((double)sellObjects.Count / MaxItemsPerTransaction)} batches of {MaxItemsPerTransaction} items each, with {TimeoutBetweenTransactionsSeconds} second delays between batches.\n");
+            }
+            
             foreach (WorldObject wo in sellObjects) {
                 uTank2.LootPlugins.GameItemInfo itemInfo = uTank2.PluginCore.PC.FWorldTracker_GetWithID(wo.Id);
                 if (itemInfo == null) continue;
